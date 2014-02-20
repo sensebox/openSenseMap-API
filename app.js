@@ -1,5 +1,6 @@
 var restify = require('restify'), 
-	mongoose = require('mongoose');
+	mongoose = require('mongoose'),
+  timestamp = require('mongoose-timestamp');
 
 
 var server = restify.createServer({ name: 'opensensemap-api' })
@@ -11,7 +12,7 @@ server
 	.use(restify.fullResponse())
  	.use(restify.bodyParser());
 
-db = mongoose.connect("mongodb://localhost/opensensemap-api");
+conn = mongoose.connect("mongodb://localhost/opensensemap-api");
 var Schema = mongoose.Schema,
 	ObjectId = Schema.ObjectID;
 
@@ -45,10 +46,12 @@ var measurementSchema = new Schema({
   },
   sensor_id: {
     type: Schema.Types.ObjectId,
-    ref: 'Measurement',
+    ref: 'Sensor',
     required: true
   }
 });
+
+measurementSchema.plugin(timestamp);
 
 //Sensor schema
 var sensorSchema = new Schema({
@@ -67,7 +70,7 @@ var sensorSchema = new Schema({
     ref: 'Box',
     required: true 
   },
-  measurements: [{type: Schema.Types.ObjectId,ref: 'Measurement'}]
+  measurements: {type: Schema.Types.ObjectId,ref: 'Measurement'}
 });
 
 //SenseBox schema
@@ -95,36 +98,33 @@ server.post({path : PATH , version: '0.0.1'} ,postNewBox);
 server.post({path : PATH +'/:boxId/:sensorId' , version : '0.0.1'}, postNewMeasurement);
 
 function postNewMeasurement(req, res, next) {
+  if (Box.findOne({_id: req.params.boxId})) {
+    if (Sensor.findOne({_id: req.params.sensorId})) {
+      var measurementData = {
+        value: req.params.value,
+        _id: mongoose.Types.ObjectId(),
+        sensor_id: req.params.sensorId
+      };
 
-  var measurementData = {
-    value: req.params.value,
-    _id: mongoose.Types.ObjectId(),
-    sensor_id: req.params.sensorId
-  };
+      var measurement = new Measurement(measurementData);
 
-  var measurement = new Measurement(measurementData);
+      measurement.save(function(error, data){
+        if (error) {
+          return next(new restify.InvalidArgumentError(JSON.stringify(error.errors)));
+        } else {
+          Sensor.update({_id:req.params.sensorId},{$set: {measurements:measurement._id}}, function(err,sensor){
 
-  measurement.save(function(error, data){
-    if (error) {
-      return next(new restify.InvalidArgumentError(JSON.stringify(error.errors)));
+          });
+          res.json(data);
+          res.send(201,measurement); 
+        }
+      });
     } else {
-      res.json(data);
-      res.send(201,measurement); 
-    }
-  });
-  
-  //TODO Check if boxId is valid
-
-
-  //TODO Check if sensorId is valid
-
-
-  //TODO Define Measurement model
-
-
-  //TODO Save it to mongoDB
-
-
+      res.send(404, 'SensorID invalid!');
+    };
+  } else {
+    res.send(404, 'BoxID invalid');
+  }
 }
 
 function findAllBoxes(req, res , next){
@@ -134,7 +134,7 @@ function findAllBoxes(req, res , next){
 }
 
 function findBox(req, res, next) {
-  Box.findOne({_id: req.params.boxId}).populate('sensors').exec(function(error,box){
+  Box.findOne({_id: req.params.boxId}).populate('sensors measurements').exec(function(error,box){
     if (error) return next(new restify.InvalidArgumentError(JSON.stringify(error.errors)));
     if (box) {
       res.send(box);
