@@ -1,6 +1,7 @@
 var restify = require('restify'), 
 	mongoose = require('mongoose'),
-  timestamp = require('mongoose-timestamp');
+  timestamp = require('mongoose-timestamp'),
+  fs = require('fs');
 
 
 var server = restify.createServer({ name: 'opensensemap-api' });
@@ -89,9 +90,10 @@ var boxSchema = new Schema({
     type: String,
     required: true
   },
-  id: {
+  orderID: {
     type: String,
-    required: false
+    required: false,
+    trim: true
   },
   sensors: [
     {
@@ -183,6 +185,7 @@ function postNewBox(req, res, next) {
     name: req.params.name,
     boxType: req.params.boxType,
     loc: req.params.loc,
+    orderID: req.params.orderID,
     _id: mongoose.Types.ObjectId(),
     sensors: []
   };
@@ -206,10 +209,6 @@ function postNewBox(req, res, next) {
     ids.push(sensorData._id);
   }
   
-  // var box = new Box(boxData);
-  // ids.forEach(function(tempId){
-  //   box.sensors.push(tempId);
-  // });
   var box = new Box(boxData);
   tempSensors.forEach(function(tempSensor){
     box.sensors.push(tempSensor);
@@ -232,7 +231,36 @@ function postNewBox(req, res, next) {
       });
     }
     Box.findOne({_id:box._id}).populate('sensors').exec(function(err,boxPopulated){
+      if (err) return next(new restify.InvalidArgumentError(JSON.querystring.stringify(err.errors)));
+      
+      fs.readFileSync('files/template.ino').toString().split('\n').forEach(function (line) { 
+          var filename = "files/"+boxPopulated._id+".ino";
+          if (line.indexOf("//SenseBox ID") != -1) {
+            fs.appendFileSync(filename, line.toString() + "\n");
+            fs.appendFileSync(filename, 'String senseboxId = "'+boxPopulated._id+'";\n');
+          } else if (line.indexOf("//Senor IDs") != -1) {
+            fs.appendFileSync(filename, line.toString() + "\n");
+            for (var i = boxPopulated.sensors.length - 1; i >= 0; i--) {
+              var sensor = boxPopulated.sensors[i];
+              if (sensor.title == "Temperatur") {
+                fs.appendFileSync(filename, 'String temperatureSensorId = "'+sensor._id+'";\n');
+              } else if(sensor.title == "Luftfeuchtigkeit") {
+                fs.appendFileSync(filename, 'String humiditySensorId = "'+sensor._id+'";\n');
+              } else if(sensor.title == "Luftdruck") {
+                fs.appendFileSync(filename, 'String pressureSensorId = "'+sensor._id+'";\n');
+              } else if(sensor.title == "Schall") {
+                fs.appendFileSync(filename, 'String noiseSensorId = "'+sensor._id+'";\n');
+              } else if(sensor.title == "Helligkeit") {
+                fs.appendFileSync(filename, 'String lightSensorId = "'+sensor._id+'";\n');
+              };
+            };
+          } else {
+            fs.appendFileSync(filename, line.toString() + "\n");  
+          };    
+      });
+
       res.send(201,boxPopulated);
+
     });
   });	
 }
