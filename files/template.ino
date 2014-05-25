@@ -51,7 +51,7 @@ Barometer barometer;
 DHT dht(DHTPIN, DHT11);
 
 //Variables for time sync and upload intervall
-const unsigned long postingInterval = 10*1000; //10 seconds
+const unsigned long postingInterval = 10*1000*60; //1 minute
 unsigned long lastConnectionTime = 0;
 boolean lastConnected = false;
 boolean uploadSuccess = false;
