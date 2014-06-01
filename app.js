@@ -103,16 +103,71 @@ var boxSchema = new Schema({
   ]
 });
 
+var userSchema = new Schema({
+  firstname: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  lastname: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  email: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  apikey: {
+    type: String,
+    trim: true
+  },
+  boxes: [
+    {
+      type: String,
+      trim: true
+    }
+  ]
+});
+
 var Measurement = mongoose.model('Measurement', measurementSchema);
 var Box = mongoose.model('Box', boxSchema);
 var Sensor = mongoose.model('Sensor', sensorSchema);
+var User = mongoose.model('User', userSchema);
 
 var PATH = '/boxes';
+var userPATH = 'users';
+
 server.get({path : PATH , version : '0.0.1'} , findAllBoxes);
 server.get({path : PATH +'/:boxId' , version : '0.0.1'} , findBox);
 server.get({path : PATH +'/:boxId/sensors', version : '0.0.1'}, getMeasurements);
 server.post({path : PATH , version: '0.0.1'} ,postNewBox);
 server.post({path : PATH +'/:boxId/:sensorId' , version : '0.0.1'}, postNewMeasurement);
+
+server.post({path : userPATH , version : '0.0.1'} , generateNewID);
+
+function generateNewID(req, res, next) {
+
+  var userData = {
+    firstname: req.params.firstname,
+    lastname: req.params.lastname,
+    email: req.params.email,
+    apikey: mongoose.Types.ObjectId(),
+    boxes: []
+  }
+
+  var user = new User(userData);
+
+  user.save(function(error,user){
+    if (error) {
+      return next(new restify.InvalidArgumentError(JSON.stringify(error.errors)));
+    } else {
+      res.send(201,user);
+    }
+  });
+
+}
 
 function getMeasurements(req, res, next) {
   Sensor.find({boxes_id: req.params.boxId}).populate('measurements').exec(function(error,sensors){
@@ -181,88 +236,97 @@ function postNewBox(req, res, next) {
     return next(new restify.InvalidArgumentError('Name must be supplied'));
   }
 
-  var boxData = {
-    name: req.params.name,
-    boxType: req.params.boxType,
-    loc: req.params.loc,
-    orderID: req.params.orderID,
-    _id: mongoose.Types.ObjectId(),
-    sensors: []
-  };
+  User.findOne({apikey:req.params.orderID}, function(error, user){
+    if (error) return next(new restify.InvalidArgumentError(JSON.stringify(error.errors)));
 
-  var ids = [];
-  var tempSensors = [];
-  for (var i = req.params.sensors.length - 1; i >= 0; i--) {
+    if (user) {
+      var boxData = {
+        name: req.params.name,
+        boxType: req.params.boxType,
+        loc: req.params.loc,
+        _id: mongoose.Types.ObjectId(),
+        sensors: []
+      };
+
+      user.boxes.push(boxData._id);
+      user.save();
+
+      var ids = [];
+      var tempSensors = [];  
+
+      for (var i = req.params.sensors.length - 1; i >= 0; i--) {
     
-    var id = mongoose.Types.ObjectId();
+        var id = mongoose.Types.ObjectId();
 
-    var sensorData = {
-      _id: id,
-      title: req.params.sensors[i].title,
-      unit: req.params.sensors[i].unit,
-      sensorType: req.params.sensors[i].sensorType,
-      boxes_id: boxData._id
-    };
+        var sensorData = {
+          _id: id,
+          title: req.params.sensors[i].title,
+          unit: req.params.sensors[i].unit,
+          sensorType: req.params.sensors[i].sensorType,
+          boxes_id: boxData._id
+        };
 
-    var sensor = new Sensor(sensorData);
-    tempSensors.push(sensor);
-    ids.push(sensorData._id);
-  }
-  
-  var box = new Box(boxData);
-  tempSensors.forEach(function(tempSensor){
-    box.sensors.push(tempSensor);
-  });
+        var sensor = new Sensor(sensorData);
+          tempSensors.push(sensor);
+          ids.push(sensorData._id);
+        }
 
-  box.save(function (error, data) {
-		if (error) {
-      return next(new restify.InvalidArgumentError(JSON.stringify(error.errors)));
-		}
-		else {
-      tempSensors.forEach(function(tempSensor){
-        tempSensor.save(function (error, data) {
-          if (error) {
-            return next(new restify.InvalidArgumentError(JSON.stringify(error.errors)));
-          }
-          else {
-            // res.send(data);
-          }
+        var box = new Box(boxData);
+        tempSensors.forEach(function(tempSensor){
+          box.sensors.push(tempSensor);
+        });
+
+        box.save(function (error, data) {
+        if (error) {
+          return next(new restify.InvalidArgumentError(JSON.stringify(error.errors)));
+        }
+        else {
+          tempSensors.forEach(function(tempSensor){
+            tempSensor.save(function (error, data) {
+              if (error) {
+                return next(new restify.InvalidArgumentError(JSON.stringify(error.errors)));
+              }
+              else {
+                // res.send(data);
+              }
+            });
+          });
+        }
+        Box.findOne({_id:box._id}).populate('sensors').exec(function(err,boxPopulated){
+          if (err) return next(new restify.InvalidArgumentError(JSON.querystring.stringify(err.errors)));
+          
+          fs.readFileSync('files/template.ino').toString().split('\n').forEach(function (line) { 
+              var filename = "files/"+boxPopulated._id+".ino";
+              if (line.indexOf("//SenseBox ID") != -1) {
+                fs.appendFileSync(filename, line.toString() + "\n");
+                fs.appendFileSync(filename, 'String senseboxId = "'+boxPopulated._id+'";\n');
+              } else if (line.indexOf("//Senor IDs") != -1) {
+                fs.appendFileSync(filename, line.toString() + "\n");
+                for (var i = boxPopulated.sensors.length - 1; i >= 0; i--) {
+                  var sensor = boxPopulated.sensors[i];
+                  if (sensor.title == "Temperatur") {
+                    fs.appendFileSync(filename, 'String temperatureSensorId = "'+sensor._id+'";\n');
+                  } else if(sensor.title == "Luftfeuchtigkeit") {
+                    fs.appendFileSync(filename, 'String humiditySensorId = "'+sensor._id+'";\n');
+                  } else if(sensor.title == "Luftdruck") {
+                    fs.appendFileSync(filename, 'String pressureSensorId = "'+sensor._id+'";\n');
+                  } else if(sensor.title == "Schall") {
+                    fs.appendFileSync(filename, 'String noiseSensorId = "'+sensor._id+'";\n');
+                  } else if(sensor.title == "Helligkeit") {
+                    fs.appendFileSync(filename, 'String lightSensorId = "'+sensor._id+'";\n');
+                  };
+                };
+              } else {
+                fs.appendFileSync(filename, line.toString() + "\n");  
+              };    
+          });
+          res.send(201,boxPopulated);
         });
       });
-    }
-    Box.findOne({_id:box._id}).populate('sensors').exec(function(err,boxPopulated){
-      if (err) return next(new restify.InvalidArgumentError(JSON.querystring.stringify(err.errors)));
-      
-      fs.readFileSync('files/template.ino').toString().split('\n').forEach(function (line) { 
-          var filename = "files/"+boxPopulated._id+".ino";
-          if (line.indexOf("//SenseBox ID") != -1) {
-            fs.appendFileSync(filename, line.toString() + "\n");
-            fs.appendFileSync(filename, 'String senseboxId = "'+boxPopulated._id+'";\n');
-          } else if (line.indexOf("//Senor IDs") != -1) {
-            fs.appendFileSync(filename, line.toString() + "\n");
-            for (var i = boxPopulated.sensors.length - 1; i >= 0; i--) {
-              var sensor = boxPopulated.sensors[i];
-              if (sensor.title == "Temperatur") {
-                fs.appendFileSync(filename, 'String temperatureSensorId = "'+sensor._id+'";\n');
-              } else if(sensor.title == "Luftfeuchtigkeit") {
-                fs.appendFileSync(filename, 'String humiditySensorId = "'+sensor._id+'";\n');
-              } else if(sensor.title == "Luftdruck") {
-                fs.appendFileSync(filename, 'String pressureSensorId = "'+sensor._id+'";\n');
-              } else if(sensor.title == "Schall") {
-                fs.appendFileSync(filename, 'String noiseSensorId = "'+sensor._id+'";\n');
-              } else if(sensor.title == "Helligkeit") {
-                fs.appendFileSync(filename, 'String lightSensorId = "'+sensor._id+'";\n');
-              };
-            };
-          } else {
-            fs.appendFileSync(filename, line.toString() + "\n");  
-          };    
-      });
-
-      res.send(201,boxPopulated);
-
-    });
-  });	
+    } else {
+      res.send(404, 'SenseBox ID invalid')
+    };
+  })
 }
 
 function isEmptyObject(obj) {
