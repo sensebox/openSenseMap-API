@@ -1,0 +1,25 @@
+{
+  "name": "OpenSenseMapAPI",
+  "version": "0.0.1",
+  "description": "API for opensensemap.org",
+  "main": "app.js",
+  "dependencies": {
+    "mongoose": "^3.8.12",
+    "mongoose-timestamp": "^0.2.1",
+    "restify": "^2.6.1"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mpfeil/OpenSenseMap-API.git"
+  },
+  "author": "Matthias Pfeil",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/mpfeil/OpenSenseMap-API/issues"
+  },
+  "homepage": "https://github.com/mpfeil/OpenSenseMap-API"
+}
