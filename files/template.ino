@@ -51,8 +51,9 @@ Barometer barometer;
 DHT dht(DHTPIN, DHT11);
 
 //Variables for time sync and upload intervall
-const unsigned long postingInterval = 10*1000*60; //1 minute
+const unsigned long postingInterval = 60 * 1000; //post meausrements each 60 seconds
 unsigned long lastConnectionTime = 0;
+unsigned long currentTime = 0;
 boolean lastConnected = false;
 boolean uploadSuccess = false;
 
@@ -143,7 +144,8 @@ void loop()
   // if you're not already connected, and 60 seconds have passed since
   // your last connection, then connect again and send data: 
   uploadSuccess = false;
-  if(!client.connected() && (millis() - lastConnectionTime > postingInterval)) {
+  currentTime = millis();
+  if(!client.connected() && (currentTime - lastConnectionTime > postingInterval)) {
     Serial.println("-----------------------------------");
     Serial.print("Connecting and posting sensor sample (case ");
     Serial.print(sampleType);
