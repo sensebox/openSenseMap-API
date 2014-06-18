@@ -145,7 +145,7 @@ void loop()
   // your last connection, then connect again and send data: 
   uploadSuccess = false;
   currentTime = millis();
-  if(!client.connected() && (currentTime - lastConnectionTime > postingInterval)) {
+  if(!client.connected() && ((unsigned long)(currentTime - lastConnectionTime) >= postingInterval)) {
     Serial.println("-----------------------------------");
     Serial.print("Connecting and posting sensor sample (case ");
     Serial.print(sampleType);
