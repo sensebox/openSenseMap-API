@@ -140,17 +140,22 @@ server.get({path : PATH +'/:boxId/sensors', version : '0.0.1'}, getMeasurements)
 server.post({path : PATH , version: '0.0.1'} ,postNewBox);
 server.post({path : PATH +'/:boxId/:sensorId' , version : '0.0.1'}, postNewMeasurement);
 
-server.get({path : userPATH +'/:apikey', version : '0.0.1'}, checkEdit);
+server.get({path : userPATH +'/:boxId', version : '0.0.1'}, validApiKey);
 server.post({path : userPATH , version : '0.0.1'} , generateNewID);
 
-function checkEdit(req,res,next) {
-  User.findOne({apikey:req.params.apikey}, function(error,user){
-    if (error) return next(new restify.InvalidArgumentError(JSON.stringify(error.errors)));
-    if (user) {
-      res.send(201,user);
+function validApiKey (req,res,next) {
+  User.findOne({apikey:req.headers['x-apikey']}, function (error, user) {
+    if (error) {
+      return next(new restify.InvalidArgumentError(JSON.stringify(error.errors)));
+    }
+
+    if (user.boxes.indexOf(req.params.boxId) != -1) {
+      res.status(200);
+      res.send('ApiKey is valid!');
     } else {
-      res.send(404,'Invalid ApiKey');
-    };
+      res.status(400);
+      res.send('ApiKey is invalid!');
+    }
   });
 }
 
