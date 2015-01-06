@@ -294,21 +294,23 @@ function postNewBox(req, res, next) {
             var filename = "files/"+data._id+".ino";
             if (line.indexOf("//SenseBox ID") != -1) {
               fs.appendFileSync(filename, line.toString() + "\n");
-              fs.appendFileSync(filename, 'String senseboxId = "'+data._id+'";\n');
-            } else if (line.indexOf("//Senor IDs") != -1) {
+              fs.appendFileSync(filename, '#define SENSEBOX_ID "'+data._id+'";\n');
+            } else if (line.indexOf("//Sensor IDs") != -1) {
               fs.appendFileSync(filename, line.toString() + "\n");
               for (var i = data.sensors.length - 1; i >= 0; i--) {
                 var sensor = data.sensors[i];
                 if (sensor.title == "Temperatur") {
-                  fs.appendFileSync(filename, 'String temperatureSensorId = "'+sensor._id+'";\n');
+                  fs.appendFileSync(filename, '#define TEMPERATURESENSOR_ID "'+sensor._id+'";\n');
                 } else if(sensor.title == "Luftfeuchtigkeit") {
-                  fs.appendFileSync(filename, 'String humiditySensorId = "'+sensor._id+'";\n');
+                  fs.appendFileSync(filename, '#define HUMIDITYSENSOR_ID "'+sensor._id+'";\n');
                 } else if(sensor.title == "Luftdruck") {
-                  fs.appendFileSync(filename, 'String pressureSensorId = "'+sensor._id+'";\n');
+                  fs.appendFileSync(filename, '#define PRESSURESENSOR_ID "'+sensor._id+'";\n');
                 } else if(sensor.title == "Schall") {
-                  fs.appendFileSync(filename, 'String noiseSensorId = "'+sensor._id+'";\n');
+                  fs.appendFileSync(filename, '#define NOISESENSOR_ID "'+sensor._id+'";\n');
                 } else if(sensor.title == "Helligkeit") {
-                  fs.appendFileSync(filename, 'String lightSensorId = "'+sensor._id+'";\n');
+                  fs.appendFileSync(filename, '#define LIGHTSENSOR_ID "'+sensor._id+'";\n');
+                } else if (sensor.title == "UV") {
+                  fs.appendFileSync(filename, '#define UVSENSOR_ID "'+sensor._id+'";\n');
                 };
               };
             } else {
