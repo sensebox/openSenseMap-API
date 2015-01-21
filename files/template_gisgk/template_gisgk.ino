@@ -131,7 +131,7 @@ void loop(){
         break;
       case 6:
         uvValue = analogRead(UVPIN);
-        sensorSample = (String)uvValue;
+        sensorSample = (String)calcUVIndex(uvValue);
         currentSensorId = UVSENSOR_ID;
         break;
     }
@@ -215,7 +215,7 @@ void postObservation(String measurement, String sensorId, String boxId)
     Serial.println("done!");
     uploadSuccess = true;
     //Change case
-    if (sampleType == 5) {
+    if (sampleType == 6) {
       sampleType = 1;
       // remember the time that the connection was made or attempted
       lastConnectionTime = millis();
