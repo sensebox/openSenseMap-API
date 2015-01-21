@@ -130,7 +130,7 @@ void loop(){
         break;
       case 6:
         uvValue = analogRead(UVPIN);
-        sensorSample = (String)uvValue;
+        sensorSample = (String)calcUVIndex(uvValue);
         currentSensorId = UVSENSOR_ID;
         break;
     }
