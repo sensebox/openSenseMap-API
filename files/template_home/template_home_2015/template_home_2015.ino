@@ -72,7 +72,7 @@ void setup(){
     Serial.print(Ethernet.localIP()[thisByte], DEC);
     Serial.print("."); 
   }
-  Serial.println();
+  Serial.println("STARTING UP");
   barometer.init();
   dht.begin();
   TSL2561.init();
@@ -126,7 +126,7 @@ void loop(){
         TSL2561.getLux();
         lux = TSL2561.calculateLux(0,0,1);
         sensorSample = (String)lux;
-        currentSensorId = LIGHTSENSOR_ID;
+        currentSensorId = LUXSENSOR_ID;
         break;
     }
   }
