@@ -1,10 +1,10 @@
 /*
 SenseBox Citizen Sensingplatform
-Version: 1.3.1
+Version: 1.3.2
 Date: 2015-02-04
 Homepage: http://www.sensebox.de
 Author: Jan Wirwahn
-Note: Sketch for SB-Photonik-Ethernet
+Note: Sketch for SB-Photonik-WiFi
 */
 
 #include <Wire.h>
