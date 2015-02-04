@@ -327,31 +327,51 @@ function postNewBox(req, res, next) {
         if (err) {
           return next(new restify.InvalidArgumentError(JSON.stringify(error.errors)));
         }
-        fs.readFileSync('files/template.ino').toString().split('\n').forEach(function (line) {
-          var filename = "files/"+box._id+".ino";
+
+        switch(req.params.model){
+          case 'senseboxhome2014':
+            filename = "files/template_home/template_home_2014/template_home_2014.ino";
+            break;
+          case 'senseboxhome2015':
+            filename = "files/template_home/template_home_2015/template_home_2015.ino";
+            break;
+          case 'senseboxphotonikwifi':
+            filename = "files/template_photonik/template_photonik_wifi/template_photonik_wifi.ino";
+            break;
+          case 'senseboxphotonikethernet':
+            filename = "files/template_photonik/template_photonik_ethernet/template_photonik_ethernet.ino";
+            break;
+          default:
+            break;
+        }
+
+        fs.readFileSync(filename).toString().split('\n').forEach(function (line) {
+          var output = "files/"+box._id+".ino";
           if (line.indexOf("//SenseBox ID") != -1) {
-            fs.appendFileSync(filename, line.toString() + "\n");
-            fs.appendFileSync(filename, '#define SENSEBOX_ID "'+box._id+'"\n');
+            fs.appendFileSync(output, line.toString() + "\n");
+            fs.appendFileSync(output, '#define SENSEBOX_ID "'+box._id+'"\n');
           } else if (line.indexOf("//Sensor IDs") != -1) {
-            fs.appendFileSync(filename, line.toString() + "\n");
+            fs.appendFileSync(output, line.toString() + "\n");
             for (var i = box.sensors.length - 1; i >= 0; i--) {
               var sensor = box.sensors[i];
               if (sensor.title == "Temperatur") {
-                fs.appendFileSync(filename, '#define TEMPERATURESENSOR_ID "'+sensor._id+'"\n');
-              } else if(sensor.title == "Luftfeuchtigkeit") {
-                fs.appendFileSync(filename, '#define HUMIDITYSENSOR_ID "'+sensor._id+'"\n');
+                fs.appendFileSync(output, '#define TEMPERATURESENSOR_ID "'+sensor._id+'"\n');
+              } else if(sensor.title == "rel. Luftfeuchte") {
+                fs.appendFileSync(output, '#define HUMIDITYSENSOR_ID "'+sensor._id+'"\n');
               } else if(sensor.title == "Luftdruck") {
-                fs.appendFileSync(filename, '#define PRESSURESENSOR_ID "'+sensor._id+'"\n');
-              } else if(sensor.title == "Schall") {
-                fs.appendFileSync(filename, '#define NOISESENSOR_ID "'+sensor._id+'"\n');
+                fs.appendFileSync(output, '#define PRESSURESENSOR_ID "'+sensor._id+'"\n');
+              } else if(sensor.title == "Lautstärke") {
+                fs.appendFileSync(output, '#define NOISESENSOR_ID "'+sensor._id+'"\n');
               } else if(sensor.title == "Helligkeit") {
-                fs.appendFileSync(filename, '#define LIGHTSENSOR_ID "'+sensor._id+'"\n');
+                fs.appendFileSync(output, '#define LIGHTSENSOR_ID "'+sensor._id+'"\n');
+              } else if (sensor.title == "Beleuchtungsstärke") {
+                fs.appendFileSync(output, '#define LUXSENSOR_ID "'+sensor._id+'"\n');
               } else if (sensor.title == "UV") {
-                fs.appendFileSync(filename, '#define UVSENSOR_ID "'+sensor._id+'"\n');
+                fs.appendFileSync(output, '#define UVSENSOR_ID "'+sensor._id+'"\n');
               };
             };
           } else {
-            fs.appendFileSync(filename, line.toString() + "\n");
+            fs.appendFileSync(output, line.toString() + "\n");
           }
         });
 
