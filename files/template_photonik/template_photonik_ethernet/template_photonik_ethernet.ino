@@ -1,10 +1,10 @@
 /*
 SenseBox Citizen Sensingplatform
-Version: 1.1
-Date: 2015-01-14
-Homepage: http://sensebox.uni-muenster.de/bestellen/fuer-buerger/
+Version: 1.2
+Date: 2015-02-04
+Homepage: http://www.sensebox.de
 Author: Jan Wirwahn
-Note: Sketch for SB-Basic
+Note: Sketch for SB-Photonik-Ethernet
 */
 
 #include <Wire.h>
@@ -12,6 +12,7 @@ Note: Sketch for SB-Basic
 #include <EthernetV2_0.h>
 #include <DHT.h>
 #include <Barometer.h>
+#include <Digital_Light_TSL2561.h>
 #include <avr/wdt.h>
 
 //SenseBox ID
@@ -19,9 +20,8 @@ Note: Sketch for SB-Basic
 //Sensor IDs
 
 //Sensor pin settings
-#define NOISEPIN A0
-#define LIGHTPIN A1
-#define DHTPIN A2
+#define UVPIN A0
+#define DHTPIN A1
 #define DHTTYPE DHT11
 //Ethernet shield settings
 #define W5200_CS 10
@@ -37,7 +37,6 @@ String currentSensorId = TEMPERATURESENSOR_ID;
 float temperature;
 float humidity;
 float pressure;
-int analogNoise, analogLight;
 
 DHT dht(DHTPIN, DHTTYPE);
 Barometer barometer;
@@ -48,7 +47,7 @@ unsigned long lastConnectionTime = 0;
 boolean lastConnected = false;
 boolean uploadSuccess = true;
 String sensorSample;
-int sampleType = 1; //1=temp,2=humi,3=baro,4=light
+int sampleType = 1; //1=temp,2=humi,3=pressure,4=lux,5=UV
 
 void setup(){
   Wire.begin();
@@ -70,7 +69,7 @@ void setup(){
     Serial.print(Ethernet.localIP()[thisByte], DEC);
     Serial.print("."); 
   }
-  Serial.println();
+  Serial.println("STARTING UP");
   barometer.init();
   dht.begin();
   TSL2561.init();
@@ -116,14 +115,15 @@ void loop(){
         currentSensorId = PRESSURESENSOR_ID;
         break;
       case 4:
-        analogNoise = analogRead(NOISEPIN);
-        sensorSample = (String)analogNoise;
-        currentSensorId = NOISESENSOR_ID;
+        TSL2561.getLux();
+        lux = TSL2561.calculateLux(0,0,1);
+        sensorSample = (String)lux;
+        currentSensorId = LUXSENSOR_ID;
         break;
       case 5:
-        analogLight = analogRead(LIGHTPIN);
-        sensorSample = (String)analogLight;
-        currentSensorId = LIGHTSENSOR_ID;
+        analogLight = analogRead(UVPIN);
+        sensorSample = (String)calcUVIndex(analogLight);
+        currentSensorId = UVSENSOR_ID;
         break;
     }
   }
