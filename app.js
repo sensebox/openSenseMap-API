@@ -1,7 +1,8 @@
 var restify = require('restify'),
   mongoose = require('mongoose'),
   timestamp = require('mongoose-timestamp'),
-  fs = require('fs');
+  fs = require('fs'),
+  products = require('./products');
 
 
 var server = restify.createServer({ name: 'opensensemap-api' });
@@ -255,9 +256,9 @@ function findBox(req, res, next) {
 
 function createNewUser (req) {
   var userData = {
-    firstname: req.params.firstname,
-    lastname: req.params.lastname,
-    email: req.params.email,
+    firstname: req.params.user.firstname,
+    lastname: req.params.user.lastname,
+    email: req.params.user.email,
     apikey: req.params.orderID,
     boxes: []
   }
@@ -279,6 +280,25 @@ function createNewBox (req) {
   };
 
   var box = new Box(boxData);
+
+  if (req.params.model) {
+    switch(req.params.model){
+      case 'senseboxhome2014':
+        req.params.sensors = products.senseboxhome2014;
+        break;
+      case 'senseboxhome2015':
+        req.params.sensors = products.senseboxhome2015;
+        break;
+      case 'senseboxphotonikwifi':
+        req.params.sensors = products.senseboxphotonikwifi;
+        break;
+      case 'senseboxphotonikethernet':
+        req.params.sensors = products.senseboxphotonikethernet;
+        break;
+      default:
+        break;
+    }
+  }
 
   for (var i = req.params.sensors.length - 1; i >= 0; i--) {
     var id = mongoose.Types.ObjectId();
@@ -303,45 +323,43 @@ function postNewBox(req, res, next) {
       var newBox = createNewBox(req);
 
       newUser._doc.boxes.push(newBox._doc._id.toString());
-      newUser.save( function (err, user) {
+      newBox.save( function (err, box) {
         if (err) {
           return next(new restify.InvalidArgumentError(JSON.stringify(error.errors)));
         }
+        fs.readFileSync('files/template.ino').toString().split('\n').forEach(function (line) {
+          var filename = "files/"+box._id+".ino";
+          if (line.indexOf("//SenseBox ID") != -1) {
+            fs.appendFileSync(filename, line.toString() + "\n");
+            fs.appendFileSync(filename, '#define SENSEBOX_ID "'+box._id+'"\n');
+          } else if (line.indexOf("//Sensor IDs") != -1) {
+            fs.appendFileSync(filename, line.toString() + "\n");
+            for (var i = box.sensors.length - 1; i >= 0; i--) {
+              var sensor = box.sensors[i];
+              if (sensor.title == "Temperatur") {
+                fs.appendFileSync(filename, '#define TEMPERATURESENSOR_ID "'+sensor._id+'"\n');
+              } else if(sensor.title == "Luftfeuchtigkeit") {
+                fs.appendFileSync(filename, '#define HUMIDITYSENSOR_ID "'+sensor._id+'"\n');
+              } else if(sensor.title == "Luftdruck") {
+                fs.appendFileSync(filename, '#define PRESSURESENSOR_ID "'+sensor._id+'"\n');
+              } else if(sensor.title == "Schall") {
+                fs.appendFileSync(filename, '#define NOISESENSOR_ID "'+sensor._id+'"\n');
+              } else if(sensor.title == "Helligkeit") {
+                fs.appendFileSync(filename, '#define LIGHTSENSOR_ID "'+sensor._id+'"\n');
+              } else if (sensor.title == "UV") {
+                fs.appendFileSync(filename, '#define UVSENSOR_ID "'+sensor._id+'"\n');
+              };
+            };
+          } else {
+            fs.appendFileSync(filename, line.toString() + "\n");
+          }
+        });
 
-        newBox.save( function (err, box) {
+        newUser.save( function (err, user) {
           if (err) {
             return next(new restify.InvalidArgumentError(JSON.stringify(error.errors)));
           }
-
-          fs.readFileSync('files/template.ino').toString().split('\n').forEach(function (line) {
-            var filename = "files/"+box._id+".ino";
-            if (line.indexOf("//SenseBox ID") != -1) {
-              fs.appendFileSync(filename, line.toString() + "\n");
-              fs.appendFileSync(filename, '#define SENSEBOX_ID "'+box._id+'"\n');
-            } else if (line.indexOf("//Sensor IDs") != -1) {
-              fs.appendFileSync(filename, line.toString() + "\n");
-              for (var i = box.sensors.length - 1; i >= 0; i--) {
-                var sensor = box.sensors[i];
-                if (sensor.title == "Temperatur") {
-                  fs.appendFileSync(filename, '#define TEMPERATURESENSOR_ID "'+sensor._id+'"\n');
-                } else if(sensor.title == "Luftfeuchtigkeit") {
-                  fs.appendFileSync(filename, '#define HUMIDITYSENSOR_ID "'+sensor._id+'"\n');
-                } else if(sensor.title == "Luftdruck") {
-                  fs.appendFileSync(filename, '#define PRESSURESENSOR_ID "'+sensor._id+'"\n');
-                } else if(sensor.title == "Schall") {
-                  fs.appendFileSync(filename, '#define NOISESENSOR_ID "'+sensor._id+'"\n');
-                } else if(sensor.title == "Helligkeit") {
-                  fs.appendFileSync(filename, '#define LIGHTSENSOR_ID "'+sensor._id+'"\n');
-                } else if (sensor.title == "UV") {
-                  fs.appendFileSync(filename, '#define UVSENSOR_ID "'+sensor._id+'"\n');
-                };
-              };
-            } else {
-              fs.appendFileSync(filename, line.toString() + "\n");
-            }
-          });
-
-          res.send(201, box);
+          res.send(201, user);
         });
       });
     }
@@ -353,5 +371,5 @@ function isEmptyObject(obj) {
 }
 
 server.listen(8000, function () {
-    console.log('%s listening at %s', server.name, server.url);
+  console.log('%s listening at %s', server.name, server.url);
 });
