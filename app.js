@@ -3,9 +3,23 @@ var restify = require('restify'),
   timestamp = require('mongoose-timestamp'),
   fs = require('fs'),
   products = require('./products');
+var Logger = require('bunyan'),
+  log = new Logger.createLogger({
+    name: 'OSeM-API',
+    streams: [{
+      path: './request.log'
+    }],
+    serializers: {
+      req: Logger.stdSerializers.req
+    }
+  });
 
 
-var server = restify.createServer({ name: 'opensensemap-api' });
+var server = restify.createServer({
+  name: 'opensensemap-api',
+  version: '0.0.1',
+  log: log
+});
 server.use(restify.CORS({'origins': ['http://localhost', 'https://opensensemap.org']}));
 server.use(restify.fullResponse());
 server.use(restify.queryParser());
@@ -136,6 +150,11 @@ var User = mongoose.model('User', userSchema);
 
 var PATH = '/boxes';
 var userPATH = 'users';
+
+server.pre(function (request,response,next) {
+  request.log.info({req: request}, 'REQUEST');
+  next();
+});
 
 server.get({path : PATH , version : '0.0.1'} , findAllBoxes);
 server.get({path : PATH +'/:boxId' , version : '0.0.1'} , findBox);
