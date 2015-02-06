@@ -2,7 +2,8 @@ var restify = require('restify'),
   mongoose = require('mongoose'),
   timestamp = require('mongoose-timestamp'),
   fs = require('fs'),
-  products = require('./products');
+  products = require('./products'),
+  cfg = require('./config');
 var Logger = require('bunyan'),
   log = new Logger.createLogger({
     name: 'OSeM-API',
@@ -365,7 +366,7 @@ function postNewBox(req, res, next) {
         }
 
         fs.readFileSync(filename).toString().split('\n').forEach(function (line) {
-          var output = "files/"+box._id+".ino";
+          var output = cfg.targetFolder+box._id+".ino";
           if (line.indexOf("//SenseBox ID") != -1) {
             fs.appendFileSync(output, line.toString() + "\n");
             fs.appendFileSync(output, '#define SENSEBOX_ID "'+box._id+'"\n');
