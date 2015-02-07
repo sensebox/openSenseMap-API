@@ -34,9 +34,9 @@ char server[] = "opensensemap.org";
 EthernetClient client;
 
 String currentSensorId = TEMPERATURESENSOR_ID;
-float temperature;
-float humidity;
-float pressure;
+float temperature, humidity, pressure;
+unsigned long  lux;
+unsigned int analogUv;
 
 DHT dht(DHTPIN, DHTTYPE);
 Barometer barometer;
@@ -67,7 +67,7 @@ void setup(){
   for (byte thisByte = 0; thisByte < 4; thisByte++) {
     // print the value of each byte of the IP address:
     Serial.print(Ethernet.localIP()[thisByte], DEC);
-    Serial.print("."); 
+    Serial.println("."); 
   }
   Serial.println("STARTING UP");
   barometer.init();
@@ -121,8 +121,8 @@ void loop(){
         currentSensorId = LUXSENSOR_ID;
         break;
       case 5:
-        analogLight = analogRead(UVPIN);
-        sensorSample = (String)calcUVIndex(analogLight);
+        analogUv = analogRead(UVPIN);
+        sensorSample = (String)calcUVIndex(analogUv);
         currentSensorId = UVSENSOR_ID;
         break;
     }
