@@ -4,7 +4,7 @@ Version: 1.3.2
 Date: 2015-02-04
 Homepage: http://www.sensebox.de
 Author: Jan Wirwahn
-Note: Sketch for SB-Photonik-WiFi
+Note: Sketch for SB-Photonik-WiFi.
 */
 #include <Wire.h>
 #include <SPI.h>
@@ -29,8 +29,7 @@ Note: Sketch for SB-Photonik-WiFi
 #define ADAFRUIT_CC3000_VBAT  5
 #define ADAFRUIT_CC3000_CS    10
 #define IDLE_TIMEOUT_MS  3000  
-// Use hardware SPI for the remaining pins
-// On an UNO, SCK = 13, MISO = 12, and MOSI = 11
+
 Adafruit_CC3000 cc3000 = Adafruit_CC3000(ADAFRUIT_CC3000_CS, ADAFRUIT_CC3000_IRQ, ADAFRUIT_CC3000_VBAT,
                                          SPI_CLOCK_DIVIDER); // you can change this clock speed  
 //Server values
@@ -80,7 +79,6 @@ void setup(void)
     delay(100); // ToDo: Insert a DHCP timeout!
   }
   ip = 0;
-  // Try looking up the website's IP address
   Serial.print(WEBSITE); Serial.print(F(" -> "));
   while (ip == 0) {
     if (! cc3000.getHostByName(WEBSITE, &ip)) {
@@ -142,14 +140,6 @@ void loop(void)
   Adafruit_CC3000_Client client = cc3000.connectTCP(ip, 8000);
   
   if (client.connected()) {
-    /*
-    clientclient.print(F("GET "));
-    client.print(F("/"));
-    client.print(F(" HTTP/1.1\r\n"));
-    client.print(F("Host: ")); client.fastrprint(WEBSITE); .fastrprint(F("\r\n"));
-    www.print(F("\r\n"));
-    www.println();
-    */
     client.print("POST /boxes/");
     client.print(SENSEBOX_ID);
     client.print("/"); 
@@ -173,7 +163,6 @@ void loop(void)
 
   Serial.println(F("-------------------------------------"));
   
-  /* Read data until either the connection is closed, or the idle timeout is reached. */ 
   unsigned long lastRead = millis();
   while (client.connected() && (millis() - lastRead < IDLE_TIMEOUT_MS)) {
     while (client.available()) {
@@ -189,10 +178,8 @@ void loop(void)
       sampleType = 1;
     }else sampleType++;
   }
-  /* You need to make sure to clean up after yourself or the CC3000 can freak out */
-  /* the next time your try to connect ... */
-  Serial.println(F("\n\nDisconnecting"));
-//  cc3000.disconnect();
+  
+  Serial.println(F("\n\nConnection closed."));
 
  delay(1000);
 }
@@ -200,9 +187,6 @@ void loop(void)
 String floatToString(float number, int precision)
 {
   String stringNumber = "";
-  //int prec;
-  //only temperature (case 1) has a decimal place
-  //if (sampleType == 1) prec = 1; else prec = 0;
   char tempChar[10];
   dtostrf(number, 1, precision, tempChar);
   stringNumber += tempChar;
