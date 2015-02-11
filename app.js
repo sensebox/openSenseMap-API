@@ -2,6 +2,8 @@ var restify = require('restify'),
   mongoose = require('mongoose'),
   timestamp = require('mongoose-timestamp'),
   fs = require('fs'),
+  GeoJSON = require('geojson'),
+  _ = require('lodash'),
   products = require('./products');
 var Logger = require('bunyan'),
   log = new Logger.createLogger({
@@ -34,7 +36,7 @@ var LocationSchema = new Schema({
   type: {
     type: String,
     required: true,
-    default: "feature"
+    default: "Feature"
   },
   geometry: {
     type: {
@@ -157,6 +159,7 @@ server.pre(function (request,response,next) {
 });
 
 server.get({path : PATH , version : '0.0.1'} , findAllBoxes);
+server.get({path : /(boxes)\.([a-z]+)/, version : '0.0.1'} , findAllBoxes);
 server.get({path : PATH +'/:boxId' , version : '0.0.1'} , findBox);
 server.get({path : PATH +'/:boxId/sensors', version : '0.0.1'}, getMeasurements);
 
@@ -254,16 +257,44 @@ function postNewMeasurement(req, res, next) {
 
 function findAllBoxes(req, res , next){
   Box.find({}).populate('sensors.lastMeasurement').exec(function(err,boxes){
-    res.send(boxes);
+    if (req.params[1] === "json" || req.params[1] === undefined) {
+      res.send(boxes);
+    } else if (req.params[1] === "geojson") {
+      tmp = JSON.stringify(boxes);
+      tmp = JSON.parse(tmp);
+      var geojson = _.transform(tmp, function(result, n) {
+        lat = n.loc[0].geometry.coordinates[1];
+        lng = n.loc[0].geometry.coordinates[0];
+        delete n["loc"];
+        n["lat"] = lat;
+        n["lng"] = lng;
+        return result.push(n);
+      });
+      res.send(GeoJSON.parse(geojson, {Point: ['lat','lng']}));
+    }
   });
 }
 
 function findBox(req, res, next) {
+  id = req.params.boxId.split(".")[0];
+  format = req.params.boxId.split(".")[1];
   if (isEmptyObject(req.query)) {
-    Box.findOne({_id: req.params.boxId}).populate('sensors.lastMeasurement').exec(function(error,box){
+    Box.findOne({_id: id}).populate('sensors.lastMeasurement').exec(function(error,box){
       if (error) return next(new restify.InvalidArgumentError(JSON.stringify(error.errors)));
       if (box) {
-        res.send(box);
+        if (format === "json" || format === undefined) {
+          res.send(box);
+        } else if (format === "geojson") {
+          tmp = JSON.stringify(box);
+          tmp = JSON.parse(tmp);
+          lat = tmp.loc[0].geometry.coordinates[1];
+          lng = tmp.loc[0].geometry.coordinates[0];
+          delete tmp["loc"];
+          tmp["lat"] = lat;
+          tmp["lng"] = lng;
+          geojson = [tmp];
+          res.send(GeoJSON.parse(geojson, {Point: ['lat','lng']}));
+        }
       } else {
         res.send(404);
       }
