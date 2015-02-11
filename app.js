@@ -26,7 +26,10 @@ server.use(restify.fullResponse());
 server.use(restify.queryParser());
 server.use(restify.bodyParser());
 
-conn = mongoose.connect("mongodb://localhost/OSeM-api");
+conn = mongoose.connect("mongodb://localhost/OSeM-api",{
+  user: cfg.dbuser,
+  pass: cfg.dbuserpass
+});
 var Schema = mongoose.Schema,
   ObjectId = Schema.ObjectID;
 
