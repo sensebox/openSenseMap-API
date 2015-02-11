@@ -4,7 +4,8 @@ var restify = require('restify'),
   fs = require('fs'),
   GeoJSON = require('geojson'),
   _ = require('lodash'),
-  products = require('./products');
+  products = require('./products'),
+  cfg = require('./config');
 var Logger = require('bunyan'),
   log = new Logger.createLogger({
     name: 'OSeM-API',
@@ -27,7 +28,10 @@ server.use(restify.fullResponse());
 server.use(restify.queryParser());
 server.use(restify.bodyParser());
 
-conn = mongoose.connect("mongodb://localhost/OSeM-api");
+conn = mongoose.connect("mongodb://localhost/OSeM-api",{
+  user: cfg.dbuser,
+  pass: cfg.dbuserpass
+});
 var Schema = mongoose.Schema,
   ObjectId = Schema.ObjectID;
 
@@ -396,7 +400,7 @@ function postNewBox(req, res, next) {
         }
 
         fs.readFileSync(filename).toString().split('\n').forEach(function (line) {
-          var output = "files/"+box._id+".ino";
+          var output = cfg.targetFolder+box._id+".ino";
           if (line.indexOf("//SenseBox ID") != -1) {
             fs.appendFileSync(output, line.toString() + "\n");
             fs.appendFileSync(output, '#define SENSEBOX_ID "'+box._id+'"\n');
