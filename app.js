@@ -119,7 +119,7 @@ var boxSchema = new Schema({
     required: false
   },
   sensors: [sensorSchema]
-});
+},{ strict: false });
 
 var userSchema = new Schema({
   firstname: {
@@ -207,8 +207,36 @@ function validApiKey (req,res,next) {
   });
 }
 
-function updateBox(req, res, next) {
+function decodeBase64Image(dataString) {
+  var matches = dataString.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/),
+    response = {};
 
+  if (matches.length !== 3) {
+    return new Error('Invalid input string');
+  }
+
+  response.type = matches[1];
+  response.data = new Buffer(matches[2], 'base64');
+
+  return response;
+}
+
+function updateBox(req, res, next) {
+  //TODO check apikey
+  Box.findById(req.params.boxId, function (err, box) {
+    if (err) return handleError(err);
+    var data = req.params.image.toString();
+    var imageBuffer = decodeBase64Image(data);
+    console.log(cfg.imageFolder);
+    fs.writeFile(cfg.imageFolder+""+req.params.boxId+'.jpeg', imageBuffer.data, function(err){
+      if (err) return new Error(err);
+      box.set({image:cfg.imageFolder+""+req.params.boxId+'.jpeg'});
+      box.save(function (err) {
+        if (err) return handleError(err);
+        res.send(box);
+      });
+    });
+  });
 }
 
 function getMeasurements(req, res, next) {
@@ -400,7 +428,7 @@ function postNewBox(req, res, next) {
         }
 
         fs.readFileSync(filename).toString().split('\n').forEach(function (line) {
-          var output = cfg.targetFolder+box._id+".ino";
+          var output = cfg.targetFolder+""+box._id+".ino";
           if (line.indexOf("//SenseBox ID") != -1) {
             fs.appendFileSync(output, line.toString() + "\n");
             fs.appendFileSync(output, '#define SENSEBOX_ID "'+box._id+'"\n');
