@@ -222,20 +222,35 @@ function decodeBase64Image(dataString) {
 }
 
 function updateBox(req, res, next) {
-  //TODO check apikey
-  Box.findById(req.params.boxId, function (err, box) {
-    if (err) return handleError(err);
-    var data = req.params.image.toString();
-    var imageBuffer = decodeBase64Image(data);
-    console.log(cfg.imageFolder);
-    fs.writeFile(cfg.imageFolder+""+req.params.boxId+'.jpeg', imageBuffer.data, function(err){
-      if (err) return new Error(err);
-      box.set({image:cfg.imageFolder+""+req.params.boxId+'.jpeg'});
-      box.save(function (err) {
+  User.findOne({apikey:req.headers["x-apikey"]}, function (error, user) {
+    if (error) {
+      res.send(400, 'ApiKey not existing!');
+    }
+    if (user.boxes.indexOf(req.params.boxId) !== -1) {
+      Box.findById(req.params.boxId, function (err, box) {
         if (err) return handleError(err);
-        res.send(box);
+        if (req.params.image !== undefined) {
+          var data = req.params.image.toString();
+          var imageBuffer = decodeBase64Image(data);
+          fs.writeFile(cfg.imageFolder+""+req.params.boxId+'.jpeg', imageBuffer.data, function(err){
+            if (err) return new Error(err);
+            box.set({image:req.params.boxId+'.jpeg'});
+            box.save(function (err) {
+              if (err) return handleError(err);
+              res.send(box);
+            });
+          });
+        } else {
+          box.set({image:""});
+          box.save(function (err) {
+            if (err) return handleError(err);
+            res.send(box);
+          });
+        }
       });
-    });
+    } else {
+     res.send(400, 'ApiKey does not match SenseBoxID');
+    }
   });
 }
 
