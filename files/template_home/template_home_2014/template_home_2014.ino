@@ -3,7 +3,7 @@ SenseBox Citizen Sensingplatform
 Version: 1.1
 Date: 2015-01-14
 Homepage: http://www.sensebox.de
-Author: Jan Wirwahn
+Author: Jan Wirwahn, Institute for Geoinformatics, University of Muenster
 Note: Sketch for SB-Home Edition 2014
 */
 
