@@ -3,7 +3,7 @@ SenseBox Citizen Sensingplatform
 Version: 1.3.2
 Date: 2015-02-04
 Homepage: http://www.sensebox.de
-Author: Jan Wirwahn
+Author: Jan Wirwahn, Institute for Geoinformatics, University of Muenster
 Note: Sketch for SB-Photonik-WiFi.
 */
 #include <Wire.h>
@@ -56,7 +56,7 @@ Barometer barometer;
 
 void setup(void)
 {
-  Serial.begin(115200);
+  Serial.begin(9600);
   Serial.println(F("\nInitializing WiFi..."));
   if (!cc3000.begin())
   {
@@ -193,19 +193,14 @@ String floatToString(float number, int precision)
   return stringNumber;
 }
 
-int calcUVIndex(int analogValue){
-  int uvi;
-  if (analogValue<10) uvi = 0;
-  else if (analogValue<46) uvi = 1;
-  else if (analogValue<65) uvi = 2;
-  else if (analogValue<83) uvi = 3;
-  else if (analogValue<103) uvi = 4;
-  else if (analogValue<124) uvi = 5;
-  else if (analogValue<142) uvi = 6;
-  else if (analogValue<162) uvi = 7;
-  else if (analogValue<180) uvi = 8;
-  else if (analogValue<200) uvi = 9;
-  else if (analogValue<221) uvi = 10;
-  else if (analogValue<240) uvi = 11;
-  return uvi;
-}
+int calcUVIndex(int analogVal){
+ // get voltage from analog value
+ float uvindex = map(analogVal, 0, 1023, 0, 5000);
+ uvindex /= 1000;
+ //illumination intensity => V_sig * 307
+ uvindex = uvindex * 307;
+ //UVI => illumination intesity / 200
+ uvindex = uvindex / 200;
+ 
+ return int(uvindex+0.5);
+} 

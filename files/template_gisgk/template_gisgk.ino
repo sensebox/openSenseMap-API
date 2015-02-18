@@ -2,8 +2,8 @@
 SenseBox Citizen Sensingplatform
 Version: 1.2
 Date: 2015-01-06
-Homepage: http://sensebox.uni-muenster.de/bestellen/fuer-buerger/
-Author: Jan Wirwahn
+Homepage: http://www.sensebox.de
+Author: Jan Wirwahn, Institute for Geoinformatics, University of Muenster
 Note: Version with additional sensors for GIS-GK@ifgi
 */
 
