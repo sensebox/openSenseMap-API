@@ -73,7 +73,6 @@ void setup(){
   Serial.println();
   barometer.init();
   dht.begin();
-  TSL2561.init();
 }
 
 void loop(){
