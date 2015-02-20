@@ -1,5 +1,12 @@
 /*
 SenseBox Citizen Sensingplatform
+
+Sensor Connections on Base-Shield
+ A0: UV-Sensor
+ A1: Temperature and Humidity Sensor Pro
+I2C: Pressure Sensor
+I2C: Digital Light Sensor
+
 Version: 1.3.1
 Date: 2015-02-18
 Homepage: http://www.sensebox.de
@@ -24,7 +31,7 @@ Disable Serial.print functions for better performance on your stand-alone sensor
 //Sensor pin settings
 #define UVPIN A0
 #define DHTPIN A1
-#define DHTTYPE DHT11
+#define DHTTYPE DHT22
 
 //INDIVIDUAL SETUP
 //Change MAC-adress here:
