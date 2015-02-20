@@ -1,5 +1,12 @@
 /*
 SenseBox Citizen Sensingplatform
+
+Sensor Connections on Base-Shield
+ A0: UV-Sensor
+ A1: Temperature and Humidity Sensor Pro
+I2C: Pressure Sensor
+I2C: Digital Light Sensor
+
 Version: 1.3.2
 Date: 2015-02-04
 Homepage: http://www.sensebox.de
@@ -39,7 +46,7 @@ uint32_t ip = 2159055603;
 //Sensor pin settings
 #define UVPIN A0
 #define DHTPIN A1
-#define DHTTYPE DHT11
+#define DHTTYPE DHT22
 
 String currentSensorId = TEMPERATURESENSOR_ID;
 float temperature, humidity, pressure;
