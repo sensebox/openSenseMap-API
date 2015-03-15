@@ -107,6 +107,26 @@ define({ "api": [
         ]
       }
     },
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "ObjectId",
+            "optional": false,
+            "field": "x-apikey",
+            "description": "<p>SenseBox specific apikey</p> "
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "Request-Example:",
+          "content": "{\n  'X-ApiKey':54d3a96d5438b4440913434b\n}",
+          "type": "json"
+        }
+      ]
+    },
     "version": "0.0.1",
     "group": "Boxes",
     "name": "updateBox",

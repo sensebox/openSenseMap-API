@@ -225,6 +225,11 @@ function decodeBase64Image(dataString) {
  * @api {put} /boxes/:boxId Update a SenseBox
  * @apiDescription Modify the specified SenseBox.
  * @apiParam {ID} boxId SenseBox unique ID.
+ * @apiHeader {ObjectId} x-apikey SenseBox specific apikey
+ * @apiHeaderExample {json} Request-Example:
+ *   {
+ *     'X-ApiKey':54d3a96d5438b4440913434b
+ *   }
  * @apiVersion 0.0.1
  * @apiGroup Boxes
  * @apiName updateBox
