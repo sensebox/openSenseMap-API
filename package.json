@@ -20,7 +20,7 @@
     "url": "https://github.com/mpfeil/OpenSenseMap-API.git"
   },
   "author": "Matthias Pfeil",
-  "license": "ISC",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/mpfeil/OpenSenseMap-API/issues"
   },
