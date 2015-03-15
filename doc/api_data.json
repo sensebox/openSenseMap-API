@@ -34,6 +34,47 @@
         ]
       }
     },
+    "success": {
+      "fields": {
+        "Success 200": [
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": false,
+            "field": "_id",
+            "description": "<p>SenseBox unique ID.</p> "
+          },
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": false,
+            "field": "boxType",
+            "description": "<p>SenseBox type (fixed or mobile).</p> "
+          },
+          {
+            "group": "Success 200",
+            "type": "Array",
+            "optional": false,
+            "field": "sensors",
+            "description": "<p>All attached sensors.</p> "
+          },
+          {
+            "group": "Success 200",
+            "type": "Array",
+            "optional": false,
+            "field": "loc",
+            "description": "<p>Location of SenseBox.</p> "
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "Example data on success:",
+          "content": "{\n  \"_id\": \"5386e44d5f08822009b8b614\",\n  \"name\": \"PHOBOS\",\n  \"boxType\": \"fixed\",\n  \"sensors\": [\n    {\n      \"_id\": \"5386e44d5f08822009b8b615\",\n      \"boxes_id\": \"5386e44d5f08822009b8b614\",\n      \"lastMeasurement\": {\n        \"_id\": \"5388d07f5f08822009b937b7\",\n        \"createdAt\": \"2014-05-30T18:39:59.353Z\",\n        \"updatedAt\": \"2014-05-30T18:39:59.353Z\",\n        \"value\": \"584\",\n        \"sensor_id\": \"5386e44d5f08822009b8b615\",\n      },\n      \"sensorType\": \"GL5528\",\n      \"title\": \"Helligkeit\",\n      \"unit\": \"Pegel\"\n    }\n  ],\n  \"loc\": [\n    {\n      \"_id\": \"5386e44d5f08822009b8b61a\",\n      \"geometry\": {\n        \"coordinates\": [\n          10.54555893642828,\n          49.61361673283691\n        ],\n        \"type\": \"Point\"\n      },\n      \"type\": \"feature\"\n    }\n  ]\n}",
+          "type": "json"
+        }
+      ]
+    },
     "filename": "./app.js",
     "groupTitle": "Boxes"
   },

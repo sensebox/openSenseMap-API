@@ -360,6 +360,45 @@ function findAllBoxes(req, res , next){
  * @apiVersion 0.0.1
  * @apiGroup Boxes
  * @apiParam {ID} boxId SenseBox unique ID.
+ * @apiSuccess {String} _id SenseBox unique ID.
+ * @apiSuccess {String} boxType SenseBox type (fixed or mobile).
+ * @apiSuccess {Array} sensors All attached sensors.
+ * @apiSuccess {Array} loc Location of SenseBox.
+ * @apiSuccessExample Example data on success:
+ * {
+  "_id": "5386e44d5f08822009b8b614",
+  "name": "PHOBOS",
+  "boxType": "fixed",
+  "sensors": [
+    {
+      "_id": "5386e44d5f08822009b8b615",
+      "boxes_id": "5386e44d5f08822009b8b614",
+      "lastMeasurement": {
+        "_id": "5388d07f5f08822009b937b7",
+        "createdAt": "2014-05-30T18:39:59.353Z",
+        "updatedAt": "2014-05-30T18:39:59.353Z",
+        "value": "584",
+        "sensor_id": "5386e44d5f08822009b8b615",
+      },
+      "sensorType": "GL5528",
+      "title": "Helligkeit",
+      "unit": "Pegel"
+    }
+  ],
+  "loc": [
+    {
+      "_id": "5386e44d5f08822009b8b61a",
+      "geometry": {
+        "coordinates": [
+          10.54555893642828,
+          49.61361673283691
+        ],
+        "type": "Point"
+      },
+      "type": "feature"
+    }
+  ]
+}
  */
 function findBox(req, res, next) {
   id = req.params.boxId.split(".")[0];
