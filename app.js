@@ -221,6 +221,14 @@ function decodeBase64Image(dataString) {
   return response;
 }
 
+/**
+ * @api {put} /boxes/:boxId Update a SenseBox
+ * @apiDescription Modify the specified SenseBox.
+ * @apiParam {ID} boxId SenseBox unique ID.
+ * @apiVersion 0.0.1
+ * @apiGroup Boxes
+ * @apiName updateBox
+ */
 function updateBox(req, res, next) {
   User.findOne({apikey:req.headers["x-apikey"]}, function (error, user) {
     if (error) {
@@ -254,6 +262,14 @@ function updateBox(req, res, next) {
   });
 }
 
+/**
+ * @api {get} /boxes/:boxId/sensors Get all last measurements
+ * @apiDescription Get last measurements of all sensors of the secified SenseBox.
+ * @apiVersion 0.0.1
+ * @apiGroup Measurements
+ * @apiName getMeasurements
+ * @apiParam {ID} boxId SenseBox unique ID.
+ */
 function getMeasurements(req, res, next) {
   Box.findOne({_id: req.params.boxId},{sensors:1}).populate('sensors.lastMeasurement').exec(function(error,sensors){
     if (error) {
@@ -264,6 +280,15 @@ function getMeasurements(req, res, next) {
   });
 }
 
+/**
+ * @api {post} /boxes/:boxId/:sensorId Post new measurement
+ * @apiDescription Posts a new measurement to a specific sensor of a box.
+ * @apiVersion 0.0.1
+ * @apiGroup Measurements
+ * @apiName postNewMeasurement
+ * @apiParam {ID} boxId SenseBox unique ID.
+ * @apiParam {ID} sensorId Sensors unique ID.
+ */
 function postNewMeasurement(req, res, next) {
   Box.findOne({_id: req.params.boxId}, function(error,box){
     if (error) {
@@ -302,6 +327,13 @@ function postNewMeasurement(req, res, next) {
   });
 }
 
+/**
+ * @api {get} /boxes Get all SenseBoxes
+ * @apiName findAllBoxes
+ * @apiGroup Boxes
+ * @apiVersion 0.0.1
+ * @apiSampleRequest http://opensensemap.org:8000/boxes
+ */
 function findAllBoxes(req, res , next){
   Box.find({}).populate('sensors.lastMeasurement').exec(function(err,boxes){
     if (req.params[1] === "json" || req.params[1] === undefined) {
@@ -322,6 +354,13 @@ function findAllBoxes(req, res , next){
   });
 }
 
+/**
+ * @api {get} /boxes/:boxId Get one SenseBox
+ * @apiName findBox
+ * @apiVersion 0.0.1
+ * @apiGroup Boxes
+ * @apiParam {ID} boxId SenseBox unique ID.
+ */
 function findBox(req, res, next) {
   id = req.params.boxId.split(".")[0];
   format = req.params.boxId.split(".")[1];
@@ -413,6 +452,13 @@ function createNewBox (req) {
   return box;
 }
 
+/**
+ * @api {post} /boxes Post new SenseBox
+ * @apiDescription Create a new SenseBox.
+ * @apiVersion 0.0.1
+ * @apiGroup Boxes
+ * @apiName postNewBox
+ */
 function postNewBox(req, res, next) {
   User.findOne({apikey:req.params.orderID}, function (err, user) {
     if (!user) {

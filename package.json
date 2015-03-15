@@ -24,5 +24,12 @@
   "bugs": {
     "url": "https://github.com/mpfeil/OpenSenseMap-API/issues"
   },
-  "homepage": "https://github.com/mpfeil/OpenSenseMap-API"
+  "homepage": "https://github.com/mpfeil/OpenSenseMap-API",
+  "apidoc":{
+    "name": "OpenSenseMap API documentation",
+    "version": "0.0.1",
+    "description": "Documentation for OpenSenseMap to register and administer SenseBoxes",
+    "title": "OpenSenseMap API docs title",
+    "url" : "http://opensensemap.org:8000"
+  }
 }
