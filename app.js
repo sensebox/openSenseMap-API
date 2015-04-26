@@ -166,6 +166,7 @@ server.get({path : PATH , version : '0.0.1'} , findAllBoxes);
 server.get({path : /(boxes)\.([a-z]+)/, version : '0.0.1'} , findAllBoxes);
 server.get({path : PATH +'/:boxId' , version : '0.0.1'} , findBox);
 server.get({path : PATH +'/:boxId/sensors', version : '0.0.1'}, getMeasurements);
+server.get({path : PATH +'/:boxId/data/:sensorId', version : '0.0.1'}, getData);
 
 server.post({path : PATH , version: '0.0.1'} ,postNewBox);
 server.post({path : PATH +'/:boxId/:sensorId' , version : '0.0.1'}, postNewMeasurement);
@@ -284,6 +285,38 @@ function getMeasurements(req, res, next) {
     }
   });
 }
+
+/**
+ * @api {get} /boxes/:boxId/data/:sensorId?from-date=:fromDate&to-date:toDate Get last n measurements for a sensor
+ * @apiDescription Get last measurements of a sensor for a specific time frame, parameters `from-date` and `to-date` are optional. If not set, the last 24 hours are used. A maxmimum of 10000 values wil be returned for each request.
+ * @apiVersion 0.0.1
+ * @apiGroup Measurements
+ * @apiName getData
+ * @apiParam {ID} boxId SenseBox unique ID.
+ * @apiParam {ID} sensorId Sensor unique ID.
+ * @apiParam {String} from-date Beginning date of measurement data (default: 24 hours ago from now)
+ * @apiParam {String} to-date End date of measurement data (default: now)
+ */
+function getData(req, res, next) {
+  // default to yesterday
+  var fromDate = (typeof req.params["from-date"] == 'undefined') ? new Date((new Date()).valueOf() - 1000*60*60*24) : req.params["from-date"];
+  // default to now
+  var toDate = (typeof req.params["to-date"] == 'undefined') ? new Date() : req.params["to-date"];
+
+  Measurement.find({ 
+      sensor_id: req.params.sensorId,
+      createdAt: { $gte: new Date(req.params["from-date"]), $lte: new Date(req.params["to-date"]) } 
+    },{createdAt:1, value:1})
+  .limit(10000)
+  .exec(function(error,sensors){
+    if (error) {
+      return next(new restify.InvalidArgumentError(JSON.stringify(error.errors)));
+    } else {
+      res.send(201,sensors);
+    }
+  });
+}
+
 
 /**
  * @api {post} /boxes/:boxId/:sensorId Post new measurement
@@ -577,6 +610,6 @@ function isEmptyObject(obj) {
   return !Object.keys(obj).length;
 }
 
-server.listen(8000, function () {
+server.listen(8002, function () {
   console.log('%s listening at %s', server.name, server.url);
 });
