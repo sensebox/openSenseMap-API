@@ -23,7 +23,7 @@ var server = restify.createServer({
   version: '0.0.1',
   log: log
 });
-server.use(restify.CORS({'origins': ['http://localhost', 'https://opensensemap.org']}));
+server.use(restify.CORS({'origins': ['*'] })); //['http://localhost', 'https://opensensemap.org']}));
 server.use(restify.fullResponse());
 server.use(restify.queryParser());
 server.use(restify.bodyParser());
@@ -312,6 +312,10 @@ function getData(req, res, next) {
     if (error) {
       return next(new restify.InvalidArgumentError(JSON.stringify(error.errors)));
     } else {
+      if(typeof req.params["download"] != 'undefined'){
+        res.header('Content-Disposition', 'attachment; filename='+req.params.sensorId+'.json');
+      }
+      
       res.send(201,sensors);
     }
   });
