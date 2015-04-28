@@ -288,7 +288,7 @@ function getMeasurements(req, res, next) {
 
 /**
  * @api {get} /boxes/:boxId/data/:sensorId?from-date=:fromDate&to-date:toDate Get last n measurements for a sensor
- * @apiDescription Get last measurements of a sensor for a specific time frame, parameters `from-date` and `to-date` are optional. If not set, the last 24 hours are used. A maxmimum of 10000 values wil be returned for each request.
+ * @apiDescription Get up to 1000 measurements from a sensor for a specific time frame, parameters `from-date` and `to-date` are optional. If not set, the last 24 hours are used. The maximum time frame is 1 month. A maxmimum of 1000 values wil be returned for each request.
  * @apiVersion 0.0.1
  * @apiGroup Measurements
  * @apiName getData
@@ -296,8 +296,8 @@ function getMeasurements(req, res, next) {
  * @apiParam {ID} sensorId Sensor unique ID.
  * @apiParam {String} from-date Beginning date of measurement data (default: 24 hours ago from now)
  * @apiParam {String} to-date End date of measurement data (default: now)
- * @apiParam {String} download If set, offer download to the user
- * @apiParam {String} format Can be 'JSON' (default) or 'CSV'
+ * @apiParam {String} download If set, offer download to the user (default: false, always on if CSV is used)
+ * @apiParam {String} format Can be 'JSON' (default) or 'CSV' (default: JSON)
  */
 function getData(req, res, next) {
   // default to yesterday
@@ -309,11 +309,11 @@ function getData(req, res, next) {
   if (toDate.valueOf() < fromDate.valueOf()) {
     return next(new restify.InvalidArgumentError(JSON.stringify('Invalid time frame specified')));
   }
-  if (toDate.valueOf()-fromDate.valueOf() > 1000*60*60*24*31) {
+  if (toDate.valueOf()-fromDate.valueOf() > 1000*60*60*24*32) {
     return next(new restify.InvalidArgumentError(JSON.stringify('Please choose a time frame up to 31 days maximum')));
   }
 
-  var queryLimit = 50000;
+  var queryLimit = 100000;
   var resultLimit = 1000;
 
   Measurement.find({ 
@@ -327,6 +327,7 @@ function getData(req, res, next) {
       return next(new restify.InvalidArgumentError(JSON.stringify(error.errors)));
     } else {
       // only return every nth element
+      // TODO: equally distribute data over time instead
       if(sensorData.length > resultLimit) {
         var limitedResult = [];
         var returnEveryN = Math.ceil(sensorData.length/resultLimit);
