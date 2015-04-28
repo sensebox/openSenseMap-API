@@ -16,7 +16,7 @@ var Logger = require('bunyan'),
       req: Logger.stdSerializers.req
     }
   });
-
+var json2csv = require('json2csv');
 
 var server = restify.createServer({
   name: 'opensensemap-api',
@@ -296,27 +296,69 @@ function getMeasurements(req, res, next) {
  * @apiParam {ID} sensorId Sensor unique ID.
  * @apiParam {String} from-date Beginning date of measurement data (default: 24 hours ago from now)
  * @apiParam {String} to-date End date of measurement data (default: now)
+ * @apiParam {String} download If set, offer download to the user
+ * @apiParam {String} format Can be 'JSON' (default) or 'CSV'
  */
 function getData(req, res, next) {
   // default to yesterday
-  var fromDate = (typeof req.params["from-date"] == 'undefined') ? new Date((new Date()).valueOf() - 1000*60*60*24) : req.params["from-date"];
+  var fromDate = (typeof req.params["from-date"] == 'undefined') ? new Date((new Date()).valueOf() - 1000*60*60*24) : new Date(req.params["from-date"]);
   // default to now
-  var toDate = (typeof req.params["to-date"] == 'undefined') ? new Date() : req.params["to-date"];
+  var toDate = (typeof req.params["to-date"] == 'undefined') ? new Date() : new Date(req.params["to-date"]);
+  var format = (typeof req.params["format"] == 'undefined') ? "json" : req.params["format"].toLowerCase();
+
+  if (toDate.valueOf() < fromDate.valueOf()) {
+    return next(new restify.InvalidArgumentError(JSON.stringify('Invalid time frame specified')));
+  }
+  if (toDate.valueOf()-fromDate.valueOf() > 1000*60*60*24*31) {
+    return next(new restify.InvalidArgumentError(JSON.stringify('Please choose a time frame up to 31 days maximum')));
+  }
+
+  var queryLimit = 50000;
+  var resultLimit = 1000;
 
   Measurement.find({ 
       sensor_id: req.params.sensorId,
-      createdAt: { $gte: new Date(req.params["from-date"]), $lte: new Date(req.params["to-date"]) } 
+      createdAt: { $gte: new Date(fromDate), $lte: new Date(toDate) }
     },{createdAt:1, value:1})
-  .limit(10000)
-  .exec(function(error,sensors){
+  .limit(queryLimit)
+  .lean()
+  .exec(function(error,sensorData){
     if (error) {
       return next(new restify.InvalidArgumentError(JSON.stringify(error.errors)));
     } else {
-      if(typeof req.params["download"] != 'undefined'){
-        res.header('Content-Disposition', 'attachment; filename='+req.params.sensorId+'.json');
+      // only return every nth element
+      if(sensorData.length > resultLimit) {
+        var limitedResult = [];
+        var returnEveryN = Math.ceil(sensorData.length/resultLimit);
+        console.log("returnEveryN ", returnEveryN);
+        console.log("old sensorData length:", sensorData.length);
+        for(var i=0; i<sensorData.length; i++) {
+          if(i%returnEveryN == 0) {
+            limitedResult.push( sensorData[i] )
+          } 
+        }
+        sensorData = limitedResult;
+        console.log("new sensorData length:", sensorData.length);
       }
       
-      res.send(201,sensors);
+      if(typeof req.params["download"] != 'undefined' && req.params["download"]=="true"){
+        // offer download to browser
+        res.header('Content-Disposition', 'attachment; filename='+req.params.sensorId+'.'+format);
+      }
+
+      if(format == "csv") { 
+        // send CSV
+        json2csv({data: sensorData, fields: ['createdAt', '_id', 'value']}, function(err, csv) {
+          if (err) console.log(err);
+          res.header('Content-Type', 'text/csv');
+          res.header('Content-Disposition', 'attachment; filename='+req.params.sensorId+'.csv');
+          res.send(201, csv);
+        });
+      } else { 
+        // send JSON
+        res.send(201,sensorData);
+      }
+
     }
   });
 }
