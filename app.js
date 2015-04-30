@@ -10,7 +10,7 @@ var Logger = require('bunyan'),
   log = new Logger.createLogger({
     name: 'OSeM-API',
     streams: [{
-      path: './request.log'
+      path: './request-8002.log'
     }],
     serializers: {
       req: Logger.stdSerializers.req
@@ -300,11 +300,13 @@ function getMeasurements(req, res, next) {
  * @apiParam {String} format Can be 'JSON' (default) or 'CSV' (default: JSON)
  */
 function getData(req, res, next) {
-  // default to yesterday
-  var fromDate = (typeof req.params["from-date"] == 'undefined') ? new Date((new Date()).valueOf() - 1000*60*60*24) : new Date(req.params["from-date"]);
   // default to now
-  var toDate = (typeof req.params["to-date"] == 'undefined') ? new Date() : new Date(req.params["to-date"]);
+  var toDate = (typeof req.params["to-date"] == 'undefined' || req.params["to-date"] == "") ? new Date() : new Date(req.params["to-date"]);
+  // default to 24 hours earlier
+  var fromDate = (typeof req.params["from-date"] == 'undefined' || req.params["from-date"] == "") ? new Date(toDate.valueOf() - 1000*60*60*24) : new Date(req.params["from-date"]);
   var format = (typeof req.params["format"] == 'undefined') ? "json" : req.params["format"].toLowerCase();
+
+  //console.log(fromDate, "to", toDate);
 
   if (toDate.valueOf() < fromDate.valueOf()) {
     return next(new restify.InvalidArgumentError(JSON.stringify('Invalid time frame specified')));
