@@ -303,7 +303,7 @@ function getData(req, res, next) {
   // default to now
   var toDate = (typeof req.params["to-date"] == 'undefined' || req.params["to-date"] == "") ? new Date() : new Date(req.params["to-date"]);
   // default to 24 hours earlier
-  var fromDate = (typeof req.params["from-date"] == 'undefined' || req.params["from-date"] == "") ? new Date(toDate.valueOf() - 1000*60*60*24) : new Date(req.params["from-date"]);
+  var fromDate = (typeof req.params["from-date"] == 'undefined' || req.params["from-date"] == "") ? new Date(toDate.valueOf() - 1000*60*60*24*15) : new Date(req.params["from-date"]);
   var format = (typeof req.params["format"] == 'undefined') ? "json" : req.params["format"].toLowerCase();
 
   //console.log(fromDate, "to", toDate);
