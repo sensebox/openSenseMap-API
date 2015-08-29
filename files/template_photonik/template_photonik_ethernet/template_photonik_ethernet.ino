@@ -114,7 +114,7 @@ void loop()
     
     postObservation(uvIndex, UVSENSOR_ID, SENSEBOX_ID); 
     
-    timeOld = timeNew; 
+    timeOld = millis(); 
   }
 }
 
