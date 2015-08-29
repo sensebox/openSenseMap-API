@@ -10,20 +10,20 @@ var Logger = require('bunyan'),
   log = new Logger.createLogger({
     name: 'OSeM-API',
     streams: [{
-      path: './request.log'
+      path: './request-8002.log'
     }],
     serializers: {
       req: Logger.stdSerializers.req
     }
   });
-
+var json2csv = require('json2csv');
 
 var server = restify.createServer({
   name: 'opensensemap-api',
   version: '0.0.1',
   log: log
 });
-server.use(restify.CORS({'origins': ['http://localhost', 'https://opensensemap.org']}));
+server.use(restify.CORS({'origins': ['*'] })); //['http://localhost', 'https://opensensemap.org']}));
 server.use(restify.fullResponse());
 server.use(restify.queryParser());
 server.use(restify.bodyParser());
@@ -166,6 +166,7 @@ server.get({path : PATH , version : '0.0.1'} , findAllBoxes);
 server.get({path : /(boxes)\.([a-z]+)/, version : '0.0.1'} , findAllBoxes);
 server.get({path : PATH +'/:boxId' , version : '0.0.1'} , findBox);
 server.get({path : PATH +'/:boxId/sensors', version : '0.0.1'}, getMeasurements);
+server.get({path : PATH +'/:boxId/data/:sensorId', version : '0.0.1'}, getData);
 
 server.post({path : PATH , version: '0.0.1'} ,postNewBox);
 server.post({path : PATH +'/:boxId/:sensorId' , version : '0.0.1'}, postNewMeasurement);
@@ -284,6 +285,87 @@ function getMeasurements(req, res, next) {
     }
   });
 }
+
+/**
+ * @api {get} /boxes/:boxId/data/:sensorId?from-date=:fromDate&to-date:toDate Get last n measurements for a sensor
+ * @apiDescription Get up to 1000 measurements from a sensor for a specific time frame, parameters `from-date` and `to-date` are optional. If not set, the last 24 hours are used. The maximum time frame is 1 month. A maxmimum of 1000 values wil be returned for each request.
+ * @apiVersion 0.0.1
+ * @apiGroup Measurements
+ * @apiName getData
+ * @apiParam {ID} boxId SenseBox unique ID.
+ * @apiParam {ID} sensorId Sensor unique ID.
+ * @apiParam {String} from-date Beginning date of measurement data (default: 24 hours ago from now)
+ * @apiParam {String} to-date End date of measurement data (default: now)
+ * @apiParam {String} download If set, offer download to the user (default: false, always on if CSV is used)
+ * @apiParam {String} format Can be 'JSON' (default) or 'CSV' (default: JSON)
+ */
+function getData(req, res, next) {
+  // default to now
+  var toDate = (typeof req.params["to-date"] == 'undefined' || req.params["to-date"] == "") ? new Date() : new Date(req.params["to-date"]);
+  // default to 24 hours earlier
+  var fromDate = (typeof req.params["from-date"] == 'undefined' || req.params["from-date"] == "") ? new Date(toDate.valueOf() - 1000*60*60*24*15) : new Date(req.params["from-date"]);
+  var format = (typeof req.params["format"] == 'undefined') ? "json" : req.params["format"].toLowerCase();
+
+  //console.log(fromDate, "to", toDate);
+
+  if (toDate.valueOf() < fromDate.valueOf()) {
+    return next(new restify.InvalidArgumentError(JSON.stringify('Invalid time frame specified')));
+  }
+  if (toDate.valueOf()-fromDate.valueOf() > 1000*60*60*24*32) {
+    return next(new restify.InvalidArgumentError(JSON.stringify('Please choose a time frame up to 31 days maximum')));
+  }
+
+  var queryLimit = 100000;
+  var resultLimit = 1000;
+
+  Measurement.find({ 
+      sensor_id: req.params.sensorId,
+      createdAt: { $gte: new Date(fromDate), $lte: new Date(toDate) }
+    },{createdAt:1, value:1})
+  .limit(queryLimit)
+  .lean()
+  .exec(function(error,sensorData){
+    if (error) {
+      return next(new restify.InvalidArgumentError(JSON.stringify(error.errors)));
+    } else {
+      // only return every nth element
+      // TODO: equally distribute data over time instead
+      if(sensorData.length > resultLimit) {
+        var limitedResult = [];
+        var returnEveryN = Math.ceil(sensorData.length/resultLimit);
+        console.log("returnEveryN ", returnEveryN);
+        console.log("old sensorData length:", sensorData.length);
+        for(var i=0; i<sensorData.length; i++) {
+          if(i%returnEveryN == 0) {
+            limitedResult.push( sensorData[i] )
+          } 
+        }
+        sensorData = limitedResult;
+        console.log("new sensorData length:", sensorData.length);
+      }
+      
+      if(typeof req.params["download"] != 'undefined' && req.params["download"]=="true"){
+        // offer download to browser
+        res.header('Content-Disposition', 'attachment; filename='+req.params.sensorId+'.'+format);
+      }
+
+      if(format == "csv") { 
+        // send CSV
+        json2csv({data: sensorData, fields: ['createdAt', '_id', 'value']}, function(err, csv) {
+          if (err) console.log(err);
+          res.header('Content-Type', 'text/csv');
+          res.header('Content-Disposition', 'attachment; filename='+req.params.sensorId+'.csv');
+          res.send(201, csv);
+        });
+      } else { 
+        // send JSON
+        res.send(201,sensorData);
+      }
+
+    }
+  });
+}
+
 
 /**
  * @api {post} /boxes/:boxId/:sensorId Post new measurement
@@ -577,6 +659,6 @@ function isEmptyObject(obj) {
   return !Object.keys(obj).length;
 }
 
-server.listen(8000, function () {
+server.listen(8002, function () {
   console.log('%s listening at %s', server.name, server.url);
 });
