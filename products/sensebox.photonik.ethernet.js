@@ -21,7 +21,7 @@ var SENSORS = [
   },
   {
     title: "UV",
-    unit: "UV-Index",
+    unit: "µW/cm²",
     sensorType: "GUVA-S12D"
   }
 ];

@@ -243,6 +243,10 @@ function updateBox(req, res, next) {
     if (user.boxes.indexOf(req.params.boxId) !== -1) {
       Box.findById(req.params.boxId, function (err, box) {
         if (err) return handleError(err);
+        //console.log(req.params);
+        if (req.params.tmpSensorName !== undefined) {
+          box.set({name: req.params.tmpSensorName});
+        }
         if (req.params.image !== undefined) {
           var data = req.params.image.toString();
           var imageBuffer = decodeBase64Image(data);
@@ -256,11 +260,11 @@ function updateBox(req, res, next) {
           });
         } else {
           box.set({image:""});
-          box.save(function (err) {
-            if (err) return handleError(err);
-            res.send(box);
-          });
         }
+        box.save(function (err) {
+          if (err) return handleError(err);
+          res.send(box);
+        });
       });
     } else {
      res.send(400, 'ApiKey does not match SenseBoxID');
@@ -659,6 +663,6 @@ function isEmptyObject(obj) {
   return !Object.keys(obj).length;
 }
 
-server.listen(8002, function () {
+server.listen(8002, function () { /* TODO: change port back to 8000 later */
   console.log('%s listening at %s', server.name, server.url);
 });

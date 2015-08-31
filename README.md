@@ -16,15 +16,15 @@ The API has been built as part of my bachelor thesis at the ifgi (Institute for 
 
 It is assumed that you have installed node.js (developed using 0.10.26)
 
-Install MongoDB according to [the manual](http://docs.mongodb.org/manual/installation/) and create the following database schema:
+Install MongoDB according to [the manual](http://docs.mongodb.org/manual/installation/) and create the database "OSeM-api".
 
+The database schema will be created automatically upon data insertion and looks like this:
 ```
 Database "OSeM-api"
   - Collections
-    - Box
-    - Measurement
-    - Sensor
-    - User
+    - boxes
+    - measurements
+    - sensors
 ```
 
 ### Run for Development & Production
@@ -33,7 +33,7 @@ Edit your configuration in ```config/index.js```:
 |Variable name             | Explanation|
 |--------------------------|---------------|
 |```exports.targetFolder```|The folder where a generated Arduino sketch for each box will be saved upon registration, should be in your htdocs|
-|```exports.imageFolder``` |The folder where banner images for boxes are stored, should be in your htdocs|
+|```exports.imageFolder``` |The folder where banner images for boxes are stored, should be in your htdocs (make sure read and write permissions are correct)|
 |```exports.dbuser```      |MongoDB database user, leave empty if not configured|
 |```exports.dbuserpass```  |MongoDB database password, leave empty if not configured|
 
