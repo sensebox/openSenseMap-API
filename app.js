@@ -325,7 +325,7 @@ function getData(req, res, next) {
   Measurement.find({ 
       sensor_id: req.params.sensorId,
       createdAt: { $gte: new Date(fromDate), $lte: new Date(toDate) }
-    },{createdAt:1, value:1})
+    },{"createdAt":1, "value":1, "_id": 0}) // do not send _id column
   .limit(queryLimit)
   .lean()
   .exec(function(error,sensorData){
@@ -355,7 +355,7 @@ function getData(req, res, next) {
 
       if(format == "csv") { 
         // send CSV
-        json2csv({data: sensorData, fields: ['createdAt', '_id', 'value']}, function(err, csv) {
+        json2csv({data: sensorData, fields: ['createdAt', 'value']}, function(err, csv) {
           if (err) console.log(err);
           res.header('Content-Type', 'text/csv');
           res.header('Content-Disposition', 'attachment; filename='+req.params.sensorId+'.csv');
