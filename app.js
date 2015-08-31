@@ -9,9 +9,10 @@ var restify = require('restify'),
 var Logger = require('bunyan'),
   log = new Logger.createLogger({
     name: 'OSeM-API',
-    streams: [{
-      path: './request-8002.log'
-    }],
+    streams: [
+      { level:'error', path: './request-8002.log' },
+      { level:'debug', stream: process.stdout }
+    ],
     serializers: {
       req: Logger.stdSerializers.req
     }
@@ -29,9 +30,11 @@ server.use(restify.queryParser());
 server.use(restify.bodyParser());
 
 conn = mongoose.connect("mongodb://localhost/OSeM-api",{
+  keepAlive: 1,
   user: cfg.dbuser,
   pass: cfg.dbuserpass
 });
+
 var Schema = mongoose.Schema,
   ObjectId = Schema.ObjectID;
 
@@ -115,6 +118,10 @@ var boxSchema = new Schema({
     required: false
   },
   grouptag: {
+    type: String,
+    required: false
+  },
+  model: {
     type: String,
     required: false
   },
@@ -243,7 +250,7 @@ function updateBox(req, res, next) {
     if (user.boxes.indexOf(req.params.boxId) !== -1) {
       Box.findById(req.params.boxId, function (err, box) {
         if (err) return handleError(err);
-        //console.log(req.params);
+        log.debug(req.params);
         if (req.params.tmpSensorName !== undefined) {
           box.set({name: req.params.tmpSensorName});
         }
@@ -310,7 +317,7 @@ function getData(req, res, next) {
   var fromDate = (typeof req.params["from-date"] == 'undefined' || req.params["from-date"] == "") ? new Date(toDate.valueOf() - 1000*60*60*24*15) : new Date(req.params["from-date"]);
   var format = (typeof req.params["format"] == 'undefined') ? "json" : req.params["format"].toLowerCase();
 
-  //console.log(fromDate, "to", toDate);
+  log.debug(fromDate, "to", toDate);
 
   if (toDate.valueOf() < fromDate.valueOf()) {
     return next(new restify.InvalidArgumentError(JSON.stringify('Invalid time frame specified')));
@@ -337,15 +344,15 @@ function getData(req, res, next) {
       if(sensorData.length > resultLimit) {
         var limitedResult = [];
         var returnEveryN = Math.ceil(sensorData.length/resultLimit);
-        console.log("returnEveryN ", returnEveryN);
-        console.log("old sensorData length:", sensorData.length);
+        log.info("returnEveryN ", returnEveryN);
+        log.info("old sensorData length:", sensorData.length);
         for(var i=0; i<sensorData.length; i++) {
           if(i%returnEveryN == 0) {
             limitedResult.push( sensorData[i] )
           } 
         }
         sensorData = limitedResult;
-        console.log("new sensorData length:", sensorData.length);
+        log.info("new sensorData length:", sensorData.length);
       }
       
       if(typeof req.params["download"] != 'undefined' && req.params["download"]=="true"){
@@ -356,7 +363,7 @@ function getData(req, res, next) {
       if(format == "csv") { 
         // send CSV
         json2csv({data: sensorData, fields: ['createdAt', 'value']}, function(err, csv) {
-          if (err) console.log(err);
+          if (err) log.error(err);
           res.header('Content-Type', 'text/csv');
           res.header('Content-Disposition', 'attachment; filename='+req.params.sensorId+'.csv');
           res.send(201, csv);
@@ -591,72 +598,94 @@ function createNewBox (req) {
  */
 function postNewBox(req, res, next) {
   User.findOne({apikey:req.params.orderID}, function (err, user) {
-    if (!user) {
-      var newUser = createNewUser(req);
-      var newBox = createNewBox(req);
+    if (err) {
+      log.error(err);
+      return res.send(500);
+    } else {
 
-      newUser._doc.boxes.push(newBox._doc._id.toString());
-      newBox.save( function (err, box) {
-        if (err) {
-          return next(new restify.InvalidArgumentError(JSON.stringify(error.errors)));
-        }
+      log.debug("POSTNEWBOX");
+      log.debug(req.params);
+      if (!user) {
+        var newUser = createNewUser(req);
+        var newBox = createNewBox(req);
 
-        switch(req.params.model){
-          case 'senseboxhome2014':
-            filename = "files/template_home/template_home_2014/template_home_2014.ino";
-            break;
-          case 'senseboxhome2015':
-            filename = "files/template_home/template_home_2015/template_home_2015.ino";
-            break;
-          case 'senseboxphotonikwifi':
-            filename = "files/template_photonik/template_photonik_wifi/template_photonik_wifi.ino";
-            break;
-          case 'senseboxphotonikethernet':
-            filename = "files/template_photonik/template_photonik_ethernet/template_photonik_ethernet.ino";
-            break;
-          default:
-            break;
-        }
-
-        fs.readFileSync(filename).toString().split('\n').forEach(function (line) {
-          var output = cfg.targetFolder+""+box._id+".ino";
-          if (line.indexOf("//SenseBox ID") != -1) {
-            fs.appendFileSync(output, line.toString() + "\n");
-            fs.appendFileSync(output, '#define SENSEBOX_ID "'+box._id+'"\n');
-          } else if (line.indexOf("//Sensor IDs") != -1) {
-            fs.appendFileSync(output, line.toString() + "\n");
-            for (var i = box.sensors.length - 1; i >= 0; i--) {
-              var sensor = box.sensors[i];
-              if (sensor.title == "Temperatur") {
-                fs.appendFileSync(output, '#define TEMPERATURESENSOR_ID "'+sensor._id+'"\n');
-              } else if(sensor.title == "rel. Luftfeuchte") {
-                fs.appendFileSync(output, '#define HUMIDITYSENSOR_ID "'+sensor._id+'"\n');
-              } else if(sensor.title == "Luftdruck") {
-                fs.appendFileSync(output, '#define PRESSURESENSOR_ID "'+sensor._id+'"\n');
-              } else if(sensor.title == "Lautstärke") {
-                fs.appendFileSync(output, '#define NOISESENSOR_ID "'+sensor._id+'"\n');
-              } else if(sensor.title == "Helligkeit") {
-                fs.appendFileSync(output, '#define LIGHTSENSOR_ID "'+sensor._id+'"\n');
-              } else if (sensor.title == "Beleuchtungsstärke") {
-                fs.appendFileSync(output, '#define LUXSENSOR_ID "'+sensor._id+'"\n');
-              } else if (sensor.title == "UV") {
-                fs.appendFileSync(output, '#define UVSENSOR_ID "'+sensor._id+'"\n');
-              };
-            };
-          } else {
-            fs.appendFileSync(output, line.toString() + "\n");
-          }
-        });
-
-        newUser.save( function (err, user) {
+        newUser._doc.boxes.push(newBox._doc._id.toString());
+        newBox.save( function (err, box) {
           if (err) {
             return next(new restify.InvalidArgumentError(JSON.stringify(error.errors)));
           }
-          res.send(201, user);
+
+          switch(req.params.model){
+            case 'senseboxhome2014':
+              filename = "files/template_home/template_home_2014/template_home_2014.ino";
+              break;
+            case 'senseboxhome2015':
+              filename = "files/template_home/template_home_2015/template_home_2015.ino";
+              break;
+            case 'senseboxphotonikwifi':
+              filename = "files/template_photonik/template_photonik_wifi/template_photonik_wifi.ino";
+              break;
+            case 'senseboxphotonikethernet':
+              filename = "files/template_photonik/template_photonik_ethernet/template_photonik_ethernet.ino";
+              break;
+            default:
+              filename = "files/template_custom_setup/template_custom_setup.ino";
+              break;
+          }
+
+          try {
+            var output = cfg.targetFolder+""+box._id+".ino";
+            log.debug(output);
+            fs.readFileSync(filename).toString().split('\n').forEach(function (line) {
+              if (line.indexOf("//SenseBox ID") != -1) {
+                fs.appendFileSync(output, line.toString() + "\n");
+                fs.appendFileSync(output, '#define SENSEBOX_ID "'+box._id+'"\n');
+              } else if (line.indexOf("//Sensor IDs") != -1) {
+                fs.appendFileSync(output, line.toString() + "\n");
+                var customSensorindex = 1;
+                for (var i = box.sensors.length - 1; i >= 0; i--) {
+                  var sensor = box.sensors[i];
+                  log.debug(sensor);
+                  if (sensor.title == "Temperatur") {
+                    fs.appendFileSync(output, '#define TEMPERATURESENSOR_ID "'+sensor._id+'"\n');
+                  } else if(sensor.title == "rel. Luftfeuchte") {
+                    fs.appendFileSync(output, '#define HUMIDITYSENSOR_ID "'+sensor._id+'"\n');
+                  } else if(sensor.title == "Luftdruck") {
+                    fs.appendFileSync(output, '#define PRESSURESENSOR_ID "'+sensor._id+'"\n');
+                  } else if(sensor.title == "Lautstärke") {
+                    fs.appendFileSync(output, '#define NOISESENSOR_ID "'+sensor._id+'"\n');
+                  } else if(sensor.title == "Helligkeit") {
+                    fs.appendFileSync(output, '#define LIGHTSENSOR_ID "'+sensor._id+'"\n');
+                  } else if (sensor.title == "Beleuchtungsstärke") {
+                    fs.appendFileSync(output, '#define LUXSENSOR_ID "'+sensor._id+'"\n');
+                  } else if (sensor.title == "UV") {
+                    fs.appendFileSync(output, '#define UVSENSOR_ID "'+sensor._id+'"\n');
+                  } else {
+                    fs.appendFileSync(output, '#define SENSOR'+customSensorindex+'_ID "'+sensor._id+'"\n');
+                    customSensorindex++;
+                  }
+                };
+              } else {
+                fs.appendFileSync(output, line.toString() + "\n");
+              }
+            });
+          } catch (e) {
+            log.error(e);
+            return res.send(500, JSON.stringify('An error occured'));
+          }
+
+          newUser.save( function (err, user) {
+            if (err) {
+              return next(new restify.InvalidArgumentError(JSON.stringify(error.errors)));
+            } else {
+              return res.send(201, user);
+            }
+          });
         });
-      });
+      }
     }
   });
+  next();
 }
 
 function isEmptyObject(obj) {
@@ -665,4 +694,9 @@ function isEmptyObject(obj) {
 
 server.listen(8002, function () { /* TODO: change port back to 8000 later */
   console.log('%s listening at %s', server.name, server.url);
+});
+
+server.on('uncaughtException', function (req, res, route, err) {
+  log.error('Uncaught error', err);
+  return res.send(500, JSON.stringify('An error occured'));
 });
