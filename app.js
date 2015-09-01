@@ -5,24 +5,54 @@ var restify = require('restify'),
   GeoJSON = require('geojson'),
   _ = require('lodash'),
   products = require('./products'),
-  cfg = require('./config');
+  cfg = require('./config'),
+  json2csv = require('json2csv'),
+  Stream = require('stream');
+
+/*
+  Logging
+*/
+var consoleStream = new Stream();
+consoleStream.writable = true;
+consoleStream.write = function(obj) {
+  if(obj.req){
+    console.log(obj.time, obj.req.remoteAddress, obj.req.method, obj.req.url);
+  } else {
+    console.log(obj.time, obj.msg);
+  }
+  
+}
+
 var Logger = require('bunyan'),
+  reqlog = new Logger.createLogger({
+    name: 'OSeM-API',
+    streams: [
+      { path: './request.log', type: 'rotating-file', period: '1w', count: 8 },
+      { level: 'debug', type: 'raw', stream: consoleStream }
+    ],
+    serializers: {
+      err: Logger.stdSerializers.err,
+      req: Logger.stdSerializers.req,
+      res: Logger.stdSerializers.res
+    }
+  }),
   log = new Logger.createLogger({
     name: 'OSeM-API',
     streams: [
-      { level:'error', path: './request-8002.log' },
-      { level:'debug', stream: process.stdout }
+      { level: 'error', path: './request-error.log', type: 'rotating-file', period: '1w', count: 8 },
+      { level: 'debug', type: 'raw', stream: consoleStream }
     ],
     serializers: {
-      req: Logger.stdSerializers.req
+      err: Logger.stdSerializers.err,
+      req: Logger.stdSerializers.req,
+      res: Logger.stdSerializers.res
     }
   });
-var json2csv = require('json2csv');
 
 var server = restify.createServer({
   name: 'opensensemap-api',
   version: '0.0.1',
-  log: log
+  log: reqlog
 });
 server.use(restify.CORS({'origins': ['*'] })); //['http://localhost', 'https://opensensemap.org']}));
 server.use(restify.fullResponse());
@@ -201,6 +231,22 @@ function unknownMethodHandler(req, res) {
 
 server.on('MethodNotAllowed', unknownMethodHandler);
 
+/**
+ * @api {get} /boxes/users/:boxId Check for valid API key
+ * @apiDescription Check for valid API key. Will return status code 400 if invalid, 200 if valid.
+ * @apiParam {ID} boxId SenseBox unique ID.
+ * @apiHeader {ObjectId} x-apikey SenseBox specific apikey
+ * @apiHeaderExample {json} Request-Example:
+ *   {
+ *     'X-ApiKey':54d3a96d5438b4440913434b
+ *   }
+ * @apiError {String} ApiKey is invalid!
+ * @apiError {String} ApiKey not existing!
+ * @apiSuccess {String} ApiKey is valid!
+ * @apiVersion 0.0.1
+ * @apiGroup Boxes
+ * @apiName updateBox
+ */
 function validApiKey (req,res,next) {
   User.findOne({apikey:req.headers['x-apikey']}, function (error, user) {
     if (error) {
@@ -603,7 +649,7 @@ function postNewBox(req, res, next) {
       return res.send(500);
     } else {
 
-      log.debug("POSTNEWBOX");
+      log.debug("A new sensebox is being submitted");
       log.debug(req.params);
       if (!user) {
         var newUser = createNewUser(req);
@@ -692,7 +738,7 @@ function isEmptyObject(obj) {
   return !Object.keys(obj).length;
 }
 
-server.listen(8002, function () { /* TODO: change port back to 8000 later */
+server.listen(8000, function () {
   console.log('%s listening at %s', server.name, server.url);
 });
 
