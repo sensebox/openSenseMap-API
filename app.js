@@ -7,7 +7,10 @@ var restify = require('restify'),
   products = require('./products'),
   cfg = require('./config'),
   json2csv = require('json2csv'),
-  Stream = require('stream');
+  Stream = require('stream'),
+  nodemailer = require('nodemailer'),
+  smtpTransport = require('nodemailer-smtp-transport'),
+  htmlToText = require('nodemailer-html-to-text').htmlToText;
 
 /*
   Logging
@@ -654,6 +657,7 @@ function postNewBox(req, res, next) {
       if (!user) {
         var newUser = createNewUser(req);
         var newBox = createNewBox(req);
+        var savedBox = {};
 
         newUser._doc.boxes.push(newBox._doc._id.toString());
         newBox.save( function (err, box) {
@@ -707,7 +711,7 @@ function postNewBox(req, res, next) {
                   } else if (sensor.title == "UV") {
                     fs.appendFileSync(output, '#define UVSENSOR_ID "'+sensor._id+'"\n');
                   } else {
-                    fs.appendFileSync(output, '#define SENSOR'+customSensorindex+'_ID "'+sensor._id+'"\n');
+                    fs.appendFileSync(output, '#define SENSOR'+customSensorindex+'_ID "'+sensor._id+'" \/\/ '+sensor.title+' \n');
                     customSensorindex++;
                   }
                 };
@@ -715,23 +719,78 @@ function postNewBox(req, res, next) {
                 fs.appendFileSync(output, line.toString() + "\n");
               }
             });
+            savedBox = box;
+
+            newUser.save( function (err, user) {
+              if (err) {
+                return next(new restify.InvalidArgumentError(JSON.stringify(error.errors)));
+              } else {
+                sendWelcomeMail(user, newBox);
+                return res.send(201, user);
+              }
+            });
+
           } catch (e) {
             log.error(e);
             return res.send(500, JSON.stringify('An error occured'));
           }
 
-          newUser.save( function (err, user) {
-            if (err) {
-              return next(new restify.InvalidArgumentError(JSON.stringify(error.errors)));
-            } else {
-              return res.send(201, user);
-            }
-          });
+          
         });
       }
     }
   });
   next();
+}
+
+// Send box script to user via email
+function sendWelcomeMail(user, box) {
+  var templatePath = './templates/registration.html';
+  var templateContent = fs.readFileSync(templatePath, encoding = 'utf8');
+  var template = _.template(templateContent);
+  var compiled = template({ 'user': user, 'box': box });
+
+  var transporter = nodemailer.createTransport(smtpTransport({
+    host: cfg.email.host,
+    port: cfg.email.port,
+    secure: cfg.email.secure,
+    auth: {
+        user: cfg.email.user,
+        pass: cfg.email.pass
+    }
+  }));
+  transporter.use('compile', htmlToText());
+  transporter.sendMail({
+    from: { 
+      name: cfg.email.fromName, 
+      address: cfg.email.fromEmail
+    },
+    replyTo: {
+      name: cfg.email.fromName, 
+      address: cfg.email.replyTo
+    },
+    to: { 
+      name: user.firstname+" "+user.lastname, 
+      address: user.email
+    },
+    subject: cfg.email.subject,
+    template: 'registration',
+    html: compiled,
+    attachments: [
+      {
+        filename: "sensebox.ino",
+        path: cfg.targetFolder + box._id + ".ino"
+      }
+    ]
+  }, function(err, info){
+    if(err){
+      log.error("Email error")
+      log.error(err)
+    }
+    if(info){
+      log.debug("Email sent successfully")
+    }
+  });
 }
 
 function isEmptyObject(obj) {

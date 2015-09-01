@@ -28,11 +28,12 @@ Database "OSeM-api"
 ```
 
 ### Run for Development & Production
-Edit your configuration in ```config/index.js```:
+
+Open the configuration file ```config/index.js``` and change settings accordingly.
 
 |Variable name             | Explanation|
 |--------------------------|---------------|
-|```exports.targetFolder```|The folder where a generated Arduino sketch for each box will be saved upon registration, should be in your htdocs|
+|```exports.targetFolder```|The folder where a generated Arduino sketch for each box will be saved upon registration|
 |```exports.imageFolder``` |The folder where banner images for boxes are stored, should be in your htdocs (make sure read and write permissions are correct)|
 |```exports.dbuser```      |MongoDB database user, leave empty if not configured|
 |```exports.dbuserpass```  |MongoDB database password, leave empty if not configured|

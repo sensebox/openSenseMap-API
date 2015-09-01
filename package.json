@@ -10,7 +10,10 @@
     "mongoose": "~4.1.0",
     "mongoose-timestamp": "^0.2.1",
     "restify": "^2.6.1",
-    "json2csv": "~2.2.1"
+    "json2csv": "~2.2.1",
+    "nodemailer": "~1.4.0",
+    "nodemailer-smtp-transport": "~1.0.3",
+    "nodemailer-html-to-text": "~1.0.2"
   },
   "devDependencies": {},
   "scripts": {
