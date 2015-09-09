@@ -20,7 +20,7 @@ var SENSORS = [
     sensorType: "TSL45315"
   },
   {
-    title: "UV-Index",
+    title: "UV-Intensität",
     unit: "μW/cm²",
     sensorType: "VEML6070"
   }
