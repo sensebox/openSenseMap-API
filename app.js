@@ -697,7 +697,7 @@ function postNewBox(req, res, next) {
                     fs.appendFileSync(output, '#define LIGHTSENSOR_ID "'+sensor._id+'"\n');
                   } else if (sensor.title == "Beleuchtungsstärke") {
                     fs.appendFileSync(output, '#define LUXSENSOR_ID "'+sensor._id+'"\n');
-                  } else if (sensor.title == "UV-Index") {
+                  } else if (sensor.title == "UV-Intensität") {
                     fs.appendFileSync(output, '#define UVSENSOR_ID "'+sensor._id+'"\n');
                   } else {
                     fs.appendFileSync(output, '#define SENSOR'+customSensorindex+'_ID "'+sensor._id+'" \/\/ '+sensor.title+' \n');
