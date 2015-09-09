@@ -648,7 +648,7 @@ function postNewBox(req, res, next) {
     } else {
 
       log.debug("A new sensebox is being submitted");
-      log.debug(req.params);
+      //log.debug(req.params);
       if (!user) {
         var newUser = createNewUser(req);
         var newBox = createNewBox(req);
