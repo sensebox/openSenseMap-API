@@ -41,7 +41,7 @@ int messTyp;
 #define IT_1   0x1
 
 unsigned long oldTime = 0;
-const unsigned long postingInterval = 10000;
+const unsigned long postingInterval = 60000;
 
 void setup() {
   // Open serial communications and wait for port to open:
@@ -69,7 +69,6 @@ void setup() {
   Serial.println("done!");
   Serial.println("Starting loop.");
   temperature = HDC.getTemp();
-  Serial.println(temperature,2);
 }
 
 void loop()
