@@ -2,27 +2,27 @@ var SENSORS = [
   {
     title: "Temperatur",
     unit: "°C",
-    sensorType: "BMP085"
+    sensorType: "HDC1008"
   },
   {
     title: "rel. Luftfeuchte",
     unit: "%",
-    sensorType: "DHT11"
+    sensorType: "HDC1008"
   },
   {
     title: "Luftdruck",
-    unit: "Pa",
-    sensorType: "BMP085"
+    unit: "hPa",
+    sensorType: "BMP280"
   },
   {
     title: "Beleuchtungsstärke",
     unit: "lx",
-    sensorType: "TSL2561"
+    sensorType: "TSL45315"
   },
   {
-    title: "Lautstärke",
-    unit: "Schallpegel",
-    sensorType: "LM358"
+    title: "UV-Intensität",
+    unit: "μW/cm²",
+    sensorType: "VEML6070"
   }
 ];
 

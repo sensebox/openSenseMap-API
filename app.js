@@ -20,11 +20,12 @@ consoleStream.writable = true;
 consoleStream.write = function(obj) {
   if(obj.req){
     console.log(obj.time, obj.req.remoteAddress, obj.req.method, obj.req.url);
-  } else {
+  } else if(obj.msg) {
     console.log(obj.time, obj.msg);
+  } else {
+    //console.log(obj.time, obj);
   }
-  
-}
+};
 
 var Logger = require('bunyan'),
   reqlog = new Logger.createLogger({
@@ -605,17 +606,11 @@ function createNewBox (req) {
 
   if (req.params.model) {
     switch(req.params.model){
-      case 'senseboxhome2014':
-        req.params.sensors = products.senseboxhome2014;
+      case 'homeEthernet':
+        req.params.sensors = products.senseboxhome;
         break;
-      case 'senseboxhome2015':
-        req.params.sensors = products.senseboxhome2015;
-        break;
-      case 'senseboxphotonikwifi':
-        req.params.sensors = products.senseboxphotonikwifi;
-        break;
-      case 'senseboxphotonikethernet':
-        req.params.sensors = products.senseboxphotonikethernet;
+      case 'basicEthernet':
+        req.params.sensors = products.senseboxbasic;
         break;
       default:
         break;
@@ -666,17 +661,11 @@ function postNewBox(req, res, next) {
           }
 
           switch(req.params.model){
-            case 'senseboxhome2014':
-              filename = "files/template_home/template_home_2014/template_home_2014.ino";
+            case 'homeEthernet':
+              filename = "files/template_home/template_home.ino";
               break;
-            case 'senseboxhome2015':
-              filename = "files/template_home/template_home_2015/template_home_2015.ino";
-              break;
-            case 'senseboxphotonikwifi':
-              filename = "files/template_photonik/template_photonik_wifi/template_photonik_wifi.ino";
-              break;
-            case 'senseboxphotonikethernet':
-              filename = "files/template_photonik/template_photonik_ethernet/template_photonik_ethernet.ino";
+            case 'basicEthernet':
+              filename = "files/template_basic/template_basic.ino";
               break;
             default:
               filename = "files/template_custom_setup/template_custom_setup.ino";
@@ -697,9 +686,9 @@ function postNewBox(req, res, next) {
                   var sensor = box.sensors[i];
                   log.debug(sensor);
                   if (sensor.title == "Temperatur") {
-                    fs.appendFileSync(output, '#define TEMPERATURESENSOR_ID "'+sensor._id+'"\n');
+                    fs.appendFileSync(output, '#define TEMPSENSOR_ID "'+sensor._id+'"\n');
                   } else if(sensor.title == "rel. Luftfeuchte") {
-                    fs.appendFileSync(output, '#define HUMIDITYSENSOR_ID "'+sensor._id+'"\n');
+                    fs.appendFileSync(output, '#define HUMISENSOR_ID "'+sensor._id+'"\n');
                   } else if(sensor.title == "Luftdruck") {
                     fs.appendFileSync(output, '#define PRESSURESENSOR_ID "'+sensor._id+'"\n');
                   } else if(sensor.title == "Lautstärke") {
@@ -708,13 +697,13 @@ function postNewBox(req, res, next) {
                     fs.appendFileSync(output, '#define LIGHTSENSOR_ID "'+sensor._id+'"\n');
                   } else if (sensor.title == "Beleuchtungsstärke") {
                     fs.appendFileSync(output, '#define LUXSENSOR_ID "'+sensor._id+'"\n');
-                  } else if (sensor.title == "UV") {
+                  } else if (sensor.title == "UV-Index") {
                     fs.appendFileSync(output, '#define UVSENSOR_ID "'+sensor._id+'"\n');
                   } else {
                     fs.appendFileSync(output, '#define SENSOR'+customSensorindex+'_ID "'+sensor._id+'" \/\/ '+sensor.title+' \n');
                     customSensorindex++;
                   }
-                };
+                }
               } else {
                 fs.appendFileSync(output, line.toString() + "\n");
               }
