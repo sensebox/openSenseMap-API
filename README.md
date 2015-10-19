@@ -48,6 +48,10 @@ Then start the API process, press CTRL+C to stop:
 node app.js
 ```
 
+**or with Docker**
+- install docker and docker-compose
+- run `docker-compose up`
+
 ### Create the JSDoc pages
 
 To create the documentation you need [apidocjs](http://apidocjs.com/) and run:
