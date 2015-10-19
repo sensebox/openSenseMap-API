@@ -12,6 +12,8 @@ var restify = require('restify'),
   smtpTransport = require('nodemailer-smtp-transport'),
   htmlToText = require('nodemailer-html-to-text').htmlToText;
 
+var dbHost = process.env.DB_HOST || "db";
+
 /*
   Logging
 */
@@ -63,11 +65,19 @@ server.use(restify.fullResponse());
 server.use(restify.queryParser());
 server.use(restify.bodyParser());
 
-conn = mongoose.connect("mongodb://localhost/OSeM-api",{
-  keepAlive: 1,
-  user: cfg.dbuser,
-  pass: cfg.dbuserpass
-});
+// use this function to retry if a connection cannot be established immediately
+var connectWithRetry = function () {
+  return mongoose.connect("mongodb://" + dbHost + "/OSeM-api", {
+    keepAlive: 1
+  }, function (err) {
+    if (err) {
+      console.error('Failed to connect to mongo on startup - retrying in 5 sec', err);
+      setTimeout(connectWithRetry, 5000);
+    }
+  });
+};
+
+conn = connectWithRetry();
 
 var Schema = mongoose.Schema,
   ObjectId = Schema.ObjectID;
@@ -379,7 +389,7 @@ function getData(req, res, next) {
   var queryLimit = 100000;
   var resultLimit = 1000;
 
-  Measurement.find({ 
+  Measurement.find({
       sensor_id: req.params.sensorId,
       createdAt: { $gte: new Date(fromDate), $lte: new Date(toDate) }
     },{"createdAt":1, "value":1, "_id": 0}) // do not send _id column
@@ -399,18 +409,18 @@ function getData(req, res, next) {
         for(var i=0; i<sensorData.length; i++) {
           if(i%returnEveryN == 0) {
             limitedResult.push( sensorData[i] )
-          } 
+          }
         }
         sensorData = limitedResult;
         log.info("new sensorData length:", sensorData.length);
       }
-      
+
       if(typeof req.params["download"] != 'undefined' && req.params["download"]=="true"){
         // offer download to browser
         res.header('Content-Disposition', 'attachment; filename='+req.params.sensorId+'.'+format);
       }
 
-      if(format == "csv") { 
+      if(format == "csv") {
         // send CSV
         json2csv({data: sensorData, fields: ['createdAt', 'value']}, function(err, csv) {
           if (err) log.error(err);
@@ -418,7 +428,7 @@ function getData(req, res, next) {
           res.header('Content-Disposition', 'attachment; filename='+req.params.sensorId+'.csv');
           res.send(201, csv);
         });
-      } else { 
+      } else {
         // send JSON
         res.send(201,sensorData);
       }
@@ -724,7 +734,7 @@ function postNewBox(req, res, next) {
             return res.send(500, JSON.stringify('An error occured'));
           }
 
-          
+
         });
       }
     }
@@ -750,16 +760,16 @@ function sendWelcomeMail(user, box) {
   }));
   transporter.use('compile', htmlToText());
   transporter.sendMail({
-    from: { 
-      name: cfg.email.fromName, 
+    from: {
+      name: cfg.email.fromName,
       address: cfg.email.fromEmail
     },
     replyTo: {
-      name: cfg.email.fromName, 
+      name: cfg.email.fromName,
       address: cfg.email.replyTo
     },
-    to: { 
-      name: user.firstname+" "+user.lastname, 
+    to: {
+      name: user.firstname+" "+user.lastname,
       address: user.email
     },
     subject: cfg.email.subject,
