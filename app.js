@@ -12,6 +12,8 @@ var restify = require('restify'),
   smtpTransport = require('nodemailer-smtp-transport'),
   htmlToText = require('nodemailer-html-to-text').htmlToText;
 
+var dbHost = process.env.DB_HOST || "db";
+
 /*
   Logging
 */
@@ -63,11 +65,19 @@ server.use(restify.fullResponse());
 server.use(restify.queryParser());
 server.use(restify.bodyParser());
 
-conn = mongoose.connect("mongodb://localhost/OSeM-api",{
-  keepAlive: 1,
-  user: cfg.dbuser,
-  pass: cfg.dbuserpass
-});
+// use this function to retry if a connection cannot be established immediately
+var connectWithRetry = function () {
+  return mongoose.connect("mongodb://" + dbHost + "/OSeM-api", {
+    keepAlive: 1
+  }, function (err) {
+    if (err) {
+      console.error('Failed to connect to mongo on startup - retrying in 5 sec', err);
+      setTimeout(connectWithRetry, 5000);
+    }
+  });
+};
+
+conn = connectWithRetry();
 
 var Schema = mongoose.Schema,
   ObjectId = Schema.ObjectID;

@@ -1,0 +1,15 @@
+osem-api:
+  build: .
+  ports:
+    - 8000:8000
+  links:
+    - db
+  volumes:
+    - ./config/index.js:/usr/src/app/config/index.js
+    - ./usersketches:/var/OpenSenseMap-API/usersketches
+    - ./userimages:/var/www/OpenSenseMap/app/userimages
+
+db:
+  image: mongo:2.6
+  volumes:
+    - ./mongo-data:/data/db
