@@ -725,6 +725,7 @@ function postNewBox(req, res, next) {
                 return next(new restify.InvalidArgumentError(JSON.stringify(error.errors)));
               } else {
                 sendWelcomeMail(user, newBox);
+                sendYeahMail(user, newBox);
                 return res.send(201, user);
               }
             });
@@ -781,6 +782,51 @@ function sendWelcomeMail(user, box) {
         path: cfg.targetFolder + box._id + ".ino"
       }
     ]
+  }, function(err, info){
+    if(err){
+      log.error("Email error")
+      log.error(err)
+    }
+    if(info){
+      log.debug("Email sent successfully")
+    }
+  });
+}
+
+// Send Yeah Mail to senseBox Team
+function sendYeahMail(user, box) {
+  var templatePath = './templates/yeah.html';
+  var templateContent = fs.readFileSync(templatePath, encoding = 'utf8');
+  var template = _.template(templateContent);
+  var compiled = template({ 'user': user, 'box': box });
+
+  var transporter = nodemailer.createTransport(smtpTransport({
+    host: cfg.email.host,
+    port: cfg.email.port,
+    secure: cfg.email.secure,
+    auth: {
+        user: cfg.email.user,
+        pass: cfg.email.pass
+    }
+  }));
+  transporter.use('compile', htmlToText());
+  transporter.sendMail({
+    from: {
+      name: cfg.email.fromName,
+      address: cfg.email.fromEmail
+    },
+    replyTo: {
+      name: cfg.email.fromName,
+      address: cfg.email.replyTo
+    },
+    to: {
+      name: user.firstname+" "+user.lastname,
+      address: "support@sensebox.de"
+    },
+    subject: cfg.email.subject,
+    template: 'yeah',
+    html: compiled
+    
   }, function(err, info){
     if(err){
       log.error("Email error")
