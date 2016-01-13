@@ -2,16 +2,16 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8">
-  <title>Dein SenseBox Skript</title>
+  <title>Dein senseBox Skript</title>
 </head>
 <body>
   <p>
     Hallo <%- user.firstname %> <%- user.lastname %>,
   </p>
   <p>
-    vielen Dank für die Registrierung deiner Messstation! Im Anhang findest du ein Arduino-Skript, welches noch auf dein Sensorsetup angepasst werden muss. Lade es herunter und ergänze es mit den nötigen Erweiterungen, wie in unserem <a href="https://github.com/sensebox/OER/blob/master/OSeM%20Tutorials/OSeMCustomSensor.md" target="_blank"><b>Tutorial</b></a> beschrieben.
+    vielen Dank für die Registrierung deiner Messstation! Im Anhang findest du ein Arduino-Skript, welches noch auf dein Sensorsetup angepasst werden muss. Lade es herunter und ergänze es mit den nötigen Erweiterungen, wie in unserem <a href="https://github.com/sensebox/OER/wiki" target="_blank"><b>Wiki</b></a> beschrieben.
   </p>
-  <p>Um die Eigenschaften deiner SenseBox nachträglich zu ändern, wirst du immer nach einem API-Key gefragt. Deiner lautet: <b><%= user.apikey %></b></p>
+  <p>Um die Eigenschaften deiner senseBox nachträglich zu ändern, wirst du immer nach einem API-Key gefragt. Deiner lautet: <b><%= user.apikey %></b></p>
   <p>Außerdem wurden die folgenden IDs für die Sensoren deiner Station generiert:</p>
   <ul>
     <% _.forEach(box.sensors, function(sensor) { %>
@@ -19,10 +19,10 @@
   </ul>
   <p>Du findest deine Station auf der Webseite unter der Adresse <a href="http://opensensemap.org/#/explore/<%= box._id %>" target="_blank">opensensemap.org/#/explore/<%= box._id %></a>.</p>
   <p>
-    Wenn ihr Fragen habt schreibt uns eine Mail an: <a href="mailto:support@sensebox.de?Subject=Hilfe%20bei%20der%20Einrichtung" target="_top">support@sensebox.de</a>
+    Wenn Du Fragen hast schreib uns eine Mail an: <a href="mailto:support@sensebox.de?Subject=Hilfe%20bei%20der%20Einrichtung" target="_top">support@sensebox.de</a>
   </p>
   <p>
-    Viel Spaß wünscht dein SenseBox Team
+    Viel Spaß wünscht dein senseBox Team
   </p>
 </body>
 </html>
