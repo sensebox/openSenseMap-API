@@ -1,5 +1,6 @@
 exports.targetFolder = '/var/OpenSenseMap-API/usersketches/';
 exports.imageFolder = '/var/www/OpenSenseMap/app/userimages/';
+exports.dbhost = '';
 exports.dbuser = '';
 exports.dbuserpass = '';
 
