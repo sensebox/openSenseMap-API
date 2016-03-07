@@ -10,8 +10,10 @@ var restify = require('restify'),
   Stream = require('stream'),
   nodemailer = require('nodemailer'),
   smtpTransport = require('nodemailer-smtp-transport'),
-  htmlToText = require('nodemailer-html-to-text').htmlToText;
+  htmlToText = require('nodemailer-html-to-text').htmlToText,
+  moment = require('moment');
 
+mongoose.Promise = require('bluebird');
 var dbHost = process.env.DB_HOST || cfg.dbhost;
 
 /*
@@ -98,18 +100,20 @@ server.pre(function (request,response,next) {
   next();
 });
 
+// GET 
 server.get({path : PATH , version : '0.0.1'} , findAllBoxes);
 server.get({path : /(boxes)\.([a-z]+)/, version : '0.0.1'} , findAllBoxes);
 server.get({path : PATH +'/:boxId' , version : '0.0.1'} , findBox);
 server.get({path : PATH +'/:boxId/sensors', version : '0.0.1'}, getMeasurements);
 server.get({path : PATH +'/:boxId/data/:sensorId', version : '0.0.1'}, getData);
+server.get({path : userPATH +'/:boxId', version : '0.0.1'}, validApiKey);
 
+// POST
 server.post({path : PATH , version: '0.0.1'} ,postNewBox);
 server.post({path : PATH +'/:boxId/:sensorId' , version : '0.0.1'}, postNewMeasurement);
 
+// PUT
 server.put({path: PATH + '/:boxId' , version: '0.0.1'} , updateBox);
-
-server.get({path : userPATH +'/:boxId', version : '0.0.1'}, validApiKey);
 
 function unknownMethodHandler(req, res) {
   if (req.method.toLowerCase() === 'options') {
@@ -175,7 +179,7 @@ function decodeBase64Image(dataString) {
 }
 
 /**
- * @api {put} /boxes/:boxId Update a SenseBox
+ * @api {put} /boxes/:boxId Update a SenseBox: Image and sensor names
  * @apiDescription Modify the specified SenseBox.
  * @apiParam {ID} boxId SenseBox unique ID.
  * @apiHeader {ObjectId} x-apikey SenseBox specific apikey
@@ -237,7 +241,7 @@ function getMeasurements(req, res, next) {
     if (error) {
       return next(new restify.InvalidArgumentError(JSON.stringify(error.errors)));
     } else {
-      res.send(201,sensors);
+      res.send(201, sensors);
     }
   });
 }
@@ -315,7 +319,7 @@ function getData(req, res, next) {
         });
       } else {
         // send JSON
-        res.send(201,sensorData);
+        res.send(201, sensorData);
       }
 
     }
@@ -331,6 +335,9 @@ function getData(req, res, next) {
  * @apiName postNewMeasurement
  * @apiParam {ID} boxId SenseBox unique ID.
  * @apiParam {ID} sensorId Sensors unique ID.
+ * @apiParamExample Request-Example: 
+ * curl --data 'value=22' localhost:8000/boxes/56ccb342eda956582a88e48c/56ccb342eda956582a88e490
+ * curl -H 'Content-type:application/json' -d '{"value": 22}' localhost:8000/boxes/56ccb342eda956582a88e48c/56ccb342eda956582a88e490
  */
 function postNewMeasurement(req, res, next) {
   Box.findOne({_id: req.params.boxId}, function(error,box){
@@ -353,15 +360,13 @@ function postNewMeasurement(req, res, next) {
             if (error) {
               return next(new restify.InvalidArgumentError(JSON.stringify(error.errors)));
             } else {
-              res.send(201,'measurement saved in box');
-            }
-          });
-
-          measurement.save(function(error, data, box){
-            if (error) {
-              return next(new restify.InvalidArgumentError(JSON.stringify(error.errors)));
-            } else {
-              res.send(201,measurement);
+              measurement.save(function(error, data, box){
+              if (error) {
+                  return next(new restify.InvalidArgumentError(JSON.stringify(error.errors)));
+                } else {
+                  res.send(201, measurement);
+                }
+              });
             }
           });
         }
@@ -371,30 +376,146 @@ function postNewMeasurement(req, res, next) {
 }
 
 /**
- * @api {get} /boxes Get all SenseBoxes
- * @apiName findAllBoxes
- * @apiGroup Boxes
- * @apiVersion 0.0.1
- * @apiSampleRequest http://opensensemap.org:8000/boxes
+ * @api {post} /boxes/:boxId/:sensorId Post multiple new measurements
+ * @apiDescription Posts a new measurement to a specific sensor of a box.
+ * @apiVersion 0.1.0
+ * @apiGroup Measurements
+ * @apiName postNewMeasurement
+ * @apiParam {ID} boxId SenseBox unique ID.
+ * @apiParam {ID} sensorId Sensors unique ID.
  */
-function findAllBoxes(req, res , next){
-  Box.find({}).populate('sensors.lastMeasurement').exec(function(err,boxes){
-    if (req.params[1] === "json" || req.params[1] === undefined) {
-      res.send(boxes);
-    } else if (req.params[1] === "geojson") {
-      tmp = JSON.stringify(boxes);
-      tmp = JSON.parse(tmp);
-      var geojson = _.transform(tmp, function(result, n) {
-        lat = n.loc[0].geometry.coordinates[1];
-        lng = n.loc[0].geometry.coordinates[0];
-        delete n["loc"];
-        n["lat"] = lat;
-        n["lng"] = lng;
-        return result.push(n);
-      });
-      res.send(GeoJSON.parse(geojson, {Point: ['lat','lng']}));
+function postNewMeasurements(req, res, next) {
+  Box.findOne({_id: req.params.boxId}, function(error,box){
+    if (error) {
+      return next(new restify.InvalidArgumentError(JSON.stringify(error.errors)));
+    } else {
+      for (var i = box.sensors.length - 1; i >= 0; i--) {
+        if (box.sensors[i]._id.equals(req.params.sensorId)) {
+
+          var measurementData = {
+            value: req.params.value,
+            _id: mongoose.Types.ObjectId(),
+            sensor_id: req.params.sensorId
+          };
+
+          var measurement = new Measurement(measurementData);
+
+          box.sensors[i].lastMeasurement = measurement._id;
+          box.save(function(error,data){
+            if (error) {
+              return next(new restify.InvalidArgumentError(JSON.stringify(error.errors)));
+            } else {
+              measurement.save(function(error, data, box){
+              if (error) {
+                  return next(new restify.InvalidArgumentError(JSON.stringify(error.errors)));
+                } else {
+                  res.send(201, measurement);
+                }
+              });
+            }
+          });
+        }
+      };
     }
   });
+}
+
+/**
+ * @api {get} /boxes?date=:date&phenomenon=:phenomenon Get all SenseBoxes. With the optional `date` and `phenomenon` parameters you can find SenseBoxes that have submitted data around that time, +/- 1 hours.
+ * @apiName findAllBoxes
+ * @apiGroup Boxes
+ * @apiVersion 0.1.0
+ * @apiParam {String} date A date or datetime (UTC) where a station should provide measurements. Use in combination with `phenomenon`.
+ * @apiParam {String} phenomenon A specific sensor phenomenon such as temperature, humidity or UV intensity. Use in combination with `date`.
+ * @apiSampleRequest http://opensensemap.org:8000/boxes
+ * @apiSampleRequest http://opensensemap.org:8000/boxes?date=2015-03-07T02:50Z&phenomenon=Temperatur
+ */
+function findAllBoxes(req, res , next){
+  var activityAroundDate = (typeof req.params["date"] === 'undefined' || req.params["date"] === "") ? undefined : req.params["date"];
+  var phenomenon = (typeof req.params["phenomenon"] === 'undefined' || req.params["phenomenon"] === "") ? undefined : req.params["phenomenon"];
+
+  var fromDate = moment.utc(activityAroundDate).subtract(10, 'hours').toDate();
+  var toDate = moment.utc(activityAroundDate).add(10, 'hours').toDate();
+
+  // prepare query & callback
+  var boxQry = Box.find({}).populate('sensors.lastMeasurement');
+  var boxQryCallback = function(err, boxes){
+
+    var pp = [];
+    // extend/update 'lastMeasurement' to the queried date
+    if(activityAroundDate !== undefined && phenomenon !== undefined) {
+      boxes.forEach(function(box){
+        box.sensors.forEach(function(sensor){
+          pp.push(
+            Measurement.findOne({
+              sensor_id: sensor._id,
+              createdAt: { 
+                "$gt": fromDate,
+                "$lt": toDate
+              }
+            }).lean().exec()
+          );
+        });
+      });
+    }
+
+    Promise.all(pp).then(function(thatresult){
+      if(activityAroundDate !== undefined && phenomenon !== undefined) {
+        var _boxes = boxes.slice();
+        // TODO: too many loops
+        _boxes.forEach(function(box){
+          box.sensors.forEach(function(sensor){
+            thatresult.forEach(function(thisresult){
+              if(thisresult !== null){
+                if(sensor.lastMeasurement && thisresult._id === sensor.lastMeasurement._id) {
+                  sensor.lastMeasurement = thisresult;
+                }
+              }
+            });
+          });
+        });
+        return(_boxes);
+      }
+      return(boxes);
+    }).then(function(resultset){
+      if (req.params[1] === "json" || req.params[1] === undefined) {
+        res.send(resultset);
+      } else if (req.params[1] === "geojson") {
+        tmp = JSON.stringify(resultset);
+        tmp = JSON.parse(tmp);
+        var geojson = _.transform(tmp, function(result, n) {
+          lat = n.loc[0].geometry.coordinates[1];
+          lng = n.loc[0].geometry.coordinates[0];
+          delete n["loc"];
+          n["lat"] = lat;
+          n["lng"] = lng;
+          return result.push(n);
+        });
+        res.send(GeoJSON.parse(geojson, {Point: ['lat','lng']}));
+      }
+
+    });
+  };
+
+  // if date and phenom. are specified then filter boxes,
+  // otherwise show all boxes
+  if(activityAroundDate && phenomenon) {
+    Measurement.find({
+      createdAt: { 
+        "$gt": fromDate,
+        "$lt": toDate
+      }
+    }).lean().distinct('sensor_id', function(err,measurements){
+      boxQry = Box.find({
+        "sensors._id": {
+          "$in": measurements
+        }
+      }).populate('sensors.lastMeasurement');
+      boxQry.exec(boxQryCallback);
+    });
+  } else {
+    boxQry.exec(boxQryCallback);
+  }
 }
 
 /**
@@ -619,7 +740,7 @@ function postNewBox(req, res, next) {
 
           } catch (e) {
             log.error(e);
-            return res.send(500, JSON.stringify('An error occured'));
+            return res.status(500).send(JSON.stringify('An error occured'));
           }
 
 
@@ -671,11 +792,11 @@ function sendWelcomeMail(user, box) {
     ]
   }, function(err, info){
     if(err){
-      log.error("Email error")
-      log.error(err)
+      log.error("Email error");
+      log.error(err);
     }
     if(info){
-      log.debug("Email sent successfully")
+      log.debug("Email sent successfully");
     }
   });
 }
@@ -716,11 +837,11 @@ function sendYeahMail(user, box) {
     
   }, function(err, info){
     if(err){
-      log.error("Email error")
-      log.error(err)
+      log.error("Email error");
+      log.error(err);
     }
     if(info){
-      log.debug("Email sent successfully")
+      log.debug("Email sent successfully");
     }
   });
 }

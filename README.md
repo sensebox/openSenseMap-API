@@ -14,7 +14,7 @@ The API has been built as part of my bachelor thesis at the ifgi (Institute for 
 
 ### Install dependencies (Ubuntu)
 
-It is assumed that you have installed node.js (developed using 0.10.26)
+It is assumed that you have installed node.js (developed using 0.10.26).
 
 Install MongoDB according to [the manual](http://docs.mongodb.org/manual/installation/) and create the database "OSeM-api".
 
@@ -24,7 +24,7 @@ Database "OSeM-api"
   - Collections
     - boxes
     - measurements
-    - sensors
+    - users
 ```
 
 ### Run for Development & Production
