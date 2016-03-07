@@ -434,19 +434,19 @@ function findAllBoxes(req, res , next){
   var activityAroundDate = (typeof req.params["date"] === 'undefined' || req.params["date"] === "") ? undefined : req.params["date"];
   var phenomenon = (typeof req.params["phenomenon"] === 'undefined' || req.params["phenomenon"] === "") ? undefined : req.params["phenomenon"];
 
-  var fromDate = moment.utc(activityAroundDate).subtract(10, 'hours').toDate();
-  var toDate = moment.utc(activityAroundDate).add(10, 'hours').toDate();
+  var fromDate = moment.utc(activityAroundDate).subtract(2, 'hours').toDate();
+  var toDate = moment.utc(activityAroundDate).add(2, 'hours').toDate();
 
   // prepare query & callback
   var boxQry = Box.find({}).populate('sensors.lastMeasurement');
   var boxQryCallback = function(err, boxes){
 
-    var pp = [];
     // extend/update 'lastMeasurement' to the queried date
+    var sensorQrys = [];
     if(activityAroundDate !== undefined && phenomenon !== undefined) {
       boxes.forEach(function(box){
         box.sensors.forEach(function(sensor){
-          pp.push(
+          sensorQrys.push(
             Measurement.findOne({
               sensor_id: sensor._id,
               createdAt: { 
@@ -459,7 +459,9 @@ function findAllBoxes(req, res , next){
       });
     }
 
-    Promise.all(pp).then(function(thatresult){
+    Promise.all(sensorQrys).then(function(thatresult){
+      // merge 'old' data that was queried according to the date/timestamp into the box result set
+      // by replacing the "lastMeasurement" attribute's values with one fitting the query
       if(activityAroundDate !== undefined && phenomenon !== undefined) {
         var _boxes = boxes.slice();
         // TODO: too many loops
@@ -467,8 +469,10 @@ function findAllBoxes(req, res , next){
           box.sensors.forEach(function(sensor){
             thatresult.forEach(function(thisresult){
               if(thisresult !== null){
-                if(sensor.lastMeasurement && thisresult._id === sensor.lastMeasurement._id) {
-                  sensor.lastMeasurement = thisresult;
+                if(sensor.lastMeasurement){
+                  if(thisresult.sensor_id.toString() == sensor._id.toString()) {
+                    sensor.lastMeasurement = thisresult;
+                  }
                 }
               }
             });
@@ -499,7 +503,7 @@ function findAllBoxes(req, res , next){
 
   // if date and phenom. are specified then filter boxes,
   // otherwise show all boxes
-  if(activityAroundDate && phenomenon) {
+  if(activityAroundDate !== undefined && phenomenon !== undefined) {
     Measurement.find({
       createdAt: { 
         "$gt": fromDate,
