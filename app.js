@@ -200,10 +200,10 @@ function updateBox(req, res, next) {
       Box.findById(req.params.boxId, function (err, box) {
         if (err) return handleError(err);
         log.debug(req.params);
-        if (req.params.tmpSensorName !== undefined) {
+        if (typeof req.params.tmpSensorName !== 'undefined') {
           box.set({name: req.params.tmpSensorName});
         }
-        if (req.params.image !== undefined) {
+        if (typeof req.params.image !== 'undefined') {
           var data = req.params.image.toString();
           var imageBuffer = decodeBase64Image(data);
           fs.writeFile(cfg.imageFolder+""+req.params.boxId+'.jpeg', imageBuffer.data, function(err){
@@ -443,7 +443,7 @@ function findAllBoxes(req, res , next){
 
     // extend/update 'lastMeasurement' to the queried date
     var sensorQrys = [];
-    if(activityAroundDate !== undefined && phenomenon !== undefined) {
+    if(typeof activityAroundDate !== 'undefined' && typeof phenomenon !== 'undefined') {
       boxes.forEach(function(box){
         box.sensors.forEach(function(sensor){
           sensorQrys.push(
@@ -462,7 +462,7 @@ function findAllBoxes(req, res , next){
     Promise.all(sensorQrys).then(function(thatresult){
       // merge 'old' data that was queried according to the date/timestamp into the box result set
       // by replacing the "lastMeasurement" attribute's values with one fitting the query
-      if(activityAroundDate !== undefined && phenomenon !== undefined) {
+      if(typeof activityAroundDate !== 'undefined' && typeof phenomenon !== 'undefined') {
         var _boxes = boxes.slice();
         // TODO: too many loops
         _boxes.forEach(function(box){
@@ -482,7 +482,7 @@ function findAllBoxes(req, res , next){
       }
       return(boxes);
     }).then(function(resultset){
-      if (req.params[1] === "json" || req.params[1] === undefined) {
+      if (req.params[1] === "json" || typeof req.params[1] === 'undefined') {
         res.send(resultset);
       } else if (req.params[1] === "geojson") {
         tmp = JSON.stringify(resultset);
@@ -503,7 +503,7 @@ function findAllBoxes(req, res , next){
 
   // if date and phenom. are specified then filter boxes,
   // otherwise show all boxes
-  if(activityAroundDate !== undefined && phenomenon !== undefined) {
+  if(typeof activityAroundDate !== 'undefined' && typeof phenomenon !== 'undefined') {
     Measurement.find({
       createdAt: { 
         "$gt": fromDate,
@@ -575,7 +575,7 @@ function findBox(req, res, next) {
     Box.findOne({_id: id}).populate('sensors.lastMeasurement').exec(function(error,box){
       if (error) return next(new restify.InvalidArgumentError(JSON.stringify(error.errors)));
       if (box) {
-        if (format === "json" || format === undefined) {
+        if (format === "json" || typeof format === 'undefined') {
           res.send(box);
         } else if (format === "geojson") {
           tmp = JSON.stringify(box);
