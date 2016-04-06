@@ -421,29 +421,37 @@ function postNewMeasurements(req, res, next) {
 }
 
 /**
- * @api {get} /boxes?date=:date&phenomenon=:phenomenon Get all SenseBoxes. With the optional `date` and `phenomenon` parameters you can find SenseBoxes that have submitted data around that time, +/- 1 hours.
+ * @api {get} /boxes?date=:date&phenomenon=:phenomenon Get all SenseBoxes. With the optional `date` and `phenomenon` parameters you can find SenseBoxes that have submitted data around that time, +/- 2 hours, or specify two dates separated by a comma.
  * @apiName findAllBoxes
  * @apiGroup Boxes
  * @apiVersion 0.1.0
  * @apiParam {String} date A date or datetime (UTC) where a station should provide measurements. Use in combination with `phenomenon`.
- * @apiParam {String} phenomenon A specific sensor phenomenon such as temperature, humidity or UV intensity. Use in combination with `date`.
+ * @apiParam {String} phenomenon A sensor phenomenon (determined by sensor name) such as temperature, humidity or UV intensity. Use in combination with `date`.
  * @apiSampleRequest http://opensensemap.org:8000/boxes
  * @apiSampleRequest http://opensensemap.org:8000/boxes?date=2015-03-07T02:50Z&phenomenon=Temperatur
+ * @apiSampleRequest http://opensensemap.org:8000/boxes?date=2015-03-07T02:50Z,2015-04-07T02:50Z&phenomenon=Temperatur
  */
 function findAllBoxes(req, res , next){
   var activityAroundDate = (typeof req.params["date"] === 'undefined' || req.params["date"] === "") ? undefined : req.params["date"];
   var phenomenon = (typeof req.params["phenomenon"] === 'undefined' || req.params["phenomenon"] === "") ? undefined : req.params["phenomenon"];
+  var fromDate,
+      toDate,
+      dates;
 
-  var fromDate = moment.utc(activityAroundDate).subtract(2, 'hours').toDate();
-  var toDate = moment.utc(activityAroundDate).add(2, 'hours').toDate();
+  if(activityAroundDate && (dates = activityAroundDate.split(',')) && dates.length===2 && moment(dates[0]).isBefore(dates[1])){ // moment().isBefore() will check the date's validities as well
+    fromDate = moment.utc(dates[0]).toDate();
+    toDate = moment.utc(dates[1]).toDate();  
+  } else if(moment(activityAroundDate).isValid()) {
+    fromDate = moment.utc(activityAroundDate).subtract(2, 'hours').toDate();
+    toDate = moment.utc(activityAroundDate).add(2, 'hours').toDate();
+  }
 
   // prepare query & callback
   var boxQry = Box.find({}).populate('sensors.lastMeasurement');
   var boxQryCallback = function(err, boxes){
-
     // extend/update 'lastMeasurement' to the queried date
     var sensorQrys = [];
-    if(typeof activityAroundDate !== 'undefined' && typeof phenomenon !== 'undefined') {
+    if(typeof activityAroundDate !== 'undefined'/* && typeof phenomenon !== 'undefined'*/) {
       boxes.forEach(function(box){
         box.sensors.forEach(function(sensor){
           sensorQrys.push(
@@ -462,7 +470,7 @@ function findAllBoxes(req, res , next){
     Promise.all(sensorQrys).then(function(thatresult){
       // merge 'old' data that was queried according to the date/timestamp into the box result set
       // by replacing the "lastMeasurement" attribute's values with one fitting the query
-      if(typeof activityAroundDate !== 'undefined' && typeof phenomenon !== 'undefined') {
+      if(typeof activityAroundDate !== 'undefined'/* && typeof phenomenon !== 'undefined'*/) {
         var _boxes = boxes.slice();
         // TODO: too many loops
         _boxes.forEach(function(box){
@@ -503,7 +511,7 @@ function findAllBoxes(req, res , next){
 
   // if date and phenom. are specified then filter boxes,
   // otherwise show all boxes
-  if(typeof activityAroundDate !== 'undefined' && typeof phenomenon !== 'undefined') {
+  if(typeof activityAroundDate !== 'undefined'/* && typeof phenomenon !== 'undefined'*/) {
     Measurement.find({
       createdAt: { 
         "$gt": fromDate,
