@@ -91,6 +91,7 @@ var Measurement = mongoose.model('Measurement', measurementSchema);
 var Box = mongoose.model('Box', boxSchema);
 var Sensor = mongoose.model('Sensor', sensorSchema);
 var User = mongoose.model('User', userSchema);
+var Location = mongoose.model('Location', LocationSchema);
 
 var PATH = '/boxes';
 var userPATH = 'users';
@@ -102,18 +103,23 @@ server.pre(function (request,response,next) {
 
 // GET 
 server.get({path : PATH , version : '0.0.1'} , findAllBoxes);
-server.get({path : /(boxes)\.([a-z]+)/, version : '0.0.1'} , findAllBoxes);
+server.get({path : /(boxes)\.([a-z]+)/, version : '0.1.0'} , findAllBoxes);
 server.get({path : PATH +'/:boxId' , version : '0.0.1'} , findBox);
 server.get({path : PATH +'/:boxId/sensors', version : '0.0.1'}, getMeasurements);
 server.get({path : PATH +'/:boxId/data/:sensorId', version : '0.0.1'}, getData);
 server.get({path : userPATH +'/:boxId', version : '0.0.1'}, validApiKey);
+server.get({path : PATH +'/:boxId/script', version : '0.1.0'}, getScript);
 
 // POST
-server.post({path : PATH , version: '0.0.1'} ,postNewBox);
+server.post({path : PATH , version: '0.0.1'}, postNewBox);
 server.post({path : PATH +'/:boxId/:sensorId' , version : '0.0.1'}, postNewMeasurement);
+server.post({path : PATH +'/:boxId/data' , version : '0.1.0'}, postNewMeasurements);
 
 // PUT
-server.put({path: PATH + '/:boxId' , version: '0.0.1'} , updateBox);
+server.put({path: PATH + '/:boxId' , version: '0.1.0'} , updateBox);
+
+// DELETE
+server.del({path: PATH + '/:boxId' , version: '0.1.0'} , deleteBox);
 
 function unknownMethodHandler(req, res) {
   if (req.method.toLowerCase() === 'options') {
@@ -148,7 +154,7 @@ server.on('MethodNotAllowed', unknownMethodHandler);
  * @apiSuccess {String} ApiKey is valid!
  * @apiVersion 0.0.1
  * @apiGroup Boxes
- * @apiName updateBox
+ * @apiName validApiKey
  */
 function validApiKey (req,res,next) {
   User.findOne({apikey:req.headers['x-apikey']}, function (error, user) {
@@ -187,11 +193,47 @@ function decodeBase64Image(dataString) {
  *   {
  *     'X-ApiKey':54d3a96d5438b4440913434b
  *   }
+ * @apiSampleRequest
+ * {
+ *  "_id": "56e741ff933e450c0fe2f705",
+ *  "name": "MeineBox",
+ *  "sensors": [
+ *    {
+ *      "_id": "56e741ff933e450c0fe2f707",
+ *      "title": "UV-Intensität",
+ *      "unit": "μW/cm²",
+ *      "sensorType": "VEML6070",
+ *    }
+ *  ],
+ *  "grouptag": "vcxyxsdf",
+ *  "exposure": "outdoor",
+ *  "loc": {
+ *    "lng": 8.6956,
+ *    "lat": 50.0430
+ *  }
+ * }
  * @apiVersion 0.0.1
  * @apiGroup Boxes
  * @apiName updateBox
  */
+function deleteBox(req, res, next) {
+  res.send(200, 'ok');
+}
 function updateBox(req, res, next) {
+  /*
+  var newBoxData = {
+    _id: $scope.editingMarker._id,
+    name: $scope.editingMarker.name,
+    sensors: $scope.editingMarker.sensors,
+    description: $scope.editingMarker.description,
+    weblink: $scope.editingMarker.weblink,
+    grouptag: $scope.editingMarker.grouptag,
+    exposure: $scope.editingMarker.exposure,
+    loc: $scope.editMarker.m1,
+    image: imgsrc
+  };
+  */
+
   User.findOne({apikey:req.headers["x-apikey"]}, function (error, user) {
     if (error) {
       res.send(400, 'ApiKey not existing!');
@@ -199,29 +241,51 @@ function updateBox(req, res, next) {
     if (user.boxes.indexOf(req.params.boxId) !== -1) {
       Box.findById(req.params.boxId, function (err, box) {
         if (err) return handleError(err);
-        log.debug(req.params);
-        if (typeof req.params.tmpSensorName !== 'undefined') {
-          box.set({name: req.params.tmpSensorName});
+
+        if (typeof req.params.name !== 'undefined' && req.params.name !== "") {
+          if(box.name !== req.params.name)
+            box.set({name: req.params.name});
         }
-        if (typeof req.params.image !== 'undefined') {
+        if (typeof req.params.exposure !== 'undefined' && req.params.exposure !== "") {
+          if(box.exposure !== req.params.exposure)
+            box.set({exposure: req.params.exposure});
+        }
+        if (typeof req.params.grouptag !== 'undefined' && req.params.grouptag !== "") {
+          if(box.grouptag !== req.params.grouptag)
+            box.set({grouptag: req.params.grouptag});
+        }
+        if (typeof req.params.weblink !== 'undefined' && req.params.weblink !== "") {
+          if(box.weblink !== req.params.weblink)
+            box.set({weblink: req.params.weblink});
+        }
+        if (typeof req.params.description !== 'undefined' && req.params.description !== "") {
+          if(box.description !== req.params.description)
+            box.set({description: req.params.description});
+        }
+        if (typeof req.params.loc !== 'undefined' && req.params.loc !== "") {
+          if(String(box.loc[0].geometry.coordinates[0]) !== req.params.loc.lng || String(box.loc[0].geometry.coordinates[1]) !== req.params.loc.lat){
+            box.loc[0].geometry.coordinates = [req.params.loc.lng, req.params.loc.lat];
+          }
+        }
+        if (typeof req.params.image !== 'undefined' && req.params.image !== "") {
           var data = req.params.image.toString();
           var imageBuffer = decodeBase64Image(data);
-          fs.writeFile(cfg.imageFolder+""+req.params.boxId+'.jpeg', imageBuffer.data, function(err){
-            if (err) return new Error(err);
-            box.set({image:req.params.boxId+'.jpeg'});
-            box.save(function (err) {
-              if (err) return handleError(err);
-              res.send(box);
-            });
-          });
-        } else {
-          box.set({image:""});
-        }
+          var extension = (imageBuffer.type === 'image/jpeg') ? '.jpg' : '.png';
+          //fs.writeFile('message.txt', 'Hello Node.js', 'utf8', callback);
+          try {
+            fs.writeFileSync(cfg.imageFolder+""+req.params.boxId+extension, imageBuffer.data);
+            box.set({image: req.params.boxId+extension});
+          } catch(e) {
+            if (err) return handleError(e);
+          }
+        } 
         box.save(function (err) {
           if (err) return handleError(err);
           res.send(box);
         });
       });
+
+
     } else {
      res.send(400, 'ApiKey does not match SenseBoxID');
     }
@@ -286,6 +350,7 @@ function getData(req, res, next) {
   .lean()
   .exec(function(error,sensorData){
     if (error) {
+      console.log(error);
       return next(new restify.InvalidArgumentError(JSON.stringify(error.errors)));
     } else {
       // only return every nth element
@@ -442,8 +507,8 @@ function findAllBoxes(req, res , next){
     fromDate = moment.utc(dates[0]).toDate();
     toDate = moment.utc(dates[1]).toDate();  
   } else if(moment(activityAroundDate).isValid()) {
-    fromDate = moment.utc(activityAroundDate).subtract(2, 'hours').toDate();
-    toDate = moment.utc(activityAroundDate).add(2, 'hours').toDate();
+    fromDate = moment.utc(activityAroundDate).subtract(4, 'hours').toDate();
+    toDate = moment.utc(activityAroundDate).add(4, 'hours').toDate();
   }
 
   // prepare query & callback
@@ -451,7 +516,7 @@ function findAllBoxes(req, res , next){
   var boxQryCallback = function(err, boxes){
     // extend/update 'lastMeasurement' to the queried date
     var sensorQrys = [];
-    if(typeof activityAroundDate !== 'undefined'/* && typeof phenomenon !== 'undefined'*/) {
+    if(typeof activityAroundDate !== 'undefined') {
       boxes.forEach(function(box){
         box.sensors.forEach(function(sensor){
           sensorQrys.push(
@@ -511,18 +576,27 @@ function findAllBoxes(req, res , next){
 
   // if date and phenom. are specified then filter boxes,
   // otherwise show all boxes
-  if(typeof activityAroundDate !== 'undefined'/* && typeof phenomenon !== 'undefined'*/) {
+  if(typeof activityAroundDate !== 'undefined') {
     Measurement.find({
       createdAt: { 
         "$gt": fromDate,
         "$lt": toDate
       }
     }).lean().distinct('sensor_id', function(err,measurements){
-      boxQry = Box.find({
+      var qry = {
         "sensors._id": {
           "$in": measurements
         }
-      }).populate('sensors.lastMeasurement');
+      };
+      if(typeof phenomenon !== 'undefined'){
+        qry = {
+          "sensors._id": {
+            "$in": measurements
+          },
+          "sensors.title": phenomenon
+        };
+      }
+      boxQry = Box.find(qry).populate('sensors.lastMeasurement');
       boxQry.exec(boxQryCallback);
     });
   } else {
@@ -761,6 +835,26 @@ function postNewBox(req, res, next) {
     }
   });
   next();
+}
+
+// download sensebox script
+function getScript(req, res, next) {
+  User.findOne({apikey:req.headers["x-apikey"]}, function (error, user) {
+    if (error) {
+      res.send(400, 'ApiKey not existing!');
+    }
+    if (user.boxes.indexOf(req.params.boxId) !== -1) {
+      Box.findById(req.params.boxId, function (err, box) {
+        if (error) {
+          res.send(400, 'No such box');
+        }
+
+        var script = fs.readFileSync(cfg.targetFolder+""+box._id+".ino", encoding = 'utf8');
+        return res.send(200, script);
+      });
+    }
+  });
+  
 }
 
 // Send box script to user via email

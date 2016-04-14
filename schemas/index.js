@@ -23,7 +23,6 @@ var LocationSchema = new Schema({
   },
   properties: Schema.Types.Mixed
 });
-
 LocationSchema.index({ 'geometry' : '2dsphere' });
 
 var measurementSchema = new Schema({
@@ -62,6 +61,7 @@ var sensorSchema = new Schema({
     ref: 'Measurement'
   }
 });
+sensorSchema.plugin(timestamp);
 
 //SenseBox schema
 var boxSchema = new Schema({
@@ -87,6 +87,14 @@ var boxSchema = new Schema({
     required: false
   },
   model: {
+    type: String,
+    required: false
+  },
+  weblink: {
+    type: String,
+    required: false
+  },
+  description: {
     type: String,
     required: false
   },
