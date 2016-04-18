@@ -6,7 +6,9 @@ var restify = require('restify'),
   products = require('./products'),
   cfg = require('./config'),
   schemas = require('./schemas'),
-  json2csv = require('json2csv'),
+  //json2csv = require('json2csv'),
+  csvstringify = require('csv-stringify'),
+  csvgenerate = require('csv-generate'),
   Stream = require('stream'),
   nodemailer = require('nodemailer'),
   smtpTransport = require('nodemailer-smtp-transport'),
@@ -324,6 +326,7 @@ function getMeasurements(req, res, next) {
  * @apiParam {String} format Can be 'JSON' (default) or 'CSV' (default: JSON)
  */
 function getData(req, res, next) {
+  'use strict'
   // default to now
   var toDate = (typeof req.params["to-date"] == 'undefined' || req.params["to-date"] == "") ? new Date() : new Date(req.params["to-date"]);
   // default to 24 hours earlier
@@ -342,13 +345,33 @@ function getData(req, res, next) {
   var queryLimit = 100000;
   var resultLimit = 1000;
 
+  var generator = csvstringify({columns: ['createdAt', 'value']});
+  var stringifier = csvstringify({header: 1, delimiter: ';'});
+
   Measurement.find({
       sensor_id: req.params.sensorId,
       createdAt: { $gte: new Date(fromDate), $lte: new Date(toDate) }
     },{"createdAt":1, "value":1, "_id": 0}) // do not send _id column
   .limit(queryLimit)
   .lean()
-  .exec(function(error,sensorData){
+  //.stream({ transform: JSON.stringify })
+  .stream({
+      // http://stackoverflow.com/a/34485539/1781026
+      transform: () => {
+          let index = 0;
+          return (data) => {
+              return (!(index++) ? '[' : ',') + JSON.stringify(data);
+          };
+      }() // invoke
+  })
+  .on('end', () => {
+      res.write(']');
+  })
+  //.stream()
+  //.pipe(stringifier)
+  .pipe(res);
+
+  /*.exec(function(error,sensorData){
     if (error) {
       console.log(error);
       return next(new restify.InvalidArgumentError(JSON.stringify(error.errors)));
@@ -388,7 +411,7 @@ function getData(req, res, next) {
       }
 
     }
-  });
+  });*/
 }
 
 
