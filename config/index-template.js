@@ -1,3 +1,4 @@
+exports.port = 8000;
 exports.targetFolder = '/var/OpenSenseMap-API/usersketches/';
 exports.imageFolder = '/var/www/OpenSenseMap/app/userimages/';
 exports.dbhost = 'localhost';

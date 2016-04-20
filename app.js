@@ -109,13 +109,16 @@ server.get({path : /(boxes)\.([a-z]+)/, version : '0.1.0'} , findAllBoxes);
 server.get({path : PATH +'/:boxId' , version : '0.0.1'} , findBox);
 server.get({path : PATH +'/:boxId/sensors', version : '0.0.1'}, getMeasurements);
 server.get({path : PATH +'/:boxId/data/:sensorId', version : '0.0.1'}, getData);
+server.get({path : PATH +'/data', version : '0.1.0'}, getDataMulti);
 server.get({path : userPATH +'/:boxId', version : '0.0.1'}, validApiKey);
 server.get({path : PATH +'/:boxId/script', version : '0.1.0'}, getScript);
+server.get({path : '/stats', version : '0.1.0'}, getStatistics);
 
 // POST
 server.post({path : PATH , version: '0.0.1'}, postNewBox);
 server.post({path : PATH +'/:boxId/:sensorId' , version : '0.0.1'}, postNewMeasurement);
 server.post({path : PATH +'/:boxId/data' , version : '0.1.0'}, postNewMeasurements);
+server.post({path : PATH +'/data', version : '0.1.0'}, getDataMulti);
 
 // PUT
 server.put({path: PATH + '/:boxId' , version: '0.1.0'} , updateBox);
@@ -218,21 +221,18 @@ function decodeBase64Image(dataString) {
  * @apiGroup Boxes
  * @apiName updateBox
  */
-function deleteBox(req, res, next) {
-  res.send(200, 'ok');
-}
 function updateBox(req, res, next) {
   /*
   var newBoxData = {
-    _id: $scope.editingMarker._id,
-    name: $scope.editingMarker.name,
-    sensors: $scope.editingMarker.sensors,
-    description: $scope.editingMarker.description,
-    weblink: $scope.editingMarker.weblink,
-    grouptag: $scope.editingMarker.grouptag,
-    exposure: $scope.editingMarker.exposure,
-    loc: $scope.editMarker.m1,
-    image: imgsrc
+    _id
+    name
+    sensors
+    description
+    weblink
+    grouptag
+    exposure
+    loc
+    image
   };
   */
 
@@ -240,29 +240,30 @@ function updateBox(req, res, next) {
     if (error) {
       res.send(400, 'ApiKey not existing!');
     }
+    var qrys = [];
     if (user.boxes.indexOf(req.params.boxId) !== -1) {
       Box.findById(req.params.boxId, function (err, box) {
         if (err) return handleError(err);
 
         if (typeof req.params.name !== 'undefined' && req.params.name !== "") {
           if(box.name !== req.params.name)
-            box.set({name: req.params.name});
+            qrys.push(box.set({name: req.params.name}));
         }
         if (typeof req.params.exposure !== 'undefined' && req.params.exposure !== "") {
           if(box.exposure !== req.params.exposure)
-            box.set({exposure: req.params.exposure});
+            qrys.push(box.set({exposure: req.params.exposure}));
         }
         if (typeof req.params.grouptag !== 'undefined' && req.params.grouptag !== "") {
           if(box.grouptag !== req.params.grouptag)
-            box.set({grouptag: req.params.grouptag});
+            qrys.push(box.set({grouptag: req.params.grouptag}));
         }
         if (typeof req.params.weblink !== 'undefined' && req.params.weblink !== "") {
           if(box.weblink !== req.params.weblink)
-            box.set({weblink: req.params.weblink});
+            qrys.push(box.set({weblink: req.params.weblink}));
         }
         if (typeof req.params.description !== 'undefined' && req.params.description !== "") {
           if(box.description !== req.params.description)
-            box.set({description: req.params.description});
+            qrys.push(box.set({description: req.params.description}));
         }
         if (typeof req.params.loc !== 'undefined' && req.params.loc !== "") {
           if(String(box.loc[0].geometry.coordinates[0]) !== req.params.loc.lng || String(box.loc[0].geometry.coordinates[1]) !== req.params.loc.lat){
@@ -276,18 +277,40 @@ function updateBox(req, res, next) {
           //fs.writeFile('message.txt', 'Hello Node.js', 'utf8', callback);
           try {
             fs.writeFileSync(cfg.imageFolder+""+req.params.boxId+extension, imageBuffer.data);
-            box.set({image: req.params.boxId+extension});
+            qrys.push(box.set({image: req.params.boxId+extension}));
           } catch(e) {
             if (err) return handleError(e);
           }
         } 
-        box.save(function (err) {
-          if (err) return handleError(err);
+        if (typeof req.params.sensors !== 'undefined' && req.params.sensors.length>0) {
+          req.params.sensors.forEach(function(updatedsensor){
+            if(updatedsensor.deleted){
+              qrys.push(Measurement.find({ sensor_id: updatedsensor._id }).remove());
+              qrys.push(Box.update({'sensors._id': mongoose.Types.ObjectId(updatedsensor._id)},
+                { $pull: { 'sensors': { _id: mongoose.Types.ObjectId(updatedsensor._id) } } 
+              }));
+            } else if(updatedsensor.edited && updatedsensor.new) {
+              var newsensor = new Sensor({
+                'title': updatedsensor.title,
+                'unit': updatedsensor.unit,
+                'sensorType': updatedsensor.sensorType
+              });
+              box.sensors.push(newsensor);
+            }else if(updatedsensor.edited && !updatedsensor.deleted){
+              qrys.push(Box.update({'sensors._id': mongoose.Types.ObjectId(updatedsensor._id)}, {'$set': {
+                  'sensors.$.title': updatedsensor.title,
+                  'sensors.$.unit': updatedsensor.unit,
+                  'sensors.$.sensorType': updatedsensor.sensorType
+              }}));
+            }
+          });
+        }
+        qrys.push(box.save());
+        Promise.all(qrys).then(function(){
+          genScript(box);
           res.send(box);
         });
       });
-
-
     } else {
      res.send(400, 'ApiKey does not match SenseBoxID');
     }
@@ -329,8 +352,8 @@ function getData(req, res, next) {
   'use strict'
   // default to now
   var toDate = (typeof req.params["to-date"] == 'undefined' || req.params["to-date"] == "") ? new Date() : new Date(req.params["to-date"]);
-  // default to 24 hours earlier
-  var fromDate = (typeof req.params["from-date"] == 'undefined' || req.params["from-date"] == "") ? new Date(toDate.valueOf() - 1000*60*60*24*15) : new Date(req.params["from-date"]);
+  // default to 48 hours earlier
+  var fromDate = (typeof req.params["from-date"] == 'undefined' || req.params["from-date"] == "") ? new Date(toDate.valueOf() - 1000*60*60*48) : new Date(req.params["from-date"]);
   var format = (typeof req.params["format"] == 'undefined') ? "json" : req.params["format"].toLowerCase();
 
   log.debug(fromDate, "to", toDate);
@@ -342,78 +365,133 @@ function getData(req, res, next) {
     return next(new restify.InvalidArgumentError(JSON.stringify('Please choose a time frame up to 31 days maximum')));
   }
 
-  var queryLimit = 100000;
-  var resultLimit = 1000;
+  var queryLimit = 10000;
+  var resultLimit = 10000;
 
   var generator = csvstringify({columns: ['createdAt', 'value']});
   var stringifier = csvstringify({header: 1, delimiter: ';'});
 
-  Measurement.find({
-      sensor_id: req.params.sensorId,
-      createdAt: { $gte: new Date(fromDate), $lte: new Date(toDate) }
-    },{"createdAt":1, "value":1, "_id": 0}) // do not send _id column
-  .limit(queryLimit)
-  .lean()
-  //.stream({ transform: JSON.stringify })
-  .stream({
-      // http://stackoverflow.com/a/34485539/1781026
-      transform: () => {
-          let index = 0;
-          return (data) => {
-              return (!(index++) ? '[' : ',') + JSON.stringify(data);
-          };
-      }() // invoke
-  })
-  .on('end', () => {
-      res.write(']');
-  })
-  //.stream()
-  //.pipe(stringifier)
-  .pipe(res);
+  var qry = {
+    sensor_id: req.params.sensorId,
+    createdAt: { $gte: new Date(fromDate), $lte: new Date(toDate) }
+  };
 
-  /*.exec(function(error,sensorData){
-    if (error) {
-      console.log(error);
-      return next(new restify.InvalidArgumentError(JSON.stringify(error.errors)));
-    } else {
-      // only return every nth element
-      // TODO: equally distribute data over time instead
-      if(sensorData.length > resultLimit) {
-        var limitedResult = [];
-        var returnEveryN = Math.ceil(sensorData.length/resultLimit);
-        log.info("returnEveryN ", returnEveryN);
-        log.info("old sensorData length:", sensorData.length);
-        for(var i=0; i<sensorData.length; i++) {
-          if(i%returnEveryN == 0) {
-            limitedResult.push( sensorData[i] )
-          }
-        }
-        sensorData = limitedResult;
-        log.info("new sensorData length:", sensorData.length);
-      }
+  if(format == "csv") {
+    res.header('Content-Type', 'text/csv');
+    res.header('Content-Disposition', 'attachment; filename='+req.params.sensorId+'.csv');
 
-      if(typeof req.params["download"] != 'undefined' && req.params["download"]=="true"){
-        // offer download to browser
-        res.header('Content-Disposition', 'attachment; filename='+req.params.sensorId+'.'+format);
-      }
-
-      if(format == "csv") {
-        // send CSV
-        json2csv({data: sensorData, fields: ['createdAt', 'value']}, function(err, csv) {
-          if (err) log.error(err);
-          res.header('Content-Type', 'text/csv');
-          res.header('Content-Disposition', 'attachment; filename='+req.params.sensorId+'.csv');
-          res.send(201, csv);
-        });
-      } else {
-        // send JSON
-        res.send(201, sensorData);
-      }
-
+    Measurement.find(qry,{"createdAt":1, "value":1, "_id": 0}) // do not send _id column
+    .limit(queryLimit)
+    .lean()
+    .stream()
+    .pipe(stringifier)
+    .pipe(res);
+  } else {
+    if(typeof req.params["download"] != 'undefined' && req.params["download"]=="true"){
+      // offer download to browser
+      res.header('Content-Disposition', 'attachment; filename='+req.params.sensorId+'.'+format);
     }
-  });*/
+    Measurement.find(qry,{"createdAt":1, "value":1, "_id": 0}) // do not send _id column
+    .limit(queryLimit)
+    .lean()
+    .stream({ // http://stackoverflow.com/a/34485539/1781026
+      transform: () => {
+        let index = 0;
+        return (data) => {
+          return (!(index++) ? '[' : ',') + JSON.stringify(data);
+        };
+      }() // invoke
+    })
+    .on('end', () => {
+        res.write(']');
+    })
+    .pipe(res);
+  }
 }
 
+/**
+ * @api {get,post} /boxes/data?boxid=:boxIdsfrom-date=:fromDate&to-date:toDate&phenomenon=:phenomenon Get last n measurements for a sensor
+ * @apiDescription Download data from multiple boxes as CSV
+ * @apiVersion 0.1.0
+ * @apiGroup Measurements
+ * @apiName getDataMulti
+ * @apiParam {ID} boxId Comma separated list of SenseBox unique IDs.
+ */
+function getDataMulti(req, res, next) {
+  'use strict'
+
+  // default to now
+  var toDate = (typeof req.params["to-date"] == 'undefined' || req.params["to-date"] == "") ? new Date() : new Date(req.params["to-date"]);
+  // default to 24 hours earlier
+  var fromDate = (typeof req.params["from-date"] == 'undefined' || req.params["from-date"] == "") ? new Date(toDate.valueOf() - 1000*60*60*24*15) : new Date(req.params["from-date"]);
+
+  if (toDate.valueOf() < fromDate.valueOf()) {
+    return next(new restify.InvalidArgumentError(JSON.stringify('Invalid time frame specified')));
+  }
+  if (toDate.valueOf()-fromDate.valueOf() > 1000*60*60*24*32) {
+    return next(new restify.InvalidArgumentError(JSON.stringify('Please choose a time frame up to 31 days maximum')));
+  }
+
+  log.debug(fromDate, "to", toDate);
+
+  if(req.params["phenomenon"] && req.params["boxid"]) {
+    res.header('Content-Type', 'text/csv');
+
+    var generator = csvstringify({columns: ['createdAt', 'value']});
+    var stringifier = csvstringify({header: 1, delimiter: ';'});
+
+    var phenom = req.params["phenomenon"].toString();
+    var boxId = req.params["boxid"].toString();
+    var boxIds = boxId.split(',');
+    Box.find({
+      '_id': {
+        '$in': boxIds
+      },
+      'sensors.title': req.params["phenomenon"].toString()
+    })
+    .lean()
+    .exec(function(error,boxData){
+      var sensors = {};
+      for(var i=0; i<boxData.length; i++) {
+        for(var j=0; j<boxData[i].sensors.length; j++){
+          if(boxData[i].sensors[j].title===phenom){
+            sensors[boxData[i].sensors[j]['_id']] = {};
+            sensors[boxData[i].sensors[j]['_id']].lat = boxData[i].loc[0].geometry.coordinates[0];
+            sensors[boxData[i].sensors[j]['_id']].lng = boxData[i].loc[0].geometry.coordinates[1];
+          }
+        }
+      }
+
+      var qry = Measurement.find({
+        'sensor_id': {
+          '$in': Object.keys(sensors)
+        },
+        createdAt: { 
+          "$gt": fromDate,
+          "$lt": toDate
+        }
+      },{"createdAt":1, "value":1, "_id": 0, "sensor_id":1})
+      .lean()
+      .stream({
+        transform: () => {
+          return (data) => {
+            data.lat = sensors[data.sensor_id].lat;
+            data.lng = sensors[data.sensor_id].lng;
+            delete(data.sensor_id);
+            return data;
+          };
+        }()
+      });//{ transform: JSON.stringify }
+      
+      qry
+        .pipe(stringifier)
+        .pipe(res);
+
+    });
+  } else {
+    res.send([]);
+  }
+}
 
 /**
  * @api {post} /boxes/:boxId/:sensorId Post new measurement
@@ -424,88 +502,97 @@ function getData(req, res, next) {
  * @apiParam {ID} boxId SenseBox unique ID.
  * @apiParam {ID} sensorId Sensors unique ID.
  * @apiParamExample Request-Example: 
- * curl --data 'value=22' localhost:8000/boxes/56ccb342eda956582a88e48c/56ccb342eda956582a88e490
- * curl -H 'Content-type:application/json' -d '{"value": 22}' localhost:8000/boxes/56ccb342eda956582a88e48c/56ccb342eda956582a88e490
+ * curl --data value=22 localhost:8000/boxes/56ccb342eda956582a88e48c/56ccb342eda956582a88e490
  */
 function postNewMeasurement(req, res, next) {
   Box.findOne({_id: req.params.boxId}, function(error,box){
     if (error) {
       return next(new restify.InvalidArgumentError(JSON.stringify(error.errors)));
     } else {
-      for (var i = box.sensors.length - 1; i >= 0; i--) {
-        if (box.sensors[i]._id.equals(req.params.sensorId)) {
-
-          var measurementData = {
-            value: req.params.value,
-            _id: mongoose.Types.ObjectId(),
-            sensor_id: req.params.sensorId
-          };
-
-          var measurement = new Measurement(measurementData);
-
-          box.sensors[i].lastMeasurement = measurement._id;
-          box.save(function(error,data){
-            if (error) {
-              return next(new restify.InvalidArgumentError(JSON.stringify(error.errors)));
-            } else {
-              measurement.save(function(error, data, box){
-              if (error) {
-                  return next(new restify.InvalidArgumentError(JSON.stringify(error.errors)));
-                } else {
-                  res.send(201, measurement);
-                }
-              });
-            }
-          });
+      saveMeasurement(box, req.params.sensorId, req.params.value, function(result){
+        if(result){
+          res.send(201,'measurement saved in box');
+        } else {
+          res.send(500,'measurement could not be saved');
         }
-      };
+      });
     }
   });
 }
 
+function saveMeasurement(box, sensorId, value, callback){
+  for (var i = box.sensors.length - 1; i >= 0; i--) {
+    if (box.sensors[i]._id.equals(sensorId)) {
+      var measurementData = {
+        value: value,
+        _id: mongoose.Types.ObjectId(),
+        sensor_id: sensorId
+      };
+
+      var measurement = new Measurement(measurementData);
+
+      box.sensors[i].lastMeasurement = measurement._id;
+      var qrys = [
+        box.save(),
+        measurement.save()
+      ];
+      Promise.all(qrys).then(callback);
+    }
+  };
+}
+
 /**
- * @api {post} /boxes/:boxId/:sensorId Post multiple new measurements
- * @apiDescription Posts a new measurement to a specific sensor of a box.
+ * @api {post} /boxes/:boxId/data Post multiple new measurements
+ * @apiDescription Post multiple new measurements as an JSON array to a box.
  * @apiVersion 0.1.0
  * @apiGroup Measurements
- * @apiName postNewMeasurement
+ * @apiName postNewMeasurements
  * @apiParam {ID} boxId SenseBox unique ID.
- * @apiParam {ID} sensorId Sensors unique ID.
+ * @apiSampleRequest
+ * [{ "sensor": "56cb7c25b66992a02fe389de", "value": "3" },{ "sensor": "56cb7c25b66992a02fe389df", "value": "2" }]
+ * curl -X POST -H 'Content-type:application/json' -d "[{ \"sensor\": \"56cb7c25b66992a02fe389de\", \"value\": \"3\" },{ \"sensor\": \"56cb7c25b66992a02fe389df\", \"value\": \"2\" }]" localhost:8000/boxes/56cb7c25b66992a02fe389d9/data
  */
 function postNewMeasurements(req, res, next) {
-  Box.findOne({_id: req.params.boxId}, function(error,box){
-    if (error) {
-      return next(new restify.InvalidArgumentError(JSON.stringify(error.errors)));
-    } else {
-      for (var i = box.sensors.length - 1; i >= 0; i--) {
-        if (box.sensors[i]._id.equals(req.params.sensorId)) {
+  var data = JSON.parse(req.body);
+  if(data){
+    Box.findOne({_id: req.params.boxId}, function(error,box){
+      if (error) {
+        return next(new restify.InvalidArgumentError(JSON.stringify(error.errors)));
+      } else {
+        saveMeasurementArray(box, data, function(result){
+          if(result){
+            res.send(201,'measurements saved in box');
+          } else {
+            res.send(500,'measurements could not be saved');
+          }
+        });
+      }
+    });
+  } else {
+    res.send(500,'Invalid request');
+  }
+}
 
-          var measurementData = {
-            value: req.params.value,
-            _id: mongoose.Types.ObjectId(),
-            sensor_id: req.params.sensorId
-          };
+function saveMeasurementArray(box, arr, callback){
+  var qrys = [];
+  arr.forEach(function(data){
+    for (var i = box.sensors.length-1; i >= 0; i--) {
+      if (box.sensors[i]._id.equals(data.sensor)) {
+        var measurementData = {
+          value: data.value,
+          _id: mongoose.Types.ObjectId(),
+          sensor_id: data.sensor
+        };
 
-          var measurement = new Measurement(measurementData);
+        var measurement = new Measurement(measurementData);
 
-          box.sensors[i].lastMeasurement = measurement._id;
-          box.save(function(error,data){
-            if (error) {
-              return next(new restify.InvalidArgumentError(JSON.stringify(error.errors)));
-            } else {
-              measurement.save(function(error, data, box){
-              if (error) {
-                  return next(new restify.InvalidArgumentError(JSON.stringify(error.errors)));
-                } else {
-                  res.send(201, measurement);
-                }
-              });
-            }
-          });
-        }
-      };
+        box.sensors[i].lastMeasurement = measurement._id;
+        qrys.push(box.save());
+        qrys.push(measurement.save());
+      }
     }
   });
+  Promise.all(qrys).then(callback);
 }
 
 /**
@@ -798,41 +885,7 @@ function postNewBox(req, res, next) {
           }
 
           try {
-            var output = cfg.targetFolder+""+box._id+".ino";
-            log.debug(output);
-            fs.readFileSync(filename).toString().split('\n').forEach(function (line) {
-              if (line.indexOf("//SenseBox ID") != -1) {
-                fs.appendFileSync(output, line.toString() + "\n");
-                fs.appendFileSync(output, '#define SENSEBOX_ID "'+box._id+'"\n');
-              } else if (line.indexOf("//Sensor IDs") != -1) {
-                fs.appendFileSync(output, line.toString() + "\n");
-                var customSensorindex = 1;
-                for (var i = box.sensors.length - 1; i >= 0; i--) {
-                  var sensor = box.sensors[i];
-                  log.debug(sensor);
-                  if (sensor.title == "Temperatur") {
-                    fs.appendFileSync(output, '#define TEMPSENSOR_ID "'+sensor._id+'"\n');
-                  } else if(sensor.title == "rel. Luftfeuchte") {
-                    fs.appendFileSync(output, '#define HUMISENSOR_ID "'+sensor._id+'"\n');
-                  } else if(sensor.title == "Luftdruck") {
-                    fs.appendFileSync(output, '#define PRESSURESENSOR_ID "'+sensor._id+'"\n');
-                  } else if(sensor.title == "Lautstärke") {
-                    fs.appendFileSync(output, '#define NOISESENSOR_ID "'+sensor._id+'"\n');
-                  } else if(sensor.title == "Helligkeit") {
-                    fs.appendFileSync(output, '#define LIGHTSENSOR_ID "'+sensor._id+'"\n');
-                  } else if (sensor.title == "Beleuchtungsstärke") {
-                    fs.appendFileSync(output, '#define LUXSENSOR_ID "'+sensor._id+'"\n');
-                  } else if (sensor.title == "UV-Intensität") {
-                    fs.appendFileSync(output, '#define UVSENSOR_ID "'+sensor._id+'"\n');
-                  } else {
-                    fs.appendFileSync(output, '#define SENSOR'+customSensorindex+'_ID "'+sensor._id+'" \/\/ '+sensor.title+' \n');
-                    customSensorindex++;
-                  }
-                }
-              } else {
-                fs.appendFileSync(output, line.toString() + "\n");
-              }
-            });
+            genScript(box);
             savedBox = box;
 
             newUser.save( function (err, user) {
@@ -860,7 +913,50 @@ function postNewBox(req, res, next) {
   next();
 }
 
-// download sensebox script
+// generate Arduino script
+function genScript(box) {
+  var output = cfg.targetFolder+""+box._id+".ino";
+  fs.readFileSync(filename).toString().split('\n').forEach(function (line) {
+    if (line.indexOf("//SenseBox ID") != -1) {
+      fs.appendFileSync(output, line.toString() + "\n");
+      fs.appendFileSync(output, '#define SENSEBOX_ID "'+box._id+'"\n');
+    } else if (line.indexOf("//Sensor IDs") != -1) {
+      fs.appendFileSync(output, line.toString() + "\n");
+      var customSensorindex = 1;
+      for (var i = box.sensors.length - 1; i >= 0; i--) {
+        var sensor = box.sensors[i];
+        log.debug(sensor);
+        if (sensor.title == "Temperatur") {
+          fs.appendFileSync(output, '#define TEMPSENSOR_ID "'+sensor._id+'"\n');
+        } else if(sensor.title == "rel. Luftfeuchte") {
+          fs.appendFileSync(output, '#define HUMISENSOR_ID "'+sensor._id+'"\n');
+        } else if(sensor.title == "Luftdruck") {
+          fs.appendFileSync(output, '#define PRESSURESENSOR_ID "'+sensor._id+'"\n');
+        } else if(sensor.title == "Lautstärke") {
+          fs.appendFileSync(output, '#define NOISESENSOR_ID "'+sensor._id+'"\n');
+        } else if(sensor.title == "Helligkeit") {
+          fs.appendFileSync(output, '#define LIGHTSENSOR_ID "'+sensor._id+'"\n');
+        } else if (sensor.title == "Beleuchtungsstärke") {
+          fs.appendFileSync(output, '#define LUXSENSOR_ID "'+sensor._id+'"\n');
+        } else if (sensor.title == "UV-Intensität") {
+          fs.appendFileSync(output, '#define UVSENSOR_ID "'+sensor._id+'"\n');
+        } else {
+          fs.appendFileSync(output, '#define SENSOR'+customSensorindex+'_ID "'+sensor._id+'" \/\/ '+sensor.title+' \n');
+          customSensorindex++;
+        }
+      }
+    } else {
+      fs.appendFileSync(output, line.toString() + "\n");
+    }
+  });
+}
+
+/**
+ * @api {get} /boxes/:boxId/script Download the Arduino script for your senseBox
+ * @apiName getScript
+ * @apiGroup Boxes
+ * @apiVersion 0.1.0
+ */
 function getScript(req, res, next) {
   User.findOne({apikey:req.headers["x-apikey"]}, function (error, user) {
     if (error) {
@@ -877,7 +973,53 @@ function getScript(req, res, next) {
       });
     }
   });
-  
+}
+
+/**
+ * @api {delete} /boxes/:boxId Delete a senseBox and its measurements
+ * @apiName deleteBox
+ * @apiGroup Boxes
+ * @apiVersion 0.1.0
+ */
+function deleteBox(req, res, next) {
+  User.findOne({apikey:req.headers["x-apikey"]}, function (findusererror, user) {
+    if (findusererror) {
+      res.send(400, 'ApiKey not existing!');
+    }
+    if (user.boxes.indexOf(req.params.boxId) !== -1) {
+      qrys = [];
+
+      Box.findById(req.params.boxId, function (findboxerr, box) {
+        box.sensors.forEach(function(sensor){
+          qrys.push(Measurement.find({ sensor_id: sensor._id }).remove());
+        });
+        qrys.push(box.remove());
+        qrys.push(user.remove());
+      });
+      
+      Promise.all(qrys).then(function(thatresult){
+      }).then(function(){
+        res.send(200, "box deleted");
+      });
+    }
+  });
+}
+
+/**
+ * @api {get} /boxes/stats Get some statistics about the database
+ * @apiName getStatistics
+ * @apiGroup misc
+ * @apiVersion 0.1.0
+ * @apiSuccessExample {json} [8,13] // 8 boxes, 13 measurements in the database
+ */
+function getStatistics(req, res, next){
+  var qrys = [
+    Box.count({}),
+    Measurement.count({})
+  ];
+  Promise.all(qrys).then(function(results){
+    res.send(200, results); 
+  });
 }
 
 // Send box script to user via email
@@ -979,7 +1121,7 @@ function isEmptyObject(obj) {
   return !Object.keys(obj).length;
 }
 
-server.listen(8000, function () {
+server.listen(cfg.port, function () {
   console.log('%s listening at %s', server.name, server.url);
 });
 

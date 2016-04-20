@@ -61,7 +61,6 @@ var sensorSchema = new Schema({
     ref: 'Measurement'
   }
 });
-sensorSchema.plugin(timestamp);
 
 //SenseBox schema
 var boxSchema = new Schema({
@@ -100,6 +99,7 @@ var boxSchema = new Schema({
   },
   sensors: [sensorSchema]
 },{ strict: false });
+boxSchema.plugin(timestamp);
 
 var userSchema = new Schema({
   firstname: {
