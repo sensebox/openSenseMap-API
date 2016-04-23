@@ -916,7 +916,7 @@ function postNewBox(req, res, next) {
 // generate Arduino script
 function genScript(box, model) {
   var output = cfg.targetFolder+""+box._id+".ino";
-  if(fs.statSync(output).isFile()){ fs.unlinkSync(output); }
+  try { if(fs.statSync(output)){ fs.unlinkSync(output); } } catch(e){}
   switch(model){
     case 'homeEthernet':
       filename = "files/template_home/template_home.ino";
