@@ -164,13 +164,13 @@ server.on('MethodNotAllowed', unknownMethodHandler);
 function validApiKey (req,res,next) {
   User.findOne({apikey:req.headers['x-apikey']}, function (error, user) {
     if (error) {
-      res.send(400, 'ApiKey not existing!');
+      res.send(400, "ApiKey does not exist");
     }
 
-    if (user.boxes.indexOf(req.params.boxId) != -1) {
-      res.send(200,'ApiKey is valid!');
+    if (user && user.boxes.length > 0 && user.boxes.indexOf(req.params.boxId) != -1) {
+      res.send(200, "ApiKey is valid");
     } else {
-      res.send(400,'ApiKey is invalid!');
+      res.send(400, "ApiKey is invalid");
     }
   });
 }
@@ -238,7 +238,7 @@ function updateBox(req, res, next) {
 
   User.findOne({apikey:req.headers["x-apikey"]}, function (error, user) {
     if (error) {
-      res.send(400, 'ApiKey not existing!');
+      res.send(400, "ApiKey does not exist");
     }
     var qrys = [];
     if (user.boxes.indexOf(req.params.boxId) !== -1) {
@@ -274,10 +274,9 @@ function updateBox(req, res, next) {
           var data = req.params.image.toString();
           var imageBuffer = decodeBase64Image(data);
           var extension = (imageBuffer.type === 'image/jpeg') ? '.jpg' : '.png';
-          //fs.writeFile('message.txt', 'Hello Node.js', 'utf8', callback);
           try {
             fs.writeFileSync(cfg.imageFolder+""+req.params.boxId+extension, imageBuffer.data);
-            qrys.push(box.set({image: req.params.boxId+extension}));
+            qrys.push(box.set({image: req.params.boxId+extension+'?'+(new Date().getTime())}));
           } catch(e) {
             if (err) return handleError(e);
           }
@@ -307,12 +306,12 @@ function updateBox(req, res, next) {
         }
         qrys.push(box.save());
         Promise.all(qrys).then(function(){
-          genScript(box);
-          res.send(box);
+          genScript(box, box.model);
+          res.send(200, box);
         });
       });
     } else {
-     res.send(400, 'ApiKey does not match SenseBoxID');
+     res.send(400, "ApiKey does not match SenseBoxID");
     }
   });
 }
@@ -391,6 +390,7 @@ function getData(req, res, next) {
       // offer download to browser
       res.header('Content-Disposition', 'attachment; filename='+req.params.sensorId+'.'+format);
     }
+    var returnlength = 0;
     Measurement.find(qry,{"createdAt":1, "value":1, "_id": 0}) // do not send _id column
     .limit(queryLimit)
     .lean()
@@ -402,8 +402,16 @@ function getData(req, res, next) {
         };
       }() // invoke
     })
-    .on('end', () => {
+    .on('data', (data) => {
+      returnlength = 1;
+    })
+    .on('end', (data) => {
+      if(returnlength > 0) {
         res.write(']');
+      } else {
+        res.status(404);
+        res.write('[]');
+      }
     })
     .pipe(res);
   }
@@ -431,18 +439,16 @@ function getDataMulti(req, res, next) {
   if (toDate.valueOf()-fromDate.valueOf() > 1000*60*60*24*32) {
     return next(new restify.InvalidArgumentError(JSON.stringify('Please choose a time frame up to 31 days maximum')));
   }
-
   log.debug(fromDate, "to", toDate);
 
   if(req.params["phenomenon"] && req.params["boxid"]) {
-    res.header('Content-Type', 'text/csv');
-
     var generator = csvstringify({columns: ['createdAt', 'value']});
     var stringifier = csvstringify({header: 1, delimiter: ';'});
 
     var phenom = req.params["phenomenon"].toString();
     var boxId = req.params["boxid"].toString();
     var boxIds = boxId.split(',');
+
     Box.find({
       '_id': {
         '$in': boxIds
@@ -482,14 +488,21 @@ function getDataMulti(req, res, next) {
           };
         }()
       });//{ transform: JSON.stringify }
-      
+
       qry
         .pipe(stringifier)
+        .on('end', (data) => {
+            if(data){
+              res.header('Content-Type', 'text/csv');
+            } else {
+              res.status(404);
+            }
+        })
         .pipe(res);
-
     });
+
   } else {
-    res.send([]);
+    return next(new restify.InvalidArgumentError(JSON.stringify('Invalid parameters')));
   }
 }
 
@@ -511,9 +524,9 @@ function postNewMeasurement(req, res, next) {
     } else {
       saveMeasurement(box, req.params.sensorId, req.params.value, function(result){
         if(result){
-          res.send(201,'measurement saved in box');
+          res.send(201, "Measurement saved in box");
         } else {
-          res.send(500,'measurement could not be saved');
+          res.send(400, "Measurement could not be saved");
         }
       });
     }
@@ -561,15 +574,15 @@ function postNewMeasurements(req, res, next) {
       } else {
         saveMeasurementArray(box, data, function(result){
           if(result){
-            res.send(201,'measurements saved in box');
+            res.send(201,"Measurements saved in box");
           } else {
-            res.send(500,'measurements could not be saved');
+            res.send(400,"Measurements could not be saved");
           }
         });
       }
     });
   } else {
-    res.send(500,'Invalid request');
+    res.send(400, "Invalid request");
   }
 }
 
@@ -761,12 +774,13 @@ function findAllBoxes(req, res , next){
 }
  */
 function findBox(req, res, next) {
-  id = req.params.boxId.split(".")[0];
-  format = req.params.boxId.split(".")[1];
-  if (isEmptyObject(req.query)) {
-    Box.findOne({_id: id}).populate('sensors.lastMeasurement').exec(function(error,box){
-      if (error) return next(new restify.InvalidArgumentError(JSON.stringify(error.errors)));
+  var id = req.params['boxId'].toString();
+  var format = (req.params['format'] && req.params['format'] !== '') ? req.params['format'].toString() : "json";
+  if (isEmptyObject(req.query) && mongoose.Types.ObjectId.isValid(id)) {
+    Box.findOne({_id: id}).exec(function(error,box){
+      if (error) return next(new restify.InvalidArgumentError());
       if (box) {
+        box.populate('sensors.lastMeasurement');
         if (format === "json" || typeof format === 'undefined') {
           res.send(box);
         } else if (format === "geojson") {
@@ -781,11 +795,11 @@ function findBox(req, res, next) {
           res.send(GeoJSON.parse(geojson, {Point: ['lat','lng']}));
         }
       } else {
-        res.send(404);
+        res.send(404, "No senseBox found");
       }
     });
   } else{
-    res.send(box);
+    res.send(404, "No senseBox found");
   }
 }
 
@@ -811,6 +825,7 @@ function createNewBox (req) {
     grouptag: req.params.tag,
     exposure: req.params.exposure,
     _id: mongoose.Types.ObjectId(),
+    model: req.params.model,
     sensors: []
   };
 
@@ -856,11 +871,10 @@ function postNewBox(req, res, next) {
   User.findOne({apikey:req.params.orderID}, function (err, user) {
     if (err) {
       log.error(err);
-      return res.send(500);
+      return res.send(400, "An error occured");
     } else {
 
       log.debug("A new sensebox is being submitted");
-      //log.debug(req.params);
       if (!user) {
         var newUser = createNewUser(req);
         var newBox = createNewBox(req);
@@ -872,20 +886,8 @@ function postNewBox(req, res, next) {
             return next(new restify.InvalidArgumentError(JSON.stringify(error.errors)));
           }
 
-          switch(req.params.model){
-            case 'homeEthernet':
-              filename = "files/template_home/template_home.ino";
-              break;
-            case 'basicEthernet':
-              filename = "files/template_basic/template_basic.ino";
-              break;
-            default:
-              filename = "files/template_custom_setup/template_custom_setup.ino";
-              break;
-          }
-
           try {
-            genScript(box);
+            genScript(box, box.model);
             savedBox = box;
 
             newUser.save( function (err, user) {
@@ -902,10 +904,8 @@ function postNewBox(req, res, next) {
 
           } catch (e) {
             log.error(e);
-            return res.status(500).send(JSON.stringify('An error occured'));
+            return res.send(400, "An error occured");
           }
-
-
         });
       }
     }
@@ -914,8 +914,20 @@ function postNewBox(req, res, next) {
 }
 
 // generate Arduino script
-function genScript(box) {
+function genScript(box, model) {
   var output = cfg.targetFolder+""+box._id+".ino";
+  if(fs.statSync(output).isFile()){ fs.unlinkSync(output); }
+  switch(model){
+    case 'homeEthernet':
+      filename = "files/template_home/template_home.ino";
+      break;
+    case 'basicEthernet':
+      filename = "files/template_basic/template_basic.ino";
+      break;
+    default:
+      filename = "files/template_custom_setup/template_custom_setup.ino";
+      break;
+  }
   fs.readFileSync(filename).toString().split('\n').forEach(function (line) {
     if (line.indexOf("//SenseBox ID") != -1) {
       fs.appendFileSync(output, line.toString() + "\n");
@@ -960,12 +972,12 @@ function genScript(box) {
 function getScript(req, res, next) {
   User.findOne({apikey:req.headers["x-apikey"]}, function (error, user) {
     if (error) {
-      res.send(400, 'ApiKey not existing!');
+      res.send(400, "ApiKey does not exist");
     }
     if (user.boxes.indexOf(req.params.boxId) !== -1) {
       Box.findById(req.params.boxId, function (err, box) {
         if (error) {
-          res.send(400, 'No such box');
+          res.send(400, "No such box");
         }
 
         var script = fs.readFileSync(cfg.targetFolder+""+box._id+".ino", encoding = 'utf8');
@@ -984,7 +996,7 @@ function getScript(req, res, next) {
 function deleteBox(req, res, next) {
   User.findOne({apikey:req.headers["x-apikey"]}, function (findusererror, user) {
     if (findusererror) {
-      res.send(400, 'ApiKey not existing!');
+      res.send(400, "ApiKey does not exist");
     }
     if (user.boxes.indexOf(req.params.boxId) !== -1) {
       qrys = [];
@@ -999,7 +1011,7 @@ function deleteBox(req, res, next) {
       
       Promise.all(qrys).then(function(thatresult){
       }).then(function(){
-        res.send(200, "box deleted");
+        res.send(200, "Box deleted");
       });
     }
   });
@@ -1018,7 +1030,7 @@ function getStatistics(req, res, next){
     Measurement.count({})
   ];
   Promise.all(qrys).then(function(results){
-    res.send(200, results); 
+    res.send(200, results);
   });
 }
 
@@ -1127,5 +1139,6 @@ server.listen(cfg.port, function () {
 
 server.on('uncaughtException', function (req, res, route, err) {
   log.error('Uncaught error', err);
-  return res.send(500, JSON.stringify('An error occured'));
+  console.log(err.stack);
+  return res.send(500, "An error occured");
 });
