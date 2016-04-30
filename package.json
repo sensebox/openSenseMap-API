@@ -11,6 +11,7 @@
     "geojson": "^0.2.0",
     "json2csv": "~2.2.1",
     "lodash": "^3.1.0",
+    "moment": "^2.13.0",
     "mongoose": "~4.1.0",
     "mongoose-timestamp": "^0.2.1",
     "nodemailer": "~1.4.0",
