@@ -1,15 +1,22 @@
-osem-api:
-  build: .
-  ports:
-    - 8000:8000
-  links:
-    - db
-  volumes:
-    - ./config/index.js:/usr/src/app/config/index.js
-    - ./usersketches:/var/OpenSenseMap-API/usersketches
-    - ./userimages:/var/www/OpenSenseMap/app/userimages
+version: "2"
+services:
+  osem-api:
+    build: .
+    ports:
+      - 8000:8000
+    volumes:
+      - ./config/index.js:/usr/src/app/config/index.js
+      - ./usersketches:/var/OpenSenseMap-API/usersketches
+      - ./userimages:/var/www/OpenSenseMap/app/userimages
+    env_file: .env
+    depends_on:
+      - db
 
-db:
-  image: mongo:2.6
-  volumes:
-    - ./mongo-data:/data/db
+  db:
+    build:
+      context: ./osem-mongo
+    volumes:
+      - ./mongo-data:/data/db
+    env_file: .env
+    command: --auth
+

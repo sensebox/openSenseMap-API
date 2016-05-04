@@ -71,7 +71,7 @@ server.use(restify.bodyParser());
 
 // use this function to retry if a connection cannot be established immediately
 var connectWithRetry = function () {
-  return mongoose.connect("mongodb://" + dbHost + "/OSeM-api", {
+  return mongoose.connect("mongodb://"+cfg.dbuser+":"+cfg.dbuserpass+"@"+cfg.dbhost+ "/OSeM-api?authSource=OSeM-api", {
     keepAlive: 1
   }, function (err) {
     if (err) {
@@ -103,7 +103,7 @@ server.pre(function (request,response,next) {
   next();
 });
 
-// GET 
+// GET
 server.get({path : PATH , version : '0.0.1'} , findAllBoxes);
 server.get({path : /(boxes)\.([a-z]+)/, version : '0.1.0'} , findAllBoxes);
 server.get({path : PATH +'/:boxId' , version : '0.0.1'} , findBox);
@@ -280,13 +280,13 @@ function updateBox(req, res, next) {
           } catch(e) {
             if (err) return handleError(e);
           }
-        } 
+        }
         if (typeof req.params.sensors !== 'undefined' && req.params.sensors.length>0) {
           req.params.sensors.forEach(function(updatedsensor){
             if(updatedsensor.deleted){
               qrys.push(Measurement.find({ sensor_id: updatedsensor._id }).remove());
               qrys.push(Box.update({'sensors._id': mongoose.Types.ObjectId(updatedsensor._id)},
-                { $pull: { 'sensors': { _id: mongoose.Types.ObjectId(updatedsensor._id) } } 
+                { $pull: { 'sensors': { _id: mongoose.Types.ObjectId(updatedsensor._id) } }
               }));
             } else if(updatedsensor.edited && updatedsensor.new) {
               var newsensor = new Sensor({
@@ -472,7 +472,7 @@ function getDataMulti(req, res, next) {
         'sensor_id': {
           '$in': Object.keys(sensors)
         },
-        createdAt: { 
+        createdAt: {
           "$gt": fromDate,
           "$lt": toDate
         }
@@ -514,7 +514,7 @@ function getDataMulti(req, res, next) {
  * @apiName postNewMeasurement
  * @apiParam {ID} boxId SenseBox unique ID.
  * @apiParam {ID} sensorId Sensors unique ID.
- * @apiParamExample Request-Example: 
+ * @apiParamExample Request-Example:
  * curl --data value=22 localhost:8000/boxes/56ccb342eda956582a88e48c/56ccb342eda956582a88e490
  */
 function postNewMeasurement(req, res, next) {
@@ -628,7 +628,7 @@ function findAllBoxes(req, res , next){
 
   if(activityAroundDate && (dates = activityAroundDate.split(',')) && dates.length===2 && moment(dates[0]).isBefore(dates[1])){ // moment().isBefore() will check the date's validities as well
     fromDate = moment.utc(dates[0]).toDate();
-    toDate = moment.utc(dates[1]).toDate();  
+    toDate = moment.utc(dates[1]).toDate();
   } else if(moment(activityAroundDate).isValid()) {
     fromDate = moment.utc(activityAroundDate).subtract(4, 'hours').toDate();
     toDate = moment.utc(activityAroundDate).add(4, 'hours').toDate();
@@ -645,7 +645,7 @@ function findAllBoxes(req, res , next){
           sensorQrys.push(
             Measurement.findOne({
               sensor_id: sensor._id,
-              createdAt: { 
+              createdAt: {
                 "$gt": fromDate,
                 "$lt": toDate
               }
@@ -701,7 +701,7 @@ function findAllBoxes(req, res , next){
   // otherwise show all boxes
   if(typeof activityAroundDate !== 'undefined') {
     Measurement.find({
-      createdAt: { 
+      createdAt: {
         "$gt": fromDate,
         "$lt": toDate
       }
@@ -894,10 +894,10 @@ function postNewBox(req, res, next) {
               if (err) {
                 return next(new restify.InvalidArgumentError(JSON.stringify(error.errors)));
               } else {
-                if(cfg.email.host!==''){
+                if(cfg.email_host!==''){
                   sendWelcomeMail(user, newBox);
                   sendYeahMail(user, newBox);
-                } 
+                }
                 return res.send(201, user);
               }
             });
@@ -1008,7 +1008,7 @@ function deleteBox(req, res, next) {
         qrys.push(box.remove());
         qrys.push(user.remove());
       });
-      
+
       Promise.all(qrys).then(function(thatresult){
       }).then(function(){
         res.send(200, "Box deleted");
@@ -1042,29 +1042,29 @@ function sendWelcomeMail(user, box) {
   var compiled = template({ 'user': user, 'box': box });
 
   var transporter = nodemailer.createTransport(smtpTransport({
-    host: cfg.email.host,
-    port: cfg.email.port,
-    secure: cfg.email.secure,
+    host: cfg.email_host,
+    port: cfg.email_port,
+    secure: cfg.email_secure,
     auth: {
-        user: cfg.email.user,
-        pass: cfg.email.pass
+        user: cfg.email_user,
+        pass: cfg.email_pass
     }
   }));
   transporter.use('compile', htmlToText());
   transporter.sendMail({
     from: {
-      name: cfg.email.fromName,
-      address: cfg.email.fromEmail
+      name: cfg.email_fromName,
+      address: cfg.email_fromEmail
     },
     replyTo: {
-      name: cfg.email.fromName,
-      address: cfg.email.replyTo
+      name: cfg.email_fromName,
+      address: cfg.email_replyTo
     },
     to: {
       name: user.firstname+" "+user.lastname,
       address: user.email
     },
-    subject: cfg.email.subject,
+    subject: cfg.email_subject,
     template: 'registration',
     html: compiled,
     attachments: [
@@ -1092,32 +1092,32 @@ function sendYeahMail(user, box) {
   var compiled = template({ 'user': user, 'box': box });
 
   var transporter = nodemailer.createTransport(smtpTransport({
-    host: cfg.email.host,
-    port: cfg.email.port,
-    secure: cfg.email.secure,
+    host: cfg.email_host,
+    port: cfg.email_port,
+    secure: cfg.email_secure,
     auth: {
-        user: cfg.email.user,
-        pass: cfg.email.pass
+        user: cfg.email_user,
+        pass: cfg.email_pass
     }
   }));
   transporter.use('compile', htmlToText());
   transporter.sendMail({
     from: {
-      name: cfg.email.fromName,
-      address: cfg.email.fromEmail
+      name: cfg.email_fromName,
+      address: cfg.email_fromEmail
     },
     replyTo: {
-      name: cfg.email.fromName,
-      address: cfg.email.replyTo
+      name: cfg.email_fromName,
+      address: cfg.email_replyTo
     },
     to: {
       name: user.firstname+" "+user.lastname,
       address: "support@sensebox.de"
     },
-    subject: cfg.email.subject,
+    subject: cfg.email_subject,
     template: 'yeah',
     html: compiled
-    
+
   }, function(err, info){
     if(err){
       log.error("Email error");

@@ -1,16 +1,33 @@
-exports.targetFolder = '/var/OpenSenseMap-API/usersketches/';
-exports.imageFolder = '/var/www/OpenSenseMap/app/userimages/';
-exports.dbhost = 'localhost';
-exports.dbuser = '';
-exports.dbuserpass = '';
+// specify your config items
+// environment variables starting with `OSEM_` will override the values here.
+// Example: `OSEM_targetfolder` will override the setting for `targetFolder`
 
-exports.email = {};
-exports.email.host = ''; // leave empty to not send emails
-exports.email.port = 465;
-exports.email.secure = true;
-exports.email.user = '';
-exports.email.pass = '';
-exports.email.fromName = '';
-exports.email.fromEmail = '';
-exports.email.replyTo = '';
-exports.email.subject = '';
+var config = {
+  targetFolder : '/var/OpenSenseMap-API/usersketches/',
+  imageFolder : '/var/www/OpenSenseMap/app/userimages/',
+  dbhost : 'db',
+  dbuser : '',
+  dbuserpass : '',
+
+  port : 8000,
+
+  email_host : '', // leave empty to not send emails
+  email_port : 465,
+  email_secure : true,
+  email_user : '',
+  email_pass : '',
+  email_fromName : '',
+  email_fromEmail : '',
+  email_replyTo : '',
+  email_subject : '',
+}
+
+for (envKey in process.env) {
+  if (envKey.indexOf("OSEM_") === 0) {
+    var configKey = envKey.substring(5)
+    config[configKey] = process.env[envKey]
+  }
+}
+
+module.exports = config
+
