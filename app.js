@@ -75,7 +75,7 @@ server.pre(function(req, res, next) {
 
 // use this function to retry if a connection cannot be established immediately
 var connectWithRetry = function () {
-  return mongoose.connect("mongodb://" + dbHost + "/OSeM-api", {
+  return mongoose.connect("mongodb://"+cfg.dbuser+":"+cfg.dbuserpass+"@"+cfg.dbhost+ "/OSeM-api?authSource=OSeM-api", {
     keepAlive: 1
   }, function (err) {
     if (err) {
@@ -902,7 +902,7 @@ function postNewBox(req, res, next) {
               if (err) {
                 return next(new restify.InvalidArgumentError(JSON.stringify(error.errors)));
               } else {
-                if(cfg.email.host!==''){
+                if(cfg.email_host!==''){
                   sendWelcomeMail(user, newBox);
                   sendYeahMail(user, newBox);
                 }
@@ -1053,29 +1053,29 @@ function sendWelcomeMail(user, box) {
   var compiled = template({ 'user': user, 'box': box });
 
   var transporter = nodemailer.createTransport(smtpTransport({
-    host: cfg.email.host,
-    port: cfg.email.port,
-    secure: cfg.email.secure,
+    host: cfg.email_host,
+    port: cfg.email_port,
+    secure: cfg.email_secure,
     auth: {
-        user: cfg.email.user,
-        pass: cfg.email.pass
+        user: cfg.email_user,
+        pass: cfg.email_pass
     }
   }));
   transporter.use('compile', htmlToText());
   transporter.sendMail({
     from: {
-      name: cfg.email.fromName,
-      address: cfg.email.fromEmail
+      name: cfg.email_fromName,
+      address: cfg.email_fromEmail
     },
     replyTo: {
-      name: cfg.email.fromName,
-      address: cfg.email.replyTo
+      name: cfg.email_fromName,
+      address: cfg.email_replyTo
     },
     to: {
       name: user.firstname+" "+user.lastname,
       address: user.email
     },
-    subject: cfg.email.subject,
+    subject: cfg.email_subject,
     template: 'registration',
     html: compiled,
     attachments: [
@@ -1103,29 +1103,29 @@ function sendYeahMail(user, box) {
   var compiled = template({ 'user': user, 'box': box });
 
   var transporter = nodemailer.createTransport(smtpTransport({
-    host: cfg.email.host,
-    port: cfg.email.port,
-    secure: cfg.email.secure,
+    host: cfg.email_host,
+    port: cfg.email_port,
+    secure: cfg.email_secure,
     auth: {
-        user: cfg.email.user,
-        pass: cfg.email.pass
+        user: cfg.email_user,
+        pass: cfg.email_pass
     }
   }));
   transporter.use('compile', htmlToText());
   transporter.sendMail({
     from: {
-      name: cfg.email.fromName,
-      address: cfg.email.fromEmail
+      name: cfg.email_fromName,
+      address: cfg.email_fromEmail
     },
     replyTo: {
-      name: cfg.email.fromName,
-      address: cfg.email.replyTo
+      name: cfg.email_fromName,
+      address: cfg.email_replyTo
     },
     to: {
       name: user.firstname+" "+user.lastname,
       address: "support@sensebox.de"
     },
-    subject: cfg.email.subject,
+    subject: cfg.email_subject,
     template: 'yeah',
     html: compiled
 
