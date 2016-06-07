@@ -68,6 +68,10 @@ server.use(restify.CORS({'origins': ['*'] })); //['http://localhost', 'https://o
 server.use(restify.fullResponse());
 server.use(restify.queryParser());
 server.use(restify.bodyParser());
+server.pre(function(req, res, next) {
+  res.charSet('utf-8');
+  return next();
+});
 
 // use this function to retry if a connection cannot be established immediately
 var connectWithRetry = function () {
@@ -103,7 +107,7 @@ server.pre(function (request,response,next) {
   next();
 });
 
-// GET 
+// GET
 server.get({path : PATH , version : '0.0.1'} , findAllBoxes);
 server.get({path : /(boxes)\.([a-z]+)/, version : '0.1.0'} , findAllBoxes);
 server.get({path : PATH +'/:boxId' , version : '0.0.1'} , findBox);
@@ -280,13 +284,13 @@ function updateBox(req, res, next) {
           } catch(e) {
             if (err) return handleError(e);
           }
-        } 
+        }
         if (typeof req.params.sensors !== 'undefined' && req.params.sensors.length>0) {
           req.params.sensors.forEach(function(updatedsensor){
             if(updatedsensor.deleted){
               qrys.push(Measurement.find({ sensor_id: updatedsensor._id }).remove());
               qrys.push(Box.update({'sensors._id': mongoose.Types.ObjectId(updatedsensor._id)},
-                { $pull: { 'sensors': { _id: mongoose.Types.ObjectId(updatedsensor._id) } } 
+                { $pull: { 'sensors': { _id: mongoose.Types.ObjectId(updatedsensor._id) } }
               }));
             } else if(updatedsensor.edited && updatedsensor.new) {
               var newsensor = new Sensor({
@@ -386,6 +390,7 @@ function getData(req, res, next) {
     .pipe(stringifier)
     .pipe(res);
   } else {
+    res.header('Content-Type', 'application/json; charset=utf-8');
     if(typeof req.params["download"] != 'undefined' && req.params["download"]=="true"){
       // offer download to browser
       res.header('Content-Disposition', 'attachment; filename='+req.params.sensorId+'.'+format);
@@ -472,7 +477,7 @@ function getDataMulti(req, res, next) {
         'sensor_id': {
           '$in': Object.keys(sensors)
         },
-        createdAt: { 
+        createdAt: {
           "$gt": fromDate,
           "$lt": toDate
         }
@@ -514,7 +519,7 @@ function getDataMulti(req, res, next) {
  * @apiName postNewMeasurement
  * @apiParam {ID} boxId SenseBox unique ID.
  * @apiParam {ID} sensorId Sensors unique ID.
- * @apiParamExample Request-Example: 
+ * @apiParamExample Request-Example:
  * curl --data value=22 localhost:8000/boxes/56ccb342eda956582a88e48c/56ccb342eda956582a88e490
  */
 function postNewMeasurement(req, res, next) {
@@ -628,7 +633,7 @@ function findAllBoxes(req, res , next){
 
   if(activityAroundDate && (dates = activityAroundDate.split(',')) && dates.length===2 && moment(dates[0]).isBefore(dates[1])){ // moment().isBefore() will check the date's validities as well
     fromDate = moment.utc(dates[0]).toDate();
-    toDate = moment.utc(dates[1]).toDate();  
+    toDate = moment.utc(dates[1]).toDate();
   } else if(moment(activityAroundDate).isValid()) {
     fromDate = moment.utc(activityAroundDate).subtract(4, 'hours').toDate();
     toDate = moment.utc(activityAroundDate).add(4, 'hours').toDate();
@@ -645,7 +650,7 @@ function findAllBoxes(req, res , next){
           sensorQrys.push(
             Measurement.findOne({
               sensor_id: sensor._id,
-              createdAt: { 
+              createdAt: {
                 "$gt": fromDate,
                 "$lt": toDate
               }
@@ -701,7 +706,7 @@ function findAllBoxes(req, res , next){
   // otherwise show all boxes
   if(typeof activityAroundDate !== 'undefined') {
     Measurement.find({
-      createdAt: { 
+      createdAt: {
         "$gt": fromDate,
         "$lt": toDate
       }
@@ -836,6 +841,9 @@ function createNewBox (req) {
       case 'homeEthernet':
         req.params.sensors = products.senseboxhome;
         break;
+      case 'homeWifi':
+        req.params.sensors = products.senseboxhome;
+        break;
       case 'basicEthernet':
         req.params.sensors = products.senseboxbasic;
         break;
@@ -897,7 +905,7 @@ function postNewBox(req, res, next) {
                 if(cfg.email.host!==''){
                   sendWelcomeMail(user, newBox);
                   sendYeahMail(user, newBox);
-                } 
+                }
                 return res.send(201, user);
               }
             });
@@ -923,6 +931,9 @@ function genScript(box, model) {
       break;
     case 'basicEthernet':
       filename = "files/template_basic/template_basic.ino";
+      break;
+    case 'homeWifi':
+      filename = "files/template_home_wifi/template_home_wifi.ino";
       break;
     default:
       filename = "files/template_custom_setup/template_custom_setup.ino";
@@ -1008,7 +1019,7 @@ function deleteBox(req, res, next) {
         qrys.push(box.remove());
         qrys.push(user.remove());
       });
-      
+
       Promise.all(qrys).then(function(thatresult){
       }).then(function(){
         res.send(200, "Box deleted");
@@ -1117,7 +1128,7 @@ function sendYeahMail(user, box) {
     subject: cfg.email.subject,
     template: 'yeah',
     html: compiled
-    
+
   }, function(err, info){
     if(err){
       log.error("Email error");
