@@ -64,8 +64,8 @@ var server = restify.createServer({
   version: '0.0.1',
   log: reqlog
 });
-server.use(restify.CORS({'origins': ['*'] })); //['http://localhost', 'https://opensensemap.org']}));
-server.use(restify.fullResponse());
+//server.use(restify.CORS({'origins': ['*'] })); //['http://localhost', 'https://opensensemap.org']}));
+//server.use(restify.fullResponse());
 server.use(restify.queryParser());
 server.use(restify.bodyParser());
 server.pre(function(req, res, next) {
