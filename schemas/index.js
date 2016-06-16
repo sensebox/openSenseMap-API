@@ -36,8 +36,8 @@ var measurementSchema = new Schema({
     required: true
   }
 });
-
 measurementSchema.plugin(timestamp);
+measurementSchema.index({ sensor_id: 1, createdAt: -1 });
 
 //Sensor schema
 var sensorSchema = new Schema({
@@ -129,7 +129,7 @@ var userSchema = new Schema({
   ]
 });
 
-module.exports = { 
+module.exports = {
   'LocationSchema': LocationSchema,
   'measurementSchema': measurementSchema,
   'sensorSchema': sensorSchema,
