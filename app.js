@@ -37,7 +37,6 @@ var Logger = require('bunyan'),
   reqlog = new Logger.createLogger({
     name: 'OSeM-API',
     streams: [
-      { path: './request.log', type: 'rotating-file', period: '1w', count: 8 },
       { level: 'debug', type: 'raw', stream: consoleStream }
     ],
     serializers: {
@@ -49,7 +48,6 @@ var Logger = require('bunyan'),
   log = new Logger.createLogger({
     name: 'OSeM-API',
     streams: [
-      { level: 'error', path: './request-error.log', type: 'rotating-file', period: '1w', count: 8 },
       { level: 'debug', type: 'raw', stream: consoleStream }
     ],
     serializers: {
