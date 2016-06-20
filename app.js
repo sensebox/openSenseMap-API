@@ -73,7 +73,7 @@ server.pre(function(req, res, next) {
 
 // use this function to retry if a connection cannot be established immediately
 var connectWithRetry = function () {
-  return mongoose.connect("mongodb://"+cfg.dbuser+":"+cfg.dbuserpass+"@"+cfg.dbhost+ "/OSeM-api?authSource=OSeM-api", {
+  return mongoose.connect(cfg.dbconnectionstring, {
     keepAlive: 1
   }, function (err) {
     if (err) {

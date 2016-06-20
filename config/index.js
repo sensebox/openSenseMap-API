@@ -22,6 +22,8 @@ var config = {
   email_subject : '',
 }
 
+config.dbconnectionstring = "mongodb://"+config.dbuser+":"+config.dbuserpass+"@"+config.dbhost+ "/OSeM-api?authSource=OSeM-api";
+
 for (envKey in process.env) {
   if (envKey.indexOf("OSEM_") === 0) {
     var configKey = envKey.substring(5)
