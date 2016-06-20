@@ -15,7 +15,7 @@ done
 echo "=> Creating user ${USER} user with password ${PASS} in MongoDB"
 mongo admin << EOF
 use OSeM-api
-db.addUser({user: '$USER', pwd: '$PASS', roles:['readWrite']})
+db.createUser({user: '$USER', pwd: '$PASS', roles:['readWrite']})
 EOF
 
 echo "=> Done!"
