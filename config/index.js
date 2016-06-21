@@ -22,13 +22,19 @@ var config = {
   email_subject : '',
 }
 
-config.dbconnectionstring = "mongodb://"+config.dbuser+":"+config.dbuserpass+"@"+config.dbhost+ "/OSeM-api?authSource=OSeM-api";
-
+var env_has_dbconnectionstring = false
 for (envKey in process.env) {
   if (envKey.indexOf("OSEM_") === 0) {
     var configKey = envKey.substring(5)
+    if (env_has_dbconnectionstring === false && configKey === "dbconnectionstring") {
+      env_has_dbconnectionstring = true
+    }
     config[configKey] = process.env[envKey]
   }
+}
+
+if (env_has_dbconnectionstring === false) {
+  config.dbconnectionstring = "mongodb://"+config.dbuser+":"+config.dbuserpass+"@"+config.dbhost+ "/OSeM-api?authSource=OSeM-api"
 }
 
 module.exports = config
