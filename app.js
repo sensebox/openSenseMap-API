@@ -13,7 +13,8 @@ var restify = require('restify'),
   nodemailer = require('nodemailer'),
   smtpTransport = require('nodemailer-smtp-transport'),
   htmlToText = require('nodemailer-html-to-text').htmlToText,
-  moment = require('moment');
+  moment = require('moment'),
+  request = require('request');
 
 mongoose.Promise = require('bluebird');
 var dbHost = process.env.DB_HOST || cfg.dbhost;
@@ -903,6 +904,7 @@ function postNewBox(req, res, next) {
                 if(cfg.email_host!==''){
                   sendWelcomeMail(user, newBox);
                   sendYeahMail(user, newBox);
+                  _postToSlack("Eine neue <https://opensensemap.org/explore/" + newBox._id + "|senseBox> wurde registriert");
                 }
                 return res.send(201, user);
               }
@@ -1138,6 +1140,12 @@ function sendYeahMail(user, box) {
   });
 }
 
+function _postToSlack (text) {
+  if (cfg.slack_url) {
+    request.post({ url: cfg.slack_url, json: { text: text }});
+  }
+}
+
 function isEmptyObject(obj) {
   return !Object.keys(obj).length;
 }
@@ -1147,6 +1155,7 @@ server.listen(cfg.port, function () {
 });
 
 server.on('uncaughtException', function (req, res, route, err) {
+  _postToSlack("Error in API (" + route.spec.method + " " + route.spec.path + "): " + err);
   log.error('Uncaught error', err);
   console.log(err.stack);
   return res.send(500, "An error occured");

@@ -20,6 +20,8 @@ var config = {
   email_fromEmail : '',
   email_replyTo : '',
   email_subject : '',
+
+  slack_url: ''
 }
 
 var env_has_dbconnectionstring = false

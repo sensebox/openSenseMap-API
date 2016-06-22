@@ -17,7 +17,8 @@
     "nodemailer": "~1.4.0",
     "nodemailer-html-to-text": "~1.0.2",
     "nodemailer-smtp-transport": "~1.0.3",
-    "restify": "^4.0.0"
+    "restify": "^4.0.0",
+    "request": "~2.72.0"
   },
   "devDependencies": {},
   "scripts": {
