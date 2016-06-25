@@ -332,7 +332,7 @@ function getMeasurements(req, res, next) {
     if (error) {
       return next(new restify.InvalidArgumentError(JSON.stringify(error.errors)));
     } else {
-      res.send(201, sensors);
+      res.send(200, sensors);
     }
   });
 }
