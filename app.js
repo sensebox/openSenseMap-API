@@ -526,18 +526,21 @@ function postNewMeasurement(req, res, next) {
     if (error) {
       return next(new restify.InvalidArgumentError(JSON.stringify(error.errors)));
     } else {
-      saveMeasurement(box, req.params.sensorId, req.params.value, function(result){
+      saveMeasurement(box, req.params.sensorId, req.params.value, req.params.createdAt).then(function(result){
         if(result){
           res.send(201, "Measurement saved in box");
         } else {
           res.send(400, "Measurement could not be saved");
         }
+      })
+      .catch(function (err) {
+        res.send(400, "Measurement could not be saved");
       });
     }
   });
 }
 
-function saveMeasurement(box, sensorId, value, callback){
+function saveMeasurement(box, sensorId, value, createdAt){
   for (var i = box.sensors.length - 1; i >= 0; i--) {
     if (box.sensors[i]._id.equals(sensorId)) {
       var measurementData = {
@@ -546,6 +549,14 @@ function saveMeasurement(box, sensorId, value, callback){
         sensor_id: sensorId
       };
 
+      if (typeof createdAt !== "undefined") {
+        try {
+          measurementData.createdAt = new Date(createdAt);
+        } catch (e) {
+          return Promise.reject(e);
+        }
+      }
+
       var measurement = new Measurement(measurementData);
 
       box.sensors[i].lastMeasurement = measurement._id;
@@ -553,7 +564,7 @@ function saveMeasurement(box, sensorId, value, callback){
         box.save(),
         measurement.save()
       ];
-      Promise.all(qrys).then(callback);
+      return Promise.all(qrys);
     }
   };
 }
