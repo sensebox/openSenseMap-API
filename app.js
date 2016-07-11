@@ -67,8 +67,9 @@ server.use(restify.CORS({'origins': ['*'] })); //['http://localhost', 'https://o
 server.use(restify.fullResponse());
 server.use(restify.queryParser());
 server.use(restify.bodyParser());
-server.pre(function(req, res, next) {
-  res.charSet('utf-8');
+server.pre(function(request, response, next) {
+  response.charSet('utf-8');
+  request.log.info({req: request}, 'REQUEST');
   return next();
 });
 
@@ -100,11 +101,6 @@ var Location = mongoose.model('Location', LocationSchema);
 
 var PATH = '/boxes';
 var userPATH = 'users';
-
-server.pre(function (request,response,next) {
-  request.log.info({req: request}, 'REQUEST');
-  next();
-});
 
 // GET
 server.get({path : PATH , version : '0.0.1'} , findAllBoxes);
