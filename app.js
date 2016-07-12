@@ -911,7 +911,7 @@ function postNewBox(req, res, next) {
                 if(cfg.email_host!==''){
                   sendWelcomeMail(user, newBox);
                   sendYeahMail(user, newBox);
-                  _postToSlack("Eine neue <https://opensensemap.org/explore/" + newBox._id + "|senseBox> wurde registriert");
+                  _postToSlack("Eine neue <https://opensensemap.org/explore/" + newBox._id + "|senseBox> wurde registriert (" + newBox.name + ")");
                 }
                 return res.send(201, user);
               }
@@ -922,6 +922,9 @@ function postNewBox(req, res, next) {
             return res.send(400, "An error occured");
           }
         });
+      } else {
+        log.error(err);
+        return res.send(400, "An error occured");
       }
     }
   });
