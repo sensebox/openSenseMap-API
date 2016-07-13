@@ -395,12 +395,12 @@ function getData(req, res, next) {
     .limit(queryLimit)
     .lean()
     .stream({ // http://stackoverflow.com/a/34485539/1781026
-      transform: () => {
+      transform: (() => {
         let index = 0;
         return (data) => {
           return (!(index++) ? '[' : ',') + JSON.stringify(data);
         };
-      }() // invoke
+      })() // invoke
     })
     .on('data', (data) => {
       returnlength = 1;
@@ -479,14 +479,15 @@ function getDataMulti(req, res, next) {
       },{"createdAt":1, "value":1, "_id": 0, "sensor_id":1})
       .lean()
       .stream({
-        transform: () => {
+        transform:(() => {
           return (data) => {
+            data.createdAt = new Date(data.createdAt).toISOString();
             data.lat = sensors[data.sensor_id].lat;
             data.lng = sensors[data.sensor_id].lng;
             delete(data.sensor_id);
             return data;
           };
-        }()
+        })()
       });//{ transform: JSON.stringify }
 
       qry
