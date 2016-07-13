@@ -1168,7 +1168,7 @@ server.listen(cfg.port, function () {
 });
 
 server.on('uncaughtException', function (req, res, route, err) {
-  _postToSlack("Error in API (" + route.spec.method + " " + route.spec.path + ", " + req.href + "): " + err);
+  _postToSlack("Error in API (" + route.spec.method + " " + route.spec.path + ", " + req.href() + "): " + err);
   log.error('Uncaught error', err);
   console.log(err.stack);
   return res.send(500, "An error occured");
