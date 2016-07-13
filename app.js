@@ -324,7 +324,7 @@ function updateBox(req, res, next) {
  * @apiParam {ID} boxId SenseBox unique ID.
  */
 function getMeasurements(req, res, next) {
-  Box.findOne({_id: req.params.boxId},{sensors:1}).populate('sensors.lastMeasurement').exec(function(error,sensors){
+  Box.findOne({_id: req.params.boxId},{sensors:1}).populate('sensors.lastMeasurement').lean().exec(function(error,sensors){
     if (error) {
       return next(new restify.InvalidArgumentError(JSON.stringify(error.errors)));
     } else {
