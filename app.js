@@ -1058,12 +1058,18 @@ function deleteBox(req, res, next) {
  * @apiName getStatistics
  * @apiGroup misc
  * @apiVersion 0.1.0
- * @apiSuccessExample {json} [8,13] // 8 boxes, 13 measurements in the database
+ * @apiSuccessExample {json} [8,13, 2] // 8 boxes, 13 measurements in the database, 2 in the last minute
  */
 function getStatistics(req, res, next){
   var qrys = [
     Box.count({}),
-    Measurement.count({})
+    Measurement.count({}),
+    Measurement.count({
+        createdAt: {
+          "$gt": new Date(Date.now() - 60000),
+          "$lt": new Date()
+        }
+    })
   ];
   Promise.all(qrys).then(function(results){
     res.send(200, results);
