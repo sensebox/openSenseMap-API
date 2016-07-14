@@ -521,17 +521,27 @@ function getDataMulti(req, res, next) {
 function postNewMeasurement(req, res, next) {
   Box.findOne({_id: req.params.boxId}, function(error,box){
     if (error) {
-      return next(new restify.InvalidArgumentError(JSON.stringify(error.errors)));
+      return next(new restify.InvalidArgumentError(JSON.stringify(error.message)));
     } else {
+      if (!box) {
+        return next(new restify.NotFoundError("box not found"));
+      }
       saveMeasurement(box, req.params.sensorId, req.params.value, req.params.createdAt).then(function(result){
         if(result){
           res.send(201, "Measurement saved in box");
         } else {
-          res.send(400, "Measurement could not be saved");
+          return next(new restify.BadRequestError("Measurement could not be saved"));
         }
       })
       .catch(function (err) {
-        res.send(400, "Measurement could not be saved");
+        if (err === "sensor not found") {
+          return next(new restify.NotFoundError("sensor not found in box"));
+        }
+        var errmsg = "Measurement could not be saved";
+        if (err.message) {
+          errmsg += ": " + err.message;
+        }
+        return next(new restify.BadRequestError(errmsg));
       });
     }
   });
@@ -562,6 +572,8 @@ function saveMeasurement(box, sensorId, value, createdAt){
         measurement.save()
       ];
       return Promise.all(qrys);
+    } else if (i === 0) {
+      return Promise.reject("sensor not found");
     }
   };
 }
@@ -582,7 +594,7 @@ function postNewMeasurements(req, res, next) {
   if(data){
     Box.findOne({_id: req.params.boxId}, function(error,box){
       if (error) {
-        return next(new restify.InvalidArgumentError(JSON.stringify(error.errors)));
+        return next(new restify.InvalidArgumentError(JSON.stringify(error.message)));
       } else {
         saveMeasurementArray(box, data, function(result){
           if(result){
