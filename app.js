@@ -346,12 +346,14 @@ function getMeasurements(req, res, next) {
  * @apiParam {String} download If set, offer download to the user (default: false, always on if CSV is used)
  * @apiParam {String} format Can be 'JSON' (default) or 'CSV' (default: JSON)
  */
+var maxTimeAgo = 1000*60*60*24*32;
+var defaultTimeAgo = 1000*60*60*48; // 48 hours
 function getData(req, res, next) {
   'use strict'
   // default to now
   var toDate = (typeof req.params["to-date"] == 'undefined' || req.params["to-date"] == "") ? new Date() : new Date(req.params["to-date"]);
   // default to 48 hours earlier
-  var fromDate = (typeof req.params["from-date"] == 'undefined' || req.params["from-date"] == "") ? new Date(toDate.valueOf() - 1000*60*60*48) : new Date(req.params["from-date"]);
+  var fromDate = (typeof req.params["from-date"] == 'undefined' || req.params["from-date"] == "") ? new Date(toDate.valueOf() - defaultTimeAgo) : new Date(req.params["from-date"]);
   var format = (typeof req.params["format"] == 'undefined') ? "json" : req.params["format"].toLowerCase();
 
   log.debug(fromDate, "to", toDate);
@@ -359,7 +361,7 @@ function getData(req, res, next) {
   if (toDate.valueOf() < fromDate.valueOf()) {
     return next(new restify.InvalidArgumentError(JSON.stringify('Invalid time frame specified')));
   }
-  if (toDate.valueOf()-fromDate.valueOf() > 1000*60*60*24*32) {
+  if (toDate.valueOf()-fromDate.valueOf() > maxTimeAgo) {
     return next(new restify.InvalidArgumentError(JSON.stringify('Please choose a time frame up to 31 days maximum')));
   }
 
@@ -381,7 +383,7 @@ function getData(req, res, next) {
     Measurement.find(qry,{"createdAt":1, "value":1, "_id": 0}) // do not send _id column
     .limit(queryLimit)
     .lean()
-    .stream()
+    .cursor()
     .pipe(stringifier)
     .pipe(res);
   } else {
@@ -394,7 +396,7 @@ function getData(req, res, next) {
     Measurement.find(qry,{"createdAt":1, "value":1, "_id": 0}) // do not send _id column
     .limit(queryLimit)
     .lean()
-    .stream({ // http://stackoverflow.com/a/34485539/1781026
+    .cursor({ // was .stream() => http://stackoverflow.com/a/34485539/1781026
       transform: (() => {
         let index = 0;
         return (data) => {
@@ -478,7 +480,7 @@ function getDataMulti(req, res, next) {
         }
       },{"createdAt":1, "value":1, "_id": 0, "sensor_id":1})
       .lean()
-      .stream({
+      .cursor({
         transform:(() => {
           return (data) => {
             data.createdAt = new Date(data.createdAt).toISOString();
