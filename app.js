@@ -125,6 +125,15 @@ server.put({path: PATH + '/:boxId' , version: '0.1.0'} , updateBox);
 // DELETE
 server.del({path: PATH + '/:boxId' , version: '0.1.0'} , deleteBox);
 
+// helper function to determine the requested format
+function getFormat (req, allowed_formats, default_format) {
+  if (typeof req.params["format"] === "undefined") {
+    return default_format;
+  } else if (allowed_formats.indexOf(req.params["format"]) !== -1) {
+    return req.params["format"];
+  }
+}
+
 function unknownMethodHandler(req, res) {
   if (req.method.toLowerCase() === 'options') {
     var allowHeaders = ['Accept', 'X-ApiKey', 'Accept-Version', 'Content-Type', 'Api-Version', 'Origin', 'X-Requested-With']; // added Origin & X-Requested-With
@@ -648,6 +657,12 @@ function saveMeasurementArray(box, arr, callback){
 function findAllBoxes(req, res , next){
   var activityAroundDate = (typeof req.params["date"] === 'undefined' || req.params["date"] === "") ? undefined : req.params["date"];
   var phenomenon = (typeof req.params["phenomenon"] === 'undefined' || req.params["phenomenon"] === "") ? undefined : req.params["phenomenon"];
+
+  var format = getFormat(req, ["json", "geojson"], "json");
+  if (typeof format === "undefined") {
+    return next(new restify.InvalidArgumentError("Invalid format: " + req.params['format']));
+  }
+
   var fromDate,
       toDate,
       dates;
@@ -703,16 +718,34 @@ function findAllBoxes(req, res , next){
         return(_boxes);
       }
       return(boxes);
-    }).then(function(resultset){
-      if (req.params[1] === "json" || typeof req.params[1] === 'undefined') {
+    })
+    .then(function (result_boxes) {
+      // clean up result..
+      return result_boxes.map(function (box) {
+        box.__v = undefined;
+
+        box.sensor = box.sensors.map(function (sensor) {
+          if (sensor.lastMeasurement) {
+            sensor.lastMeasurement.__v = undefined;
+          }
+          return sensor;
+        });
+
+        box.loc[0]._id = undefined;
+
+        return box;
+      });
+    })
+    .then(function(resultset){
+      if (format === "json") {
         res.send(resultset);
-      } else if (req.params[1] === "geojson") {
+      } else if (format === "geojson") {
         tmp = JSON.stringify(resultset);
         tmp = JSON.parse(tmp);
         var geojson = _.transform(tmp, function(result, n) {
           lat = n.loc[0].geometry.coordinates[1];
           lng = n.loc[0].geometry.coordinates[0];
-          delete n["loc"];
+          n["loc"] = undefined;
           n["lat"] = lat;
           n["lng"] = lng;
           return result.push(n);
@@ -722,6 +755,7 @@ function findAllBoxes(req, res , next){
 
     }).catch(function (err) {
       console.log(err);
+      return next(new restify.InternalServerError(JSON.stringify(err)));
     });
   };
 
@@ -801,33 +835,52 @@ function findAllBoxes(req, res , next){
   ]
 }
  */
+
 function findBox(req, res, next) {
   var id = req.params['boxId'].toString();
-  var format = (req.params['format'] && req.params['format'] !== '') ? req.params['format'].toString() : "json";
-  if (isEmptyObject(req.query) && mongoose.Types.ObjectId.isValid(id)) {
-    Box.findOne({_id: id}).exec(function(error,box){
-      if (error) return next(new restify.InvalidArgumentError());
+  var format = getFormat(req, ["json", "geojson"], "json");
+  if (typeof format === "undefined") {
+    return next(new restify.InvalidArgumentError("Invalid format: " + req.params['format']));
+  }
+
+  if (mongoose.Types.ObjectId.isValid(id)) {
+    Box.findOne({_id: id}).exec().then(function(box){
       if (box) {
         box.populate('sensors.lastMeasurement');
-        if (format === "json" || typeof format === 'undefined') {
+
+        // clean up box
+        box.__v = undefined;
+
+        box.sensor = box.sensors.map(function (sensor) {
+          if (sensor.lastMeasurement) {
+            sensor.lastMeasurement.__v = undefined;
+          }
+          return sensor;
+        });
+
+        box.loc[0]._id = undefined;
+
+        if (format === "json") {
           res.send(box);
         } else if (format === "geojson") {
-          tmp = JSON.stringify(box);
+          var tmp = JSON.stringify(box);
           tmp = JSON.parse(tmp);
-          lat = tmp.loc[0].geometry.coordinates[1];
-          lng = tmp.loc[0].geometry.coordinates[0];
-          delete tmp["loc"];
+          var lat = tmp.loc[0].geometry.coordinates[1];
+          var lng = tmp.loc[0].geometry.coordinates[0];
+          tmp["loc"] = undefined;
           tmp["lat"] = lat;
           tmp["lng"] = lng;
-          geojson = [tmp];
+          var geojson = [tmp];
           res.send(GeoJSON.parse(geojson, {Point: ['lat','lng']}));
         }
       } else {
-        res.send(404, "No senseBox found");
+        return next(new restify.NotFoundError("No senseBox found"));
       }
+    }).catch(function (error) {
+      return next(new restify.InternalServerError(error.errors));
     });
   } else{
-    res.send(404, "No senseBox found");
+    return next(new restify.NotFoundError("No senseBox found"));
   }
 }
 
