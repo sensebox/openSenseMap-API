@@ -755,6 +755,7 @@ function findAllBoxes(req, res , next){
 
     }).catch(function (err) {
       console.log(err);
+      _postToSlack(err);
       return next(new restify.InternalServerError(JSON.stringify(err)));
     });
   };
@@ -877,7 +878,9 @@ function findBox(req, res, next) {
         return next(new restify.NotFoundError("No senseBox found"));
       }
     }).catch(function (error) {
-      return next(new restify.InternalServerError(error.errors));
+      var e = error.errors;
+      _postToSlack(e);
+      return next(new restify.InternalServerError(e));
     });
   } else{
     return next(new restify.NotFoundError("No senseBox found"));
