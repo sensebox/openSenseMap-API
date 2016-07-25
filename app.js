@@ -392,7 +392,7 @@ function getData(req, res, next) {
     Measurement.find(qry,{"createdAt":1, "value":1, "_id": 0}) // do not send _id column
     .limit(queryLimit)
     .lean()
-    .cursor()
+    .stream()
     .pipe(stringifier)
     .pipe(res);
   } else {
@@ -405,7 +405,7 @@ function getData(req, res, next) {
     Measurement.find(qry,{"createdAt":1, "value":1, "_id": 0}) // do not send _id column
     .limit(queryLimit)
     .lean()
-    .cursor({ // was .stream() => http://stackoverflow.com/a/34485539/1781026
+    .stream({ // was .stream() => http://stackoverflow.com/a/34485539/1781026
       transform: (() => {
         let index = 0;
         return (data) => {
@@ -489,7 +489,7 @@ function getDataMulti(req, res, next) {
         }
       },{"createdAt":1, "value":1, "_id": 0, "sensor_id":1})
       .lean()
-      .cursor({
+      .stream({
         transform:(() => {
           return (data) => {
             data.createdAt = new Date(data.createdAt).toISOString();
