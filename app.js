@@ -619,36 +619,57 @@ function saveMeasurement(box, sensorId, value, createdAt){
  * curl -X POST -H 'Content-type:application/json' -d "[{ \"sensor\": \"56cb7c25b66992a02fe389de\", \"value\": \"3\" },{ \"sensor\": \"56cb7c25b66992a02fe389df\", \"value\": \"2\" }]" localhost:8000/boxes/56cb7c25b66992a02fe389d9/data
  */
 function postNewMeasurements(req, res, next) {
-  var data = JSON.parse(req.body);
-  if(data){
-    Box.findOne({_id: req.params.boxId}, function(error,box){
-      if (error) {
-        return next(new restify.InvalidArgumentError(JSON.stringify(error.message)));
-      } else {
-        saveMeasurementArray(box, data, function(result){
-          if(result){
-            res.send(201,"Measurements saved in box");
-          } else {
-            res.send(400,"Measurements could not be saved");
-          }
-        });
+  // when the body is an array, restify overwrites the req.params with the given array.
+  // to get the boxId, try to extract it from the path
+  var boxId = req.path().split("/")[2];
+  Box.findOne({ _id: boxId })
+    .then(function (box) {
+      if (!box) {
+        return next(new restify.NotFoundError("no senseBox found"));
       }
+      saveMeasurementArray(box, req.body)
+        .then(function () {
+          res.send(201, "Measurements saved in box");
+        })
+        .catch(function (err) {
+          console.log(err);
+          _postToSlack(err);
+          return next(new restify.InternalServerError(JSON.stringify(err)));
+        });
+    })
+    .catch(function (err) {
+      console.log(err);
+      _postToSlack(err);
+      return next(new restify.InternalServerError(JSON.stringify(err)));
     });
-  } else {
-    res.send(400, "Invalid request");
-  }
 }
 
-function saveMeasurementArray(box, arr, callback){
+function saveMeasurementArray (box, data) {
+  if (!Array.isArray(data)) {
+    return Promise.reject("array expected");
+  }
+
+  if (data.length > 2000) {
+    return Promise.reject("array too big. Please stay below 2000 items");
+  }
+
   var qrys = [];
-  arr.forEach(function(data){
-    for (var i = box.sensors.length-1; i >= 0; i--) {
-      if (box.sensors[i]._id.equals(data.sensor)) {
+  data.forEach(function (measurement) {
+    for (var i = box.sensors.length - 1; i >= 0; i--) {
+      if (box.sensors[i]._id.equals(measurement.sensor)) {
         var measurementData = {
-          value: data.value,
+          value: measurement.value,
           _id: mongoose.Types.ObjectId(),
-          sensor_id: data.sensor
+          sensor_id: measurement.sensor
         };
+
+        if (typeof measurement.createdAt !== "undefined") {
+          try {
+            measurementData.createdAt = new Date(measurement.createdAt);
+          } catch (e) {
+            return Promise.reject(e);
+          }
+        }
 
         var measurement = new Measurement(measurementData);
 
@@ -658,7 +679,7 @@ function saveMeasurementArray(box, arr, callback){
       }
     }
   });
-  Promise.all(qrys).then(callback);
+  return Promise.all(qrys);
 }
 
 /**
