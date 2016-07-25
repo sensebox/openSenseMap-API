@@ -1,5 +1,5 @@
 {
-  "name": "OpenSenseMapAPI",
+  "name": "openSenseMapAPI",
   "version": "0.0.1",
   "description": "API for opensensemap.org",
   "main": "app.js",
@@ -26,19 +26,19 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/mpfeil/OpenSenseMap-API.git"
+    "url": "https://github.com/mpfeil/openSenseMap-API.git"
   },
   "author": "Matthias Pfeil",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/mpfeil/OpenSenseMap-API/issues"
+    "url": "https://github.com/mpfeil/openSenseMap-API/issues"
   },
-  "homepage": "https://github.com/mpfeil/OpenSenseMap-API",
+  "homepage": "https://github.com/mpfeil/openSenseMap-API",
   "apidoc": {
-    "name": "OpenSenseMap API documentation",
+    "name": "openSenseMap API documentation",
     "version": "0.0.1",
-    "description": "Documentation for OpenSenseMap to register and administer SenseBoxes",
-    "title": "OpenSenseMap API docs title",
-    "url": "http://opensensemap.org:8000"
+    "description": "Documentation for openSenseMap to register and administer senseBoxes",
+    "title": "openSenseMap API docs title",
+    "url": "https://api.opensensemap.org"
   }
 }

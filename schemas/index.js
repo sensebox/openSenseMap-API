@@ -56,13 +56,18 @@ var sensorSchema = new Schema({
     required: false,
     trim: true
   },
+  icon: {
+    type: String,
+    required: false,
+    trim: true
+  },
   lastMeasurement: {
     type: Schema.Types.ObjectId,
     ref: 'Measurement'
   }
 });
 
-//SenseBox schema
+//senseBox schema
 var boxSchema = new Schema({
   name: {
     type: String,
@@ -96,6 +101,11 @@ var boxSchema = new Schema({
   description: {
     type: String,
     required: false
+  },
+  icon: {
+    type: String,
+    required: false,
+    trim: true
   },
   sensors: [sensorSchema]
 },{ strict: false });

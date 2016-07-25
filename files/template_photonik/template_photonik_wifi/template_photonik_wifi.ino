@@ -1,5 +1,5 @@
 /*
-SenseBox Citizen Sensingplatform
+senseBox Citizen Sensingplatform
 
 Sensor Connections on Base-Shield
  A0: UV-Sensor
@@ -21,7 +21,7 @@ Note: Sketch for SB-Photonik-WiFi.
 #include <Digital_Light_TSL2561.h>
 //#include <avr/wdt.h>
 
-//SenseBox ID
+//senseBox ID
 
 //Sensor IDs
 
@@ -29,16 +29,16 @@ Note: Sketch for SB-Photonik-WiFi.
 #define WLAN_SSID       "WiFi_Name"           // cannot be longer than 32 characters!
 #define WLAN_PASS       "WiFi_Password"
 // Security can be WLAN_SEC_UNSEC, WLAN_SEC_WEP, WLAN_SEC_WPA or WLAN_SEC_WPA2
-#define WLAN_SECURITY   WLAN_SEC_WPA2  
+#define WLAN_SECURITY   WLAN_SEC_WPA2
 
 // These are the interrupt and control pins
-#define ADAFRUIT_CC3000_IRQ   3  
+#define ADAFRUIT_CC3000_IRQ   3
 #define ADAFRUIT_CC3000_VBAT  5
 #define ADAFRUIT_CC3000_CS    10
-#define IDLE_TIMEOUT_MS  3000  
+#define IDLE_TIMEOUT_MS  3000
 
 Adafruit_CC3000 cc3000 = Adafruit_CC3000(ADAFRUIT_CC3000_CS, ADAFRUIT_CC3000_IRQ, ADAFRUIT_CC3000_VBAT,
-                                         SPI_CLOCK_DIVIDER); // you can change this clock speed  
+                                         SPI_CLOCK_DIVIDER); // you can change this clock speed
 //Server values
 #define WEBSITE "www.opensensemap.org"
 uint32_t ip = 2159055603;
@@ -70,15 +70,15 @@ void setup(void)
     Serial.println(F("failed! Check your wiring?"));
     while(1);
   }
-  
+
   Serial.print(F("\nAttempting to connect to ")); Serial.println(WLAN_SSID);
   if (!cc3000.connectToAP(WLAN_SSID, WLAN_PASS, WLAN_SECURITY)) {
     Serial.println(F("Failed!"));
     while(1);
   }
-   
+
   Serial.println(F("Connected!"));
-  
+
   /* Wait for DHCP to complete */
   Serial.println(F("Requesting DHCP"));
   while (!cc3000.checkDHCP())
@@ -93,7 +93,7 @@ void setup(void)
     }
     delay(500);
   }
-  cc3000.printIPdotsRev(ip);  
+  cc3000.printIPdotsRev(ip);
   Serial.println("\nSTARTING UP");
   barometer.init();
   dht.begin();
@@ -139,37 +139,37 @@ void loop(void)
     Serial.println("done...................");
   }
 
-  jsonData = "{\"value\":"; 
-  jsonData += sensorSample; 
+  jsonData = "{\"value\":";
+  jsonData += sensorSample;
   jsonData += "}";
   Serial.println(jsonData);
   contLen = jsonData.length();
   Adafruit_CC3000_Client client = cc3000.connectTCP(ip, 8000);
-  
+
   if (client.connected()) {
     client.print("POST /boxes/");
     client.print(SENSEBOX_ID);
-    client.print("/"); 
-    client.print(currentSensorId); 
-    client.print(" HTTP/1.1\r\n"); 
+    client.print("/");
+    client.print(currentSensorId);
+    client.print(" HTTP/1.1\r\n");
     client.println("Host: opensensemap.org");
-    client.println("Content-Type: application/json");   
-    client.print("Content-Length: "); 
-    client.println(contLen); 
+    client.println("Content-Type: application/json");
+    client.print("Content-Length: ");
+    client.println(contLen);
     client.println("Connection: close");
-    client.println(); 
-    client.print(jsonData); 
-    client.println(); 
+    client.println();
+    client.print(jsonData);
+    client.println();
     Serial.println("done!");
     uploadSuccess = true;
   } else {
-    Serial.println(F("Connection failed"));    
+    Serial.println(F("Connection failed"));
     uploadSuccess = false;
     return;
   }
 
   Serial.println(F("-------------------------------------"));
-  
+
   unsigned long lastRead = millis();
   while (client.connected() && (millis() - lastRead < IDLE_TIMEOUT_MS)) {
     while (client.available()) {
@@ -185,7 +185,7 @@ void loop(void)
       sampleType = 1;
     }else sampleType++;
   }
-  
+
   Serial.println(F("\n\nConnection closed."));
 
  delay(1000);
@@ -208,6 +208,6 @@ int calcUVIndex(int analogVal){
  uvindex = uvindex * 307;
  //UVI => illumination intesity / 200
  uvindex = uvindex / 200;
- 
+
  return int(uvindex+0.5);
-} 
+}

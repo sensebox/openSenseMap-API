@@ -1,11 +1,11 @@
 /*
-SenseBox Home - Citizen Sensingplatform
+senseBox Home - Citizen Sensingplatform
 Version: 2.1
 Date: 2015-09-09
 Homepage: http://www.sensebox.de
 Author: Jan Wirwahn, Institute for Geoinformatics, University of Muenster
-Note: Sketch for SenseBox Home Kit
-Email: support@sensebox.de 
+Note: Sketch for senseBox Home Kit
+Email: support@sensebox.de
 */
 
 #include <Wire.h>
@@ -15,7 +15,7 @@ Email: support@sensebox.de
 #include <SPI.h>
 #include <Ethernet.h>
 
-//SenseBox ID
+//senseBox ID
 
 //Sensor IDs
 
@@ -47,7 +47,7 @@ void setup() {
   // Open serial communications and wait for port to open:
   Serial.begin(9600);
   // start the Ethernet connection:
-  Serial.println("SenseBox Home software version 2.1");
+  Serial.println("senseBox Home software version 2.1");
   Serial.println();
   Serial.print("Starting ethernet connection...");
   if (Ethernet.begin(mac) == 0) {
@@ -82,7 +82,7 @@ void loop()
   }
 
   if (millis() - oldTime > postingInterval) {
-    oldTime = millis();   
+    oldTime = millis();
     //-----Pressure-----//
     Serial.println("Posting pressure");
     messTyp = 2;
@@ -90,17 +90,17 @@ void loop()
     if(result!=0){
       delay(result);
       result = BMP.getTemperatureAndPressure(tempBaro,pressure);
-      postObservation(pressure, PRESSURESENSOR_ID, SENSEBOX_ID); 
+      postObservation(pressure, PRESSURESENSOR_ID, SENSEBOX_ID);
       //Serial.print("Temp_baro = ");Serial.println(tempBaro,2);
       //Serial.print("Pressure  = ");Serial.println(pressure,2);
     }
-    delay(2000); 
+    delay(2000);
     //-----Humidity-----//
     Serial.println("Posting humidity");
     messTyp = 2;
     humidity = HDC.getHumi();
     //Serial.print("Humidity = "); Serial.println(humidity);
-    postObservation(humidity, HUMISENSOR_ID, SENSEBOX_ID); 
+    postObservation(humidity, HUMISENSOR_ID, SENSEBOX_ID);
     delay(2000);
     //-----Temperature-----//
     Serial.println("Posting temperature");
@@ -108,8 +108,8 @@ void loop()
     temperature = HDC.getTemp();
     //Serial.println(temperature,2);
     //Serial.print("Temperature = ");Serial.println(temperature);
-    postObservation(temperature, TEMPSENSOR_ID, SENSEBOX_ID); 
-    delay(2000);  
+    postObservation(temperature, TEMPSENSOR_ID, SENSEBOX_ID);
+    delay(2000);
     //-----Lux-----//
     Serial.println("Posting illuminance");
     messTyp = 1;
@@ -124,59 +124,59 @@ void loop()
   }
 }
 
-void postObservation(float measurement, String sensorId, String boxId){ 
-  char obs[10]; 
+void postObservation(float measurement, String sensorId, String boxId){
+  char obs[10];
   if (messTyp == 1) dtostrf(measurement, 5, 0, obs);
   else if (messTyp == 2) dtostrf(measurement, 5, 2, obs);
-  Serial.println(obs); 
-  //json must look like: {"value":"12.5"} 
+  Serial.println(obs);
+  //json must look like: {"value":"12.5"}
   //post observation to: http://opensensemap.org:8000/boxes/boxId/sensorId
-  Serial.println("connecting..."); 
-  String value = "{\"value\":"; 
-  value += obs; 
+  Serial.println("connecting...");
+  String value = "{\"value\":";
+  value += obs;
   value += "}";
-  if (client.connect(server, 8000)) 
+  if (client.connect(server, 8000))
   {
-    Serial.println("connected"); 
-    // Make a HTTP Post request: 
-    client.print("POST /boxes/"); 
+    Serial.println("connected");
+    // Make a HTTP Post request:
+    client.print("POST /boxes/");
     client.print(boxId);
-    client.print("/"); 
-    client.print(sensorId); 
-    client.println(" HTTP/1.1"); 
-    // Send the required header parameters 
-    client.println("Host:opensensemap.org"); 
-    client.println("Content-Type: application/json"); 
-    client.println("Connection: close");  
-    client.print("Content-Length: "); 
-    client.println(value.length()); 
-    client.println(); 
+    client.print("/");
+    client.print(sensorId);
+    client.println(" HTTP/1.1");
+    // Send the required header parameters
+    client.println("Host:opensensemap.org");
+    client.println("Content-Type: application/json");
+    client.println("Connection: close");
+    client.print("Content-Length: ");
+    client.println(value.length());
+    client.println();
     // Send the data
-    client.print(value); 
-    client.println(); 
-  } 
+    client.print(value);
+    client.println();
+  }
   waitForResponse();
 }
 
 void waitForResponse()
-{ 
-  // if there are incoming bytes available 
-  // from the server, read them and print them: 
-  boolean repeat = true; 
-  do{ 
-    if (client.available()) 
-    { 
+{
+  // if there are incoming bytes available
+  // from the server, read them and print them:
+  boolean repeat = true;
+  do{
+    if (client.available())
+    {
       char c = client.read();
-      Serial.print(c); 
-    } 
-    // if the servers disconnected, stop the client: 
-    if (!client.connected()) 
+      Serial.print(c);
+    }
+    // if the servers disconnected, stop the client:
+    if (!client.connected())
     {
       Serial.println();
-      Serial.println("disconnecting."); 
-      client.stop(); 
-      repeat = false; 
-    } 
+      Serial.println("disconnecting.");
+      client.stop();
+      repeat = false;
+    }
   }
   while (repeat);
 }

@@ -1,5 +1,5 @@
 /*
-SenseBox Citizen Sensingplatform
+senseBox Citizen Sensingplatform
 WiFi Version: 0.9
 Date: 2016-06-01
 Homepage: http://www.sensebox.de
@@ -16,7 +16,7 @@ Code is in the public domain.
 char ssid[] = "";      //  your network SSID (name)
 char pass[] = "";   // your network password
 int keyIndex = 0;            // your network key Index number (needed only for WEP)
-//SenseBox ID
+//senseBox ID
 //Sensor IDs
 int status = WL_IDLE_STATUS;
 // Initialize the Wifi client library

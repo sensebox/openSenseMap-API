@@ -1,9 +1,9 @@
-OpenSenseMap-API
+openSenseMap-API
 ================
-This is the back-end for [OpenSenseMap](http://opensensemap.org).
+This is the back-end for [openSenseMap](http://opensensemap.org).
 
-OpenSenseMap is part of the [SenseBox](http//sensebox.de) project.
-To get more information about OpenSenseBox and SenseBox visit the before mentioned links or have a look at this [video](https://www.youtube.com/watch?v=uTOWYa42_rI).
+openSenseMap is part of the [senseBox](http//sensebox.de) project.
+To get more information about openSenseBox and senseBox visit the before mentioned links or have a look at this [video](https://www.youtube.com/watch?v=uTOWYa42_rI).
 
 The API has been built as part of my bachelor thesis at the ifgi (Institute for Geoinformatics, WWU Münster).
 

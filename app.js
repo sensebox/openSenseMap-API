@@ -160,8 +160,8 @@ server.on('MethodNotAllowed', unknownMethodHandler);
 /**
  * @api {get} /boxes/users/:boxId Check for valid API key
  * @apiDescription Check for valid API key. Will return status code 400 if invalid, 200 if valid.
- * @apiParam {ID} boxId SenseBox unique ID.
- * @apiHeader {ObjectId} x-apikey SenseBox specific apikey
+ * @apiParam {ID} boxId senseBox unique ID.
+ * @apiHeader {ObjectId} x-apikey senseBox specific apikey
  * @apiHeaderExample {json} Request-Example:
  *   {
  *     'X-ApiKey':54d3a96d5438b4440913434b
@@ -202,10 +202,10 @@ function decodeBase64Image(dataString) {
 }
 
 /**
- * @api {put} /boxes/:boxId Update a SenseBox: Image and sensor names
- * @apiDescription Modify the specified SenseBox.
- * @apiParam {ID} boxId SenseBox unique ID.
- * @apiHeader {ObjectId} x-apikey SenseBox specific apikey
+ * @api {put} /boxes/:boxId Update a senseBox: Image and sensor names
+ * @apiDescription Modify the specified senseBox.
+ * @apiParam {ID} boxId senseBox unique ID.
+ * @apiHeader {ObjectId} x-apikey senseBox specific apikey
  * @apiHeaderExample {json} Request-Example:
  *   {
  *     'X-ApiKey':54d3a96d5438b4440913434b
@@ -323,18 +323,18 @@ function updateBox(req, res, next) {
         });
       });
     } else {
-     res.send(400, "ApiKey does not match SenseBoxID");
+     res.send(400, "ApiKey does not match senseBoxID");
     }
   });
 }
 
 /**
  * @api {get} /boxes/:boxId/sensors Get all last measurements
- * @apiDescription Get last measurements of all sensors of the secified SenseBox.
+ * @apiDescription Get last measurements of all sensors of the secified senseBox.
  * @apiVersion 0.0.1
  * @apiGroup Measurements
  * @apiName getMeasurements
- * @apiParam {ID} boxId SenseBox unique ID.
+ * @apiParam {ID} boxId senseBox unique ID.
  */
 function getMeasurements(req, res, next) {
   Box.findOne({_id: req.params.boxId},{sensors:1}).populate('sensors.lastMeasurement').lean().exec(function(error,sensors){
@@ -352,7 +352,7 @@ function getMeasurements(req, res, next) {
  * @apiVersion 0.0.1
  * @apiGroup Measurements
  * @apiName getData
- * @apiParam {ID} boxId SenseBox unique ID.
+ * @apiParam {ID} boxId senseBox unique ID.
  * @apiParam {ID} sensorId Sensor unique ID.
  * @apiParam {String} from-date Beginning date of measurement data (default: 24 hours ago from now)
  * @apiParam {String} to-date End date of measurement data (default: now)
@@ -451,7 +451,7 @@ function getData(req, res, next) {
  * @apiVersion 0.1.0
  * @apiGroup Measurements
  * @apiName getDataMulti
- * @apiParam {ID} boxId Comma separated list of SenseBox unique IDs.
+ * @apiParam {ID} boxId Comma separated list of senseBox unique IDs.
  */
 function getDataMulti(req, res, next) {
   'use strict'
@@ -542,7 +542,7 @@ function getDataMulti(req, res, next) {
  * @apiVersion 0.0.1
  * @apiGroup Measurements
  * @apiName postNewMeasurement
- * @apiParam {ID} boxId SenseBox unique ID.
+ * @apiParam {ID} boxId senseBox unique ID.
  * @apiParam {ID} sensorId Sensors unique ID.
  * @apiParamExample Request-Example:
  * curl --data value=22 localhost:8000/boxes/56ccb342eda956582a88e48c/56ccb342eda956582a88e490
@@ -613,7 +613,7 @@ function saveMeasurement(box, sensorId, value, createdAt){
  * @apiVersion 0.1.0
  * @apiGroup Measurements
  * @apiName postNewMeasurements
- * @apiParam {ID} boxId SenseBox unique ID.
+ * @apiParam {ID} boxId senseBox unique ID.
  * @apiSampleRequest
  * [{ "sensor": "56cb7c25b66992a02fe389de", "value": "3" },{ "sensor": "56cb7c25b66992a02fe389df", "value": "2" }]
  * curl -X POST -H 'Content-type:application/json' -d "[{ \"sensor\": \"56cb7c25b66992a02fe389de\", \"value\": \"3\" },{ \"sensor\": \"56cb7c25b66992a02fe389df\", \"value\": \"2\" }]" localhost:8000/boxes/56cb7c25b66992a02fe389d9/data
@@ -662,7 +662,7 @@ function saveMeasurementArray(box, arr, callback){
 }
 
 /**
- * @api {get} /boxes?date=:date&phenomenon=:phenomenon Get all SenseBoxes. With the optional `date` and `phenomenon` parameters you can find SenseBoxes that have submitted data around that time, +/- 2 hours, or specify two dates separated by a comma.
+ * @api {get} /boxes?date=:date&phenomenon=:phenomenon Get all senseBoxes. With the optional `date` and `phenomenon` parameters you can find senseBoxes that have submitted data around that time, +/- 2 hours, or specify two dates separated by a comma.
  * @apiName findAllBoxes
  * @apiGroup Boxes
  * @apiVersion 0.1.0
@@ -810,15 +810,15 @@ function findAllBoxes(req, res , next){
 }
 
 /**
- * @api {get} /boxes/:boxId Get one SenseBox
+ * @api {get} /boxes/:boxId Get one senseBox
  * @apiName findBox
  * @apiVersion 0.0.1
  * @apiGroup Boxes
- * @apiParam {ID} boxId SenseBox unique ID.
- * @apiSuccess {String} _id SenseBox unique ID.
- * @apiSuccess {String} boxType SenseBox type (fixed or mobile).
+ * @apiParam {ID} boxId senseBox unique ID.
+ * @apiSuccess {String} _id senseBox unique ID.
+ * @apiSuccess {String} boxType senseBox type (fixed or mobile).
  * @apiSuccess {Array} sensors All attached sensors.
- * @apiSuccess {Array} loc Location of SenseBox.
+ * @apiSuccess {Array} loc Location of senseBox.
  * @apiSuccessExample Example data on success:
  * {
   "_id": "5386e44d5f08822009b8b614",
@@ -968,8 +968,8 @@ function createNewBox (req) {
 }
 
 /**
- * @api {post} /boxes Post new SenseBox
- * @apiDescription Create a new SenseBox.
+ * @api {post} /boxes Post new senseBox
+ * @apiDescription Create a new senseBox.
  * @apiVersion 0.0.1
  * @apiGroup Boxes
  * @apiName postNewBox
@@ -1043,7 +1043,7 @@ function genScript(box, model) {
       break;
   }
   fs.readFileSync(filename).toString().split('\n').forEach(function (line) {
-    if (line.indexOf("//SenseBox ID") != -1) {
+    if (line.indexOf("//senseBox ID") != -1) {
       fs.appendFileSync(output, line.toString() + "\n");
       fs.appendFileSync(output, '#define SENSEBOX_ID "'+box._id+'"\n');
     } else if (line.indexOf("//Sensor IDs") != -1) {

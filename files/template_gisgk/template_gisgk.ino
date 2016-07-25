@@ -1,5 +1,5 @@
 /*
-SenseBox Citizen Sensingplatform
+senseBox Citizen Sensingplatform
 Version: 1.2
 Date: 2015-01-06
 Homepage: http://www.sensebox.de
@@ -15,7 +15,7 @@ Note: Version with additional sensors for GIS-GK@ifgi
 #include <Digital_Light_TSL2561.h>
 #include <avr/wdt.h>
 
-//SenseBox ID
+//senseBox ID
 
 //Sensor IDs
 
@@ -60,7 +60,7 @@ void setup(){
   pinMode(SDCARD_CS,OUTPUT);
   digitalWrite(SDCARD_CS,HIGH);
   delay(500);
-  // start the Ethernet connection 
+  // start the Ethernet connection
   if (Ethernet.begin(mac) == 0) {
     Serial.println("Failed to configure Ethernet using DHCP.");
     //If DHCP is disabled, use static IP
@@ -71,7 +71,7 @@ void setup(){
   for (byte thisByte = 0; thisByte < 4; thisByte++) {
     // print the value of each byte of the IP address:
     Serial.print(Ethernet.localIP()[thisByte], DEC);
-    Serial.print("."); 
+    Serial.print(".");
   }
   Serial.println();
   barometer.init();
@@ -93,7 +93,7 @@ void loop(){
     Serial.println();
     Serial.println("...stopping client!");
     client.stop();
-  }  
+  }
   //If last upload was successful, switch case to select the next sensor
   if (uploadSuccess){
     Serial.println();
@@ -137,14 +137,14 @@ void loop(){
     }
   }
   // if you're not already connected, and 60 seconds have passed since
-  // your last connection, then connect again and send data: 
+  // your last connection, then connect again and send data:
   uploadSuccess = false;
   if(!client.connected() && (millis() - lastConnectionTime > postingInterval)) {
     Serial.println("-----------------------------------");
     Serial.print("Connecting and posting sensor sample (case ");
     Serial.print(sampleType);
     Serial.print(")...");
-    Serial.println(); 
+    Serial.println();
     postObservation(sensorSample, currentSensorId, SENSEBOX_ID);
   }
   // store the state of the connection for next time through the loop
@@ -182,36 +182,36 @@ int calcUVIndex(int analogValue){
 
 //Method for posting a measurement to OSM server
 void postObservation(String measurement, String sensorId, String boxId)
-{  
+{
   //if (measurement=="") return;
   wdt_enable(WDTO_8S);
-  //json must look like {"value":"12.5"} 
-  String valueJson = "{\"value\":"; 
-  valueJson += measurement; 
+  //json must look like {"value":"12.5"}
+  String valueJson = "{\"value\":";
+  valueJson += measurement;
   valueJson += "}";
   Serial.println(valueJson);
   //post observation to: http://opensensemap.org:8000/boxes/boxId/sensorId
-  // if you get a connection, report back via serial: 
+  // if you get a connection, report back via serial:
   wdt_reset();
-  if (client.connect(server, 8000)) 
+  if (client.connect(server, 8000))
   {
-    Serial.print("connected..."); 
+    Serial.print("connected...");
     Serial.println();
-    // Make a HTTP Post request: 
-    client.print("POST /boxes/"); 
+    // Make a HTTP Post request:
+    client.print("POST /boxes/");
     client.print(boxId);
-    client.print("/"); 
-    client.print(sensorId); 
-    client.println(" HTTP/1.1"); 
-    // Send the required header parameters 
-    client.println("Host:opensensemap.org"); 
-    client.println("Content-Type: application/json"); 
-    client.println("Connection: close");  
-    client.print("Content-Length: "); 
-    client.println(valueJson.length()); 
-    client.println(); 
-    client.print(valueJson); 
-    client.println(); 
+    client.print("/");
+    client.print(sensorId);
+    client.println(" HTTP/1.1");
+    // Send the required header parameters
+    client.println("Host:opensensemap.org");
+    client.println("Content-Type: application/json");
+    client.println("Connection: close");
+    client.print("Content-Length: ");
+    client.println(valueJson.length());
+    client.println();
+    client.print(valueJson);
+    client.println();
     Serial.println("done!");
     uploadSuccess = true;
     //Change case
@@ -220,7 +220,7 @@ void postObservation(String measurement, String sensorId, String boxId)
       // remember the time that the connection was made or attempted
       lastConnectionTime = millis();
     }else sampleType++;
-  }else 
+  }else
   {
     // stop the client if you couldn't make a connection !
     Serial.println("failed...disconnecting.");
