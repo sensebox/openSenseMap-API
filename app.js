@@ -6,9 +6,8 @@ var restify = require('restify'),
   products = require('./products'),
   cfg = require('./config'),
   schemas = require('./schemas'),
-  //json2csv = require('json2csv'),
   csvstringify = require('csv-stringify'),
-  csvgenerate = require('csv-generate'),
+  csvtransform = require('stream-transform'),
   Stream = require('stream'),
   nodemailer = require('nodemailer'),
   smtpTransport = require('nodemailer-smtp-transport'),
@@ -18,6 +17,11 @@ var restify = require('restify'),
 
 mongoose.Promise = require('bluebird');
 var dbHost = process.env.DB_HOST || cfg.dbhost;
+
+
+var TIME_AGO_MAX = 1000*60*60*24*32;
+var TIME_AGO_48_H = 1000*60*60*48; // 48 hours
+var TIME_AGO_15_D = 1000*60*60*24*15 // 15 days
 
 /*
   Logging
@@ -129,7 +133,7 @@ server.del({path: PATH + '/:boxId' , version: '0.1.0'} , deleteBox);
 function getFormat (req, allowed_formats, default_format) {
   if (typeof req.params["format"] === "undefined") {
     return default_format;
-  } else if (allowed_formats.indexOf(req.params["format"]) !== -1) {
+  } else if (allowed_formats.indexOf(req.params["format"].toLowerCase()) !== -1) {
     return req.params["format"];
   }
 }
@@ -355,76 +359,89 @@ function getMeasurements(req, res, next) {
  * @apiParam {String} download If set, offer download to the user (default: false, always on if CSV is used)
  * @apiParam {String} format Can be 'JSON' (default) or 'CSV' (default: JSON)
  */
-var maxTimeAgo = 1000*60*60*24*32;
-var defaultTimeAgo = 1000*60*60*48; // 48 hours
 function getData(req, res, next) {
   'use strict'
   // default to now
   var toDate = (typeof req.params["to-date"] == 'undefined' || req.params["to-date"] == "") ? new Date() : new Date(req.params["to-date"]);
   // default to 48 hours earlier
-  var fromDate = (typeof req.params["from-date"] == 'undefined' || req.params["from-date"] == "") ? new Date(toDate.valueOf() - defaultTimeAgo) : new Date(req.params["from-date"]);
-  var format = (typeof req.params["format"] == 'undefined') ? "json" : req.params["format"].toLowerCase();
+  var fromDate = (typeof req.params["from-date"] == 'undefined' || req.params["from-date"] == "") ? new Date(toDate.valueOf() - TIME_AGO_48_H) : new Date(req.params["from-date"]);
 
-  log.debug(fromDate, "to", toDate);
+  var format = getFormat(req, ["json", "csv"], "json");
+  if (typeof format === "undefined") {
+    return next(new restify.InvalidArgumentError("Invalid format: " + req.params['format']));
+  }
 
   if (toDate.valueOf() < fromDate.valueOf()) {
     return next(new restify.InvalidArgumentError(JSON.stringify('Invalid time frame specified')));
   }
-  if (toDate.valueOf()-fromDate.valueOf() > maxTimeAgo) {
+  if (toDate.valueOf()-fromDate.valueOf() > TIME_AGO_MAX) {
     return next(new restify.InvalidArgumentError(JSON.stringify('Please choose a time frame up to 31 days maximum')));
   }
 
   var queryLimit = 10000;
-  var resultLimit = 10000;
-
-  var generator = csvstringify({columns: ['createdAt', 'value']});
-  var stringifier = csvstringify({header: 1, delimiter: ';'});
 
   var qry = {
     sensor_id: req.params.sensorId,
     createdAt: { $gte: new Date(fromDate), $lte: new Date(toDate) }
   };
 
-  if(format == "csv") {
+  if (format === "csv") {
+    var stringifier = csvstringify({ columns: ['createdAt', 'value'], header: 1, delimiter: ';' });
+    var transformer = csvtransform(function (data) {
+      data.createdAt = new Date(data.createdAt).toISOString();
+      return data;
+    });
+
+    transformer.on('error', function(err){
+      console.log(err.message);
+      _postToSlack(err.message);
+      return next(new restify.InternalServerError(JSON.stringify(err.message)));
+    });
+
     res.header('Content-Type', 'text/csv');
     res.header('Content-Disposition', 'attachment; filename='+req.params.sensorId+'.csv');
 
     Measurement.find(qry,{"createdAt":1, "value":1, "_id": 0}) // do not send _id column
-    .limit(queryLimit)
-    .lean()
-    .stream()
-    .pipe(stringifier)
-    .pipe(res);
-  } else {
+      .limit(queryLimit)
+      .lean()
+      .cursor()
+      .pipe(transformer)
+      .pipe(stringifier)
+      .pipe(res);
+
+  } else if (format === "json") {
     res.header('Content-Type', 'application/json; charset=utf-8');
-    if(typeof req.params["download"] != 'undefined' && req.params["download"]=="true"){
+    if (typeof req.params["download"] !== "undefined" && req.params["download"] === "true"){
       // offer download to browser
       res.header('Content-Disposition', 'attachment; filename='+req.params.sensorId+'.'+format);
     }
-    var returnlength = 0;
-    Measurement.find(qry,{"createdAt":1, "value":1, "_id": 0}) // do not send _id column
+    let returnlength = 0;
+    let index = 0;
+    Measurement.find(qry, {"createdAt":1, "value":1, "_id": 0}) // do not send _id column
     .limit(queryLimit)
     .lean()
-    .stream({ // was .stream() => http://stackoverflow.com/a/34485539/1781026
-      transform: (() => {
-        let index = 0;
-        return (data) => {
-          return (!(index++) ? '[' : ',') + JSON.stringify(data);
-        };
-      })() // invoke
-    })
-    .on('data', (data) => {
+    .cursor()
+    .eachAsync((doc) => {
       returnlength = 1;
+      doc.__v = undefined;
+
+      // !(index++) is true the first time because !(0) evaluates to true
+      // http://stackoverflow.com/a/34485539/1781026
+      res.write((!(index++) ? '[' : ',') + JSON.stringify(doc))
     })
-    .on('end', (data) => {
-      if(returnlength > 0) {
-        res.write(']');
-      } else {
+    .then(() => {
+      if (returnlength === 0) {
         res.status(404);
-        res.write('[]');
+        res.end("[]");
+      } else {
+        res.end("]");
       }
     })
-    .pipe(res);
+    .catch(function (err) {
+      console.log(err);
+      _postToSlack(err.errors);
+      return next(new restify.InternalServerError(JSON.stringify(err.errors)));
+    });
   }
 }
 
@@ -441,20 +458,19 @@ function getDataMulti(req, res, next) {
 
   // default to now
   var toDate = (typeof req.params["to-date"] == 'undefined' || req.params["to-date"] == "") ? new Date() : new Date(req.params["to-date"]);
-  // default to 24 hours earlier
-  var fromDate = (typeof req.params["from-date"] == 'undefined' || req.params["from-date"] == "") ? new Date(toDate.valueOf() - 1000*60*60*24*15) : new Date(req.params["from-date"]);
+  // default to 15 days earlier
+  var fromDate = (typeof req.params["from-date"] == 'undefined' || req.params["from-date"] == "") ? new Date(toDate.valueOf() - TIME_AGO_15_D) : new Date(req.params["from-date"]);
 
   if (toDate.valueOf() < fromDate.valueOf()) {
     return next(new restify.InvalidArgumentError(JSON.stringify('Invalid time frame specified')));
   }
-  if (toDate.valueOf()-fromDate.valueOf() > 1000*60*60*24*32) {
+  if (toDate.valueOf()-fromDate.valueOf() > TIME_AGO_MAX) {
     return next(new restify.InvalidArgumentError(JSON.stringify('Please choose a time frame up to 31 days maximum')));
   }
   log.debug(fromDate, "to", toDate);
 
   if(req.params["phenomenon"] && req.params["boxid"]) {
-    var generator = csvstringify({columns: ['createdAt', 'value']});
-    var stringifier = csvstringify({header: 1, delimiter: ';'});
+    //var generator = csvstringify({columns: ['createdAt', 'value']});
 
     var phenom = req.params["phenomenon"].toString();
     var boxId = req.params["boxid"].toString();
@@ -467,19 +483,35 @@ function getDataMulti(req, res, next) {
       'sensors.title': req.params["phenomenon"].toString()
     })
     .lean()
-    .exec(function(error,boxData){
-      var sensors = {};
-      for(var i=0; i<boxData.length; i++) {
-        for(var j=0; j<boxData[i].sensors.length; j++){
-          if(boxData[i].sensors[j].title===phenom){
-            sensors[boxData[i].sensors[j]['_id']] = {};
+    .exec()
+    .then(function (boxData) {
+      var sensors = Object.create(null);
+
+      for (var i = 0, len = boxData.length; i < len; i++) {
+        for (var j = 0, sensorslen = boxData[i].sensors.length; j < sensorslen; j++) {
+          if (boxData[i].sensors[j].title === phenom) {
+            sensors[boxData[i].sensors[j]['_id']] = Object.create(null);
             sensors[boxData[i].sensors[j]['_id']].lat = boxData[i].loc[0].geometry.coordinates[0];
             sensors[boxData[i].sensors[j]['_id']].lng = boxData[i].loc[0].geometry.coordinates[1];
           }
         }
       }
 
-      var qry = Measurement.find({
+      var stringifier = csvstringify({ columns: ['createdAt', 'value', 'lat', 'lng'], header: 1, delimiter: ';' });
+      var transformer = csvtransform(function (data) {
+        data.createdAt = new Date(data.createdAt).toISOString();
+        data.lat = sensors[data.sensor_id].lat;
+        data.lng = sensors[data.sensor_id].lng;
+        return data;
+      });
+
+    transformer.on('error', function(err){
+      console.log(err.message);
+      _postToSlack(err.message);
+      return next(new restify.InternalServerError(JSON.stringify(err.message)));
+    });
+
+      Measurement.find({
         'sensor_id': {
           '$in': Object.keys(sensors)
         },
@@ -487,32 +519,18 @@ function getDataMulti(req, res, next) {
           "$gt": fromDate,
           "$lt": toDate
         }
-      },{"createdAt":1, "value":1, "_id": 0, "sensor_id":1})
+      }, {"createdAt":1, "value":1, "_id": 0, "sensor_id":1})
       .lean()
-      .stream({
-        transform:(() => {
-          return (data) => {
-            data.createdAt = new Date(data.createdAt).toISOString();
-            data.lat = sensors[data.sensor_id].lat;
-            data.lng = sensors[data.sensor_id].lng;
-            delete(data.sensor_id);
-            return data;
-          };
-        })()
-      });//{ transform: JSON.stringify }
-
-      qry
-        .pipe(stringifier)
-        .on('end', (data) => {
-            if(data){
-              res.header('Content-Type', 'text/csv');
-            } else {
-              res.status(404);
-            }
-        })
-        .pipe(res);
+      .cursor()
+      .pipe(transformer)
+      .pipe(stringifier)
+      .pipe(res)
+    })
+    .catch(function (err) {
+      console.log(err);
+      _postToSlack(err.errors);
+      return next(new restify.InternalServerError(JSON.stringify(err.errors)));
     });
-
   } else {
     return next(new restify.InvalidArgumentError(JSON.stringify('Invalid parameters')));
   }
