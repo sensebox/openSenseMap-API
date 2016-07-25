@@ -725,6 +725,7 @@ function findAllBoxes(req, res , next){
         box.__v = undefined;
 
         box.sensor = box.sensors.map(function (sensor) {
+          sensor.__v = undefined;
           if (sensor.lastMeasurement) {
             sensor.lastMeasurement.__v = undefined;
           }
@@ -853,6 +854,7 @@ function findBox(req, res, next) {
         box.__v = undefined;
 
         box.sensor = box.sensors.map(function (sensor) {
+          sensor.__v = undefined;
           if (sensor.lastMeasurement) {
             sensor.lastMeasurement.__v = undefined;
           }
