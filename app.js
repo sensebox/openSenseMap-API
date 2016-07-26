@@ -1052,6 +1052,7 @@ function postNewBox(req, res, next) {
 function genScript(box, model) {
   var output = cfg.targetFolder+""+box._id+".ino";
   try { if(fs.statSync(output)){ fs.unlinkSync(output); } } catch(e){}
+  var isCustom = false;
   switch(model){
     case 'homeEthernet':
       filename = "files/template_home/template_home.ino";
@@ -1063,6 +1064,7 @@ function genScript(box, model) {
       filename = "files/template_home_wifi/template_home_wifi.ino";
       break;
     default:
+      isCustom = true;
       filename = "files/template_custom_setup/template_custom_setup.ino";
       break;
   }
@@ -1076,22 +1078,22 @@ function genScript(box, model) {
       for (var i = box.sensors.length - 1; i >= 0; i--) {
         var sensor = box.sensors[i];
         log.debug(sensor);
-        if (sensor.title == "Temperatur") {
+        if (!isCustom && sensor.title == "Temperatur") {
           fs.appendFileSync(output, '#define TEMPSENSOR_ID "'+sensor._id+'"\n');
-        } else if(sensor.title == "rel. Luftfeuchte") {
+        } else if(!isCustom && sensor.title == "rel. Luftfeuchte") {
           fs.appendFileSync(output, '#define HUMISENSOR_ID "'+sensor._id+'"\n');
-        } else if(sensor.title == "Luftdruck") {
+        } else if(!isCustom && sensor.title == "Luftdruck") {
           fs.appendFileSync(output, '#define PRESSURESENSOR_ID "'+sensor._id+'"\n');
-        } else if(sensor.title == "Lautstärke") {
+        } else if(!isCustom && sensor.title == "Lautstärke") {
           fs.appendFileSync(output, '#define NOISESENSOR_ID "'+sensor._id+'"\n');
-        } else if(sensor.title == "Helligkeit") {
+        } else if(!isCustom && sensor.title == "Helligkeit") {
           fs.appendFileSync(output, '#define LIGHTSENSOR_ID "'+sensor._id+'"\n');
-        } else if (sensor.title == "Beleuchtungsstärke") {
+        } else if (!isCustom && sensor.title == "Beleuchtungsstärke") {
           fs.appendFileSync(output, '#define LUXSENSOR_ID "'+sensor._id+'"\n');
-        } else if (sensor.title == "UV-Intensität") {
+        } else if (!isCustom && sensor.title == "UV-Intensität") {
           fs.appendFileSync(output, '#define UVSENSOR_ID "'+sensor._id+'"\n');
         } else {
-          fs.appendFileSync(output, '#define SENSOR'+customSensorindex+'_ID "'+sensor._id+'" \/\/ '+sensor.title+' \n');
+          fs.appendFileSync(output, '#define SENSOR'+customSensorindex+'_ID "'+sensor._id+'" \/\/ '+sensor.title+'\n');
           customSensorindex++;
         }
       }

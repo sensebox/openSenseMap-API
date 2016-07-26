@@ -101,7 +101,7 @@ var boxSchema = new Schema({
   description: {
     type: String,
     required: false
-  }
+  },
   sensors: [sensorSchema]
 },{ strict: false });
 boxSchema.plugin(timestamp);
