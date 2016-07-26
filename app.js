@@ -304,14 +304,16 @@ function updateBox(req, res, next) {
               var newsensor = new Sensor({
                 'title': updatedsensor.title,
                 'unit': updatedsensor.unit,
-                'sensorType': updatedsensor.sensorType
+                'sensorType': updatedsensor.sensorType,
+                'icon' : updatedsensor.icon
               });
               box.sensors.push(newsensor);
             }else if(updatedsensor.edited && !updatedsensor.deleted){
               qrys.push(Box.update({'sensors._id': mongoose.Types.ObjectId(updatedsensor._id)}, {'$set': {
                   'sensors.$.title': updatedsensor.title,
                   'sensors.$.unit': updatedsensor.unit,
-                  'sensors.$.sensorType': updatedsensor.sensorType
+                  'sensors.$.sensorType': updatedsensor.sensorType,
+                  'sensors.$.icon': updatedsensor.icon
               }}));
             }
           });
@@ -980,6 +982,7 @@ function createNewBox (req) {
       title: req.params.sensors[i].title,
       unit: req.params.sensors[i].unit,
       sensorType: req.params.sensors[i].sensorType,
+      icon: req.params.sensors[i].icon
     };
 
     box.sensors.push(sensorData);
