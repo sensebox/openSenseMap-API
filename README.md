@@ -1,5 +1,7 @@
 openSenseMap-API
 ================
+
+[![Join the chat at https://gitter.im/sensebox/openSenseMap-API](https://badges.gitter.im/sensebox/openSenseMap-API.svg)](https://gitter.im/sensebox/openSenseMap-API?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 This is the back-end for [openSenseMap](http://opensensemap.org).
 
 openSenseMap is part of the [senseBox](http//sensebox.de) project.
