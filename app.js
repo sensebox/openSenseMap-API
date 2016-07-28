@@ -1110,20 +1110,33 @@ function genScript(box, model) {
  * @apiVersion 0.1.0
  */
 function getScript(req, res, next) {
-  User.findOne({apikey:req.headers["x-apikey"]}, function (error, user) {
-    if (error) {
-      res.send(400, "ApiKey does not exist");
-    }
-    if (user.boxes.indexOf(req.params.boxId) !== -1) {
-      Box.findById(req.params.boxId, function (err, box) {
-        if (error) {
-          res.send(400, "No such box");
-        }
+  if (!req.headers["x-apikey"]) {
+    return next(new restify.NotAuthorizedError());
+  }
 
-        var script = fs.readFileSync(cfg.targetFolder+""+box._id+".ino", encoding = 'utf8');
-        return res.send(200, script);
-      });
-    }
+  User.findOne({ apikey: req.headers["x-apikey"], boxes: { $in: [ req.params.boxId ] } })
+    .lean()
+    .then(function (user) {
+      if (user.boxes.indexOf(req.params.boxId) !== -1) {
+        Box.findById(req.params.boxId).then(function (box) {
+          var file = cfg.targetFolder+""+box._id+".ino";
+
+          if (!fs.existsSync(file)) {
+            genScript(box, box.model);
+          }
+
+          return res.send(200, fs.readFileSync(file, 'utf-8'));
+        })
+        .catch(function (err) {
+          return next(new restify.NotFoundError(err.message));
+        });
+      } else {
+        return next(new restify.NotAuthorizedError());
+      }
+  }).
+  catch(function (error) {
+    console.log(error);
+    return next(new restify.NotAuthorizedError());
   });
 }
 
