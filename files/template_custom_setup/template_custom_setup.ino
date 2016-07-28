@@ -9,7 +9,7 @@
 //Sensor IDs
 
 //Ethernet-Parameter
-char server[] = "www.opensensemap.org";
+char server[] = "@@OSEM_POST_DOMAIN@@";
 byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
 // Diese IP Adresse nutzen falls DHCP nicht möglich
 IPAddress myIP(192, 168, 0, 42);
@@ -69,7 +69,8 @@ void postFloatValue(float measurement, int digits, String sensorId)
     Serial.println("-------------------------------------");
     //HTTP Header aufbauen
     client.print("POST /boxes/");client.print(SENSEBOX_ID);client.print("/");client.print(sensorId);client.println(" HTTP/1.1");
-    client.println("Host: www.opensensemap.org");
+    client.print("Host:");
+    client.println(server);
     client.println("Content-Type: application/json");
     client.println("Connection: close");
     client.print("Content-Length: ");client.println(jsonValue.length());

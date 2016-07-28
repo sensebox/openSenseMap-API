@@ -32,7 +32,7 @@ Note: Sketch for SB-Home Edition 2015
 //Network settings
 IPAddress ip(192,168,0,111);//If DHCP is disabled, specify an IP according to your network settings
 byte mac[] = { 0x00, 0xAA, 0xBB, 0xCC, 0xDE, 0x02 };
-char server[] = "opensensemap.org";
+char server[] = "@@OSEM_POST_DOMAIN@@";
 EthernetClient client;
 
 String currentSensorId = TEMPERATURESENSOR_ID;
@@ -167,7 +167,7 @@ void postObservation(String measurement, String sensorId, String boxId)
   valueJson += measurement;
   valueJson += "}";
   Serial.println(valueJson);
-  //post observation to: http://opensensemap.org:8000/boxes/boxId/sensorId
+  //post observation to: /boxes/boxId/sensorId
   // if you get a connection, report back via serial:
   wdt_reset();
   if (client.connect(server, 8000))
@@ -181,7 +181,8 @@ void postObservation(String measurement, String sensorId, String boxId)
     client.print(sensorId);
     client.println(" HTTP/1.1");
     // Send the required header parameters
-    client.println("Host:opensensemap.org");
+    client.print("Host:");
+    client.println(server);
     client.println("Content-Type: application/json");
     client.println("Connection: close");
     client.print("Content-Length: ");

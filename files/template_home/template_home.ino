@@ -22,7 +22,7 @@ Email: support@sensebox.de
 //Configure ethernet connection
 IPAddress myIp(192, 168, 0, 42);
 byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
-char server[] = "www.opensensemap.org";
+char server[] = "@@OSEM_POST_DOMAIN@@";
 EthernetClient client;
 
 //Load sensors
@@ -130,7 +130,7 @@ void postObservation(float measurement, String sensorId, String boxId){
   else if (messTyp == 2) dtostrf(measurement, 5, 2, obs);
   Serial.println(obs);
   //json must look like: {"value":"12.5"}
-  //post observation to: http://opensensemap.org:8000/boxes/boxId/sensorId
+  //post observation to: /boxes/boxId/sensorId
   Serial.println("connecting...");
   String value = "{\"value\":";
   value += obs;
@@ -145,7 +145,8 @@ void postObservation(float measurement, String sensorId, String boxId){
     client.print(sensorId);
     client.println(" HTTP/1.1");
     // Send the required header parameters
-    client.println("Host:opensensemap.org");
+    client.print("Host:");
+    client.println(server);
     client.println("Content-Type: application/json");
     client.println("Connection: close");
     client.print("Content-Length: ");
