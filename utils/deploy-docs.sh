@@ -13,8 +13,8 @@ npm install -g apidoc@0.16.1
 # deploy!
 
 # checkout gh-pages branch
-git fetch
-git checkout gh-pages
+git fetch origin
+git checkout -t origin/gh-pages
 
 # run apidoc
 apidoc -i . -f js -e node_modules
