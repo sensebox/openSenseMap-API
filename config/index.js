@@ -21,7 +21,8 @@ var config = {
   email_replyTo : '',
   email_subject : '',
 
-  slack_url: ''
+  slack_url: '',
+  measurements_post_domain: ''
 }
 
 var env_has_dbconnectionstring = false

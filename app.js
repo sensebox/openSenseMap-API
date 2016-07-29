@@ -1049,9 +1049,15 @@ function postNewBox(req, res, next) {
 }
 
 // generate Arduino script
-function genScript(box, model) {
-  var output = cfg.targetFolder+""+box._id+".ino";
-  try { if(fs.statSync(output)){ fs.unlinkSync(output); } } catch(e){}
+function genScript (box, model) {
+  var output = cfg.targetFolder + "" + box._id + ".ino";
+  // remove old script it it exists
+  try {
+    if (fs.statSync(output)) {
+      fs.unlinkSync(output);
+    }
+  } catch(e){}
+
   var isCustom = false;
   switch(model){
     case 'homeEthernet':
@@ -1068,39 +1074,46 @@ function genScript(box, model) {
       filename = "files/template_custom_setup/template_custom_setup.ino";
       break;
   }
-  fs.readFileSync(filename).toString().split('\n').forEach(function (line) {
-    if (line.indexOf("//senseBox ID") != -1) {
-      fs.appendFileSync(output, line.toString() + "\n");
-      fs.appendFileSync(output, '#define SENSEBOX_ID "'+box._id+'"\n');
-    } else if (line.indexOf("//Sensor IDs") != -1) {
-      fs.appendFileSync(output, line.toString() + "\n");
-      var customSensorindex = 1;
-      for (var i = box.sensors.length - 1; i >= 0; i--) {
-        var sensor = box.sensors[i];
-        log.debug(sensor);
-        if (!isCustom && sensor.title == "Temperatur") {
-          fs.appendFileSync(output, '#define TEMPSENSOR_ID "'+sensor._id+'"\n');
-        } else if(!isCustom && sensor.title == "rel. Luftfeuchte") {
-          fs.appendFileSync(output, '#define HUMISENSOR_ID "'+sensor._id+'"\n');
-        } else if(!isCustom && sensor.title == "Luftdruck") {
-          fs.appendFileSync(output, '#define PRESSURESENSOR_ID "'+sensor._id+'"\n');
-        } else if(!isCustom && sensor.title == "Lautstärke") {
-          fs.appendFileSync(output, '#define NOISESENSOR_ID "'+sensor._id+'"\n');
-        } else if(!isCustom && sensor.title == "Helligkeit") {
-          fs.appendFileSync(output, '#define LIGHTSENSOR_ID "'+sensor._id+'"\n');
-        } else if (!isCustom && sensor.title == "Beleuchtungsstärke") {
-          fs.appendFileSync(output, '#define LUXSENSOR_ID "'+sensor._id+'"\n');
-        } else if (!isCustom && sensor.title == "UV-Intensität") {
-          fs.appendFileSync(output, '#define UVSENSOR_ID "'+sensor._id+'"\n');
-        } else {
-          fs.appendFileSync(output, '#define SENSOR'+customSensorindex+'_ID "'+sensor._id+'" \/\/ '+sensor.title+'\n');
-          customSensorindex++;
+
+  fs.readFileSync(filename)
+    .toString()
+    .split('\n')
+    .forEach(function (line) {
+      if (line.indexOf("//senseBox ID") != -1) {
+        fs.appendFileSync(output, line.toString() + "\n");
+        fs.appendFileSync(output, '#define SENSEBOX_ID "'+box._id+'"\n');
+      } else if (line.indexOf("//Sensor IDs") != -1) {
+        fs.appendFileSync(output, line.toString() + "\n");
+        var customSensorindex = 1;
+        for (var i = box.sensors.length - 1; i >= 0; i--) {
+          var sensor = box.sensors[i];
+          log.debug(sensor);
+          if (!isCustom && sensor.title == "Temperatur") {
+            fs.appendFileSync(output, '#define TEMPSENSOR_ID "'+sensor._id+'"\n');
+          } else if(!isCustom && sensor.title == "rel. Luftfeuchte") {
+            fs.appendFileSync(output, '#define HUMISENSOR_ID "'+sensor._id+'"\n');
+          } else if(!isCustom && sensor.title == "Luftdruck") {
+            fs.appendFileSync(output, '#define PRESSURESENSOR_ID "'+sensor._id+'"\n');
+          } else if(!isCustom && sensor.title == "Lautstärke") {
+            fs.appendFileSync(output, '#define NOISESENSOR_ID "'+sensor._id+'"\n');
+          } else if(!isCustom && sensor.title == "Helligkeit") {
+            fs.appendFileSync(output, '#define LIGHTSENSOR_ID "'+sensor._id+'"\n');
+          } else if (!isCustom && sensor.title == "Beleuchtungsstärke") {
+            fs.appendFileSync(output, '#define LUXSENSOR_ID "'+sensor._id+'"\n');
+          } else if (!isCustom && sensor.title == "UV-Intensität") {
+            fs.appendFileSync(output, '#define UVSENSOR_ID "'+sensor._id+'"\n');
+          } else {
+            fs.appendFileSync(output, '#define SENSOR'+customSensorindex+'_ID "'+sensor._id+'" \/\/ '+sensor.title+'\n');
+            customSensorindex++;
+          }
         }
+      } else if (line.indexOf("@@OSEM_POST_DOMAIN@@") !== -1) {
+        var newLine = line.toString().replace("@@OSEM_POST_DOMAIN@@", cfg.measurements_post_domain);
+        fs.appendFileSync(output, newLine + "\n");
+      } else {
+        fs.appendFileSync(output, line.toString() + "\n");
       }
-    } else {
-      fs.appendFileSync(output, line.toString() + "\n");
-    }
-  });
+    });
 }
 
 /**

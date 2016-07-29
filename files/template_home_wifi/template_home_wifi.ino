@@ -22,7 +22,7 @@ int status = WL_IDLE_STATUS;
 // Initialize the Wifi client library
 WiFiClient client;
 // server address:
-char server[] = "www.opensensemap.org";
+char server[] = "@@OSEM_POST_DOMAIN@@";
 Makerblog_TSL45315 TSL = Makerblog_TSL45315(TSL45315_TIME_M4);
 HDC100X HDC(0x43);
 BMP280 BMP;
@@ -103,7 +103,8 @@ void httpRequest(String sensorId, String value) {
     client.print(sensorId);
     client.println(" HTTP/1.1");
     // Send the required header parameters
-    client.println("Host: opensensemap.org");
+    client.print("Host:");
+    client.println(server);
     client.println("Content-Type: application/json");
     client.println("Connection: close");
     client.print("Content-Length: ");
