@@ -20,10 +20,10 @@
 /**
  * @apiDefine CommonBoxJSONBody
  *
- * @apiParam (RequestBody) {String} name the updated name of this senseBox.
- * @apiParam (RequestBody) {String} grouptag the updated grouptag of this senseBox.
- * @apiParam (RequestBody) {String="indoor","outdoor"} exposure the updated exposure of this senseBox.
- * @apiParam (RequestBody) {String} grouptag the updated grouptag of this senseBox.
+ * @apiParam (RequestBody) {String} name the name of this senseBox.
+ * @apiParam (RequestBody) {String} grouptag the grouptag of this senseBox.
+ * @apiParam (RequestBody) {String="indoor","outdoor"} exposure the exposure of this senseBox.
+ * @apiParam (RequestBody) {String} grouptag the grouptag of this senseBox.
  * @apiParam (RequestBody) {Sensor[]} sensors an array containing the sensors of this senseBox.
  */
 
@@ -392,8 +392,8 @@ function updateBox(req, res, next) {
 }
 
 /**
- * @api {get} /boxes/:senseBoxId/sensors Get all last measurements
- * @apiDescription Get last measurements of all sensors of the specified senseBox.
+ * @api {get} /boxes/:senseBoxId/sensors Get latest measurements of a senseBox
+ * @apiDescription Get the latest measurements of all sensors of the specified senseBox.
  * @apiVersion 0.0.1
  * @apiGroup Measurements
  * @apiName getMeasurements
@@ -410,8 +410,8 @@ function getMeasurements(req, res, next) {
 }
 
 /**
- * @api {get} /boxes/:senseBoxId/data/:sensorId?from-date=:fromDate&to-date:toDate Get last n measurements for a sensor
- * @apiDescription Get up to 10000 measurements from a sensor for a specific time frame, parameters `from-date` and `to-date` are optional. If not set, the last 24 hours are used. The maximum time frame is 1 month. A maxmimum of 1000 values wil be returned for each request.
+ * @api {get} /boxes/:senseBoxId/data/:sensorId?from-date=fromDate&to-datetoDate&download=true&format=json Get the 10000 latest measurements for a sensor
+ * @apiDescription Get up to 10000 measurements from a sensor for a specific time frame, parameters `from-date` and `to-date` are optional. If not set, the last 24 hours are used. The maximum time frame is 1 month. If `download=true` `Content-disposition` headers will be set. Allows for JSON or CSV format.
  * @apiVersion 0.0.1
  * @apiGroup Measurements
  * @apiName getData
@@ -419,8 +419,8 @@ function getMeasurements(req, res, next) {
  * @apiUse SensorIdParam
  * @apiParam {String} from-date Beginning date of measurement data (default: 48 hours ago from now)
  * @apiParam {String} to-date End date of measurement data (default: now)
- * @apiParam {String} download If set, offer download to the user (default: false, always on if CSV is used)
- * @apiParam {String} format Can be 'JSON' (default) or 'CSV' (default: JSON)
+ * @apiParam {String="true","false"} download If set, offer download to the user (default: false, always on if CSV is used)
+ * @apiParam {String="json","csv"} format=json Can be 'JSON' (default) or 'CSV' (default: JSON)
  */
 function getData(req, res, next) {
   'use strict'
@@ -509,12 +509,16 @@ function getData(req, res, next) {
 }
 
 /**
- * @api {get,post} /boxes/data?boxid=:boxIdsfrom-date=:fromDate&to-date:toDate&phenomenon=:phenomenon Get last n measurements for a sensor
+ * @api {get,post} /boxes/data?boxid=:senseBoxIds&from-date=:fromDate&to-date:toDate&phenomenon=:phenomenon Get latest measurements for a sensor as CSV
  * @apiDescription Download data from multiple boxes as CSV
  * @apiVersion 0.1.0
  * @apiGroup Measurements
  * @apiName getDataMulti
- * @apiParam {ID} boxId Comma separated list of senseBox unique IDs.
+ * @apiParam {String} senseBoxIds Comma separated list of senseBox IDs.
+ * @apiParam {String} phenomenon the name of the phenomenon you want to download the data for.
+ * @apiParam {String} from-date Beginning date of measurement data (default: 15 days ago from now)
+ * @apiParam {String} to-date End date of measurement data (default: now)
+ * @apiParam {String="true","false"} download If set, offer download to the user (default: false, always on if CSV is used)
  */
 function getDataMulti(req, res, next) {
   'use strict'
@@ -600,15 +604,15 @@ function getDataMulti(req, res, next) {
 }
 
 /**
- * @api {post} /boxes/:boxId/:sensorId Post new measurement
+ * @api {post} /boxes/:senseBoxId/:sensorId Post new measurement
  * @apiDescription Posts a new measurement to a specific sensor of a box.
  * @apiVersion 0.0.1
  * @apiGroup Measurements
  * @apiName postNewMeasurement
- * @apiParam {ID} boxId senseBox unique ID.
- * @apiParam {ID} sensorId Sensors unique ID.
- * @apiParamExample Request-Example:
- * curl --data value=22 localhost:8000/boxes/56ccb342eda956582a88e48c/56ccb342eda956582a88e490
+ * @apiUse BoxIdParam
+ * @apiUse SensorIdParam
+ * @apiParam (RequestBody) {String} value the measured value of the sensor. Also accepts JSON float numbers.
+ * @apiParam (RequestBody) {String} createdAt the timestamp of the measurement. Should be parseable by JavaScript.
  */
 function postNewMeasurement(req, res, next) {
   Box.findOne({_id: req.params.boxId}, function(error,box){
@@ -671,12 +675,14 @@ function saveMeasurement(box, sensorId, value, createdAt){
 }
 
 /**
- * @api {post} /boxes/:boxId/data Post multiple new measurements
+ * I think this shouldn't be documented for now
+ * api {post} /boxes/:boxId/data Post multiple new measurements
  * @apiDescription Post multiple new measurements as an JSON array to a box.
  * @apiVersion 0.1.0
  * @apiGroup Measurements
  * @apiName postNewMeasurements
- * @apiParam {ID} boxId senseBox unique ID.
+ * @apiUse BoxIdParam
+ * @apiParam (RequestBody) {Object[]} bla bla
  * @apiSampleRequest
  * [{ "sensor": "56cb7c25b66992a02fe389de", "value": "3" },{ "sensor": "56cb7c25b66992a02fe389df", "value": "2" }]
  * curl -X POST -H 'Content-type:application/json' -d "[{ \"sensor\": \"56cb7c25b66992a02fe389de\", \"value\": \"3\" },{ \"sensor\": \"56cb7c25b66992a02fe389df\", \"value\": \"2\" }]" localhost:8000/boxes/56cb7c25b66992a02fe389d9/data
@@ -752,6 +758,7 @@ function saveMeasurementArray (box, data) {
  * @apiVersion 0.1.0
  * @apiParam {String} date A date or datetime (UTC) where a station should provide measurements. Use in combination with `phenomenon`.
  * @apiParam {String} phenomenon A sensor phenomenon (determined by sensor name) such as temperature, humidity or UV intensity. Use in combination with `date`.
+ * @apiParam {String="json","geojson"} format=json the format the sensor data is returned in.
  * @apiSampleRequest http://opensensemap.org:8000/boxes
  * @apiSampleRequest http://opensensemap.org:8000/boxes?date=2015-03-07T02:50Z&phenomenon=Temperatur
  * @apiSampleRequest http://opensensemap.org:8000/boxes?date=2015-03-07T02:50Z,2015-04-07T02:50Z&phenomenon=Temperatur
@@ -898,11 +905,8 @@ function findAllBoxes(req, res , next){
  * @apiName findBox
  * @apiVersion 0.0.1
  * @apiGroup Boxes
- * @apiParam {ID} boxId senseBox unique ID.
- * @apiSuccess {String} _id senseBox unique ID.
- * @apiSuccess {String} boxType senseBox type (fixed or mobile).
- * @apiSuccess {Array} sensors All attached sensors.
- * @apiSuccess {Array} loc Location of senseBox.
+ * @apiUse BoxIdParam
+ * @apiParam {String="json","geojson"} format=json the format the sensor data is returned in.
  * @apiSuccessExample Example data on success:
  * {
   "_id": "5386e44d5f08822009b8b614",
@@ -1058,6 +1062,11 @@ function createNewBox (req) {
  * @apiVersion 0.0.1
  * @apiGroup Boxes
  * @apiName postNewBox
+ * @apiUse CommonBoxJSONBody
+ * @apiParam (RequestBody) {String} firstname firstname of the user for the senseBox.
+ * @apiParam (RequestBody) {String} lastname lastname of the user for the senseBox.
+ * @apiParam (RequestBody) {String} email email of the user for the senseBox.
+ * @apiParam (RequestBody) {String} orderID the apiKey of the user for the senseBox.
  */
 function postNewBox(req, res, next) {
   User.findOne({apikey:req.params.orderID}, function (err, user) {
@@ -1178,10 +1187,12 @@ function genScript (box, model) {
 }
 
 /**
- * @api {get} /boxes/:boxId/script Download the Arduino script for your senseBox
+ * @api {get} /boxes/:senseBoxId/script Download the Arduino script for your senseBox
  * @apiName getScript
  * @apiGroup Boxes
  * @apiVersion 0.1.0
+ * @apiUse AuthorizationRequiredError
+ * @apiUse BoxIdParam
  */
 function getScript(req, res, next) {
   Box.findById(req.params.boxId).then(function (box) {
@@ -1199,10 +1210,12 @@ function getScript(req, res, next) {
 }
 
 /**
- * @api {delete} /boxes/:boxId Delete a senseBox and its measurements
+ * @api {delete} /boxes/:senseBoxId Delete a senseBox and its measurements
  * @apiName deleteBox
  * @apiGroup Boxes
  * @apiVersion 0.1.0
+ * @apiUse AuthorizationRequiredError
+ * @apiUse BoxIdParam
  */
 function deleteBox(req, res, next) {
   var qrys = [];
@@ -1226,7 +1239,7 @@ function deleteBox(req, res, next) {
  * @api {get} /boxes/stats Get some statistics about the database
  * @apiDescription 8 boxes, 13 measurements in the database, 2 in the last minute
  * @apiName getStatistics
- * @apiGroup misc
+ * @apiGroup Misc
  * @apiVersion 0.1.0
  * @apiSuccessExample {json}
  * [8,13, 2]
