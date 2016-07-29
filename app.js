@@ -400,13 +400,26 @@ function updateBox(req, res, next) {
  * @apiUse BoxIdParam
  */
 function getMeasurements(req, res, next) {
-  Box.findOne({_id: req.params.boxId},{sensors:1}).populate('sensors.lastMeasurement').lean().exec(function(error,sensors){
-    if (error) {
-      return next(new restify.InvalidArgumentError(JSON.stringify(error.errors)));
-    } else {
-      res.send(200, sensors);
-    }
-  });
+  "use strict";
+  Box.findOne({ _id: req.params.boxId }, { sensors: 1 })
+    .populate('sensors.lastMeasurement')
+    .lean()
+    .exec()
+    .then(function (box_with_sensors) {
+      box_with_sensors.sensors = box_with_sensors.sensors.map(function (sensor) {
+        if (sensor.lastMeasurement) {
+          sensor.lastMeasurement.__v = undefined;
+          sensor.lastMeasurement.updatedAt = undefined;
+        }
+
+        return sensor;
+      });
+      res.send(200, box_with_sensors);
+    })
+    .catch(function (error) {
+      console.log(error);
+      return next(new restify.InternalServerError());
+    });
 }
 
 /**
