@@ -752,7 +752,8 @@ function saveMeasurementArray (box, data) {
 }
 
 /**
- * @api {get} /boxes?date=:date&phenomenon=:phenomenon Get all senseBoxes. With the optional `date` and `phenomenon` parameters you can find senseBoxes that have submitted data around that time, +/- 2 hours, or specify two dates separated by a comma.
+ * @api {get} /boxes?date=:date&phenomenon=:phenomenon&format=:format Get all senseBoxes
+ * @apiDescription With the optional `date` and `phenomenon` parameters you can find senseBoxes that have submitted data around that time, +/- 2 hours, or specify two dates separated by a comma.
  * @apiName findAllBoxes
  * @apiGroup Boxes
  * @apiVersion 0.1.0

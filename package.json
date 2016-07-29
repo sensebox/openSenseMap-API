@@ -39,6 +39,18 @@
     "version": "0.0.1",
     "description": "Documentation for openSenseMap to register and administer senseBoxes",
     "title": "openSenseMap API docs title",
-    "url": "https://api.opensensemap.org"
+    "url": "https://api.opensensemap.org",
+    "order": [
+      "validApiKey",
+      "findBox",
+      "findAllBoxes",
+      "postNewBox",
+      "updateBox",
+      "deleteBox",
+      "getScript",
+      "postNewMeasurement",
+      "getMeasurements",
+      "getData"
+    ]
   }
 }

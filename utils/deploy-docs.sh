@@ -37,7 +37,7 @@ git config user.name "Travis-CI"
 git config user.email "travis@travis-ci.org"
 
 # commit
-git commit -m "Deployed by Travis"
+git commit -m "apidoc build from ${TRAVIS_COMMIT} by Travis"
 
 # push to github!
 git push "https://${GITHUB_TOKEN}@github.com/${GITHUB_REPO}.git" gh-pages
