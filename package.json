@@ -26,14 +26,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/mpfeil/openSenseMap-API.git"
+    "url": "https://github.com/sensebox/openSenseMap-API.git"
   },
   "author": "Matthias Pfeil",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/mpfeil/openSenseMap-API/issues"
+    "url": "https://github.com/sensebox/openSenseMap-API/issues"
   },
-  "homepage": "https://github.com/mpfeil/openSenseMap-API",
+  "homepage": "https://github.com/sensebox/openSenseMap-API",
   "apidoc": {
     "name": "openSenseMap API documentation",
     "version": "0.0.1",
