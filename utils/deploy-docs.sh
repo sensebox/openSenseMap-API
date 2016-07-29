@@ -12,13 +12,13 @@ npm install -g apidoc@0.16.1
 
 # deploy!
 
+# run apidoc
+apidoc -i . -f js -e node_modules
+
 # checkout gh-pages branch
 git remote set-branches --add origin gh-pages
 git fetch
 git checkout -t origin/gh-pages
-
-# run apidoc
-apidoc -i . -f js -e node_modules
 
 # delete everything except for the doc folder
 find . ! \( -path './.git' -prune \) ! \( -path './doc' -prune \) ! -name '.' ! -name '..' -print0 |  xargs -0 rm -rf --
