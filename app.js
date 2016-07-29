@@ -1,3 +1,57 @@
+/**
+ * This is the openSenseMap API source code!
+ * Booya!
+ */
+
+/**
+ * define for the senseBox request body encoded in JSON
+ * @apiDefine RequestBody JSON request body
+ */
+
+/**
+ * @apiDefine SensorJSONBody
+ *
+ * @apiParam {String} title the title of the phenomenon the sensor observes.
+ * @apiParam {String} unit the unit of the phenomenon the sensor observes.
+ * @apiParam {String} sensorType the type of the sensor.
+ * @apiParam {String} the visual representation for the openSenseMap of this sensor.
+ */
+
+/**
+ * @apiDefine CommonBoxJSONBody
+ *
+ * @apiParam (RequestBody) {String} name the updated name of this senseBox.
+ * @apiParam (RequestBody) {String} grouptag the updated grouptag of this senseBox.
+ * @apiParam (RequestBody) {String="indoor","outdoor"} exposure the updated exposure of this senseBox.
+ * @apiParam (RequestBody) {String} grouptag the updated grouptag of this senseBox.
+ * @apiParam (RequestBody) {Sensor[]} sensors an array containing the sensors of this senseBox.
+ */
+
+/**
+ * @apiDefine AuthorizationRequiredError
+ *
+ * @apiHeader {String} x-APIKey the secret API key which corresponds to the <code>senseBoxId</code> parameter.
+ * @apiHeaderExample {String} x-APIKey header example:
+ *   x-APIKey: 576efef4cb9b9ebe057bf7b4
+ * @apiError {Object} 403 the request has invalid or missing credentials.
+ * @apiErrorExample {json} Error-Response:
+ *     HTTP/1.1 403 Forbidden
+ *     {"code":"NotAuthorized","message":"ApiKey is invalid or missing"}
+ */
+
+/**
+ * @apiDefine BoxIdParam
+ *
+ * @apiParam {String} :senseBoxId the ID of the senseBox you are referring to.
+ */
+
+/**
+ * @apiDefine SensorIdParam
+ *
+ * @apiParam {String} :sensorId the ID of the sensor you are referring to.
+ */
+
+
 var restify = require('restify'),
   mongoose = require('mongoose'),
   fs = require('fs'),
@@ -121,17 +175,6 @@ server.post({path : PATH +'/data', version : '0.1.0'}, getDataMulti);
 
 // Secured (needs authorization through apikey)
 
-/**
- * @apiDefine AuthorizationRequiredError
- *
- * @apiHeader {String} x-APIKey the secret API key which corresponds to the <code>senseBoxId</code> parameter.
- * @apiHeaderExample {String} x-APIKey header example:
- *   x-APIKey: 576efef4cb9b9ebe057bf7b4
- * @apiError {Object} 403 the request has invalid or missing credentials.
- * @apiErrorExample {json} Error-Response:
- *     HTTP/1.1 403 Forbidden
- *     {"code":"NotAuthorized","message":"ApiKey is invalid or missing"}
- */
 
 // attach a function to secured requests to validate api key and box id
 server.use(function validateAuthenticationRequest (req, res, next) {
@@ -192,17 +235,6 @@ function unknownMethodHandler(req, res) {
 
 server.on('MethodNotAllowed', unknownMethodHandler);
 
-/**
- * @apiDefine BoxIdParam
- *
- * @apiParam {String} senseBoxId the ID of the senseBox you are referring to.
- */
-
-/**
- * @apiDefine SensorIdParam
- *
- * @apiParam {String} sensorId the ID of the sensor you are referring to.
- */
 
 /**
  * @api {get} /users/:senseBoxId Validate authorization
@@ -235,30 +267,38 @@ function decodeBase64Image(dataString) {
 /**
  * @api {put} /boxes/:senseBoxId Update a senseBox: Image and sensor names
  * @apiDescription Modify the specified senseBox.
- * @apiSampleRequest
+ * @apiUse CommonBoxJSONBody
+ * @apiParam (RequestBody) {String} description the updated description of this senseBox.
+ * @apiParam (RequestBody) {String} image the updated image of this senseBox encoded as base64 data uri.
+ * @apiParamExample {json} Request-Example:
  * {
  *  "_id": "56e741ff933e450c0fe2f705",
- *  "name": "MeineBox",
+ *  "name": "my senseBox",
+ *  "description": "this is just a description",
+ *  "weblink": "https://opensensemap.org/explore/561ce8acb3de1fe005d3d7bf",
+ *  "grouptag": "senseBoxes99",
+ *  "exposure": "indoor",
  *  "sensors": [
  *    {
  *      "_id": "56e741ff933e450c0fe2f707",
  *      "title": "UV-Intensität",
  *      "unit": "μW/cm²",
  *      "sensorType": "VEML6070",
+ *      "icon": "osem-sprinkles"
  *    }
  *  ],
- *  "grouptag": "vcxyxsdf",
- *  "exposure": "outdoor",
  *  "loc": {
  *    "lng": 8.6956,
  *    "lat": 50.0430
- *  }
+ *  },
+ *  "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAIVBMVEUAAABKrkMGteh0wW5Ixu931vKy3bO46fj/7hr/+J36/vyFw5EiAAAAAXRSTlMAQObYZgAAAF5JREFUeAFdjdECgzAIA1kIUvP/HzyhdrPe210L2GLYzhjj7VvRefmpn1MKFbdHUOzA9qRQEhIw3xMzEVeJDqkOrC9IJqWE7hFDLZ0Q6+zh7odsoU/j9qeDPXDf/cEX1xsDKIqAkK8AAAAASUVORK5CYII="
  * }
  * @apiVersion 0.0.1
  * @apiGroup Boxes
  * @apiName updateBox
  * @apiUse AuthorizationRequiredError
  * @apiUse BoxIdParam
+ *
  */
 function updateBox(req, res, next) {
   /*
