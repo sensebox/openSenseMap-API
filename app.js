@@ -406,7 +406,7 @@ function getData(req, res, next) {
     Measurement.find(qry,{"createdAt":1, "value":1, "_id": 0}) // do not send _id column
       .limit(queryLimit)
       .lean()
-      .cursor()
+      .cursor({ batchSize: 500 })
       .pipe(transformer)
       .pipe(stringifier)
       .pipe(res);
@@ -422,7 +422,7 @@ function getData(req, res, next) {
     Measurement.find(qry, {"createdAt":1, "value":1, "_id": 0}) // do not send _id column
     .limit(queryLimit)
     .lean()
-    .cursor()
+    .cursor({ batchSize: 500 })
     .eachAsync((doc) => {
       returnlength = 1;
       doc.__v = undefined;
@@ -523,7 +523,7 @@ function getDataMulti(req, res, next) {
         }
       }, {"createdAt":1, "value":1, "_id": 0, "sensor_id":1})
       .lean()
-      .cursor()
+      .cursor({ batchSize: 500 })
       .pipe(transformer)
       .pipe(stringifier)
       .pipe(res)
