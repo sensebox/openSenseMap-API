@@ -113,8 +113,6 @@ server.get({path : PATH +'/:boxId' , version : '0.0.1'} , findBox);
 server.get({path : PATH +'/:boxId/sensors', version : '0.0.1'}, getMeasurements);
 server.get({path : PATH +'/:boxId/data/:sensorId', version : '0.0.1'}, getData);
 server.get({path : PATH +'/data', version : '0.1.0'}, getDataMulti);
-server.get({path : userPATH +'/:boxId', version : '0.0.1'}, validApiKey);
-server.get({path : PATH +'/:boxId/script', version : '0.1.0'}, getScript);
 server.get({path : '/stats', version : '0.1.0'}, getStatistics);
 
 // POST
@@ -123,11 +121,38 @@ server.post({path : PATH +'/:boxId/:sensorId' , version : '0.0.1'}, postNewMeasu
 server.post({path : PATH +'/:boxId/data' , version : '0.1.0'}, postNewMeasurements);
 server.post({path : PATH +'/data', version : '0.1.0'}, getDataMulti);
 
+// Secured (needs authorization through apikey)
+
+// attach a function to secured requests to validate api key and box id
+server.use(function validateAuthenticationRequest (req, res, next) {
+  if (req.headers["x-apikey"] && req.params.boxId) {
+    User.findOne({ apikey: req.headers["x-apikey"], boxes: { $in: [ req.params.boxId ] } })
+      .then(function (user) {
+        if (user && user.boxes.length > 0 && user.boxes.indexOf(req.params.boxId) != -1) {
+          req.authorized_user = user;
+          next();
+        } else {
+          next(new restify.NotAuthorizedError("ApiKey is invalid or missing"));
+        }
+      })
+      .catch(function (err) {
+        next(new restify.InternalServerError());
+      })
+  } else {
+    next(new restify.NotAuthorizedError("ApiKey is invalid or missing"));
+  }
+});
+
+// GET
+server.get({path : userPATH +'/:boxId', version : '0.0.1'}, validApiKey);
+server.get({path : PATH +'/:boxId/script', version : '0.1.0'}, getScript);
+
 // PUT
 server.put({path: PATH + '/:boxId' , version: '0.1.0'} , updateBox);
 
 // DELETE
 server.del({path: PATH + '/:boxId' , version: '0.1.0'} , deleteBox);
+
 
 // helper function to determine the requested format
 function getFormat (req, allowed_formats, default_format) {
@@ -173,18 +198,8 @@ server.on('MethodNotAllowed', unknownMethodHandler);
  * @apiGroup Boxes
  * @apiName validApiKey
  */
-function validApiKey (req,res,next) {
-  User.findOne({apikey:req.headers['x-apikey']}, function (error, user) {
-    if (error) {
-      res.send(400, "ApiKey does not exist");
-    }
-
-    if (user && user.boxes.length > 0 && user.boxes.indexOf(req.params.boxId) != -1) {
-      res.send(200, "ApiKey is valid");
-    } else {
-      res.send(400, "ApiKey is invalid");
-    }
-  });
+function validApiKey (req, res, next) {
+  res.send(200, "ApiKey is valid");
 }
 
 function decodeBase64Image(dataString) {
@@ -248,85 +263,79 @@ function updateBox(req, res, next) {
   };
   */
 
-  User.findOne({apikey:req.headers["x-apikey"]}, function (error, user) {
-    if (error) {
-      res.send(400, "ApiKey does not exist");
-    }
-    var qrys = [];
-    if (user.boxes.indexOf(req.params.boxId) !== -1) {
-      Box.findById(req.params.boxId, function (err, box) {
-        if (err) return handleError(err);
+  var qrys = [];
+  Box.findById(req.params.boxId, function (err, box) {
+    if (err) return handleError(err);
 
-        if (typeof req.params.name !== 'undefined' && req.params.name !== "") {
-          if(box.name !== req.params.name)
-            qrys.push(box.set({name: req.params.name}));
-        }
-        if (typeof req.params.exposure !== 'undefined' && req.params.exposure !== "") {
-          if(box.exposure !== req.params.exposure)
-            qrys.push(box.set({exposure: req.params.exposure}));
-        }
-        if (typeof req.params.grouptag !== 'undefined' && req.params.grouptag !== "") {
-          if(box.grouptag !== req.params.grouptag)
-            qrys.push(box.set({grouptag: req.params.grouptag}));
-        }
-        if (typeof req.params.weblink !== 'undefined' && req.params.weblink !== "") {
-          if(box.weblink !== req.params.weblink)
-            qrys.push(box.set({weblink: req.params.weblink}));
-        }
-        if (typeof req.params.description !== 'undefined' && req.params.description !== "") {
-          if(box.description !== req.params.description)
-            qrys.push(box.set({description: req.params.description}));
-        }
-        if (typeof req.params.loc !== 'undefined' && req.params.loc !== "") {
-          if(String(box.loc[0].geometry.coordinates[0]) !== req.params.loc.lng || String(box.loc[0].geometry.coordinates[1]) !== req.params.loc.lat){
-            box.loc[0].geometry.coordinates = [req.params.loc.lng, req.params.loc.lat];
-          }
-        }
-        if (typeof req.params.image !== 'undefined' && req.params.image !== "") {
-          var data = req.params.image.toString();
-          var imageBuffer = decodeBase64Image(data);
-          var extension = (imageBuffer.type === 'image/jpeg') ? '.jpg' : '.png';
-          try {
-            fs.writeFileSync(cfg.imageFolder+""+req.params.boxId+extension, imageBuffer.data);
-            qrys.push(box.set({image: req.params.boxId+extension+'?'+(new Date().getTime())}));
-          } catch(e) {
-            if (err) return handleError(e);
-          }
-        }
-        if (typeof req.params.sensors !== 'undefined' && req.params.sensors.length>0) {
-          req.params.sensors.forEach(function(updatedsensor){
-            if(updatedsensor.deleted){
-              qrys.push(Measurement.find({ sensor_id: updatedsensor._id }).remove());
-              qrys.push(Box.update({'sensors._id': mongoose.Types.ObjectId(updatedsensor._id)},
-                { $pull: { 'sensors': { _id: mongoose.Types.ObjectId(updatedsensor._id) } }
-              }));
-            } else if(updatedsensor.edited && updatedsensor.new) {
-              var newsensor = new Sensor({
-                'title': updatedsensor.title,
-                'unit': updatedsensor.unit,
-                'sensorType': updatedsensor.sensorType,
-                'icon' : updatedsensor.icon
-              });
-              box.sensors.push(newsensor);
-            }else if(updatedsensor.edited && !updatedsensor.deleted){
-              qrys.push(Box.update({'sensors._id': mongoose.Types.ObjectId(updatedsensor._id)}, {'$set': {
-                  'sensors.$.title': updatedsensor.title,
-                  'sensors.$.unit': updatedsensor.unit,
-                  'sensors.$.sensorType': updatedsensor.sensorType,
-                  'sensors.$.icon': updatedsensor.icon
-              }}));
-            }
-          });
-        }
-        qrys.push(box.save());
-        Promise.all(qrys).then(function(){
-          genScript(box, box.model);
-          res.send(200, box);
-        });
-      });
-    } else {
-     res.send(400, "ApiKey does not match senseBoxID");
+    if (typeof req.params.name !== 'undefined' && req.params.name !== "") {
+      if(box.name !== req.params.name)
+        qrys.push(box.set({name: req.params.name}));
     }
+    if (typeof req.params.exposure !== 'undefined' && req.params.exposure !== "") {
+      if(box.exposure !== req.params.exposure)
+        qrys.push(box.set({exposure: req.params.exposure}));
+    }
+    if (typeof req.params.grouptag !== 'undefined' && req.params.grouptag !== "") {
+      if(box.grouptag !== req.params.grouptag)
+        qrys.push(box.set({grouptag: req.params.grouptag}));
+    }
+    if (typeof req.params.weblink !== 'undefined' && req.params.weblink !== "") {
+      if(box.weblink !== req.params.weblink)
+        qrys.push(box.set({weblink: req.params.weblink}));
+    }
+    if (typeof req.params.description !== 'undefined' && req.params.description !== "") {
+      if(box.description !== req.params.description)
+        qrys.push(box.set({description: req.params.description}));
+    }
+    if (typeof req.params.loc !== 'undefined' && req.params.loc !== "") {
+      if(String(box.loc[0].geometry.coordinates[0]) !== req.params.loc.lng || String(box.loc[0].geometry.coordinates[1]) !== req.params.loc.lat){
+        box.loc[0].geometry.coordinates = [req.params.loc.lng, req.params.loc.lat];
+      }
+    }
+    if (typeof req.params.image !== 'undefined' && req.params.image !== "") {
+      var data = req.params.image.toString();
+      var imageBuffer = decodeBase64Image(data);
+      var extension = (imageBuffer.type === 'image/jpeg') ? '.jpg' : '.png';
+      try {
+        fs.writeFileSync(cfg.imageFolder+""+req.params.boxId+extension, imageBuffer.data);
+        qrys.push(box.set({image: req.params.boxId+extension+'?'+(new Date().getTime())}));
+      } catch(e) {
+        if (err) return handleError(e);
+      }
+    }
+    if (typeof req.params.sensors !== 'undefined' && req.params.sensors.length>0) {
+      req.params.sensors.forEach(function(updatedsensor){
+        if(updatedsensor.deleted){
+          qrys.push(Measurement.find({ sensor_id: updatedsensor._id }).remove());
+          qrys.push(Box.update({'sensors._id': mongoose.Types.ObjectId(updatedsensor._id)},
+            { $pull: { 'sensors': { _id: mongoose.Types.ObjectId(updatedsensor._id) } }
+          }));
+        } else if(updatedsensor.edited && updatedsensor.new) {
+          var newsensor = new Sensor({
+            'title': updatedsensor.title,
+            'unit': updatedsensor.unit,
+            'sensorType': updatedsensor.sensorType,
+            'icon' : updatedsensor.icon
+          });
+          box.sensors.push(newsensor);
+        }else if(updatedsensor.edited && !updatedsensor.deleted){
+          qrys.push(Box.update({'sensors._id': mongoose.Types.ObjectId(updatedsensor._id)}, {'$set': {
+              'sensors.$.title': updatedsensor.title,
+              'sensors.$.unit': updatedsensor.unit,
+              'sensors.$.sensorType': updatedsensor.sensorType,
+              'sensors.$.icon': updatedsensor.icon
+          }}));
+        }
+      });
+    }
+    qrys.push(box.save());
+
+    Promise.all(qrys).then(function () {
+      genScript(box, box.model);
+      res.send(200, box);
+    }).catch(function (err) {
+      return next(new restify.InternalServerError(JSON.stringify(err.message)));
+    });
   });
 }
 
@@ -1123,33 +1132,17 @@ function genScript (box, model) {
  * @apiVersion 0.1.0
  */
 function getScript(req, res, next) {
-  if (!req.headers["x-apikey"]) {
-    return next(new restify.NotAuthorizedError());
-  }
+  Box.findById(req.params.boxId).then(function (box) {
+    var file = cfg.targetFolder+""+box._id+".ino";
 
-  User.findOne({ apikey: req.headers["x-apikey"], boxes: { $in: [ req.params.boxId ] } })
-    .lean()
-    .then(function (user) {
-      if (user.boxes.indexOf(req.params.boxId) !== -1) {
-        Box.findById(req.params.boxId).then(function (box) {
-          var file = cfg.targetFolder+""+box._id+".ino";
+    if (!fs.existsSync(file)) {
+      genScript(box, box.model);
+    }
 
-          if (!fs.existsSync(file)) {
-            genScript(box, box.model);
-          }
-
-          return res.send(200, fs.readFileSync(file, 'utf-8'));
-        })
-        .catch(function (err) {
-          return next(new restify.NotFoundError(err.message));
-        });
-      } else {
-        return next(new restify.NotAuthorizedError());
-      }
-  }).
-  catch(function (error) {
-    console.log(error);
-    return next(new restify.NotAuthorizedError());
+    return res.send(200, fs.readFileSync(file, 'utf-8'));
+  })
+  .catch(function (err) {
+    return next(new restify.NotFoundError(err.message));
   });
 }
 
