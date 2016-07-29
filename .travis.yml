@@ -9,6 +9,6 @@ script: ./utils/deploy-docs.sh
 
 env:
   global:
-    - GITHUB_REPO "sensebox/openSenseMap-API"
+    - GITHUB_REPO: "sensebox/openSenseMap-API"
     - secure: "C8a0UNmemknEtnybR7DpDladB8DtJJ4EM0gi1HlusBOGoDjE7Xf07JEeQZJSOma/hM3LlaU1gQiwbSkhiwCUD1qb7fxjBvc4KGR6zkCoXG8Zr3Y/o9Y4y03Fld+ZgUXn8HSsEbxjRPfPHGFyk2MX6TCddAeqzHL+BxmObehF1FU="
 
