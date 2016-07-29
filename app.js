@@ -1153,26 +1153,20 @@ function getScript(req, res, next) {
  * @apiVersion 0.1.0
  */
 function deleteBox(req, res, next) {
-  User.findOne({apikey:req.headers["x-apikey"]}, function (findusererror, user) {
-    if (findusererror) {
-      res.send(400, "ApiKey does not exist");
-    }
-    if (user.boxes.indexOf(req.params.boxId) !== -1) {
-      qrys = [];
+  var qrys = [];
 
-      Box.findById(req.params.boxId, function (findboxerr, box) {
-        box.sensors.forEach(function(sensor){
-          qrys.push(Measurement.find({ sensor_id: sensor._id }).remove());
-        });
-        qrys.push(box.remove());
-        qrys.push(user.remove());
-      });
+  Box.findById(req.params.boxId, function (findboxerr, box) {
+    box.sensors.forEach(function(sensor){
+      qrys.push(Measurement.find({ sensor_id: sensor._id }).remove());
+    });
+    qrys.push(box.remove());
+    qrys.push(user.remove());
+  });
 
-      Promise.all(qrys).then(function(thatresult){
-      }).then(function(){
-        res.send(200, "Box deleted");
-      });
-    }
+  Promise.all(qrys).then(function() {
+    res.send(200, "Box deleted");
+  }).catch(function (err) {
+    return next(new restify.InternalServerError(err.message));
   });
 }
 
