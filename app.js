@@ -51,6 +51,7 @@
  * @apiParam {String} :sensorId the ID of the sensor you are referring to.
  */
 
+'use strict';
 
 var restify = require('restify'),
   mongoose = require('mongoose'),
@@ -70,20 +71,18 @@ var restify = require('restify'),
   request = require('request');
 
 mongoose.Promise = require('bluebird');
-var dbHost = process.env.DB_HOST || cfg.dbhost;
 
-
-var TIME_AGO_MAX = 1000*60*60*24*32;
-var TIME_AGO_48_H = 1000*60*60*48; // 48 hours
-var TIME_AGO_15_D = 1000*60*60*24*15 // 15 days
+var TIME_AGO_MAX = 1000 * 60 * 60 * 24 * 32;
+var TIME_AGO_48_H = 1000 * 60 * 60 * 48; // 48 hours
+var TIME_AGO_15_D = 1000 * 60 * 60 * 24 * 15; // 15 days
 
 // Logging
 var consoleStream = new Stream();
 consoleStream.writable = true;
-consoleStream.write = function(obj) {
-  if(obj.req){
+consoleStream.write = function (obj) {
+  if (obj.req) {
     console.log(obj.time, obj.req.remoteAddress, obj.req.method, obj.req.url);
-  } else if(obj.msg) {
+  } else if (obj.msg) {
     console.log(obj.time, obj.msg);
   } else {
     //console.log(obj.time, obj);
@@ -123,14 +122,14 @@ server.use(restify.CORS({'origins': ['*'] })); //['http://localhost', 'https://o
 server.use(restify.fullResponse());
 server.use(restify.queryParser());
 server.use(restify.bodyParser());
-server.pre(function(request, response, next) {
+server.pre(function (request, response, next) {
   response.charSet('utf-8');
   request.log.info({req: request}, 'REQUEST');
   return next();
 });
 
 // use this function to retry if a connection cannot be established immediately
-var connectWithRetry = function () {
+(function connectWithRetry () {
   return mongoose.connect(cfg.dbconnectionstring, {
     keepAlive: 1
   }, function (err) {
@@ -139,11 +138,9 @@ var connectWithRetry = function () {
       setTimeout(connectWithRetry, 5000);
     }
   });
-};
+})();
 
-conn = connectWithRetry();
 
-var LocationSchema = schemas.LocationSchema;
 var measurementSchema = schemas.measurementSchema;
 var sensorSchema = schemas.sensorSchema;
 var boxSchema = schemas.boxSchema;
@@ -153,52 +150,52 @@ var Measurement = mongoose.model('Measurement', measurementSchema);
 var Box = mongoose.model('Box', boxSchema);
 var Sensor = mongoose.model('Sensor', sensorSchema);
 var User = mongoose.model('User', userSchema);
-var Location = mongoose.model('Location', LocationSchema);
 
 var PATH = '/boxes';
 var userPATH = 'users';
 
 // GET
-server.get({path : PATH , version : '0.0.1'} , findAllBoxes);
-server.get({path : /(boxes)\.([a-z]+)/, version : '0.1.0'} , findAllBoxes);
-server.get({path : PATH +'/:boxId' , version : '0.0.1'} , findBox);
-server.get({path : PATH +'/:boxId/sensors', version : '0.0.1'}, getMeasurements);
-server.get({path : PATH +'/:boxId/data/:sensorId', version : '0.0.1'}, getData);
-server.get({path : PATH +'/data', version : '0.1.0'}, getDataMulti);
-server.get({path : '/stats', version : '0.1.0'}, getStatistics);
+server.get({path: PATH , version: '0.0.1'} , findAllBoxes);
+server.get({path: /(boxes)\.([a-z]+)/, version: '0.1.0'} , findAllBoxes);
+server.get({path: PATH + '/:boxId' , version: '0.0.1'} , findBox);
+server.get({path: PATH + '/:boxId/sensors', version: '0.0.1'}, getMeasurements);
+server.get({path: PATH + '/:boxId/data/:sensorId', version: '0.0.1'}, getData);
+server.get({path: PATH + '/data', version: '0.1.0'}, getDataMulti);
+server.get({path: '/stats', version: '0.1.0'}, getStatistics);
 
 // POST
-server.post({path : PATH , version: '0.0.1'}, postNewBox);
-server.post({path : PATH +'/:boxId/:sensorId' , version : '0.0.1'}, postNewMeasurement);
-server.post({path : PATH +'/:boxId/data' , version : '0.1.0'}, postNewMeasurements);
-server.post({path : PATH +'/data', version : '0.1.0'}, getDataMulti);
+server.post({path: PATH , version: '0.0.1'}, postNewBox);
+server.post({path: PATH + '/:boxId/:sensorId' , version: '0.0.1'}, postNewMeasurement);
+server.post({path: PATH + '/:boxId/data' , version: '0.1.0'}, postNewMeasurements);
+server.post({path: PATH + '/data', version: '0.1.0'}, getDataMulti);
 
 // Secured (needs authorization through apikey)
 
 
 // attach a function to secured requests to validate api key and box id
 server.use(function validateAuthenticationRequest (req, res, next) {
-  if (req.headers["x-apikey"] && req.params.boxId) {
-    User.findOne({ apikey: req.headers["x-apikey"], boxes: { $in: [ req.params.boxId ] } })
+  if (req.headers['x-apikey'] && req.params.boxId) {
+    User.findOne({ apikey: req.headers['x-apikey'], boxes: { $in: [ req.params.boxId ] } })
       .then(function (user) {
-        if (user && user.boxes.length > 0 && user.boxes.indexOf(req.params.boxId) != -1) {
+        if (user && user.boxes.length > 0 && user.boxes.indexOf(req.params.boxId) !== -1) {
           req.authorized_user = user;
           next();
         } else {
-          next(new restify.NotAuthorizedError("ApiKey is invalid or missing"));
+          next(new restify.NotAuthorizedError('ApiKey is invalid or missing'));
         }
       })
       .catch(function (err) {
+        console.log(err);
         next(new restify.InternalServerError());
-      })
+      });
   } else {
-    next(new restify.NotAuthorizedError("ApiKey is invalid or missing"));
+    next(new restify.NotAuthorizedError('ApiKey is invalid or missing'));
   }
 });
 
 // GET
-server.get({path : userPATH +'/:boxId', version : '0.0.1'}, validApiKey);
-server.get({path : PATH +'/:boxId/script', version : '0.1.0'}, getScript);
+server.get({path: userPATH + '/:boxId', version: '0.0.1'}, validApiKey);
+server.get({path: PATH + '/:boxId/script', version: '0.1.0'}, getScript);
 
 // PUT
 server.put({path: PATH + '/:boxId' , version: '0.1.0'} , updateBox);
@@ -209,18 +206,20 @@ server.del({path: PATH + '/:boxId' , version: '0.1.0'} , deleteBox);
 
 // helper function to determine the requested format
 function getFormat (req, allowed_formats, default_format) {
-  if (typeof req.params["format"] === "undefined") {
+  if (typeof req.params['format'] === 'undefined') {
     return default_format;
-  } else if (allowed_formats.indexOf(req.params["format"].toLowerCase()) !== -1) {
-    return req.params["format"];
+  } else if (allowed_formats.indexOf(req.params['format'].toLowerCase()) !== -1) {
+    return req.params['format'];
   }
 }
 
-function unknownMethodHandler(req, res) {
+function unknownMethodHandler (req, res) {
   if (req.method.toLowerCase() === 'options') {
     var allowHeaders = ['Accept', 'X-ApiKey', 'Accept-Version', 'Content-Type', 'Api-Version', 'Origin', 'X-Requested-With']; // added Origin & X-Requested-With
 
-    if (res.methods.indexOf('OPTIONS') === -1) res.methods.push('OPTIONS');
+    if (res.methods.indexOf('OPTIONS') === -1) {
+      res.methods.push('OPTIONS');
+    }
 
     res.header('Access-Control-Allow-Credentials', true);
     res.header('Access-Control-Allow-Headers', allowHeaders.join(', '));
@@ -246,11 +245,11 @@ server.on('MethodNotAllowed', unknownMethodHandler);
  * @apiVersion 0.0.1
  * @apiName validApiKey
  */
-function validApiKey (req, res, next) {
-  res.send(200, "ApiKey is valid");
+function validApiKey (req, res) {
+  res.send(200, 'ApiKey is valid');
 }
 
-function decodeBase64Image(dataString) {
+function decodeBase64Image (dataString) {
   var matches = dataString.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/),
     response = {};
 
@@ -300,7 +299,7 @@ function decodeBase64Image(dataString) {
  * @apiUse BoxIdParam
  *
  */
-function updateBox(req, res, next) {
+function updateBox (req, res, next) {
   /*
   var newBoxData = {
     _id
@@ -316,66 +315,69 @@ function updateBox(req, res, next) {
   */
 
   var qrys = [];
-  Box.findById(req.params.boxId, function (err, box) {
-    if (err) return handleError(err);
-
-    if (typeof req.params.name !== 'undefined' && req.params.name !== "") {
-      if(box.name !== req.params.name)
+  Box.findById(req.params.boxId).then(function (box) {
+    if (typeof req.params.name !== 'undefined' && req.params.name !== '') {
+      if (box.name !== req.params.name) {
         qrys.push(box.set({name: req.params.name}));
+      }
     }
-    if (typeof req.params.exposure !== 'undefined' && req.params.exposure !== "") {
-      if(box.exposure !== req.params.exposure)
+    if (typeof req.params.exposure !== 'undefined' && req.params.exposure !== '') {
+      if (box.exposure !== req.params.exposure) {
         qrys.push(box.set({exposure: req.params.exposure}));
+      }
     }
-    if (typeof req.params.grouptag !== 'undefined' && req.params.grouptag !== "") {
-      if(box.grouptag !== req.params.grouptag)
+    if (typeof req.params.grouptag !== 'undefined' && req.params.grouptag !== '') {
+      if (box.grouptag !== req.params.grouptag) {
         qrys.push(box.set({grouptag: req.params.grouptag}));
+      }
     }
-    if (typeof req.params.weblink !== 'undefined' && req.params.weblink !== "") {
-      if(box.weblink !== req.params.weblink)
+    if (typeof req.params.weblink !== 'undefined' && req.params.weblink !== '') {
+      if (box.weblink !== req.params.weblink) {
         qrys.push(box.set({weblink: req.params.weblink}));
+      }
     }
-    if (typeof req.params.description !== 'undefined' && req.params.description !== "") {
-      if(box.description !== req.params.description)
+    if (typeof req.params.description !== 'undefined' && req.params.description !== '') {
+      if (box.description !== req.params.description) {
         qrys.push(box.set({description: req.params.description}));
+      }
     }
-    if (typeof req.params.loc !== 'undefined' && req.params.loc !== "") {
-      if(String(box.loc[0].geometry.coordinates[0]) !== req.params.loc.lng || String(box.loc[0].geometry.coordinates[1]) !== req.params.loc.lat){
+    if (typeof req.params.loc !== 'undefined' && req.params.loc !== '') {
+      if (String(box.loc[0].geometry.coordinates[0]) !== req.params.loc.lng || String(box.loc[0].geometry.coordinates[1]) !== req.params.loc.lat) {
         box.loc[0].geometry.coordinates = [req.params.loc.lng, req.params.loc.lat];
       }
     }
-    if (typeof req.params.image !== 'undefined' && req.params.image !== "") {
+    if (typeof req.params.image !== 'undefined' && req.params.image !== '') {
       var data = req.params.image.toString();
       var imageBuffer = decodeBase64Image(data);
       var extension = (imageBuffer.type === 'image/jpeg') ? '.jpg' : '.png';
       try {
-        fs.writeFileSync(cfg.imageFolder+""+req.params.boxId+extension, imageBuffer.data);
-        qrys.push(box.set({image: req.params.boxId+extension+'?'+(new Date().getTime())}));
-      } catch(e) {
-        if (err) return handleError(e);
+        fs.writeFileSync(cfg.imageFolder + '' + req.params.boxId + extension, imageBuffer.data);
+        qrys.push(box.set({image: req.params.boxId + extension + '?' + (new Date().getTime())}));
+      } catch (e) {
+        return next(new restify.InternalServerError(JSON.stringify(e.message)));
       }
     }
-    if (typeof req.params.sensors !== 'undefined' && req.params.sensors.length>0) {
-      req.params.sensors.forEach(function(updatedsensor){
-        if(updatedsensor.deleted){
+    if (typeof req.params.sensors !== 'undefined' && req.params.sensors.length > 0) {
+      req.params.sensors.forEach(function (updatedsensor) {
+        if (updatedsensor.deleted) {
           qrys.push(Measurement.find({ sensor_id: updatedsensor._id }).remove());
           qrys.push(Box.update({'sensors._id': mongoose.Types.ObjectId(updatedsensor._id)},
             { $pull: { 'sensors': { _id: mongoose.Types.ObjectId(updatedsensor._id) } }
           }));
-        } else if(updatedsensor.edited && updatedsensor.new) {
+        } else if (updatedsensor.edited && updatedsensor.new) {
           var newsensor = new Sensor({
             'title': updatedsensor.title,
             'unit': updatedsensor.unit,
             'sensorType': updatedsensor.sensorType,
-            'icon' : updatedsensor.icon
+            'icon': updatedsensor.icon
           });
           box.sensors.push(newsensor);
-        }else if(updatedsensor.edited && !updatedsensor.deleted){
+        } else if (updatedsensor.edited && !updatedsensor.deleted) {
           qrys.push(Box.update({'sensors._id': mongoose.Types.ObjectId(updatedsensor._id)}, {'$set': {
-              'sensors.$.title': updatedsensor.title,
-              'sensors.$.unit': updatedsensor.unit,
-              'sensors.$.sensorType': updatedsensor.sensorType,
-              'sensors.$.icon': updatedsensor.icon
+            'sensors.$.title': updatedsensor.title,
+            'sensors.$.unit': updatedsensor.unit,
+            'sensors.$.sensorType': updatedsensor.sensorType,
+            'sensors.$.icon': updatedsensor.icon
           }}));
         }
       });
@@ -388,6 +390,8 @@ function updateBox(req, res, next) {
     }).catch(function (err) {
       return next(new restify.InternalServerError(JSON.stringify(err.message)));
     });
+  }).catch(function (err) {
+    return next(new restify.InternalServerError(JSON.stringify(err.message)));
   });
 }
 
@@ -399,8 +403,7 @@ function updateBox(req, res, next) {
  * @apiName getMeasurements
  * @apiUse BoxIdParam
  */
-function getMeasurements(req, res, next) {
-  "use strict";
+function getMeasurements (req, res, next) {
   Box.findOne({ _id: req.params.boxId }, { sensors: 1 })
     .populate('sensors.lastMeasurement')
     .lean()
@@ -435,22 +438,21 @@ function getMeasurements(req, res, next) {
  * @apiParam {String="true","false"} download If set, offer download to the user (default: false, always on if CSV is used)
  * @apiParam {String="json","csv"} format=json Can be 'JSON' (default) or 'CSV' (default: JSON)
  */
-function getData(req, res, next) {
-  'use strict'
+function getData (req, res, next) {
   // default to now
-  var toDate = (typeof req.params["to-date"] == 'undefined' || req.params["to-date"] == "") ? new Date() : new Date(req.params["to-date"]);
+  var toDate = (typeof req.params['to-date'] === 'undefined' || req.params['to-date'] === '') ? new Date() : new Date(req.params['to-date']);
   // default to 48 hours earlier
-  var fromDate = (typeof req.params["from-date"] == 'undefined' || req.params["from-date"] == "") ? new Date(toDate.valueOf() - TIME_AGO_48_H) : new Date(req.params["from-date"]);
+  var fromDate = (typeof req.params['from-date'] === 'undefined' || req.params['from-date'] === '') ? new Date(toDate.valueOf() - TIME_AGO_48_H) : new Date(req.params['from-date']);
 
-  var format = getFormat(req, ["json", "csv"], "json");
-  if (typeof format === "undefined") {
-    return next(new restify.InvalidArgumentError("Invalid format: " + req.params['format']));
+  var format = getFormat(req, ['json', 'csv'], 'json');
+  if (typeof format === 'undefined') {
+    return next(new restify.InvalidArgumentError('Invalid format: ' + req.params['format']));
   }
 
   if (toDate.valueOf() < fromDate.valueOf()) {
     return next(new restify.InvalidArgumentError(JSON.stringify('Invalid time frame specified')));
   }
-  if (toDate.valueOf()-fromDate.valueOf() > TIME_AGO_MAX) {
+  if (toDate.valueOf() - fromDate.valueOf() > TIME_AGO_MAX) {
     return next(new restify.InvalidArgumentError(JSON.stringify('Please choose a time frame up to 31 days maximum')));
   }
 
@@ -461,23 +463,23 @@ function getData(req, res, next) {
     createdAt: { $gte: new Date(fromDate), $lte: new Date(toDate) }
   };
 
-  if (format === "csv") {
+  if (format === 'csv') {
     var stringifier = csvstringify({ columns: ['createdAt', 'value'], header: 1, delimiter: ';' });
     var transformer = csvtransform(function (data) {
       data.createdAt = new Date(data.createdAt).toISOString();
       return data;
     });
 
-    transformer.on('error', function(err){
+    transformer.on('error', function (err) {
       console.log(err.message);
       _postToSlack(err.message);
       return next(new restify.InternalServerError(JSON.stringify(err.message)));
     });
 
     res.header('Content-Type', 'text/csv');
-    res.header('Content-Disposition', 'attachment; filename='+req.params.sensorId+'.csv');
+    res.header('Content-Disposition', 'attachment; filename=' + req.params.sensorId + '.csv');
 
-    Measurement.find(qry,{"createdAt":1, "value":1, "_id": 0}) // do not send _id column
+    Measurement.find(qry,{'createdAt': 1, 'value': 1, '_id': 0}) // do not send _id column
       .limit(queryLimit)
       .lean()
       .cursor({ batchSize: 500 })
@@ -485,39 +487,39 @@ function getData(req, res, next) {
       .pipe(stringifier)
       .pipe(res);
 
-  } else if (format === "json") {
+  } else if (format === 'json') {
     res.header('Content-Type', 'application/json; charset=utf-8');
-    if (typeof req.params["download"] !== "undefined" && req.params["download"] === "true"){
+    if (typeof req.params['download'] !== 'undefined' && req.params['download'] === 'true') {
       // offer download to browser
-      res.header('Content-Disposition', 'attachment; filename='+req.params.sensorId+'.'+format);
+      res.header('Content-Disposition', 'attachment; filename=' + req.params.sensorId + '.' + format);
     }
     let returnlength = 0;
     let index = 0;
-    Measurement.find(qry, {"createdAt":1, "value":1, "_id": 0}) // do not send _id column
-    .limit(queryLimit)
-    .lean()
-    .cursor({ batchSize: 500 })
-    .eachAsync((doc) => {
-      returnlength = 1;
-      doc.__v = undefined;
+    Measurement.find(qry, {'createdAt': 1, 'value': 1, '_id': 0}) // do not send _id column
+      .limit(queryLimit)
+      .lean()
+      .cursor({ batchSize: 500 })
+      .eachAsync((doc) => {
+        returnlength = 1;
+        doc.__v = undefined;
 
       // !(index++) is true the first time because !(0) evaluates to true
       // http://stackoverflow.com/a/34485539/1781026
-      res.write((!(index++) ? '[' : ',') + JSON.stringify(doc))
-    })
-    .then(() => {
-      if (returnlength === 0) {
-        res.status(404);
-        res.end("[]");
-      } else {
-        res.end("]");
-      }
-    })
-    .catch(function (err) {
-      console.log(err);
-      _postToSlack(err.errors);
-      return next(new restify.InternalServerError(JSON.stringify(err.errors)));
-    });
+        res.write((!(index++) ? '[' : ',') + JSON.stringify(doc));
+      })
+      .then(() => {
+        if (returnlength === 0) {
+          res.status(404);
+          res.end('[]');
+        } else {
+          res.end(']');
+        }
+      })
+      .catch(function (err) {
+        console.log(err);
+        _postToSlack(err.errors);
+        return next(new restify.InternalServerError(JSON.stringify(err.errors)));
+      });
   }
 }
 
@@ -533,84 +535,82 @@ function getData(req, res, next) {
  * @apiParam {String} to-date End date of measurement data (default: now)
  * @apiParam {String="true","false"} download If set, offer download to the user (default: false, always on if CSV is used)
  */
-function getDataMulti(req, res, next) {
-  'use strict'
-
+function getDataMulti (req, res, next) {
   // default to now
-  var toDate = (typeof req.params["to-date"] == 'undefined' || req.params["to-date"] == "") ? new Date() : new Date(req.params["to-date"]);
+  var toDate = (typeof req.params['to-date'] === 'undefined' || req.params['to-date'] === '') ? new Date() : new Date(req.params['to-date']);
   // default to 15 days earlier
-  var fromDate = (typeof req.params["from-date"] == 'undefined' || req.params["from-date"] == "") ? new Date(toDate.valueOf() - TIME_AGO_15_D) : new Date(req.params["from-date"]);
+  var fromDate = (typeof req.params['from-date'] === 'undefined' || req.params['from-date'] === '') ? new Date(toDate.valueOf() - TIME_AGO_15_D) : new Date(req.params['from-date']);
 
   if (toDate.valueOf() < fromDate.valueOf()) {
     return next(new restify.InvalidArgumentError(JSON.stringify('Invalid time frame specified')));
   }
-  if (toDate.valueOf()-fromDate.valueOf() > TIME_AGO_MAX) {
+  if (toDate.valueOf() - fromDate.valueOf() > TIME_AGO_MAX) {
     return next(new restify.InvalidArgumentError(JSON.stringify('Please choose a time frame up to 31 days maximum')));
   }
-  log.debug(fromDate, "to", toDate);
+  log.debug(fromDate, 'to', toDate);
 
-  if(req.params["phenomenon"] && req.params["boxid"]) {
+  if (req.params['phenomenon'] && req.params['boxid']) {
     //var generator = csvstringify({columns: ['createdAt', 'value']});
 
-    var phenom = req.params["phenomenon"].toString();
-    var boxId = req.params["boxid"].toString();
+    var phenom = req.params['phenomenon'].toString();
+    var boxId = req.params['boxid'].toString();
     var boxIds = boxId.split(',');
 
     Box.find({
       '_id': {
         '$in': boxIds
       },
-      'sensors.title': req.params["phenomenon"].toString()
+      'sensors.title': req.params['phenomenon'].toString()
     })
-    .lean()
-    .exec()
-    .then(function (boxData) {
-      var sensors = Object.create(null);
+      .lean()
+      .exec()
+      .then(function (boxData) {
+        var sensors = Object.create(null);
 
-      for (var i = 0, len = boxData.length; i < len; i++) {
-        for (var j = 0, sensorslen = boxData[i].sensors.length; j < sensorslen; j++) {
-          if (boxData[i].sensors[j].title === phenom) {
-            sensors[boxData[i].sensors[j]['_id']] = Object.create(null);
-            sensors[boxData[i].sensors[j]['_id']].lat = boxData[i].loc[0].geometry.coordinates[0];
-            sensors[boxData[i].sensors[j]['_id']].lng = boxData[i].loc[0].geometry.coordinates[1];
+        for (var i = 0, len = boxData.length; i < len; i++) {
+          for (var j = 0, sensorslen = boxData[i].sensors.length; j < sensorslen; j++) {
+            if (boxData[i].sensors[j].title === phenom) {
+              sensors[boxData[i].sensors[j]['_id']] = Object.create(null);
+              sensors[boxData[i].sensors[j]['_id']].lat = boxData[i].loc[0].geometry.coordinates[0];
+              sensors[boxData[i].sensors[j]['_id']].lng = boxData[i].loc[0].geometry.coordinates[1];
+            }
           }
         }
-      }
 
-      var stringifier = csvstringify({ columns: ['createdAt', 'value', 'lat', 'lng'], header: 1, delimiter: ';' });
-      var transformer = csvtransform(function (data) {
-        data.createdAt = new Date(data.createdAt).toISOString();
-        data.lat = sensors[data.sensor_id].lat;
-        data.lng = sensors[data.sensor_id].lng;
-        return data;
+        var stringifier = csvstringify({ columns: ['createdAt', 'value', 'lat', 'lng'], header: 1, delimiter: ';' });
+        var transformer = csvtransform(function (data) {
+          data.createdAt = new Date(data.createdAt).toISOString();
+          data.lat = sensors[data.sensor_id].lat;
+          data.lng = sensors[data.sensor_id].lng;
+          return data;
+        });
+
+        transformer.on('error', function (err) {
+          console.log(err.message);
+          _postToSlack(err.message);
+          return next(new restify.InternalServerError(JSON.stringify(err.message)));
+        });
+
+        Measurement.find({
+          'sensor_id': {
+            '$in': Object.keys(sensors)
+          },
+          createdAt: {
+            '$gt': fromDate,
+            '$lt': toDate
+          }
+        }, {'createdAt': 1, 'value': 1, '_id': 0, 'sensor_id': 1})
+          .lean()
+          .cursor({ batchSize: 500 })
+          .pipe(transformer)
+          .pipe(stringifier)
+          .pipe(res);
+      })
+      .catch(function (err) {
+        console.log(err);
+        _postToSlack(err.errors);
+        return next(new restify.InternalServerError(JSON.stringify(err.errors)));
       });
-
-    transformer.on('error', function(err){
-      console.log(err.message);
-      _postToSlack(err.message);
-      return next(new restify.InternalServerError(JSON.stringify(err.message)));
-    });
-
-      Measurement.find({
-        'sensor_id': {
-          '$in': Object.keys(sensors)
-        },
-        createdAt: {
-          "$gt": fromDate,
-          "$lt": toDate
-        }
-      }, {"createdAt":1, "value":1, "_id": 0, "sensor_id":1})
-      .lean()
-      .cursor({ batchSize: 500 })
-      .pipe(transformer)
-      .pipe(stringifier)
-      .pipe(res)
-    })
-    .catch(function (err) {
-      console.log(err);
-      _postToSlack(err.errors);
-      return next(new restify.InternalServerError(JSON.stringify(err.errors)));
-    });
   } else {
     return next(new restify.InvalidArgumentError(JSON.stringify('Invalid parameters')));
   }
@@ -627,36 +627,36 @@ function getDataMulti(req, res, next) {
  * @apiParam (RequestBody) {String} value the measured value of the sensor. Also accepts JSON float numbers.
  * @apiParam (RequestBody) {String} createdAt the timestamp of the measurement. Should be parseable by JavaScript.
  */
-function postNewMeasurement(req, res, next) {
-  Box.findOne({_id: req.params.boxId}, function(error,box){
+function postNewMeasurement (req, res, next) {
+  Box.findOne({_id: req.params.boxId}, function (error,box) {
     if (error) {
       return next(new restify.InvalidArgumentError(JSON.stringify(error.message)));
     } else {
       if (!box) {
-        return next(new restify.NotFoundError("box not found"));
+        return next(new restify.NotFoundError('box not found'));
       }
-      saveMeasurement(box, req.params.sensorId, req.params.value, req.params.createdAt).then(function(result){
-        if(result){
-          res.send(201, "Measurement saved in box");
+      saveMeasurement(box, req.params.sensorId, req.params.value, req.params.createdAt).then(function (result) {
+        if (result) {
+          res.send(201, 'Measurement saved in box');
         } else {
-          return next(new restify.BadRequestError("Measurement could not be saved"));
+          return next(new restify.BadRequestError('Measurement could not be saved'));
         }
       })
-      .catch(function (err) {
-        if (err === "sensor not found") {
-          return next(new restify.NotFoundError("sensor not found in box"));
-        }
-        var errmsg = "Measurement could not be saved";
-        if (err.message) {
-          errmsg += ": " + err.message;
-        }
-        return next(new restify.BadRequestError(errmsg));
-      });
+        .catch(function (err) {
+          if (err === 'sensor not found') {
+            return next(new restify.NotFoundError('sensor not found in box'));
+          }
+          var errmsg = 'Measurement could not be saved';
+          if (err.message) {
+            errmsg += ': ' + err.message;
+          }
+          return next(new restify.BadRequestError(errmsg));
+        });
     }
   });
 }
 
-function saveMeasurement(box, sensorId, value, createdAt){
+function saveMeasurement (box, sensorId, value, createdAt) {
   for (var i = box.sensors.length - 1; i >= 0; i--) {
     if (box.sensors[i]._id.equals(sensorId)) {
       var measurementData = {
@@ -665,7 +665,7 @@ function saveMeasurement(box, sensorId, value, createdAt){
         sensor_id: sensorId
       };
 
-      if (typeof createdAt !== "undefined") {
+      if (typeof createdAt !== 'undefined') {
         try {
           measurementData.createdAt = new Date(createdAt);
         } catch (e) {
@@ -682,9 +682,9 @@ function saveMeasurement(box, sensorId, value, createdAt){
       ];
       return Promise.all(qrys);
     } else if (i === 0) {
-      return Promise.reject("sensor not found");
+      return Promise.reject('sensor not found');
     }
-  };
+  }
 }
 
 /**
@@ -700,18 +700,18 @@ function saveMeasurement(box, sensorId, value, createdAt){
  * [{ "sensor": "56cb7c25b66992a02fe389de", "value": "3" },{ "sensor": "56cb7c25b66992a02fe389df", "value": "2" }]
  * curl -X POST -H 'Content-type:application/json' -d "[{ \"sensor\": \"56cb7c25b66992a02fe389de\", \"value\": \"3\" },{ \"sensor\": \"56cb7c25b66992a02fe389df\", \"value\": \"2\" }]" localhost:8000/boxes/56cb7c25b66992a02fe389d9/data
  */
-function postNewMeasurements(req, res, next) {
+function postNewMeasurements (req, res, next) {
   // when the body is an array, restify overwrites the req.params with the given array.
   // to get the boxId, try to extract it from the path
-  var boxId = req.path().split("/")[2];
+  var boxId = req.path().split('/')[2];
   Box.findOne({ _id: boxId })
     .then(function (box) {
       if (!box) {
-        return next(new restify.NotFoundError("no senseBox found"));
+        return next(new restify.NotFoundError('no senseBox found'));
       }
       saveMeasurementArray(box, req.body)
         .then(function () {
-          res.send(201, "Measurements saved in box");
+          res.send(201, 'Measurements saved in box');
         })
         .catch(function (err) {
           console.log(err);
@@ -728,11 +728,11 @@ function postNewMeasurements(req, res, next) {
 
 function saveMeasurementArray (box, data) {
   if (!Array.isArray(data)) {
-    return Promise.reject("array expected");
+    return Promise.reject('array expected');
   }
 
   if (data.length > 2000) {
-    return Promise.reject("array too big. Please stay below 2000 items");
+    return Promise.reject('array too big. Please stay below 2000 items');
   }
 
   var qrys = [];
@@ -745,7 +745,7 @@ function saveMeasurementArray (box, data) {
           sensor_id: measurement.sensor
         };
 
-        if (typeof measurement.createdAt !== "undefined") {
+        if (typeof measurement.createdAt !== 'undefined') {
           try {
             measurementData.createdAt = new Date(measurement.createdAt);
           } catch (e) {
@@ -753,11 +753,11 @@ function saveMeasurementArray (box, data) {
           }
         }
 
-        var measurement = new Measurement(measurementData);
+        var mongoMeasurement = new Measurement(measurementData);
 
-        box.sensors[i].lastMeasurement = measurement._id;
+        box.sensors[i].lastMeasurement = mongoMeasurement._id;
         qrys.push(box.save());
-        qrys.push(measurement.save());
+        qrys.push(mongoMeasurement.save());
       }
     }
   });
@@ -777,41 +777,41 @@ function saveMeasurementArray (box, data) {
  * @apiSampleRequest http://opensensemap.org:8000/boxes?date=2015-03-07T02:50Z&phenomenon=Temperatur
  * @apiSampleRequest http://opensensemap.org:8000/boxes?date=2015-03-07T02:50Z,2015-04-07T02:50Z&phenomenon=Temperatur
  */
-function findAllBoxes(req, res , next){
-  var activityAroundDate = (typeof req.params["date"] === 'undefined' || req.params["date"] === "") ? undefined : req.params["date"];
-  var phenomenon = (typeof req.params["phenomenon"] === 'undefined' || req.params["phenomenon"] === "") ? undefined : req.params["phenomenon"];
+function findAllBoxes (req, res , next) {
+  var activityAroundDate = (typeof req.params['date'] === 'undefined' || req.params['date'] === '') ? undefined : req.params['date'];
+  var phenomenon = (typeof req.params['phenomenon'] === 'undefined' || req.params['phenomenon'] === '') ? undefined : req.params['phenomenon'];
 
-  var format = getFormat(req, ["json", "geojson"], "json");
-  if (typeof format === "undefined") {
-    return next(new restify.InvalidArgumentError("Invalid format: " + req.params['format']));
+  var format = getFormat(req, ['json', 'geojson'], 'json');
+  if (typeof format === 'undefined') {
+    return next(new restify.InvalidArgumentError('Invalid format: ' + req.params['format']));
   }
 
   var fromDate,
-      toDate,
-      dates;
+    toDate,
+    dates;
 
-  if(activityAroundDate && (dates = activityAroundDate.split(',')) && dates.length===2 && moment(dates[0]).isBefore(dates[1])){ // moment().isBefore() will check the date's validities as well
+  if (activityAroundDate && (dates = activityAroundDate.split(',')) && dates.length === 2 && moment(dates[0]).isBefore(dates[1])) { // moment().isBefore() will check the date's validities as well
     fromDate = moment.utc(dates[0]).toDate();
     toDate = moment.utc(dates[1]).toDate();
-  } else if(moment(activityAroundDate).isValid()) {
+  } else if (moment(activityAroundDate).isValid()) {
     fromDate = moment.utc(activityAroundDate).subtract(4, 'hours').toDate();
     toDate = moment.utc(activityAroundDate).add(4, 'hours').toDate();
   }
 
   // prepare query & callback
   var boxQry = Box.find({}).populate('sensors.lastMeasurement');
-  var boxQryCallback = function(err, boxes){
+  var boxQryCallback = function (err, boxes) {
     // extend/update 'lastMeasurement' to the queried date
     var sensorQrys = [];
-    if(typeof activityAroundDate !== 'undefined') {
-      boxes.forEach(function(box){
-        box.sensors.forEach(function(sensor){
+    if (typeof activityAroundDate !== 'undefined') {
+      boxes.forEach(function (box) {
+        box.sensors.forEach(function (sensor) {
           sensorQrys.push(
             Measurement.findOne({
               sensor_id: sensor._id,
               createdAt: {
-                "$gt": fromDate,
-                "$lt": toDate
+                '$gt': fromDate,
+                '$lt': toDate
               }
             }).lean().exec()
           );
@@ -819,18 +819,18 @@ function findAllBoxes(req, res , next){
       });
     }
 
-    Promise.all(sensorQrys).then(function(thatresult){
+    Promise.all(sensorQrys).then(function (thatresult) {
       // merge 'old' data that was queried according to the date/timestamp into the box result set
       // by replacing the "lastMeasurement" attribute's values with one fitting the query
-      if(typeof activityAroundDate !== 'undefined'/* && typeof phenomenon !== 'undefined'*/) {
+      if (typeof activityAroundDate !== 'undefined'/* && typeof phenomenon !== 'undefined'*/) {
         var _boxes = boxes.slice();
         // TODO: too many loops
-        _boxes.forEach(function(box){
-          box.sensors.forEach(function(sensor){
-            thatresult.forEach(function(thisresult){
-              if(thisresult !== null){
-                if(sensor.lastMeasurement){
-                  if(thisresult.sensor_id.toString() == sensor._id.toString()) {
+        _boxes.forEach(function (box) {
+          box.sensors.forEach(function (sensor) {
+            thatresult.forEach(function (thisresult) {
+              if (thisresult !== null) {
+                if (sensor.lastMeasurement) {
+                  if (thisresult.sensor_id.toString() === sensor._id.toString()) {
                     sensor.lastMeasurement = thisresult;
                   }
                 }
@@ -838,72 +838,72 @@ function findAllBoxes(req, res , next){
             });
           });
         });
-        return(_boxes);
+        return (_boxes);
       }
-      return(boxes);
+      return (boxes);
     })
-    .then(function (result_boxes) {
+      .then(function (result_boxes) {
       // clean up result..
-      return result_boxes.map(function (box) {
-        box.__v = undefined;
+        return result_boxes.map(function (box) {
+          box.__v = undefined;
 
-        box.sensor = box.sensors.map(function (sensor) {
-          sensor.__v = undefined;
-          if (sensor.lastMeasurement) {
-            sensor.lastMeasurement.__v = undefined;
-          }
-          return sensor;
+          box.sensor = box.sensors.map(function (sensor) {
+            sensor.__v = undefined;
+            if (sensor.lastMeasurement) {
+              sensor.lastMeasurement.__v = undefined;
+            }
+            return sensor;
+          });
+
+          box.loc[0]._id = undefined;
+
+          return box;
         });
+      })
+      .then(function (resultset) {
+        if (format === 'json') {
+          res.send(resultset);
+        } else if (format === 'geojson') {
+          var tmp = JSON.stringify(resultset);
+          tmp = JSON.parse(tmp);
+          var geojson = _.transform(tmp, function (result, n) {
+            var lat = n.loc[0].geometry.coordinates[1];
+            var lng = n.loc[0].geometry.coordinates[0];
+            n['loc'] = undefined;
+            n['lat'] = lat;
+            n['lng'] = lng;
+            return result.push(n);
+          });
+          res.send(GeoJSON.parse(geojson, {Point: ['lat','lng']}));
+        }
 
-        box.loc[0]._id = undefined;
-
-        return box;
+      }).catch(function (err) {
+        console.log(err);
+        _postToSlack(err);
+        return next(new restify.InternalServerError(JSON.stringify(err)));
       });
-    })
-    .then(function(resultset){
-      if (format === "json") {
-        res.send(resultset);
-      } else if (format === "geojson") {
-        tmp = JSON.stringify(resultset);
-        tmp = JSON.parse(tmp);
-        var geojson = _.transform(tmp, function(result, n) {
-          lat = n.loc[0].geometry.coordinates[1];
-          lng = n.loc[0].geometry.coordinates[0];
-          n["loc"] = undefined;
-          n["lat"] = lat;
-          n["lng"] = lng;
-          return result.push(n);
-        });
-        res.send(GeoJSON.parse(geojson, {Point: ['lat','lng']}));
-      }
-
-    }).catch(function (err) {
-      console.log(err);
-      _postToSlack(err);
-      return next(new restify.InternalServerError(JSON.stringify(err)));
-    });
   };
 
   // if date and phenom. are specified then filter boxes,
   // otherwise show all boxes
-  if(typeof activityAroundDate !== 'undefined') {
+  if (typeof activityAroundDate !== 'undefined') {
     Measurement.find({
       createdAt: {
-        "$gt": fromDate,
-        "$lt": toDate
+        '$gt': fromDate,
+        '$lt': toDate
       }
-    }).lean().distinct('sensor_id', function(err,measurements){
+    }).lean().distinct('sensor_id', function (err,measurements) {
       var qry = {
-        "sensors._id": {
-          "$in": measurements
+        'sensors._id': {
+          '$in': measurements
         }
       };
-      if(typeof phenomenon !== 'undefined'){
+      if (typeof phenomenon !== 'undefined') {
         qry = {
-          "sensors._id": {
-            "$in": measurements
+          'sensors._id': {
+            '$in': measurements
           },
-          "sensors.title": phenomenon
+          'sensors.title': phenomenon
         };
       }
       boxQry = Box.find(qry).populate('sensors.lastMeasurement');
@@ -958,15 +958,15 @@ function findAllBoxes(req, res , next){
 }
  */
 
-function findBox(req, res, next) {
+function findBox (req, res, next) {
   var id = req.params['boxId'].toString();
-  var format = getFormat(req, ["json", "geojson"], "json");
-  if (typeof format === "undefined") {
-    return next(new restify.InvalidArgumentError("Invalid format: " + req.params['format']));
+  var format = getFormat(req, ['json', 'geojson'], 'json');
+  if (typeof format === 'undefined') {
+    return next(new restify.InvalidArgumentError('Invalid format: ' + req.params['format']));
   }
 
   if (mongoose.Types.ObjectId.isValid(id)) {
-    Box.findOne({_id: id}).exec().then(function(box){
+    Box.findOne({_id: id}).exec().then(function (box) {
       if (box) {
         box.populate('sensors.lastMeasurement');
 
@@ -983,29 +983,29 @@ function findBox(req, res, next) {
 
         box.loc[0]._id = undefined;
 
-        if (format === "json") {
+        if (format === 'json') {
           res.send(box);
-        } else if (format === "geojson") {
+        } else if (format === 'geojson') {
           var tmp = JSON.stringify(box);
           tmp = JSON.parse(tmp);
           var lat = tmp.loc[0].geometry.coordinates[1];
           var lng = tmp.loc[0].geometry.coordinates[0];
-          tmp["loc"] = undefined;
-          tmp["lat"] = lat;
-          tmp["lng"] = lng;
+          tmp['loc'] = undefined;
+          tmp['lat'] = lat;
+          tmp['lng'] = lng;
           var geojson = [tmp];
           res.send(GeoJSON.parse(geojson, {Point: ['lat','lng']}));
         }
       } else {
-        return next(new restify.NotFoundError("No senseBox found"));
+        return next(new restify.NotFoundError('No senseBox found'));
       }
     }).catch(function (error) {
       var e = error.errors;
       _postToSlack(e);
       return next(new restify.InternalServerError(e));
     });
-  } else{
-    return next(new restify.NotFoundError("No senseBox found"));
+  } else {
+    return next(new restify.NotFoundError('No senseBox found'));
   }
 }
 
@@ -1016,7 +1016,7 @@ function createNewUser (req) {
     email: req.params.user.email,
     apikey: req.params.orderID,
     boxes: []
-  }
+  };
 
   var user = new User(userData);
 
@@ -1038,18 +1038,18 @@ function createNewBox (req) {
   var box = new Box(boxData);
 
   if (req.params.model) {
-    switch(req.params.model){
-      case 'homeEthernet':
-        req.params.sensors = products.senseboxhome;
-        break;
-      case 'homeWifi':
-        req.params.sensors = products.senseboxhome;
-        break;
-      case 'basicEthernet':
-        req.params.sensors = products.senseboxbasic;
-        break;
-      default:
-        break;
+    switch (req.params.model) {
+    case 'homeEthernet':
+      req.params.sensors = products.senseboxhome;
+      break;
+    case 'homeWifi':
+      req.params.sensors = products.senseboxhome;
+      break;
+    case 'basicEthernet':
+      req.params.sensors = products.senseboxbasic;
+      break;
+    default:
+      break;
     }
   }
 
@@ -1065,7 +1065,7 @@ function createNewBox (req) {
     };
 
     box.sensors.push(sensorData);
-  };
+  }
 
   return box;
 }
@@ -1082,37 +1082,35 @@ function createNewBox (req) {
  * @apiParam (RequestBody) {String} email email of the user for the senseBox.
  * @apiParam (RequestBody) {String} orderID the apiKey of the user for the senseBox.
  */
-function postNewBox(req, res, next) {
-  User.findOne({apikey:req.params.orderID}, function (err, user) {
+function postNewBox (req, res, next) {
+  User.findOne({apikey: req.params.orderID}, function (err, user) {
     if (err) {
       log.error(err);
-      return res.send(400, "An error occured");
+      return res.send(400, 'An error occured');
     } else {
 
-      log.debug("A new sensebox is being submitted");
+      log.debug('A new sensebox is being submitted');
       if (!user) {
         var newUser = createNewUser(req);
         var newBox = createNewBox(req);
-        var savedBox = {};
 
         newUser._doc.boxes.push(newBox._doc._id.toString());
-        newBox.save( function (err, box) {
+        newBox.save(function (err, box) {
           if (err) {
-            return next(new restify.InvalidArgumentError(JSON.stringify(error.errors)));
+            return next(new restify.InvalidArgumentError(JSON.stringify(err.message)));
           }
 
           try {
             genScript(box, box.model);
-            savedBox = box;
 
-            newUser.save( function (err, user) {
+            newUser.save(function (err, user) {
               if (err) {
-                return next(new restify.InvalidArgumentError(JSON.stringify(error.errors)));
+                return next(new restify.InvalidArgumentError(JSON.stringify(err.message)));
               } else {
-                if(cfg.email_host!==''){
+                if (cfg.email_host !== '') {
                   sendWelcomeMail(user, newBox);
                   sendYeahMail(user, newBox);
-                  _postToSlack("Eine neue <https://opensensemap.org/explore/" + newBox._id + "|senseBox> wurde registriert (" + newBox.name + ")");
+                  _postToSlack('Eine neue <https://opensensemap.org/explore/' + newBox._id + '|senseBox> wurde registriert (' + newBox.name + ')');
                 }
                 return res.send(201, user);
               }
@@ -1120,12 +1118,12 @@ function postNewBox(req, res, next) {
 
           } catch (e) {
             log.error(e);
-            return res.send(400, "An error occured");
+            return res.send(400, 'An error occured');
           }
         });
       } else {
         log.error(err);
-        return res.send(400, "An error occured");
+        return res.send(400, 'An error occured');
       }
     }
   });
@@ -1134,68 +1132,71 @@ function postNewBox(req, res, next) {
 
 // generate Arduino script
 function genScript (box, model) {
-  var output = cfg.targetFolder + "" + box._id + ".ino";
+  var output = cfg.targetFolder + '' + box._id + '.ino';
   // remove old script it it exists
   try {
     if (fs.statSync(output)) {
       fs.unlinkSync(output);
     }
-  } catch(e){}
+  } catch (e) {
+    console.log('deleted old sketch. (' + output + ') bye bye!');
+  }
 
   var isCustom = false;
-  switch(model){
-    case 'homeEthernet':
-      filename = "files/template_home/template_home.ino";
-      break;
-    case 'basicEthernet':
-      filename = "files/template_basic/template_basic.ino";
-      break;
-    case 'homeWifi':
-      filename = "files/template_home_wifi/template_home_wifi.ino";
-      break;
-    default:
-      isCustom = true;
-      filename = "files/template_custom_setup/template_custom_setup.ino";
-      break;
+  var filename;
+  switch (model) {
+  case 'homeEthernet':
+    filename = 'files/template_home/template_home.ino';
+    break;
+  case 'basicEthernet':
+    filename = 'files/template_basic/template_basic.ino';
+    break;
+  case 'homeWifi':
+    filename = 'files/template_home_wifi/template_home_wifi.ino';
+    break;
+  default:
+    isCustom = true;
+    filename = 'files/template_custom_setup/template_custom_setup.ino';
+    break;
   }
 
   fs.readFileSync(filename)
     .toString()
     .split('\n')
     .forEach(function (line) {
-      if (line.indexOf("//senseBox ID") != -1) {
-        fs.appendFileSync(output, line.toString() + "\n");
-        fs.appendFileSync(output, '#define SENSEBOX_ID "'+box._id+'"\n');
-      } else if (line.indexOf("//Sensor IDs") != -1) {
-        fs.appendFileSync(output, line.toString() + "\n");
+      if (line.indexOf('//senseBox ID') !== -1) {
+        fs.appendFileSync(output, line.toString() + '\n');
+        fs.appendFileSync(output, '#define SENSEBOX_ID "' + box._id + '"\n');
+      } else if (line.indexOf('//Sensor IDs') !== -1) {
+        fs.appendFileSync(output, line.toString() + '\n');
         var customSensorindex = 1;
         for (var i = box.sensors.length - 1; i >= 0; i--) {
           var sensor = box.sensors[i];
           log.debug(sensor);
-          if (!isCustom && sensor.title == "Temperatur") {
-            fs.appendFileSync(output, '#define TEMPSENSOR_ID "'+sensor._id+'"\n');
-          } else if(!isCustom && sensor.title == "rel. Luftfeuchte") {
-            fs.appendFileSync(output, '#define HUMISENSOR_ID "'+sensor._id+'"\n');
-          } else if(!isCustom && sensor.title == "Luftdruck") {
-            fs.appendFileSync(output, '#define PRESSURESENSOR_ID "'+sensor._id+'"\n');
-          } else if(!isCustom && sensor.title == "Lautstärke") {
-            fs.appendFileSync(output, '#define NOISESENSOR_ID "'+sensor._id+'"\n');
-          } else if(!isCustom && sensor.title == "Helligkeit") {
-            fs.appendFileSync(output, '#define LIGHTSENSOR_ID "'+sensor._id+'"\n');
-          } else if (!isCustom && sensor.title == "Beleuchtungsstärke") {
-            fs.appendFileSync(output, '#define LUXSENSOR_ID "'+sensor._id+'"\n');
-          } else if (!isCustom && sensor.title == "UV-Intensität") {
-            fs.appendFileSync(output, '#define UVSENSOR_ID "'+sensor._id+'"\n');
+          if (!isCustom && sensor.title === 'Temperatur') {
+            fs.appendFileSync(output, '#define TEMPSENSOR_ID "' + sensor._id + '"\n');
+          } else if (!isCustom && sensor.title === 'rel. Luftfeuchte') {
+            fs.appendFileSync(output, '#define HUMISENSOR_ID "' + sensor._id + '"\n');
+          } else if (!isCustom && sensor.title === 'Luftdruck') {
+            fs.appendFileSync(output, '#define PRESSURESENSOR_ID "' + sensor._id + '"\n');
+          } else if (!isCustom && sensor.title === 'Lautstärke') {
+            fs.appendFileSync(output, '#define NOISESENSOR_ID "' + sensor._id + '"\n');
+          } else if (!isCustom && sensor.title === 'Helligkeit') {
+            fs.appendFileSync(output, '#define LIGHTSENSOR_ID "' + sensor._id + '"\n');
+          } else if (!isCustom && sensor.title === 'Beleuchtungsstärke') {
+            fs.appendFileSync(output, '#define LUXSENSOR_ID "' + sensor._id + '"\n');
+          } else if (!isCustom && sensor.title === 'UV-Intensität') {
+            fs.appendFileSync(output, '#define UVSENSOR_ID "' + sensor._id + '"\n');
           } else {
-            fs.appendFileSync(output, '#define SENSOR'+customSensorindex+'_ID "'+sensor._id+'" \/\/ '+sensor.title+'\n');
+            fs.appendFileSync(output, '#define SENSOR' + customSensorindex + '_ID "' + sensor._id + '" \/\/ ' + sensor.title + '\n');
             customSensorindex++;
           }
         }
-      } else if (line.indexOf("@@OSEM_POST_DOMAIN@@") !== -1) {
-        var newLine = line.toString().replace("@@OSEM_POST_DOMAIN@@", cfg.measurements_post_domain);
-        fs.appendFileSync(output, newLine + "\n");
+      } else if (line.indexOf('@@OSEM_POST_DOMAIN@@') !== -1) {
+        var newLine = line.toString().replace('@@OSEM_POST_DOMAIN@@', cfg.measurements_post_domain);
+        fs.appendFileSync(output, newLine + '\n');
       } else {
-        fs.appendFileSync(output, line.toString() + "\n");
+        fs.appendFileSync(output, line.toString() + '\n');
       }
     });
 }
@@ -1208,9 +1209,9 @@ function genScript (box, model) {
  * @apiUse AuthorizationRequiredError
  * @apiUse BoxIdParam
  */
-function getScript(req, res, next) {
+function getScript (req, res, next) {
   Box.findById(req.params.boxId).then(function (box) {
-    var file = cfg.targetFolder+""+box._id+".ino";
+    var file = cfg.targetFolder + '' + box._id + '.ino';
 
     if (!fs.existsSync(file)) {
       genScript(box, box.model);
@@ -1218,9 +1219,9 @@ function getScript(req, res, next) {
 
     return res.send(200, fs.readFileSync(file, 'utf-8'));
   })
-  .catch(function (err) {
-    return next(new restify.NotFoundError(err.message));
-  });
+    .catch(function (err) {
+      return next(new restify.NotFoundError(err.message));
+    });
 }
 
 /**
@@ -1231,19 +1232,19 @@ function getScript(req, res, next) {
  * @apiUse AuthorizationRequiredError
  * @apiUse BoxIdParam
  */
-function deleteBox(req, res, next) {
+function deleteBox (req, res, next) {
   var qrys = [];
 
   Box.findById(req.params.boxId, function (findboxerr, box) {
-    box.sensors.forEach(function(sensor){
+    box.sensors.forEach(function (sensor) {
       qrys.push(Measurement.find({ sensor_id: sensor._id }).remove());
     });
     qrys.push(box.remove());
-    qrys.push(user.remove());
+    qrys.push(req.authorized_user.remove());
   });
 
-  Promise.all(qrys).then(function() {
-    res.send(200, "Box deleted");
+  Promise.all(qrys).then(function () {
+    res.send(200, 'Box deleted');
   }).catch(function (err) {
     return next(new restify.InternalServerError(err.message));
   });
@@ -1258,26 +1259,26 @@ function deleteBox(req, res, next) {
  * @apiSuccessExample {json}
  * [8,13, 2]
  */
-function getStatistics(req, res, next){
+function getStatistics (req, res) {
   var qrys = [
     Box.count({}),
     Measurement.count({}),
     Measurement.count({
-        createdAt: {
-          "$gt": new Date(Date.now() - 60000),
-          "$lt": new Date()
-        }
+      createdAt: {
+        '$gt': new Date(Date.now() - 60000),
+        '$lt': new Date()
+      }
     })
   ];
-  Promise.all(qrys).then(function(results){
+  Promise.all(qrys).then(function (results) {
     res.send(200, results);
   });
 }
 
 // Send box script to user via email
-function sendWelcomeMail(user, box) {
+function sendWelcomeMail (user, box) {
   var templatePath = './templates/registration.html';
-  var templateContent = fs.readFileSync(templatePath, encoding = 'utf8');
+  var templateContent = fs.readFileSync(templatePath, { encoding: 'utf8' });
   var template = _.template(templateContent);
   var compiled = template({ 'user': user, 'box': box });
 
@@ -1286,8 +1287,8 @@ function sendWelcomeMail(user, box) {
     port: cfg.email_port,
     secure: cfg.email_secure,
     auth: {
-        user: cfg.email_user,
-        pass: cfg.email_pass
+      user: cfg.email_user,
+      pass: cfg.email_pass
     }
   }));
   transporter.use('compile', htmlToText());
@@ -1301,7 +1302,7 @@ function sendWelcomeMail(user, box) {
       address: cfg.email_replyTo
     },
     to: {
-      name: user.firstname+" "+user.lastname,
+      name: user.firstname + ' ' + user.lastname,
       address: user.email
     },
     subject: cfg.email_subject,
@@ -1309,25 +1310,25 @@ function sendWelcomeMail(user, box) {
     html: compiled,
     attachments: [
       {
-        filename: "sensebox.ino",
-        path: cfg.targetFolder + box._id + ".ino"
+        filename: 'sensebox.ino',
+        path: cfg.targetFolder + box._id + '.ino'
       }
     ]
-  }, function(err, info){
-    if(err){
-      log.error("Email error");
+  }, function (err, info) {
+    if (err) {
+      log.error('Email error');
       log.error(err);
     }
-    if(info){
-      log.debug("Email sent successfully");
+    if (info) {
+      log.debug('Email sent successfully');
     }
   });
 }
 
 // Send Yeah Mail to senseBox Team
-function sendYeahMail(user, box) {
+function sendYeahMail (user, box) {
   var templatePath = './templates/yeah.html';
-  var templateContent = fs.readFileSync(templatePath, encoding = 'utf8');
+  var templateContent = fs.readFileSync(templatePath, { encoding: 'utf8' });
   var template = _.template(templateContent);
   var compiled = template({ 'user': user, 'box': box });
 
@@ -1336,8 +1337,8 @@ function sendYeahMail(user, box) {
     port: cfg.email_port,
     secure: cfg.email_secure,
     auth: {
-        user: cfg.email_user,
-        pass: cfg.email_pass
+      user: cfg.email_user,
+      pass: cfg.email_pass
     }
   }));
   transporter.use('compile', htmlToText());
@@ -1351,20 +1352,20 @@ function sendYeahMail(user, box) {
       address: cfg.email_replyTo
     },
     to: {
-      name: user.firstname+" "+user.lastname,
-      address: "support@sensebox.de"
+      name: user.firstname + ' ' + user.lastname,
+      address: 'support@sensebox.de'
     },
     subject: cfg.email_subject,
     template: 'yeah',
     html: compiled
 
-  }, function(err, info){
-    if(err){
-      log.error("Email error");
+  }, function (err, info) {
+    if (err) {
+      log.error('Email error');
       log.error(err);
     }
-    if(info){
-      log.debug("Email sent successfully");
+    if (info) {
+      log.debug('Email sent successfully');
     }
   });
 }
@@ -1375,17 +1376,13 @@ function _postToSlack (text) {
   }
 }
 
-function isEmptyObject(obj) {
-  return !Object.keys(obj).length;
-}
-
 server.listen(cfg.port, function () {
   console.log('%s listening at %s', server.name, server.url);
 });
 
 server.on('uncaughtException', function (req, res, route, err) {
-  _postToSlack("Error in API (" + route.spec.method + " " + route.spec.path + ", " + req.href() + "): " + err);
+  _postToSlack('Error in API (' + route.spec.method + ' ' + route.spec.path + ', ' + req.href() + '): ' + err);
   log.error('Uncaught error', err);
   console.log(err.stack);
-  return res.send(500, "An error occured");
+  return res.send(500, 'An error occured');
 });

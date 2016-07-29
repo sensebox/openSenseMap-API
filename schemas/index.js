@@ -1,20 +1,20 @@
+'use strict';
 var mongoose = require('mongoose'),
-    timestamp = require('mongoose-timestamp'),
-    Schema = mongoose.Schema,
-    ObjectId = Schema.ObjectID;
+  timestamp = require('mongoose-timestamp'),
+  Schema = mongoose.Schema;
 
 //Location schema
 var LocationSchema = new Schema({
   type: {
     type: String,
     required: true,
-    default: "Feature"
+    default: 'Feature'
   },
   geometry: {
     type: {
       type: String,
       required: true,
-      default:"Point"
+      default: 'Point'
     },
     coordinates: {
       type: Array,
@@ -23,7 +23,7 @@ var LocationSchema = new Schema({
   },
   properties: Schema.Types.Mixed
 });
-LocationSchema.index({ 'geometry' : '2dsphere' });
+LocationSchema.index({ 'geometry': '2dsphere' });
 
 var measurementSchema = new Schema({
   value: {
