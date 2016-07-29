@@ -64,8 +64,9 @@ define({ "api": [
   },
   {
     "type": "get",
-    "url": "/boxes?date=:date&phenomenon=:phenomenon",
-    "title": "Get all senseBoxes. With the optional `date` and `phenomenon` parameters you can find senseBoxes that have submitted data around that time, +/- 2 hours, or specify two dates separated by a comma.",
+    "url": "/boxes?date=:date&phenomenon=:phenomenon&format=:format",
+    "title": "Get all senseBoxes",
+    "description": "<p>With the optional <code>date</code> and <code>phenomenon</code> parameters you can find senseBoxes that have submitted data around that time, +/- 2 hours, or specify two dates separated by a comma.</p>",
     "name": "findAllBoxes",
     "group": "Boxes",
     "version": "0.1.0",
