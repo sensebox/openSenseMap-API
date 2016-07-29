@@ -13,7 +13,8 @@ npm install -g apidoc@0.16.1
 # deploy!
 
 # checkout gh-pages branch
-git fetch origin
+git remote set-branches --add origin gh-pages
+git fetch
 git checkout -t origin/gh-pages
 
 # run apidoc
