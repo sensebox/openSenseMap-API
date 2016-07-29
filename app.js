@@ -23,9 +23,7 @@ var TIME_AGO_MAX = 1000*60*60*24*32;
 var TIME_AGO_48_H = 1000*60*60*48; // 48 hours
 var TIME_AGO_15_D = 1000*60*60*24*15 // 15 days
 
-/*
-  Logging
-*/
+// Logging
 var consoleStream = new Stream();
 consoleStream.writable = true;
 consoleStream.write = function(obj) {
@@ -123,6 +121,18 @@ server.post({path : PATH +'/data', version : '0.1.0'}, getDataMulti);
 
 // Secured (needs authorization through apikey)
 
+/**
+ * @apiDefine AuthorizationRequiredError
+ *
+ * @apiHeader {String} x-APIKey the secret API key which corresponds to the <code>senseBoxId</code> parameter.
+ * @apiHeaderExample {String} x-APIKey header example:
+ *   x-APIKey: 576efef4cb9b9ebe057bf7b4
+ * @apiError {Object} 403 the request has invalid or missing credentials.
+ * @apiErrorExample {json} Error-Response:
+ *     HTTP/1.1 403 Forbidden
+ *     {"code":"NotAuthorized","message":"ApiKey is invalid or missing"}
+ */
+
 // attach a function to secured requests to validate api key and box id
 server.use(function validateAuthenticationRequest (req, res, next) {
   if (req.headers["x-apikey"] && req.params.boxId) {
@@ -183,19 +193,25 @@ function unknownMethodHandler(req, res) {
 server.on('MethodNotAllowed', unknownMethodHandler);
 
 /**
- * @api {get} /boxes/users/:boxId Check for valid API key
- * @apiDescription Check for valid API key. Will return status code 400 if invalid, 200 if valid.
- * @apiParam {ID} boxId senseBox unique ID.
- * @apiHeader {ObjectId} x-apikey senseBox specific apikey
- * @apiHeaderExample {json} Request-Example:
- *   {
- *     'X-ApiKey':54d3a96d5438b4440913434b
- *   }
- * @apiError {String} ApiKey is invalid!
- * @apiError {String} ApiKey not existing!
- * @apiSuccess {String} ApiKey is valid!
- * @apiVersion 0.0.1
+ * @apiDefine BoxIdParam
+ *
+ * @apiParam {String} senseBoxId the ID of the senseBox you are referring to.
+ */
+
+/**
+ * @apiDefine SensorIdParam
+ *
+ * @apiParam {String} sensorId the ID of the sensor you are referring to.
+ */
+
+/**
+ * @api {get} /users/:senseBoxId Validate authorization
  * @apiGroup Boxes
+ * @apiUse AuthorizationRequiredError
+ * @apiUse BoxIdParam
+ * @apiDescription Validate authorization through API key and senseBoxId. Will return status code 403 if invalid, 200 if valid.
+ * @apiSuccess {String} Response ApiKey is valid
+ * @apiVersion 0.0.1
  * @apiName validApiKey
  */
 function validApiKey (req, res, next) {
@@ -217,14 +233,8 @@ function decodeBase64Image(dataString) {
 }
 
 /**
- * @api {put} /boxes/:boxId Update a senseBox: Image and sensor names
+ * @api {put} /boxes/:senseBoxId Update a senseBox: Image and sensor names
  * @apiDescription Modify the specified senseBox.
- * @apiParam {ID} boxId senseBox unique ID.
- * @apiHeader {ObjectId} x-apikey senseBox specific apikey
- * @apiHeaderExample {json} Request-Example:
- *   {
- *     'X-ApiKey':54d3a96d5438b4440913434b
- *   }
  * @apiSampleRequest
  * {
  *  "_id": "56e741ff933e450c0fe2f705",
@@ -247,6 +257,8 @@ function decodeBase64Image(dataString) {
  * @apiVersion 0.0.1
  * @apiGroup Boxes
  * @apiName updateBox
+ * @apiUse AuthorizationRequiredError
+ * @apiUse BoxIdParam
  */
 function updateBox(req, res, next) {
   /*
@@ -340,12 +352,12 @@ function updateBox(req, res, next) {
 }
 
 /**
- * @api {get} /boxes/:boxId/sensors Get all last measurements
- * @apiDescription Get last measurements of all sensors of the secified senseBox.
+ * @api {get} /boxes/:senseBoxId/sensors Get all last measurements
+ * @apiDescription Get last measurements of all sensors of the specified senseBox.
  * @apiVersion 0.0.1
  * @apiGroup Measurements
  * @apiName getMeasurements
- * @apiParam {ID} boxId senseBox unique ID.
+ * @apiUse BoxIdParam
  */
 function getMeasurements(req, res, next) {
   Box.findOne({_id: req.params.boxId},{sensors:1}).populate('sensors.lastMeasurement').lean().exec(function(error,sensors){
@@ -358,14 +370,14 @@ function getMeasurements(req, res, next) {
 }
 
 /**
- * @api {get} /boxes/:boxId/data/:sensorId?from-date=:fromDate&to-date:toDate Get last n measurements for a sensor
- * @apiDescription Get up to 1000 measurements from a sensor for a specific time frame, parameters `from-date` and `to-date` are optional. If not set, the last 24 hours are used. The maximum time frame is 1 month. A maxmimum of 1000 values wil be returned for each request.
+ * @api {get} /boxes/:senseBoxId/data/:sensorId?from-date=:fromDate&to-date:toDate Get last n measurements for a sensor
+ * @apiDescription Get up to 10000 measurements from a sensor for a specific time frame, parameters `from-date` and `to-date` are optional. If not set, the last 24 hours are used. The maximum time frame is 1 month. A maxmimum of 1000 values wil be returned for each request.
  * @apiVersion 0.0.1
  * @apiGroup Measurements
  * @apiName getData
- * @apiParam {ID} boxId senseBox unique ID.
- * @apiParam {ID} sensorId Sensor unique ID.
- * @apiParam {String} from-date Beginning date of measurement data (default: 24 hours ago from now)
+ * @apiUse BoxIdParam
+ * @apiUse SensorIdParam
+ * @apiParam {String} from-date Beginning date of measurement data (default: 48 hours ago from now)
  * @apiParam {String} to-date End date of measurement data (default: now)
  * @apiParam {String} download If set, offer download to the user (default: false, always on if CSV is used)
  * @apiParam {String} format Can be 'JSON' (default) or 'CSV' (default: JSON)
@@ -1172,10 +1184,12 @@ function deleteBox(req, res, next) {
 
 /**
  * @api {get} /boxes/stats Get some statistics about the database
+ * @apiDescription 8 boxes, 13 measurements in the database, 2 in the last minute
  * @apiName getStatistics
  * @apiGroup misc
  * @apiVersion 0.1.0
- * @apiSuccessExample {json} [8,13, 2] // 8 boxes, 13 measurements in the database, 2 in the last minute
+ * @apiSuccessExample {json}
+ * [8,13, 2]
  */
 function getStatistics(req, res, next){
   var qrys = [
