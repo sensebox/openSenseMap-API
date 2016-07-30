@@ -567,8 +567,8 @@ define({ "api": [
   {
     "type": "get,post",
     "url": "/boxes/data?boxid=:senseBoxIds&from-date=:fromDate&to-date:toDate&phenomenon=:phenomenon",
-    "title": "Get latest measurements for a sensor as CSV",
-    "description": "<p>Download data from multiple boxes as CSV</p>",
+    "title": "Get latest measurements for a phenomenon as CSV",
+    "description": "<p>Download data of a given phenomenon from multiple selected senseBoxes as CSV</p>",
     "version": "0.1.0",
     "group": "Measurements",
     "name": "getDataMulti",
@@ -602,17 +602,6 @@ define({ "api": [
             "optional": false,
             "field": "to-date",
             "description": "<p>End date of measurement data (default: now)</p>"
-          },
-          {
-            "group": "Parameter",
-            "type": "String",
-            "allowedValues": [
-              "\"true\"",
-              "\"false\""
-            ],
-            "optional": false,
-            "field": "download",
-            "description": "<p>If set, offer download to the user (default: false, always on if CSV is used)</p>"
           }
         ]
       }
@@ -730,9 +719,9 @@ define({ "api": [
   },
   {
     "type": "get",
-    "url": "/boxes/stats",
+    "url": "/stats",
     "title": "Get some statistics about the database",
-    "description": "<p>8 boxes, 13 measurements in the database, 2 in the last minute</p>",
+    "description": "<p>8 boxes, 13 measurements in the database, 2 measurements in the last minute</p>",
     "name": "getStatistics",
     "group": "Misc",
     "version": "0.1.0",
