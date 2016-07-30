@@ -524,8 +524,8 @@ function getData (req, res, next) {
 }
 
 /**
- * @api {get,post} /boxes/data?boxid=:senseBoxIds&from-date=:fromDate&to-date:toDate&phenomenon=:phenomenon Get latest measurements for a sensor as CSV
- * @apiDescription Download data from multiple boxes as CSV
+ * @api {get,post} /boxes/data?boxid=:senseBoxIds&from-date=:fromDate&to-date:toDate&phenomenon=:phenomenon Get latest measurements for a phenomenon as CSV
+ * @apiDescription Download data of a given phenomenon from multiple selected senseBoxes as CSV
  * @apiVersion 0.1.0
  * @apiGroup Measurements
  * @apiName getDataMulti
@@ -533,7 +533,6 @@ function getData (req, res, next) {
  * @apiParam {String} phenomenon the name of the phenomenon you want to download the data for.
  * @apiParam {String} from-date Beginning date of measurement data (default: 15 days ago from now)
  * @apiParam {String} to-date End date of measurement data (default: now)
- * @apiParam {String="true","false"} download If set, offer download to the user (default: false, always on if CSV is used)
  */
 function getDataMulti (req, res, next) {
   // default to now
@@ -1251,8 +1250,8 @@ function deleteBox (req, res, next) {
 }
 
 /**
- * @api {get} /boxes/stats Get some statistics about the database
- * @apiDescription 8 boxes, 13 measurements in the database, 2 in the last minute
+ * @api {get} /stats Get some statistics about the database
+ * @apiDescription 8 boxes, 13 measurements in the database, 2 measurements in the last minute
  * @apiName getStatistics
  * @apiGroup Misc
  * @apiVersion 0.1.0

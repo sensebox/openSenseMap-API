@@ -37,7 +37,7 @@
   "apidoc": {
     "name": "openSenseMap API documentation",
     "version": "0.0.1",
-    "description": "Documentation for openSenseMap to register and administer senseBoxes",
+    "description": "methods to manage senseBoxes and get/post measurements",
     "title": "openSenseMap API docs title",
     "url": "https://api.opensensemap.org",
     "order": [
