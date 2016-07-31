@@ -1315,6 +1315,7 @@ function sendWelcomeMail (user, box) {
     ]
   }, function (err, info) {
     if (err) {
+      _postToSlack('Error sending mail:' + err.message);
       log.error('Email error');
       log.error(err);
     }
@@ -1360,6 +1361,7 @@ function sendYeahMail (user, box) {
 
   }, function (err, info) {
     if (err) {
+      _postToSlack('Error sending mail:' + err.message);
       log.error('Email error');
       log.error(err);
     }
