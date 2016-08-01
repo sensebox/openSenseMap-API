@@ -104,13 +104,13 @@ define({ "api": [
     },
     "sampleRequest": [
       {
-        "url": "http://opensensemap.org:8000/boxes"
+        "url": "https://api.opensensemap.org/boxes"
       },
       {
-        "url": "http://opensensemap.org:8000/boxes?date=2015-03-07T02:50Z&phenomenon=Temperatur"
+        "url": "https://api.opensensemap.org/boxes?date=2015-03-07T02:50Z&phenomenon=Temperatur"
       },
       {
-        "url": "http://opensensemap.org:8000/boxes?date=2015-03-07T02:50Z,2015-04-07T02:50Z&phenomenon=Temperatur"
+        "url": "https://api.opensensemap.org/boxes?date=2015-03-07T02:50Z,2015-04-07T02:50Z&phenomenon=Temperatur"
       }
     ],
     "filename": "./app.js",
