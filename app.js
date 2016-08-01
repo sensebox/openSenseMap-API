@@ -206,9 +206,9 @@ server.del({path: PATH + '/:boxId' , version: '0.1.0'} , deleteBox);
 
 // helper function to determine the requested format
 function getFormat (req, allowed_formats, default_format) {
-  if (typeof req.params['format'] === 'undefined') {
+  if (typeof req.params['format'] === 'undefined' || req.params['format'].trim() === '') {
     return default_format;
-  } else if (allowed_formats.indexOf(req.params['format'].toLowerCase()) !== -1) {
+  } else if (allowed_formats.indexOf(req.params['format'].trim().toLowerCase()) !== -1) {
     return req.params['format'];
   }
 }
