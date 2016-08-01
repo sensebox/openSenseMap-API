@@ -772,9 +772,9 @@ function saveMeasurementArray (box, data) {
  * @apiParam {String} date A date or datetime (UTC) where a station should provide measurements. Use in combination with `phenomenon`.
  * @apiParam {String} phenomenon A sensor phenomenon (determined by sensor name) such as temperature, humidity or UV intensity. Use in combination with `date`.
  * @apiParam {String="json","geojson"} format=json the format the sensor data is returned in.
- * @apiSampleRequest http://opensensemap.org:8000/boxes
- * @apiSampleRequest http://opensensemap.org:8000/boxes?date=2015-03-07T02:50Z&phenomenon=Temperatur
- * @apiSampleRequest http://opensensemap.org:8000/boxes?date=2015-03-07T02:50Z,2015-04-07T02:50Z&phenomenon=Temperatur
+ * @apiSampleRequest https://api.opensensemap.org/boxes
+ * @apiSampleRequest https://api.opensensemap.org/boxes?date=2015-03-07T02:50Z&phenomenon=Temperatur
+ * @apiSampleRequest https://api.opensensemap.org/boxes?date=2015-03-07T02:50Z,2015-04-07T02:50Z&phenomenon=Temperatur
  */
 function findAllBoxes (req, res , next) {
   var activityAroundDate = (typeof req.params['date'] === 'undefined' || req.params['date'] === '') ? undefined : req.params['date'];
