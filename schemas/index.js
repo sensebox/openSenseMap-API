@@ -131,7 +131,11 @@ var userSchema = new Schema({
       type: String,
       trim: true
     }
-  ]
+  ],
+  language: {
+    type: String,
+    trim: true
+  }
 });
 
 module.exports = {
