@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Your senseBox script</title>
+</head>
+<body>
+  <p>
+    Hello <%- user.firstname %> <%- user.lastname %>,
+  </p>
+  <p>
+    Thank you for registration of your weather station! See your Arduino script in the attachment. Please download it and install it on your Arduino as you can see in our <a href="https://github.com/sensebox/oer_en/wiki/sensebox_home" target="_blank"><b>wiki</b></a>.
+  </p>
+  <p>To change settings of your senseBox afterwards, you will be asked for your API key. Your API key is: <b><%= user.apikey %></b></p>
+  <br />
+  <p>Your senseBox ID is: <%= box._id %></p>
+  <p>In addition, the following IDs were generated for the sensors of your station:</p>
+  <ul>
+    <% _.forEach(box.sensors, function(sensor) { %>
+      <li><%- sensor.title %> (<%- sensor.sensorType %>): <%- sensor._id %></li><% }); %>
+  </ul>
+  <p>You can find your senseBox at <a href="https://opensensemap.org/explore/<%= box._id %>" target="_blank">opensensemap.org/explore/<%= box._id %></a>.</p>
+  <p>
+    If you have any questions write us an email to: <a href="mailto:support@sensebox.de?Subject=Hilfe%20bei%20der%20Einrichtung" target="_top">support@sensebox.de</a>
+  </p>
+  <p>
+    The senseBox team wishes you a lot of fun with your new senseBox
+  </p>
+</body>
+</html>
