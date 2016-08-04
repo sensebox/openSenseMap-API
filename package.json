@@ -6,9 +6,9 @@
   "dependencies": {
     "bluebird": "^3.3.3",
     "bunyan": "^1.3.3",
-    "stream-transform": "^0.1.1",
     "csv-stringify": "^1.0.4",
     "geojson": "^0.2.0",
+    "honeybadger": "^1.1.2",
     "lodash": "^3.1.0",
     "moment": "^2.13.0",
     "mongoose": "~4.5.0",
@@ -16,8 +16,9 @@
     "nodemailer": "~1.4.0",
     "nodemailer-html-to-text": "~1.0.2",
     "nodemailer-smtp-transport": "~1.0.3",
+    "request": "~2.72.0",
     "restify": "^4.0.0",
-    "request": "~2.72.0"
+    "stream-transform": "^0.1.1"
   },
   "devDependencies": {},
   "scripts": {

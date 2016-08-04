@@ -70,6 +70,15 @@ var restify = require('restify'),
   moment = require('moment'),
   request = require('request');
 
+var Honeybadger = {
+  notify: function () {}
+}
+if (cfg.honeybadger_apikey && cfg.honeybadger_apikey !== '') {
+  Honeybadger = require('honeybadger').configure({
+    apiKey: cfg.honeybadger_apikey
+  });
+}
+
 mongoose.Promise = require('bluebird');
 
 var TIME_AGO_MAX = 1000 * 60 * 60 * 24 * 32;
@@ -186,6 +195,7 @@ server.use(function validateAuthenticationRequest (req, res, next) {
       })
       .catch(function (err) {
         console.log(err);
+        Honeybadger.notify(err);
         next(new restify.InternalServerError());
       });
   } else {
@@ -388,9 +398,11 @@ function updateBox (req, res, next) {
       genScript(box, box.model);
       res.send(200, box);
     }).catch(function (err) {
+      Honeybadger.notify(err);
       return next(new restify.InternalServerError(JSON.stringify(err.message)));
     });
   }).catch(function (err) {
+    Honeybadger.notify(err);
     return next(new restify.InternalServerError(JSON.stringify(err.message)));
   });
 }
@@ -421,6 +433,7 @@ function getMeasurements (req, res, next) {
     })
     .catch(function (error) {
       console.log(error);
+      Honeybadger.notify(err);
       return next(new restify.InternalServerError());
     });
 }
@@ -472,6 +485,7 @@ function getData (req, res, next) {
 
     transformer.on('error', function (err) {
       console.log(err.message);
+      Honeybadger.notify(err);
       _postToSlack(err.message);
       return next(new restify.InternalServerError(JSON.stringify(err.message)));
     });
@@ -517,6 +531,7 @@ function getData (req, res, next) {
       })
       .catch(function (err) {
         console.log(err);
+        Honeybadger.notify(err);
         _postToSlack(err.errors);
         return next(new restify.InternalServerError(JSON.stringify(err.errors)));
       });
@@ -586,6 +601,7 @@ function getDataMulti (req, res, next) {
 
         transformer.on('error', function (err) {
           console.log(err.message);
+          Honeybadger.notify(err);
           _postToSlack(err.message);
           return next(new restify.InternalServerError(JSON.stringify(err.message)));
         });
@@ -607,6 +623,7 @@ function getDataMulti (req, res, next) {
       })
       .catch(function (err) {
         console.log(err);
+        Honeybadger.notify(err);
         _postToSlack(err.errors);
         return next(new restify.InternalServerError(JSON.stringify(err.errors)));
       });
@@ -629,6 +646,7 @@ function getDataMulti (req, res, next) {
 function postNewMeasurement (req, res, next) {
   Box.findOne({_id: req.params.boxId}, function (error,box) {
     if (error) {
+      Honeybadger.notify(error);
       return next(new restify.InvalidArgumentError(JSON.stringify(error.message)));
     } else {
       if (!box) {
@@ -642,6 +660,7 @@ function postNewMeasurement (req, res, next) {
         }
       })
         .catch(function (err) {
+          Honeybadger.notify(err);
           if (err === 'sensor not found') {
             return next(new restify.NotFoundError('sensor not found in box'));
           }
@@ -668,6 +687,7 @@ function saveMeasurement (box, sensorId, value, createdAt) {
         try {
           measurementData.createdAt = new Date(createdAt);
         } catch (e) {
+          Honeybadger.notify(e);
           return Promise.reject(e);
         }
       }
@@ -714,12 +734,14 @@ function postNewMeasurements (req, res, next) {
         })
         .catch(function (err) {
           console.log(err);
+          Honeybadger.notify(err);
           _postToSlack(err);
           return next(new restify.InternalServerError(JSON.stringify(err)));
         });
     })
     .catch(function (err) {
       console.log(err);
+      Honeybadger.notify(err);
       _postToSlack(err);
       return next(new restify.InternalServerError(JSON.stringify(err)));
     });
@@ -748,6 +770,7 @@ function saveMeasurementArray (box, data) {
           try {
             measurementData.createdAt = new Date(measurement.createdAt);
           } catch (e) {
+            Honeybadger.notify(e);
             return Promise.reject(e);
           }
         }
@@ -878,6 +901,7 @@ function findAllBoxes (req, res , next) {
 
       }).catch(function (err) {
         console.log(err);
+        Honeybadger.notify(err);
         _postToSlack(err);
         return next(new restify.InternalServerError(JSON.stringify(err)));
       });
@@ -1000,6 +1024,7 @@ function findBox (req, res, next) {
       }
     }).catch(function (error) {
       var e = error.errors;
+      Honeybadger.notify(error);
       _postToSlack(e);
       return next(new restify.InternalServerError(e));
     });
@@ -1086,6 +1111,7 @@ function postNewBox (req, res, next) {
   User.findOne({apikey: req.params.orderID}, function (err, user) {
     if (err) {
       log.error(err);
+      Honeybadger.notify(err);
       return res.send(400, 'An error occured');
     } else {
 
@@ -1105,6 +1131,7 @@ function postNewBox (req, res, next) {
 
             newUser.save(function (err, user) {
               if (err) {
+                Honeybadger.notify(err);
                 return next(new restify.InvalidArgumentError(JSON.stringify(err.message)));
               } else {
                 if (cfg.email_host !== '') {
@@ -1118,6 +1145,7 @@ function postNewBox (req, res, next) {
 
           } catch (e) {
             log.error(e);
+            Honeybadger.notify(e);
             return res.send(400, 'An error occured');
           }
         });
@@ -1137,9 +1165,10 @@ function genScript (box, model) {
   try {
     if (fs.statSync(output)) {
       fs.unlinkSync(output);
+      console.log('deleted old sketch. (' + output + ') bye bye!');
     }
   } catch (e) {
-    console.log('deleted old sketch. (' + output + ') bye bye!');
+    Honeybadger.notify(e);
   }
 
   var isCustom = false;
@@ -1210,16 +1239,18 @@ function genScript (box, model) {
  * @apiUse BoxIdParam
  */
 function getScript (req, res, next) {
-  Box.findById(req.params.boxId).then(function (box) {
-    var file = cfg.targetFolder + '' + box._id + '.ino';
+  Box.findById(req.params.boxId)
+    .then(function (box) {
+      var file = cfg.targetFolder + '' + box._id + '.ino';
 
-    if (!fs.existsSync(file)) {
-      genScript(box, box.model);
-    }
+      if (!fs.existsSync(file)) {
+        genScript(box, box.model);
+      }
 
-    return res.send(200, fs.readFileSync(file, 'utf-8'));
-  })
+      return res.send(200, fs.readFileSync(file, 'utf-8'));
+    })
     .catch(function (err) {
+      Honeybadger.notify(err);
       return next(new restify.NotFoundError(err.message));
     });
 }
@@ -1246,6 +1277,7 @@ function deleteBox (req, res, next) {
   Promise.all(qrys).then(function () {
     res.send(200, 'Box deleted');
   }).catch(function (err) {
+    Honeybadger.notify(err);
     return next(new restify.InternalServerError(err.message));
   });
 }
@@ -1316,6 +1348,7 @@ function sendWelcomeMail (user, box) {
     ]
   }, function (err, info) {
     if (err) {
+      Honeybadger.notify(err);
       _postToSlack('Error sending mail:' + err.message);
       log.error('Email error');
       log.error(err);
@@ -1362,6 +1395,7 @@ function sendYeahMail (user, box) {
 
   }, function (err, info) {
     if (err) {
+      Honeybadger.notify(err);
       _postToSlack('Error sending mail:' + err.message);
       log.error('Email error');
       log.error(err);
@@ -1383,6 +1417,7 @@ server.listen(cfg.port, function () {
 });
 
 server.on('uncaughtException', function (req, res, route, err) {
+  Honeybadger.notify(err);
   _postToSlack('Error in API (' + route.spec.method + ' ' + route.spec.path + ', ' + req.href() + '): ' + err);
   log.error('Uncaught error', err);
   console.log(err.stack);

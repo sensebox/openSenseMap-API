@@ -23,7 +23,9 @@ var config = {
   email_subject: '',
 
   slack_url: '',
-  measurements_post_domain: ''
+  measurements_post_domain: '',
+
+  honeybadger_apikey: ''
 };
 
 var env_has_dbconnectionstring = false;
