@@ -1015,7 +1015,7 @@ function createNewUser (req) {
     email: req.params.user.email,
     apikey: req.params.orderID,
     boxes: [],
-    language: req.params.lang
+    language: req.params.user.lang
   };
 
   var user = new User(userData);
