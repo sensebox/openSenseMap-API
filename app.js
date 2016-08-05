@@ -1168,7 +1168,10 @@ function genScript (box, model) {
       console.log('deleted old sketch. (' + output + ') bye bye!');
     }
   } catch (e) {
-    Honeybadger.notify(e);
+    // don't notify honeybadger on ENOENT. The file isn't there if the script is first generated..
+    if (e.code !== 'ENOENT') {
+      Honeybadger.notify(e);
+    }
   }
 
   var isCustom = false;
