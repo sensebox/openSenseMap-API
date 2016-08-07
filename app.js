@@ -72,7 +72,7 @@ var restify = require('restify'),
 
 var Honeybadger = {
   notify: function () {}
-}
+};
 if (cfg.honeybadger_apikey && cfg.honeybadger_apikey !== '') {
   Honeybadger = require('honeybadger').configure({
     apiKey: cfg.honeybadger_apikey
@@ -433,7 +433,7 @@ function getMeasurements (req, res, next) {
     })
     .catch(function (error) {
       console.log(error);
-      Honeybadger.notify(err);
+      Honeybadger.notify(error);
       return next(new restify.InternalServerError());
     });
 }
@@ -660,7 +660,6 @@ function postNewMeasurement (req, res, next) {
         }
       })
         .catch(function (err) {
-          Honeybadger.notify(err);
           if (err === 'sensor not found') {
             return next(new restify.NotFoundError('sensor not found in box'));
           }
@@ -668,6 +667,7 @@ function postNewMeasurement (req, res, next) {
           if (err.message) {
             errmsg += ': ' + err.message;
           }
+          Honeybadger.notify(err);
           return next(new restify.BadRequestError(errmsg));
         });
     }
