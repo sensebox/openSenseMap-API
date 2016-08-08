@@ -171,6 +171,7 @@ server.get({path: PATH + '/:boxId/sensors', version: '0.0.1'}, getMeasurements);
 server.get({path: PATH + '/:boxId/data/:sensorId', version: '0.0.1'}, getData);
 server.get({path: PATH + '/data', version: '0.1.0'}, getDataMulti);
 server.get({path: '/stats', version: '0.1.0'}, getStatistics);
+server.get({path: PATH + '/:boxId/:sensorId/submitMeasurement/:value' , version: '0.0.1'}, postNewMeasurement);
 
 // POST
 server.post({path: PATH , version: '0.0.1'}, postNewBox);
@@ -677,8 +678,11 @@ function postNewMeasurement (req, res, next) {
 function saveMeasurement (box, sensorId, value, createdAt) {
   for (var i = box.sensors.length - 1; i >= 0; i--) {
     if (box.sensors[i]._id.equals(sensorId)) {
+      // sanitize user input a little
+      var saneValue = sanitizeString(value);
+
       var measurementData = {
-        value: value,
+        value: saneValue,
         _id: mongoose.Types.ObjectId(),
         sensor_id: sensorId
       };
@@ -704,6 +708,12 @@ function saveMeasurement (box, sensorId, value, createdAt) {
       return Promise.reject('sensor not found');
     }
   }
+}
+
+// http://stackoverflow.com/a/23453651
+function sanitizeString (str) {
+  str = str.replace(/[^a-z0-9áéíóúñü \.,_-]/gim, '');
+  return str.trim();
 }
 
 /**
