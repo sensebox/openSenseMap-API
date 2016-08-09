@@ -491,7 +491,6 @@ function getData (req, res, next) {
     transformer.on('error', function (err) {
       console.log(err.message);
       Honeybadger.notify(err);
-      _postToSlack(err.message);
       return next(new restify.InternalServerError(JSON.stringify(err.message)));
     });
 
@@ -537,7 +536,6 @@ function getData (req, res, next) {
       .catch(function (err) {
         console.log(err);
         Honeybadger.notify(err);
-        _postToSlack(err.errors);
         return next(new restify.InternalServerError(JSON.stringify(err.errors)));
       });
   }
@@ -607,7 +605,6 @@ function getDataMulti (req, res, next) {
         transformer.on('error', function (err) {
           console.log(err.message);
           Honeybadger.notify(err);
-          _postToSlack(err.message);
           return next(new restify.InternalServerError(JSON.stringify(err.message)));
         });
 
@@ -629,7 +626,6 @@ function getDataMulti (req, res, next) {
       .catch(function (err) {
         console.log(err);
         Honeybadger.notify(err);
-        _postToSlack(err.errors);
         return next(new restify.InternalServerError(JSON.stringify(err.errors)));
       });
   } else {
@@ -751,14 +747,12 @@ function postNewMeasurements (req, res, next) {
         .catch(function (err) {
           console.log(err);
           Honeybadger.notify(err);
-          _postToSlack(err);
           return next(new restify.InternalServerError(JSON.stringify(err)));
         });
     })
     .catch(function (err) {
       console.log(err);
       Honeybadger.notify(err);
-      _postToSlack(err);
       return next(new restify.InternalServerError(JSON.stringify(err)));
     });
 }
@@ -918,7 +912,6 @@ function findAllBoxes (req, res , next) {
       }).catch(function (err) {
         console.log(err);
         Honeybadger.notify(err);
-        _postToSlack(err);
         return next(new restify.InternalServerError(JSON.stringify(err)));
       });
   };
@@ -1041,7 +1034,6 @@ function findBox (req, res, next) {
     }).catch(function (error) {
       var e = error.errors;
       Honeybadger.notify(error);
-      _postToSlack(e);
       return next(new restify.InternalServerError(e));
     });
   } else {
@@ -1368,7 +1360,6 @@ function sendWelcomeMail (user, box) {
   }, function (err, info) {
     if (err) {
       Honeybadger.notify(err);
-      _postToSlack('Error sending mail:' + err.message);
       log.error('Email error');
       log.error(err);
     }
@@ -1415,7 +1406,6 @@ function sendYeahMail (user, box) {
   }, function (err, info) {
     if (err) {
       Honeybadger.notify(err);
-      _postToSlack('Error sending mail:' + err.message);
       log.error('Email error');
       log.error(err);
     }
@@ -1433,6 +1423,7 @@ function _postToSlack (text) {
 
 server.listen(cfg.port, function () {
   console.log('%s listening at %s', server.name, server.url);
+  _postToSlack('openSenseMap API started');
 });
 
 server.on('uncaughtException', function (req, res, route, err) {
