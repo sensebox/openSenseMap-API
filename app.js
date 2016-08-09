@@ -422,15 +422,19 @@ function getMeasurements (req, res, next) {
     .lean()
     .exec()
     .then(function (box_with_sensors) {
-      box_with_sensors.sensors = box_with_sensors.sensors.map(function (sensor) {
-        if (sensor.lastMeasurement) {
-          sensor.lastMeasurement.__v = undefined;
-          sensor.lastMeasurement.updatedAt = undefined;
-        }
+      if (box_with_sensors) {
+        box_with_sensors.sensors = box_with_sensors.sensors.map(function (sensor) {
+          if (sensor.lastMeasurement) {
+            sensor.lastMeasurement.__v = undefined;
+            sensor.lastMeasurement.updatedAt = undefined;
+          }
 
-        return sensor;
-      });
-      res.send(200, box_with_sensors);
+          return sensor;
+        });
+        res.send(200, box_with_sensors);
+      } else {
+        return next(new restify.NotFoundError('box not found'));
+      }
     })
     .catch(function (error) {
       console.log(error);
