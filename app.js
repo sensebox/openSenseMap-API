@@ -679,10 +679,12 @@ function saveMeasurement (box, sensorId, value, createdAt) {
   for (var i = box.sensors.length - 1; i >= 0; i--) {
     if (box.sensors[i]._id.equals(sensorId)) {
       // sanitize user input a little
-      var saneValue = sanitizeString(value);
+      if (typeof value === 'string') {
+        value = sanitizeString(value);
+      }
 
       var measurementData = {
-        value: saneValue,
+        value: value,
         _id: mongoose.Types.ObjectId(),
         sensor_id: sensorId
       };
