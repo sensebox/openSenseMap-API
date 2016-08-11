@@ -64,11 +64,9 @@ var restify = require('restify'),
   csvstringify = require('csv-stringify'),
   csvtransform = require('stream-transform'),
   Stream = require('stream'),
-  nodemailer = require('nodemailer'),
-  smtpTransport = require('nodemailer-smtp-transport'),
-  htmlToText = require('nodemailer-html-to-text').htmlToText,
   moment = require('moment'),
-  request = require('request');
+  request = require('request'),
+  mails = require('./mails');
 
 var Honeybadger = {
   notify: function () {}
@@ -1143,8 +1141,14 @@ function postNewBox (req, res, next) {
                 return next(new restify.InvalidArgumentError(JSON.stringify(err.message)));
               } else {
                 if (cfg.email_host !== '') {
-                  sendWelcomeMail(user, newBox);
-                  sendYeahMail(user, newBox);
+                  mails.sendWelcomeMail(user, newBox)
+                    .then((response) => {
+                      console.log('successfully sent mails: ' + JSON.stringify(response));
+                    })
+                    .catch((err) => {
+                      Honeybadger.notify(err);
+                      console.log(err.message);
+                    });
                   _postToSlack('Eine neue <https://opensensemap.org/explore/' + newBox._id + '|senseBox> wurde registriert (' + newBox.name + ')');
                 }
                 return res.send(201, user);
@@ -1315,103 +1319,6 @@ function getStatistics (req, res) {
   ];
   Promise.all(qrys).then(function (results) {
     res.send(200, results);
-  });
-}
-
-// Send box script to user via email
-function sendWelcomeMail (user, box) {
-  var templatePath = './templates/registration.html';
-  var templateContent = fs.readFileSync(templatePath, { encoding: 'utf8' });
-  var template = _.template(templateContent);
-  var compiled = template({ 'user': user, 'box': box });
-
-  var transporter = nodemailer.createTransport(smtpTransport({
-    host: cfg.email_host,
-    port: cfg.email_port,
-    secure: cfg.email_secure,
-    auth: {
-      user: cfg.email_user,
-      pass: cfg.email_pass
-    }
-  }));
-  transporter.use('compile', htmlToText());
-  transporter.sendMail({
-    from: {
-      name: cfg.email_fromName,
-      address: cfg.email_fromEmail
-    },
-    replyTo: {
-      name: cfg.email_fromName,
-      address: cfg.email_replyTo
-    },
-    to: {
-      name: user.firstname + ' ' + user.lastname,
-      address: user.email
-    },
-    subject: cfg.email_subject,
-    template: 'registration',
-    html: compiled,
-    attachments: [
-      {
-        filename: 'sensebox.ino',
-        path: cfg.targetFolder + box._id + '.ino'
-      }
-    ]
-  }, function (err, info) {
-    if (err) {
-      Honeybadger.notify(err);
-      log.error('Email error');
-      log.error(err);
-    }
-    if (info) {
-      log.debug('Email sent successfully');
-    }
-  });
-}
-
-// Send Yeah Mail to senseBox Team
-function sendYeahMail (user, box) {
-  var templatePath = './templates/yeah.html';
-  var templateContent = fs.readFileSync(templatePath, { encoding: 'utf8' });
-  var template = _.template(templateContent);
-  var compiled = template({ 'user': user, 'box': box });
-
-  var transporter = nodemailer.createTransport(smtpTransport({
-    host: cfg.email_host,
-    port: cfg.email_port,
-    secure: cfg.email_secure,
-    auth: {
-      user: cfg.email_user,
-      pass: cfg.email_pass
-    }
-  }));
-  transporter.use('compile', htmlToText());
-  transporter.sendMail({
-    from: {
-      name: cfg.email_fromName,
-      address: cfg.email_fromEmail
-    },
-    replyTo: {
-      name: cfg.email_fromName,
-      address: cfg.email_replyTo
-    },
-    to: {
-      name: user.firstname + ' ' + user.lastname,
-      address: 'support@sensebox.de'
-    },
-    subject: cfg.email_subject,
-    template: 'yeah',
-    html: compiled
-
-  }, function (err, info) {
-    if (err) {
-      Honeybadger.notify(err);
-      log.error('Email error');
-      log.error(err);
-    }
-    if (info) {
-      log.debug('Email sent successfully');
-    }
   });
 }
 

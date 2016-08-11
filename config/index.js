@@ -12,15 +12,10 @@ var config = {
 
   port: 8000,
 
-  email_host: '', // leave empty to not send emails
-  email_port: 465,
-  email_secure: true,
-  email_user: '',
-  email_pass: '',
-  email_fromName: '',
-  email_fromEmail: '',
-  email_replyTo: '',
-  email_subject: '',
+  mailer_url: '', // leave empty to not send emails
+  mailer_cert: '',
+  mailer_key: '',
+  mailer_ca: '',
 
   slack_url: '',
   measurements_post_domain: '',

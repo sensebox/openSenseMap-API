@@ -1,0 +1,68 @@
+'use strict';
+let cfg = require('./config');
+
+module.exports = {
+  sendWelcomeMail () {
+    return Promise.resolve({'msg': 'no mailer configured'});
+  }
+};
+
+if (cfg.mailer_url && cfg.mailer_url.trim() !== '') {
+  let fs = require('fs'),
+    request = require('request-promise');
+
+  let requestMailer = (payload) => {
+    return request({
+      url: cfg.mailer_url,
+      cert: cfg.mailer_cert,
+      key: cfg.mailer_key,
+      ca: cfg.mailer_ca,
+      json: payload
+    });
+  };
+
+  module.exports = {
+    sendWelcomeMail (user, box) {
+      // read script before sending..
+      let script = fs.readFileSync(cfg.targetFolder + '' + box._id + '.ino', 'utf-8');
+
+      // this is the payload sent to the mailing daemon
+      let payload = [
+        {
+          template: 'registration',
+          lang: user.language,
+          recipient: {
+            address: user.email,
+            name: user.firstname + ' ' + user.lastname
+          },
+          payload: {
+            user: user,
+            box: box,
+            origin: 'https://opensensemap.org'
+          },
+          attachment: {
+            filename: 'senseBox.ino',
+            contents: new Buffer(script).toString('base64')
+          }
+        },
+        {
+          template: 'yeah',
+          lang: 'de',
+          recipient: {
+            address: 'pape.gerald@googlemail.com',
+            name: 'senseBox Support'
+          },
+          payload: {
+            box: {
+              id: box._id
+            },
+            origin: 'https://opensensemap.org'
+          }
+        }
+      ];
+
+      return requestMailer(payload);
+    }
+  };
+}
+
