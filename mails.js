@@ -38,7 +38,7 @@ if (cfg.mailer_url && cfg.mailer_url.trim() !== '') {
           payload: {
             user: user,
             box: box,
-            origin: 'https://opensensemap.org'
+            origin: cfg.mailer_origin
           },
           attachment: {
             filename: 'senseBox.ino',
@@ -56,7 +56,7 @@ if (cfg.mailer_url && cfg.mailer_url.trim() !== '') {
             box: {
               id: box._id
             },
-            origin: 'https://opensensemap.org'
+            origin: cfg.mailer_origin
           }
         }
       ];

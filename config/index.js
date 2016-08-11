@@ -16,6 +16,7 @@ var config = {
   mailer_cert: '',
   mailer_key: '',
   mailer_ca: '',
+  mailer_origin: '',
 
   slack_url: '',
   measurements_post_domain: '',
