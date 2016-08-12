@@ -219,7 +219,7 @@ function getFormat (req, allowed_formats, default_format) {
   if (typeof req.params['format'] === 'undefined' || req.params['format'].trim() === '') {
     return default_format;
   } else if (allowed_formats.indexOf(req.params['format'].trim().toLowerCase()) !== -1) {
-    return req.params['format'];
+    return req.params['format'].trim().toLowerCase();
   }
 }
 
