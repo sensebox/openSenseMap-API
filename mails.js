@@ -49,7 +49,7 @@ if (cfg.mailer_url && cfg.mailer_url.trim() !== '') {
           template: 'yeah',
           lang: 'de',
           recipient: {
-            address: 'pape.gerald@googlemail.com',
+            address: 'info@sensebox.de',
             name: 'senseBox Support'
           },
           payload: {
