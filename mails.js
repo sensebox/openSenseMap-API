@@ -30,7 +30,8 @@ if (cfg.mailer_url && cfg.mailer_url.trim() !== '') {
       let payload = [
         {
           template: 'registration',
-          lang: user.language,
+          // lang: user.language,
+          lang: 'de',
           recipient: {
             address: user.email,
             name: user.firstname + ' ' + user.lastname
