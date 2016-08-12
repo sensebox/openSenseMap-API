@@ -66,7 +66,8 @@ var restify = require('restify'),
   Stream = require('stream'),
   moment = require('moment'),
   request = require('request'),
-  mails = require('./mails');
+  mails = require('./mails'),
+  util = require('util');
 
 var Honeybadger = {
   notify: function () {}
@@ -1328,9 +1329,13 @@ function _postToSlack (text) {
   }
 }
 
+var stats = fs.statSync('./app.js');
+var mtime = new Date(util.inspect(stats.mtime));
+
 server.listen(cfg.port, function () {
+  console.log('server file modified:', mtime);
   console.log('%s listening at %s', server.name, server.url);
-  _postToSlack('openSenseMap API started');
+  _postToSlack('openSenseMap API started. Server file modified: ' + mtime);
 });
 
 server.on('uncaughtException', function (req, res, route, err) {
