@@ -16,7 +16,8 @@
     "request": "~2.72.0",
     "request-promise": "^4.1.1",
     "restify": "^4.0.0",
-    "stream-transform": "^0.1.1"
+    "stream-transform": "^0.1.1",
+    "stringify-stream": "^1.0.5"
   },
   "devDependencies": {},
   "scripts": {

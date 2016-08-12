@@ -67,7 +67,8 @@ var restify = require('restify'),
   moment = require('moment'),
   request = require('request'),
   mails = require('./mails'),
-  util = require('util');
+  util = require('util'),
+  jsonstringify = require('stringify-stream');
 
 var Honeybadger = {
   notify: function () {}
@@ -442,6 +443,12 @@ function getMeasurements (req, res, next) {
     });
 }
 
+function onStreamErrorFunction (err) {
+  console.log(err.message);
+  Honeybadger.notify(err);
+  return next(new restify.InternalServerError(err.message));
+}
+
 /**
  * @api {get} /boxes/:senseBoxId/data/:sensorId?from-date=fromDate&to-datetoDate&download=true&format=json Get the 10000 latest measurements for a sensor
  * @apiDescription Get up to 10000 measurements from a sensor for a specific time frame, parameters `from-date` and `to-date` are optional. If not set, the last 24 hours are used. The maximum time frame is 1 month. If `download=true` `Content-disposition` headers will be set. Allows for JSON or CSV format.
@@ -457,87 +464,76 @@ function getMeasurements (req, res, next) {
  */
 function getData (req, res, next) {
   // default to now
-  var toDate = (typeof req.params['to-date'] === 'undefined' || req.params['to-date'] === '') ? new Date() : new Date(req.params['to-date']);
+  var toDate = (typeof req.params['to-date'] === 'undefined' || req.params['to-date'] === '') ? moment() : moment(req.params['to-date']);
   // default to 48 hours earlier
-  var fromDate = (typeof req.params['from-date'] === 'undefined' || req.params['from-date'] === '') ? new Date(toDate.valueOf() - TIME_AGO_48_H) : new Date(req.params['from-date']);
+  var fromDate = (typeof req.params['from-date'] === 'undefined' || req.params['from-date'] === '') ? moment().subtract(48, 'hours') : moment(req.params['from-date']);
 
   var format = getFormat(req, ['json', 'csv'], 'json');
   if (typeof format === 'undefined') {
     return next(new restify.InvalidArgumentError('Invalid format: ' + req.params['format']));
   }
 
-  if (toDate.valueOf() < fromDate.valueOf()) {
-    return next(new restify.InvalidArgumentError(JSON.stringify('Invalid time frame specified')));
+  // check validity of dates
+  if (!toDate.isValid()) {
+    return next(new restify.InvalidArgumentError('Invalid date format for to-date'));
   }
-  if (toDate.valueOf() - fromDate.valueOf() > TIME_AGO_MAX) {
-    return next(new restify.InvalidArgumentError(JSON.stringify('Please choose a time frame up to 31 days maximum')));
+  if (!fromDate.isValid()) {
+    return next(new restify.InvalidArgumentError('Invalid date format for from-date'));
   }
 
+  // check if one of the dates is in the future
+  if (toDate.isAfter(moment())) {
+    return next(new restify.InvalidArgumentError('Invalid time frame specified: to-date is in the future'));
+  }
+  if (fromDate.isAfter(moment())) {
+    return next(new restify.InvalidArgumentError('Invalid time frame specified: from-date is in the future'));
+  }
+
+  if (toDate.isBefore(fromDate)) {
+    return next(new restify.InvalidArgumentError('Invalid time frame specified: to-date (' + toDate.format() + ') is before from-date (' + fromDate.format() + ')'));
+  }
+  if (toDate.isBefore(moment().subtract(32, 'days'))) {
+    return next(new restify.InvalidArgumentError('Please choose a time frame up to 31 days maximum'));
+  }
+
+  var stringifier;
+
+  var csvTransformer = csvtransform(function (data) {
+      data.createdAt = new Date(data.createdAt).toISOString();
+      return data;
+    });
+  csvTransformer.on('error', onStreamErrorFunction);
+
+  if (format === 'csv') {
+    res.header('Content-Type', 'text/csv');
+    stringifier = csvstringify({ columns: ['createdAt', 'value'], header: 1, delimiter: ';' });
+  } else if (format === 'json') {
+    res.header('Content-Type', 'application/json; charset=utf-8');
+    stringifier = jsonstringify({ open:'[', close:']' });
+  }
+
+  stringifier.on('error', onStreamErrorFunction);
+
+  // offer download to browser
+  if (format === 'csv' || (typeof req.params['download'] !== 'undefined' && req.params['download'] === 'true')) {
+    res.header('Content-Disposition', 'attachment; filename=' + req.params.sensorId + '.' + format);
+  }
+
+  // finally execute the query
   var queryLimit = 10000;
 
   var qry = {
     sensor_id: req.params.sensorId,
-    createdAt: { $gte: new Date(fromDate), $lte: new Date(toDate) }
+    createdAt: { $gte: fromDate.toDate(), $lte: toDate.toDate() }
   };
 
-  if (format === 'csv') {
-    var stringifier = csvstringify({ columns: ['createdAt', 'value'], header: 1, delimiter: ';' });
-    var transformer = csvtransform(function (data) {
-      data.createdAt = new Date(data.createdAt).toISOString();
-      return data;
-    });
-
-    transformer.on('error', function (err) {
-      console.log(err.message);
-      Honeybadger.notify(err);
-      return next(new restify.InternalServerError(JSON.stringify(err.message)));
-    });
-
-    res.header('Content-Type', 'text/csv');
-    res.header('Content-Disposition', 'attachment; filename=' + req.params.sensorId + '.csv');
-
-    Measurement.find(qry,{'createdAt': 1, 'value': 1, '_id': 0}) // do not send _id column
-      .limit(queryLimit)
-      .lean()
-      .cursor({ batchSize: 500 })
-      .pipe(transformer)
-      .pipe(stringifier)
-      .pipe(res);
-
-  } else if (format === 'json') {
-    res.header('Content-Type', 'application/json; charset=utf-8');
-    if (typeof req.params['download'] !== 'undefined' && req.params['download'] === 'true') {
-      // offer download to browser
-      res.header('Content-Disposition', 'attachment; filename=' + req.params.sensorId + '.' + format);
-    }
-    let returnlength = 0;
-    let index = 0;
-    Measurement.find(qry, {'createdAt': 1, 'value': 1, '_id': 0}) // do not send _id column
-      .limit(queryLimit)
-      .lean()
-      .cursor({ batchSize: 500 })
-      .eachAsync((doc) => {
-        returnlength = 1;
-        doc.__v = undefined;
-
-      // !(index++) is true the first time because !(0) evaluates to true
-      // http://stackoverflow.com/a/34485539/1781026
-        res.write((!(index++) ? '[' : ',') + JSON.stringify(doc));
-      })
-      .then(() => {
-        if (returnlength === 0) {
-          res.status(404);
-          res.end('[]');
-        } else {
-          res.end(']');
-        }
-      })
-      .catch(function (err) {
-        console.log(err);
-        Honeybadger.notify(err);
-        return next(new restify.InternalServerError(JSON.stringify(err.errors)));
-      });
-  }
+  Measurement.find(qry,{'createdAt': 1, 'value': 1, '_id': 0}) // do not send _id column
+    .limit(queryLimit)
+    .lean()
+    .cursor({ batchSize: 500 })
+    .pipe(csvTransformer)
+    .pipe(stringifier)
+    .pipe(res);
 }
 
 /**
