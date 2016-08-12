@@ -82,7 +82,6 @@ if (cfg.honeybadger_apikey && cfg.honeybadger_apikey !== '') {
 mongoose.Promise = require('bluebird');
 
 var TIME_AGO_MAX = 1000 * 60 * 60 * 24 * 32;
-var TIME_AGO_48_H = 1000 * 60 * 60 * 48; // 48 hours
 var TIME_AGO_15_D = 1000 * 60 * 60 * 24 * 15; // 15 days
 
 // Logging
@@ -443,12 +442,6 @@ function getMeasurements (req, res, next) {
     });
 }
 
-function onStreamErrorFunction (err) {
-  console.log(err.message);
-  Honeybadger.notify(err);
-  return next(new restify.InternalServerError(err.message));
-}
-
 /**
  * @api {get} /boxes/:senseBoxId/data/:sensorId?from-date=fromDate&to-datetoDate&download=true&format=json Get the 10000 latest measurements for a sensor
  * @apiDescription Get up to 10000 measurements from a sensor for a specific time frame, parameters `from-date` and `to-date` are optional. If not set, the last 48 hours are used. The maximum time frame is 1 month. If `download=true` `Content-disposition` headers will be set. Allows for JSON or CSV format.
@@ -499,20 +492,28 @@ function getData (req, res, next) {
   var stringifier;
 
   var csvTransformer = csvtransform(function (data) {
-      data.createdAt = new Date(data.createdAt).toISOString();
-      return data;
-    });
-  csvTransformer.on('error', onStreamErrorFunction);
+    data.createdAt = new Date(data.createdAt).toISOString();
+    return data;
+  });
+  csvTransformer.on('error', (err) => {
+    console.log(err.message);
+    Honeybadger.notify(err);
+    return next(new restify.InternalServerError(err.message));
+  });
 
   if (format === 'csv') {
     res.header('Content-Type', 'text/csv');
     stringifier = csvstringify({ columns: ['createdAt', 'value'], header: 1, delimiter: ';' });
   } else if (format === 'json') {
     res.header('Content-Type', 'application/json; charset=utf-8');
-    stringifier = jsonstringify({ open:'[', close:']' });
+    stringifier = jsonstringify({ open: '[', close: ']' });
   }
 
-  stringifier.on('error', onStreamErrorFunction);
+  stringifier.on('error', (err) => {
+    console.log(err.message);
+    Honeybadger.notify(err);
+    return next(new restify.InternalServerError(err.message));
+  });
 
   // offer download to browser
   if (format === 'csv' || (typeof req.params['download'] !== 'undefined' && req.params['download'] === 'true')) {
