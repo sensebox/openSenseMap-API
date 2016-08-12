@@ -500,7 +500,7 @@
     "type": "get",
     "url": "/boxes/:senseBoxId/data/:sensorId?from-date=fromDate&to-datetoDate&download=true&format=json",
     "title": "Get the 10000 latest measurements for a sensor",
-    "description": "<p>Get up to 10000 measurements from a sensor for a specific time frame, parameters <code>from-date</code> and <code>to-date</code> are optional. If not set, the last 24 hours are used. The maximum time frame is 1 month. If <code>download=true</code> <code>Content-disposition</code> headers will be set. Allows for JSON or CSV format.</p>",
+    "description": "<p>Get up to 10000 measurements from a sensor for a specific time frame, parameters <code>from-date</code> and <code>to-date</code> are optional. If not set, the last 48 hours are used. The maximum time frame is 1 month. If <code>download=true</code> <code>Content-disposition</code> headers will be set. Allows for JSON or CSV format.</p>",
     "version": "0.0.1",
     "group": "Measurements",
     "name": "getData",
