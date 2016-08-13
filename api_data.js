@@ -561,12 +561,8 @@ define({ "api": [
           {
             "group": "Parameter",
             "type": "String",
-            "allowedValues": [
-              "\"comma\""
-            ],
             "optional": false,
             "field": "separator",
-            "defaultValue": "comma",
             "description": "<p>Only for csv: the separator for csv. Possible values: <code>comma</code> for comma as separator, everything else: semicolon. Per default a semicolon is used.</p>"
           }
         ]
@@ -617,12 +613,8 @@ define({ "api": [
           {
             "group": "Parameter",
             "type": "String",
-            "allowedValues": [
-              "\"comma\""
-            ],
             "optional": false,
             "field": "separator",
-            "defaultValue": "comma",
             "description": "<p>Only for csv: the separator for csv. Possible values: <code>comma</code> for comma as separator, everything else: semicolon. Per default a semicolon is used.</p>"
           }
         ]
