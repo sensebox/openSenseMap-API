@@ -226,7 +226,7 @@ function getFormat (req, allowed_formats, default_format) {
 /**
  * @apiDefine SeparatorParam
  *
- * @apiParam {String="comma"} separator=comma Only for csv: the separator for csv. Possible values: `comma` for comma as separator, everything else: semicolon. Per default a semicolon is used.
+ * @apiParam {String} separator Only for csv: the separator for csv. Possible values: `comma` for comma as separator, everything else: semicolon. Per default a semicolon is used.
  */
 
 // helper to determine the requested separator for csv
