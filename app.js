@@ -585,6 +585,7 @@ function getDataMulti (req, res, next) {
     var boxId = req.params['boxid'].toString();
     var boxIds = boxId.split(',');
 
+    res.header('Content-Type', 'text/csv');
     Box.find({
       '_id': {
         '$in': boxIds
