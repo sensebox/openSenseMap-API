@@ -542,7 +542,7 @@ define({ "api": [
             "optional": false,
             "field": "format",
             "defaultValue": "json",
-            "description": "<p>Can be 'JSON' (default) or 'CSV' (default: JSON)</p>"
+            "description": "<p>Can be 'json' (default) or 'csv' (default: json)</p>"
           },
           {
             "group": "Parameter",
@@ -557,6 +557,17 @@ define({ "api": [
             "optional": false,
             "field": ":sensorId",
             "description": "<p>the ID of the sensor you are referring to.</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "String",
+            "allowedValues": [
+              "\"comma\""
+            ],
+            "optional": false,
+            "field": "separator",
+            "defaultValue": "comma",
+            "description": "<p>Only for csv: the separator for csv. Possible values: <code>comma</code> for comma as separator, everything else: semicolon. Per default a semicolon is used.</p>"
           }
         ]
       }
@@ -602,6 +613,17 @@ define({ "api": [
             "optional": false,
             "field": "to-date",
             "description": "<p>End date of measurement data (default: now)</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "String",
+            "allowedValues": [
+              "\"comma\""
+            ],
+            "optional": false,
+            "field": "separator",
+            "defaultValue": "comma",
+            "description": "<p>Only for csv: the separator for csv. Possible values: <code>comma</code> for comma as separator, everything else: semicolon. Per default a semicolon is used.</p>"
           }
         ]
       }
