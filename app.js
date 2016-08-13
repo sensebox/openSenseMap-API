@@ -223,6 +223,21 @@ function getFormat (req, allowed_formats, default_format) {
   }
 }
 
+/**
+ * @apiDefine SeparatorParam
+ *
+ * @apiParam {String="comma"} separator=comma Only for csv: the separator for csv. Possible values: `comma` for comma as separator, everything else: semicolon. Per default a semicolon is used.
+ */
+
+// helper to determine the requested separator for csv
+function getSeparator (req) {
+  if (typeof req.params['separator'] !== 'undefined' && req.params['separator'].trim().toLowerCase() === 'comma') {
+    return ',';
+  } else {
+    return ';';
+  }
+}
+
 function unknownMethodHandler (req, res) {
   if (req.method.toLowerCase() === 'options') {
     var allowHeaders = ['Accept', 'X-ApiKey', 'Accept-Version', 'Content-Type', 'Api-Version', 'Origin', 'X-Requested-With']; // added Origin & X-Requested-With
@@ -453,7 +468,8 @@ function getMeasurements (req, res, next) {
  * @apiParam {String} from-date Beginning date of measurement data (default: 48 hours ago from now)
  * @apiParam {String} to-date End date of measurement data (default: now)
  * @apiParam {String="true","false"} download If set, offer download to the user (default: false, always on if CSV is used)
- * @apiParam {String="json","csv"} format=json Can be 'JSON' (default) or 'CSV' (default: JSON)
+ * @apiParam {String="json","csv"} format=json Can be 'json' (default) or 'csv' (default: json)
+ * @apiUse SeparatorParam
  */
 function getData (req, res, next) {
   // default to now
@@ -503,7 +519,8 @@ function getData (req, res, next) {
 
   if (format === 'csv') {
     res.header('Content-Type', 'text/csv');
-    stringifier = csvstringify({ columns: ['createdAt', 'value'], header: 1, delimiter: ';' });
+    var sep = getSeparator(req);
+    stringifier = csvstringify({ columns: ['createdAt', 'value'], header: 1, delimiter: sep });
   } else if (format === 'json') {
     res.header('Content-Type', 'application/json; charset=utf-8');
     stringifier = jsonstringify({ open: '[', close: ']' });
@@ -547,6 +564,7 @@ function getData (req, res, next) {
  * @apiParam {String} phenomenon the name of the phenomenon you want to download the data for.
  * @apiParam {String} from-date Beginning date of measurement data (default: 15 days ago from now)
  * @apiParam {String} to-date End date of measurement data (default: now)
+ * @apiUse SeparatorParam
  */
 function getDataMulti (req, res, next) {
   // default to now
@@ -563,8 +581,6 @@ function getDataMulti (req, res, next) {
   log.debug(fromDate, 'to', toDate);
 
   if (req.params['phenomenon'] && req.params['boxid']) {
-    //var generator = csvstringify({columns: ['createdAt', 'value']});
-
     var phenom = req.params['phenomenon'].toString();
     var boxId = req.params['boxid'].toString();
     var boxIds = boxId.split(',');
@@ -590,7 +606,8 @@ function getDataMulti (req, res, next) {
           }
         }
 
-        var stringifier = csvstringify({ columns: ['createdAt', 'value', 'lat', 'lng'], header: 1, delimiter: ';' });
+        var sep = getSeparator(req);
+        var stringifier = csvstringify({ columns: ['createdAt', 'value', 'lat', 'lng'], header: 1, delimiter: sep });
         var transformer = csvtransform(function (data) {
           data.createdAt = new Date(data.createdAt).toISOString();
           data.lat = sensors[data.sensor_id].lat;
