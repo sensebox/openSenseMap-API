@@ -162,6 +162,29 @@ var User = mongoose.model('User', userSchema);
 var PATH = '/boxes';
 var userPATH = 'users';
 
+// attach a function to validate boxId and sensorId parameters
+server.use(function validateAuthenticationRequest (req, res, next) {
+  if (typeof req.params['boxId'] !== 'undefined') {
+    var boxId = req.params['boxId'].toString();
+    if (boxId.indexOf(',') !== -1) {
+      boxId = boxId.split(',');
+    } else {
+      boxId = [boxId];
+    }
+    if (boxId.some(id => !mongoose.Types.ObjectId.isValid(id))) {
+      next(new restify.BadRequestError('Parameter :boxId is not valid'));
+    }
+  }
+
+  if (typeof req.params['sensorId'] !== 'undefined') {
+    var sensorId = req.params['sensorId'].toString();
+    if (sensorId && !mongoose.Types.ObjectId.isValid(sensorId)) {
+      next(new restify.BadRequestError('Parameter :sensorId is not valid'));
+    }
+  }
+  next();
+});
+
 // GET
 server.get({path: PATH , version: '0.0.1'} , findAllBoxes);
 server.get({path: /(boxes)\.([a-z]+)/, version: '0.1.0'} , findAllBoxes);
@@ -1011,48 +1034,44 @@ function findBox (req, res, next) {
     return next(new restify.InvalidArgumentError('Invalid format: ' + req.params['format']));
   }
 
-  if (mongoose.Types.ObjectId.isValid(id)) {
-    Box.findOne({_id: id}).exec().then(function (box) {
-      if (box) {
-        box.populate('sensors.lastMeasurement');
+  Box.findOne({_id: id}).exec().then(function (box) {
+    if (box) {
+      box.populate('sensors.lastMeasurement');
 
-        // clean up box
-        box.__v = undefined;
+      // clean up box
+      box.__v = undefined;
 
-        box.sensor = box.sensors.map(function (sensor) {
-          sensor.__v = undefined;
-          if (sensor.lastMeasurement) {
-            sensor.lastMeasurement.__v = undefined;
-          }
-          return sensor;
-        });
-
-        box.loc[0]._id = undefined;
-
-        if (format === 'json') {
-          res.send(box);
-        } else if (format === 'geojson') {
-          var tmp = JSON.stringify(box);
-          tmp = JSON.parse(tmp);
-          var lat = tmp.loc[0].geometry.coordinates[1];
-          var lng = tmp.loc[0].geometry.coordinates[0];
-          tmp['loc'] = undefined;
-          tmp['lat'] = lat;
-          tmp['lng'] = lng;
-          var geojson = [tmp];
-          res.send(GeoJSON.parse(geojson, {Point: ['lat','lng']}));
+      box.sensor = box.sensors.map(function (sensor) {
+        sensor.__v = undefined;
+        if (sensor.lastMeasurement) {
+          sensor.lastMeasurement.__v = undefined;
         }
-      } else {
-        return next(new restify.NotFoundError('No senseBox found'));
+        return sensor;
+      });
+
+      box.loc[0]._id = undefined;
+
+      if (format === 'json') {
+        res.send(box);
+      } else if (format === 'geojson') {
+        var tmp = JSON.stringify(box);
+        tmp = JSON.parse(tmp);
+        var lat = tmp.loc[0].geometry.coordinates[1];
+        var lng = tmp.loc[0].geometry.coordinates[0];
+        tmp['loc'] = undefined;
+        tmp['lat'] = lat;
+        tmp['lng'] = lng;
+        var geojson = [tmp];
+        res.send(GeoJSON.parse(geojson, {Point: ['lat','lng']}));
       }
-    }).catch(function (error) {
-      var e = error.errors;
-      Honeybadger.notify(error);
-      return next(new restify.InternalServerError(e));
-    });
-  } else {
-    return next(new restify.NotFoundError('No senseBox found'));
-  }
+    } else {
+      return next(new restify.NotFoundError('No senseBox found'));
+    }
+  }).catch(function (error) {
+    var e = error.errors;
+    Honeybadger.notify(error);
+    return next(new restify.InternalServerError(e));
+  });
 }
 
 function createNewUser (req) {
