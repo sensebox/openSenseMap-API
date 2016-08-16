@@ -497,8 +497,8 @@ function getMeasurements (req, res, next) {
 function getData (req, res, next) {
   // default to now
   var toDate = (typeof req.params['to-date'] === 'undefined' || req.params['to-date'] === '') ? moment() : moment(req.params['to-date']);
-  // default to 48 hours earlier
-  var fromDate = (typeof req.params['from-date'] === 'undefined' || req.params['from-date'] === '') ? moment().subtract(48, 'hours') : moment(req.params['from-date']);
+  // default to 48 hours earlier from to-date
+  var fromDate = (typeof req.params['from-date'] === 'undefined' || req.params['from-date'] === '') ? toDate.subtract(48, 'hours') : moment(req.params['from-date']);
 
   var format = getFormat(req, ['json', 'csv'], 'json');
   if (typeof format === 'undefined') {
@@ -521,10 +521,11 @@ function getData (req, res, next) {
     return next(new restify.InvalidArgumentError('Invalid time frame specified: from-date is in the future'));
   }
 
-  if (toDate.isBefore(fromDate)) {
-    return next(new restify.InvalidArgumentError('Invalid time frame specified: to-date (' + toDate.format() + ') is before from-date (' + fromDate.format() + ')'));
+  if (fromDate.isAfter(toDate)) {
+    return next(new restify.InvalidArgumentError('Invalid time frame specified: from-date (' + toDate.format() + ') is after to-date (' + fromDate.format() + ')'));
   }
-  if (toDate.isBefore(moment().subtract(32, 'days'))) {
+
+  if (Math.abs(toDate.diff(fromDate, 'days')) > 31) {
     return next(new restify.InvalidArgumentError('Please choose a time frame up to 31 days maximum'));
   }
 
