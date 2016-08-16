@@ -81,9 +81,6 @@ if (cfg.honeybadger_apikey && cfg.honeybadger_apikey !== '') {
 
 mongoose.Promise = require('bluebird');
 
-var TIME_AGO_MAX = 1000 * 60 * 60 * 24 * 32;
-var TIME_AGO_15_D = 1000 * 60 * 60 * 24 * 15; // 15 days
-
 // Logging
 var consoleStream = new Stream();
 consoleStream.writable = true;
@@ -261,6 +258,39 @@ function getSeparator (req) {
   }
 }
 
+function parseTimeParameter (req, next, paramName, defaultValue) {
+  var param = req.params[paramName];
+  if (typeof param === 'undefined' || param.trim() === '') {
+    return defaultValue;
+  }
+
+  var time = moment(param);
+
+  if (!time.isValid()) {
+    return new restify.InvalidArgumentError('Invalid date format for ' + paramName);
+  }
+
+  return time;
+}
+
+function validateTimeParameters (toDate, fromDate) {
+  var now = moment();
+  if (toDate.isAfter(now)) {
+    return new restify.InvalidArgumentError('Invalid time frame specified: to-date is in the future');
+  }
+  if (fromDate.isAfter(now)) {
+    return new restify.InvalidArgumentError('Invalid time frame specified: from-date is in the future');
+  }
+
+  if (fromDate.isAfter(toDate)) {
+    return new restify.InvalidArgumentError('Invalid time frame specified: from-date (' + fromDate.format() + ') is after to-date (' + toDate.format() + ')');
+  }
+
+  if (Math.abs(toDate.diff(fromDate, 'days')) > 31) {
+    return new restify.InvalidArgumentError('Please choose a time frame up to 31 days maximum');
+  }
+}
+
 function unknownMethodHandler (req, res) {
   if (req.method.toLowerCase() === 'options') {
     var allowHeaders = ['Accept', 'X-ApiKey', 'Accept-Version', 'Content-Type', 'Api-Version', 'Origin', 'X-Requested-With']; // added Origin & X-Requested-With
@@ -281,7 +311,6 @@ function unknownMethodHandler (req, res) {
 }
 
 server.on('MethodNotAllowed', unknownMethodHandler);
-
 
 /**
  * @api {get} /users/:senseBoxId Validate authorization
@@ -496,37 +525,26 @@ function getMeasurements (req, res, next) {
  */
 function getData (req, res, next) {
   // default to now
-  var toDate = (typeof req.params['to-date'] === 'undefined' || req.params['to-date'] === '') ? moment() : moment(req.params['to-date']);
+  var toDate = parseTimeParameter(req, next, 'to-date', moment());
+  if (!moment.isMoment(toDate)) {
+    return next(toDate);
+  }
+
   // default to 48 hours earlier from to-date
-  var fromDate = (typeof req.params['from-date'] === 'undefined' || req.params['from-date'] === '') ? toDate.subtract(48, 'hours') : moment(req.params['from-date']);
+  var fromDate = parseTimeParameter(req, next, 'from-date', toDate.clone().subtract(48, 'hours'));
+  if (!moment.isMoment(fromDate)) {
+    return next(fromDate);
+  }
+
+  // validate time parameters
+  var timesValid = validateTimeParameters(toDate, fromDate, next);
+  if (typeof timesValid !== 'undefined') {
+    return next(timesValid);
+  }
 
   var format = getFormat(req, ['json', 'csv'], 'json');
   if (typeof format === 'undefined') {
     return next(new restify.InvalidArgumentError('Invalid format: ' + req.params['format']));
-  }
-
-  // check validity of dates
-  if (!toDate.isValid()) {
-    return next(new restify.InvalidArgumentError('Invalid date format for to-date'));
-  }
-  if (!fromDate.isValid()) {
-    return next(new restify.InvalidArgumentError('Invalid date format for from-date'));
-  }
-
-  // check if one of the dates is in the future
-  if (toDate.isAfter(moment())) {
-    return next(new restify.InvalidArgumentError('Invalid time frame specified: to-date is in the future'));
-  }
-  if (fromDate.isAfter(moment())) {
-    return next(new restify.InvalidArgumentError('Invalid time frame specified: from-date is in the future'));
-  }
-
-  if (fromDate.isAfter(toDate)) {
-    return next(new restify.InvalidArgumentError('Invalid time frame specified: from-date (' + toDate.format() + ') is after to-date (' + fromDate.format() + ')'));
-  }
-
-  if (Math.abs(toDate.diff(fromDate, 'days')) > 31) {
-    return next(new restify.InvalidArgumentError('Please choose a time frame up to 31 days maximum'));
   }
 
   var stringifier;
@@ -592,17 +610,22 @@ function getData (req, res, next) {
  */
 function getDataMulti (req, res, next) {
   // default to now
-  var toDate = (typeof req.params['to-date'] === 'undefined' || req.params['to-date'] === '') ? new Date() : new Date(req.params['to-date']);
-  // default to 15 days earlier
-  var fromDate = (typeof req.params['from-date'] === 'undefined' || req.params['from-date'] === '') ? new Date(toDate.valueOf() - TIME_AGO_15_D) : new Date(req.params['from-date']);
+  var toDate = parseTimeParameter(req, next, 'to-date', moment());
+  if (!moment.isMoment(toDate)) {
+    return next(toDate);
+  }
 
-  if (toDate.valueOf() < fromDate.valueOf()) {
-    return next(new restify.InvalidArgumentError(JSON.stringify('Invalid time frame specified')));
+  // default to 15 days earlier
+  var fromDate = parseTimeParameter(req, next, 'from-date', toDate.clone().subtract(15, 'days'));
+  if (!moment.isMoment(fromDate)) {
+    return next(fromDate);
   }
-  if (toDate.valueOf() - fromDate.valueOf() > TIME_AGO_MAX) {
-    return next(new restify.InvalidArgumentError(JSON.stringify('Please choose a time frame up to 31 days maximum')));
+
+  // validate time parameters
+  var timesValid = validateTimeParameters(toDate, fromDate, next);
+  if (typeof timesValid !== 'undefined') {
+    return next(timesValid);
   }
-  log.debug(fromDate, 'to', toDate);
 
   if (req.params['phenomenon'] && req.params['boxid']) {
     var phenom = req.params['phenomenon'].toString();
@@ -651,8 +674,8 @@ function getDataMulti (req, res, next) {
             '$in': Object.keys(sensors)
           },
           createdAt: {
-            '$gt': fromDate,
-            '$lt': toDate
+            '$gt': fromDate.toDate(),
+            '$lt': toDate.toDate()
           }
         }, {'createdAt': 1, 'value': 1, '_id': 0, 'sensor_id': 1})
           .lean()
@@ -667,7 +690,7 @@ function getDataMulti (req, res, next) {
         return next(new restify.InternalServerError(JSON.stringify(err.errors)));
       });
   } else {
-    return next(new restify.InvalidArgumentError(JSON.stringify('Invalid parameters')));
+    return next(new restify.InvalidArgumentError('Invalid parameters'));
   }
 }
 
