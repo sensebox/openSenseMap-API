@@ -1,8 +1,8 @@
 #include <SPI.h>
 #include <Ethernet.h>
 /*
- * Zusätzliche Sensorbibliotheken, -Variablen etc im Folgenden einfügen.
- */
+   Zusätzliche Sensorbibliotheken, -Variablen etc im Folgenden einfügen.
+*/
 
 //senseBox ID
 
@@ -16,12 +16,9 @@ IPAddress myIP(192, 168, 0, 42);
 EthernetClient client;
 
 //Messparameter
-int postInterval = 10000; //Uploadintervall in Millisekunden
-long oldTime = 0;
+int postInterval = 60000; //Uploadintervall in Millisekunden
 
-
-void setup()
-{
+void setup () {
   Serial.begin(9600);
   Serial.print("Starting network...");
   //Ethernet Verbindung mit DHCP ausführen..
@@ -36,23 +33,17 @@ void setup()
   Serial.println("Starting loop.");
 }
 
-void loop()
-{
-  //Upload der Daten mit konstanter Frequenz
-  if (millis() - oldTime >= postInterval)
-  {
-    oldTime = millis();
-    /*
-     * Hier Sensoren auslesen und nacheinerander über postFloatValue(...) hochladen. Beispiel:
-     *
-     * float temperature = sensor.readTemperature();
-     * postFloatValue(temperature, 1, temperatureSensorID);
-     */
-  }
+void loop () {
+  /*
+     Hier Sensoren auslesen und nacheinerander über postFloatValue(...) hochladen. Beispiel:
+
+     float temperature = sensor.readTemperature();
+     postFloatValue(temperature, 1, temperatureSensorID);
+  */
+  sleep(postingInterval);
 }
 
-void postFloatValue(float measurement, int digits, String sensorId)
-{
+void postFloatValue (float measurement, int digits, String sensorId) {
   //Float zu String konvertieren
   char obs[10];
   dtostrf(measurement, 5, digits, obs);
@@ -63,22 +54,20 @@ void postFloatValue(float measurement, int digits, String sensorId)
   //Mit OSeM Server verbinden und POST Operation durchführen
   Serial.println("-------------------------------------");
   Serial.print("Connectingto OSeM Server...");
-  if (client.connect(server, 8000))
-  {
+  if (client.connect(server, 8000)) {
     Serial.println("connected!");
     Serial.println("-------------------------------------");
     //HTTP Header aufbauen
-    client.print("POST /boxes/");client.print(SENSEBOX_ID);client.print("/");client.print(sensorId);client.println(" HTTP/1.1");
+    client.print("POST /boxes/"); client.print(SENSEBOX_ID); client.print("/"); client.print(sensorId); client.println(" HTTP/1.1");
     client.print("Host:");
     client.println(server);
     client.println("Content-Type: application/json");
     client.println("Connection: close");
-    client.print("Content-Length: ");client.println(jsonValue.length());
+    client.print("Content-Length: "); client.println(jsonValue.length());
     client.println();
     //Daten senden
     client.println(jsonValue);
-  }else
-  {
+  } else {
     Serial.println("failed!");
     Serial.println("-------------------------------------");
   }
@@ -86,19 +75,16 @@ void postFloatValue(float measurement, int digits, String sensorId)
   waitForServerResponse();
 }
 
-void waitForServerResponse()
-{
+void waitForServerResponse () {
   //Ankommende Bytes ausgeben
   boolean repeat = true;
-  do{
-    if (client.available())
-    {
+  do {
+    if (client.available()) {
       char c = client.read();
       Serial.print(c);
     }
     //Verbindung beenden
-    if (!client.connected())
-    {
+    if (!client.connected()) {
       Serial.println();
       Serial.println("--------------");
       Serial.println("Disconnecting.");
@@ -106,5 +92,16 @@ void waitForServerResponse()
       client.stop();
       repeat = false;
     }
-  }while (repeat);
+  } while (repeat);
+}
+
+// millis() rollover fix - http://arduino.stackexchange.com/questions/12587/how-can-i-handle-the-millis-rollover
+void sleep(unsigned long ms) {            // ms: duration
+  unsigned long start = millis();         // start: timestamp
+  for (;;) {
+    unsigned long now = millis();         // now: timestamp
+    unsigned long elapsed = now - start;  // elapsed: duration
+    if (elapsed >= ms)                    // comparing durations: OK
+      return;
+  }
 }

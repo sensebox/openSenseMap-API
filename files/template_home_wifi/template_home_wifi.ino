@@ -1,11 +1,11 @@
 /*
-senseBox Citizen Sensingplatform
-WiFi Version: 1.0.1
-Date: 2016-08-21
-Homepage: http://www.sensebox.de
-Author: Institute for Geoinformatics, University of Muenster
-Note: Sketch for SB-Home WiFi Edition
-Code is in the public domain.
+  senseBox Citizen Sensingplatform
+  WiFi Version: 1.0.1
+  Date: 2016-08-21
+  Homepage: http://www.sensebox.de
+  Author: Institute for Geoinformatics, University of Muenster
+  Note: Sketch for SB-Home WiFi Edition
+  Code is in the public domain.
 */
 
 #include <avr/wdt.h>
@@ -70,10 +70,10 @@ void setup() {
   Serial.print("Initializing sensors...");
   Wire.begin();
   Wire.beginTransmission(UV_ADDR);
-  Wire.write((IT_1<<2) | 0x02);
+  Wire.write((IT_1 << 2) | 0x02);
   Wire.endTransmission();
   delay(500);
-  HDC.begin(HDC100X_TEMP_HUMI,HDC100X_14BIT,HDC100X_14BIT,DISABLE);
+  HDC.begin(HDC100X_TEMP_HUMI, HDC100X_14BIT, HDC100X_14BIT, DISABLE);
   TSL.begin();
   BMP.begin();
   BMP.setOversampling(4);
@@ -83,23 +83,23 @@ void setup() {
 }
 
 void loop() {
-    delay(5000);
-    httpRequest(TEMPSENSOR_ID, String(HDC.getTemp()));
-    delay(5000);
-    httpRequest(HUMISENSOR_ID, String(HDC.getHumi()));
-    delay(5000);
-    result = BMP.startMeasurment();
-    if(result!=0){
-      delay(result);
-      result = BMP.getTemperatureAndPressure(tempBaro,pressure);
-    }
-    delay(5000);
-    httpRequest(PRESSURESENSOR_ID, String(pressure));
-    delay(5000);
-    httpRequest(LUXSENSOR_ID, String(TSL.readLux()));
-    delay(5000);
-    httpRequest(UVSENSOR_ID, String(getUV()));
-    delay(10000);
+  delay(5000);
+  httpRequest(TEMPSENSOR_ID, String(HDC.getTemp()));
+  delay(5000);
+  httpRequest(HUMISENSOR_ID, String(HDC.getHumi()));
+  delay(5000);
+  result = BMP.startMeasurment();
+  if (result != 0) {
+    delay(result);
+    result = BMP.getTemperatureAndPressure(tempBaro, pressure);
+  }
+  delay(5000);
+  httpRequest(PRESSURESENSOR_ID, String(pressure));
+  delay(5000);
+  httpRequest(LUXSENSOR_ID, String(TSL.readLux()));
+  delay(5000);
+  httpRequest(UVSENSOR_ID, String(getUV()));
+  delay(10000);
 }
 
 void httpRequest(String sensorId, String value) {
@@ -108,7 +108,7 @@ void httpRequest(String sensorId, String value) {
   valueJson += "}";
   // close any connection before send a new request.
   // This will free the socket on the WiFi shield
-  if(client.connected()) {
+  if (client.connected()) {
     client.stop();
   }
   // if there's a successful connection:
@@ -141,16 +141,16 @@ void httpRequest(String sensorId, String value) {
   }
 }
 
-uint16_t getUV(){
-  byte msb=0, lsb=0;
+uint16_t getUV() {
+  byte msb = 0, lsb = 0;
   uint16_t uvValue;
-  Wire.requestFrom(UV_ADDR+1, 1); //MSB
+  Wire.requestFrom(UV_ADDR + 1, 1); //MSB
   delay(1);
-  if(Wire.available()) msb = Wire.read();
-  Wire.requestFrom(UV_ADDR+0, 1); //LSB
+  if (Wire.available()) msb = Wire.read();
+  Wire.requestFrom(UV_ADDR + 0, 1); //LSB
   delay(1);
-  if(Wire.available()) lsb = Wire.read();
-  uvValue = (msb<<8) | lsb;
-  return uvValue*5;
+  if (Wire.available()) lsb = Wire.read();
+  uvValue = (msb << 8) | lsb;
+  return uvValue * 5;
 }
 
