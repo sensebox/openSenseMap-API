@@ -65,7 +65,7 @@ void setup() {
     Serial.println();
     Serial.print("Waiting 60 seconds for connection...");
     delay(60000);
-    Serial.println("done.")
+    Serial.println("done.");
   }
   Serial.print("Initializing sensors...");
   Wire.begin();
