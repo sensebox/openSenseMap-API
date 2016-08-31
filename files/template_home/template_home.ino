@@ -40,7 +40,7 @@ int messTyp;
 #define UV_ADDR 0x38
 #define IT_1   0x1
 
-const unsigned long postingInterval = 60000;
+const unsigned int postingInterval = 60000;
 
 void setup() {
   // Open serial communications and wait for port to open:

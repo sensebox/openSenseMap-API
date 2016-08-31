@@ -16,7 +16,7 @@ IPAddress myIP(192, 168, 0, 42);
 EthernetClient client;
 
 //Messparameter
-int postInterval = 60000; //Uploadintervall in Millisekunden
+const unsigned int postingInterval = 60000; //Uploadintervall in Millisekunden
 
 void setup () {
   Serial.begin(9600);
