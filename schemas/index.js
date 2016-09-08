@@ -124,7 +124,10 @@ var userSchema = new Schema({
   },
   apikey: {
     type: String,
-    trim: true
+    trim: true,
+    minlength: 24,
+    unique: true,
+    required: true
   },
   boxes: [
     {
@@ -137,6 +140,19 @@ var userSchema = new Schema({
     trim: true
   }
 });
+
+var handleE11000 = function(error, res, next) {
+  if (error.name === 'MongoError' && error.code === 11000) {
+    next(new Error('Duplicate senseBox found'));
+  } else {
+    next();
+  }
+};
+
+userSchema.post('save', handleE11000);
+userSchema.post('update', handleE11000);
+userSchema.post('findOneAndUpdate', handleE11000);
+userSchema.post('insertMany', handleE11000);
 
 module.exports = {
   'LocationSchema': LocationSchema,

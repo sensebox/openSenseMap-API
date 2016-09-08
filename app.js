@@ -1114,6 +1114,7 @@ function createNewUser (req) {
 }
 
 function createNewBox (req) {
+
   var boxData = {
     name: req.params.name,
     boxType: req.params.boxType,
@@ -1173,60 +1174,47 @@ function createNewBox (req) {
  * @apiParam (RequestBody) {String} orderID the apiKey of the user for the senseBox.
  */
 function postNewBox (req, res, next) {
-  User.findOne({apikey: req.params.orderID}, function (err, user) {
+  log.debug('A new sensebox is being submitted');
+  var newUser = createNewUser(req);
+  var newBox = createNewBox(req);
+
+  newUser._doc.boxes.push(newBox._doc._id.toString());
+  newBox.save(function (err, box) {
     if (err) {
       log.error(err);
-      Honeybadger.notify(err);
-      return res.send(400, 'An error occured');
-    } else {
+      return next(new restify.InvalidArgumentError(err.message + '. ' + err));
+    }
 
-      log.debug('A new sensebox is being submitted');
-      if (!user) {
-        var newUser = createNewUser(req);
-        var newBox = createNewBox(req);
+    try {
+      genScript(box, box.model);
 
-        newUser._doc.boxes.push(newBox._doc._id.toString());
-        newBox.save(function (err, box) {
-          if (err) {
-            return next(new restify.InvalidArgumentError(JSON.stringify(err.message)));
-          }
-
-          try {
-            genScript(box, box.model);
-
-            newUser.save(function (err, user) {
-              if (err) {
+      newUser.save(function (err, user) {
+        if (err) {
+          log.error(err);
+          Honeybadger.notify(err);
+          return next(new restify.InvalidArgumentError(err.message + '. ' + err));
+        } else {
+          if (cfg.email_host !== '') {
+            mails.sendWelcomeMail(user, newBox)
+              .then((response) => {
+                console.log('successfully sent mails: ' + JSON.stringify(response));
+              })
+              .catch((err) => {
                 Honeybadger.notify(err);
-                return next(new restify.InvalidArgumentError(JSON.stringify(err.message)));
-              } else {
-                if (cfg.email_host !== '') {
-                  mails.sendWelcomeMail(user, newBox)
-                    .then((response) => {
-                      console.log('successfully sent mails: ' + JSON.stringify(response));
-                    })
-                    .catch((err) => {
-                      Honeybadger.notify(err);
-                      console.log(err.message);
-                    });
-                  _postToSlack('Eine neue <https://opensensemap.org/explore/' + newBox._id + '|senseBox> wurde registriert (' + newBox.name + ')');
-                }
-                return res.send(201, user);
-              }
-            });
-
-          } catch (e) {
-            log.error(e);
-            Honeybadger.notify(e);
-            return res.send(400, 'An error occured');
+                log.error(err);
+              });
+            _postToSlack('Eine neue <https://opensensemap.org/explore/' + newBox._id + '|senseBox> wurde registriert (' + newBox.name + ')');
           }
-        });
-      } else {
-        log.error(err);
-        return res.send(400, 'An error occured');
-      }
+          return res.send(201, user);
+        }
+      });
+
+    } catch (e) {
+      log.error(e);
+      Honeybadger.notify(e);
+      return next(new restify.InvalidArgumentError(e.message + '. ' + e));
     }
   });
-  next();
 }
 
 // generate Arduino script
