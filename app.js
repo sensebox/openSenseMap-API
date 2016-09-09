@@ -60,7 +60,7 @@ var restify = require('restify'),
   _ = require('lodash'),
   products = require('./products'),
   cfg = require('./config'),
-  schemas = require('./schemas'),
+  models = require('./models'),
   csvstringify = require('csv-stringify'),
   csvtransform = require('stream-transform'),
   Stream = require('stream'),
@@ -145,22 +145,16 @@ server.pre(function (request, response, next) {
   });
 })();
 
-
-var measurementSchema = schemas.measurementSchema;
-var sensorSchema = schemas.sensorSchema;
-var boxSchema = schemas.boxSchema;
-var userSchema = schemas.userSchema;
-
-var Measurement = mongoose.model('Measurement', measurementSchema);
-var Box = mongoose.model('Box', boxSchema);
-var Sensor = mongoose.model('Sensor', sensorSchema);
-var User = mongoose.model('User', userSchema);
+var Measurement = models.Measurement;
+var Box = models.Box;
+var Sensor = models.Sensor;
+var User = models.User;
 
 var PATH = '/boxes';
 var userPATH = 'users';
 
 // attach a function to validate boxId and sensorId parameters
-server.use(function validateAuthenticationRequest (req, res, next) {
+server.use(function validateIdParams (req, res, next) {
   if (typeof req.params['boxId'] !== 'undefined') {
     var boxId = req.params['boxId'].toString();
     if (boxId.indexOf(',') !== -1) {
@@ -1098,69 +1092,6 @@ function findBox (req, res, next) {
   });
 }
 
-function createNewUser (req) {
-  var userData = {
-    firstname: req.params.user.firstname,
-    lastname: req.params.user.lastname,
-    email: req.params.user.email,
-    apikey: req.params.orderID,
-    boxes: [],
-    language: req.params.user.lang
-  };
-
-  var user = new User(userData);
-
-  return user;
-}
-
-function createNewBox (req) {
-
-  var boxData = {
-    name: req.params.name,
-    boxType: req.params.boxType,
-    loc: req.params.loc,
-    grouptag: req.params.tag,
-    exposure: req.params.exposure,
-    _id: mongoose.Types.ObjectId(),
-    model: req.params.model,
-    sensors: []
-  };
-
-  var box = new Box(boxData);
-
-  if (req.params.model) {
-    switch (req.params.model) {
-    case 'homeEthernet':
-      req.params.sensors = products.senseboxhome;
-      break;
-    case 'homeWifi':
-      req.params.sensors = products.senseboxhome;
-      break;
-    case 'basicEthernet':
-      req.params.sensors = products.senseboxbasic;
-      break;
-    default:
-      break;
-    }
-  }
-
-  for (var i = req.params.sensors.length - 1; i >= 0; i--) {
-    var id = mongoose.Types.ObjectId();
-
-    var sensorData = {
-      _id: id,
-      title: req.params.sensors[i].title,
-      unit: req.params.sensors[i].unit,
-      sensorType: req.params.sensors[i].sensorType,
-      icon: req.params.sensors[i].icon
-    };
-
-    box.sensors.push(sensorData);
-  }
-
-  return box;
-}
-
 /**
  * @api {post} /boxes Post new senseBox
  * @apiDescription Create a new senseBox.
@@ -1175,46 +1106,34 @@ function createNewBox (req) {
  */
 function postNewBox (req, res, next) {
   log.debug('A new sensebox is being submitted');
-  var newUser = createNewUser(req);
-  var newBox = createNewBox(req);
+  var newBox = Box.newFromRequest(req);
 
-  newUser._doc.boxes.push(newBox._doc._id.toString());
-  newBox.save(function (err, box) {
-    if (err) {
+  User.createForBoxRequest(newBox, req)
+    .then(function (user) {
+      // user is saved at this point, newBox not
+      // try to save the box
+      return newBox.save()
+        .then(function (box) {
+          // box is now saved
+          // generate the script and send mails
+          // also post to slack
+          try {
+            genScript(box, box.model);
+          } catch (err) {
+            log.error(err);
+            Honeybadger.notify(err);
+          }
+          res.send(201, user);
+          mails.sendWelcomeMail(user, box);
+        });
+    })
+    .then(function () {
+      _postToSlack('Eine neue <https://opensensemap.org/explore/' + newBox._id + '|senseBox> wurde registriert (' + newBox.name + ')');
+    })
+    .catch(function (err) {
       log.error(err);
       return next(new restify.InvalidArgumentError(err.message + '. ' + err));
-    }
-
-    try {
-      genScript(box, box.model);
-
-      newUser.save(function (err, user) {
-        if (err) {
-          log.error(err);
-          Honeybadger.notify(err);
-          return next(new restify.InvalidArgumentError(err.message + '. ' + err));
-        } else {
-          if (cfg.email_host !== '') {
-            mails.sendWelcomeMail(user, newBox)
-              .then((response) => {
-                console.log('successfully sent mails: ' + JSON.stringify(response));
-              })
-              .catch((err) => {
-                Honeybadger.notify(err);
-                log.error(err);
-              });
-            _postToSlack('Eine neue <https://opensensemap.org/explore/' + newBox._id + '|senseBox> wurde registriert (' + newBox.name + ')');
-          }
-          return res.send(201, user);
-        }
-      });
-
-    } catch (e) {
-      log.error(e);
-      Honeybadger.notify(e);
-      return next(new restify.InvalidArgumentError(e.message + '. ' + e));
-    }
-  });
+    });
 }
 
 // generate Arduino script
