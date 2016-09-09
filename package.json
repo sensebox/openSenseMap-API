@@ -13,6 +13,7 @@
     "moment": "^2.13.0",
     "mongoose": "~4.6.0",
     "mongoose-timestamp": "^0.6",
+    "mqtt": "^1.14.1",
     "request": "~2.74.0",
     "request-promise": "^4.1.1",
     "restify": "^4.0.0",
