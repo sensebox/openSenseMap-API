@@ -30,7 +30,14 @@ let connect = function (box) {
 
       client.on('message', function (topic, message) {
         let decoded = handler.decodeMessage(message, decodeOptions);
-        box.saveMeasurements(decoded);
+        box.saveMeasurements(decoded).then(function (result) {
+          if (result.length !== 0) {
+            console.log('received, decoded and saved mqtt message for box', box._id);
+          }
+        })
+        .catch(function (err) {
+          console.log('error saving mqtt message for box', box._id, 'error:', err, 'message:', message);
+        });
       });
     }
   }

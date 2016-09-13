@@ -17,7 +17,6 @@ module.exports = {
         let result = jsonPath.query(json, options.jsonPath, 1);
 
         if (result[0]) {
-          console.log(result[0]);
           return result[0];
         }
       } else {
