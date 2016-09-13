@@ -426,7 +426,7 @@ function updateBox (req, res, next) {
       }
     }
     if (typeof req.params.mqtt !== 'undefined' && typeof req.params.mqtt.url !== 'undefined' && typeof req.params.mqtt.topic !== 'undefined') {
-        qrys.push(Box.update({ 'mqtt': req.params.mqtt}));
+      qrys.push(Box.update({ 'mqtt': req.params.mqtt}));
     }
     if (typeof req.params.sensors !== 'undefined' && req.params.sensors.length > 0) {
       req.params.sensors.forEach(function (updatedsensor) {

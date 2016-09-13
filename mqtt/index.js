@@ -1,35 +1,49 @@
 'use strict';
 
-let mqtt = require('mqtt');
+let mqtt = require('mqtt'),
+  handlers = require('./handlers');
 
-module.exports = {
-  initConnection (box) {
-    console.log("WHOOOOOOOOOOOOOOOOOOOOOOOOP");
-    console.log("trying to connect box" + box._id + " to mqtt");
-    if (box.mqtt && box.mqtt.url && box.mqtt.topic) {
-      console.log("credentials:", box.mqtt);
-      let client = mqtt.connect(box.mqtt.url);
+// use this object as simple key/value store for connecting/disconnecting
+let mqttConnections = {};
+
+let connect = function (box) {
+  // disconnect any running connections before reconnecting..
+  disconnect(box);
+  if (box.mqtt) {
+    let handler = handlers[box.mqtt.messageFormat],
+      decodeOptions;
+
+    try {
+      decodeOptions = JSON.parse(box.mqtt.decodeOptions);
+    } catch (e) {
+      console.log('mqtt decode options of box', box._id, 'not parseable');
+    }
+
+    if (box.mqtt.url && box.mqtt.topic && handler) {
+      mqttConnections[box._id] = mqtt.connect(box.mqtt.url);
+      let client = mqttConnections[box._id];
+      client.reconnecting = true;
 
       client.on('connect', function () {
-        console.log(box._id, "connected");
         client.subscribe(box.mqtt.topic);
       });
 
       client.on('message', function (topic, message) {
-        console.log("message",topic,message);
-        let json;
-        try {
-          json = JSON.parse(message.toString());
-        } catch (err) {
-          console.log(err);
-        }
-
-        if (typeof json !== 'undefined') {
-          // try to save the json
-          console.log(json);
-          //box.saveMeasurementObject(json);
-        }
+        let decoded = handler.decodeMessage(message, decodeOptions);
+        box.saveMeasurements(decoded);
       });
     }
   }
+};
+
+let disconnect = function (box) {
+  if (mqttConnections[box._id]) {
+    mqttConnections[box._id].end(true);
+    mqttConnections[box._id] = undefined;
+  }
+};
+
+module.exports = {
+  connect: connect,
+  disconnect: disconnect
 };

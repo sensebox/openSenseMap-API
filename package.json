@@ -9,6 +9,7 @@
     "csv-stringify": "^1.0.4",
     "geojson": "^0.3.0",
     "honeybadger": "^1.1.2",
+    "jsonpath": "^0.2.7",
     "lodash": "^4",
     "moment": "^2.13.0",
     "mongoose": "~4.6.0",

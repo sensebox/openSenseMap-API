@@ -1,7 +1,8 @@
 'use strict';
 var mongoose = require('mongoose'),
   timestamp = require('mongoose-timestamp'),
-  Schema = mongoose.Schema;
+  Schema = mongoose.Schema,
+  Honeybadger = require('../utils').Honeybadger;
 
 var measurementSchema = new Schema({
   value: {
@@ -16,6 +17,36 @@ var measurementSchema = new Schema({
 });
 measurementSchema.plugin(timestamp);
 measurementSchema.index({ sensor_id: 1, createdAt: -1 });
+
+measurementSchema.statics.initMeasurement = function (sensorId, value, createdAt) {
+  // sanitize user input a little
+  if (typeof value === 'string') {
+    value = sanitizeString(value);
+  }
+
+  var measurementData = {
+    value: value,
+    _id: mongoose.Types.ObjectId(),
+    sensor_id: sensorId
+  };
+
+  if (typeof createdAt !== 'undefined') {
+    try {
+      measurementData.createdAt = new Date(createdAt);
+    } catch (e) {
+      Honeybadger.notify(e);
+      return Promise.reject(e);
+    }
+  }
+
+  return new this(measurementData);
+};
+
+// http://stackoverflow.com/a/23453651
+function sanitizeString (str) {
+  str = str.replace(/[^a-z0-9áéíóúñü \.,_-]/gim, '');
+  return str.trim();
+}
 
 var measurementModel = mongoose.model('Measurement', measurementSchema);
 
