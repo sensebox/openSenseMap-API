@@ -12,13 +12,15 @@ var LocationSchema = new Schema({
   type: {
     type: String,
     required: true,
-    default: 'Feature'
+    default: 'Feature',
+    enum: ['Feature']
   },
   geometry: {
     type: {
       type: String,
       required: true,
-      default: 'Point'
+      default: 'Point',
+      enum: ['Point']
     },
     coordinates: {
       type: Array,
