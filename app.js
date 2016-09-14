@@ -386,7 +386,9 @@ function decodeBase64Image (dataString) {
  *  "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAIVBMVEUAAABKrkMGteh0wW5Ixu931vKy3bO46fj/7hr/+J36/vyFw5EiAAAAAXRSTlMAQObYZgAAAF5JREFUeAFdjdECgzAIA1kIUvP/HzyhdrPe210L2GLYzhjj7VvRefmpn1MKFbdHUOzA9qRQEhIw3xMzEVeJDqkOrC9IJqWE7hFDLZ0Q6+zh7odsoU/j9qeDPXDf/cEX1xsDKIqAkK8AAAAASUVORK5CYII=",
  *  "mqtt": {
  *    "url": "some url",
- *    "topic": "some topic"
+ *    "topic": "some topic",
+ *    "messageFormat": "json",
+ *    "decodeOptions": "{\"jsonPath\":\"$.bla\"}"
  *  }
  * }
  * @apiVersion 0.0.1
