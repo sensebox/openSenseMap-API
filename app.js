@@ -9,12 +9,33 @@
  */
 
 /**
- * @apiDefine SensorJSONBody
+ * define for a senseBox Sensor
+ * @apiDefine Sensor A single sensor for the nested Sensor parameter
+ */
+
+/**
+ * @apiDefine SensorBody
  *
- * @apiParam {String} title the title of the phenomenon the sensor observes.
- * @apiParam {String} unit the unit of the phenomenon the sensor observes.
- * @apiParam {String} sensorType the type of the sensor.
- * @apiParam {String} the visual representation for the openSenseMap of this sensor.
+ * @apiParam (Sensor) {String} title the title of the phenomenon the sensor observes.
+ * @apiParam (Sensor) {String} unit the unit of the phenomenon the sensor observes.
+ * @apiParam (Sensor) {String} sensorType the type of the sensor.
+ * @apiParam (Sensor) {String} icon the visual representation for the openSenseMap of this sensor.
+ *
+ */
+
+/**
+ * define for the MQTT options
+ * @apiDefine MqttOption Settings for a senseBox connected through MQTT
+ */
+
+/**
+ * @apiDefine MqttBody
+ *
+ * @apiParam (MqttOption) {String} url the url to the mqtt server.
+ * @apiParam (MqttOption) {String} topic the topic to subscribe to.
+ * @apiParam (MqttOption) {String="json"} messageFormat the format the mqtt messages are in.
+ * @apiParam (MqttOption) {String} decodeOptions a json encoded string with options for decoding the message. 'jsonPath' for 'json' messageFormat.
+ *
  */
 
 /**
@@ -24,7 +45,11 @@
  * @apiParam (RequestBody) {String} grouptag the grouptag of this senseBox.
  * @apiParam (RequestBody) {String="indoor","outdoor"} exposure the exposure of this senseBox.
  * @apiParam (RequestBody) {String} grouptag the grouptag of this senseBox.
+ * @apiParam (RequestBody) {String="fixed"} boxType the type of the senseBox. Currently only 'fixed' is supported.
  * @apiParam (RequestBody) {Sensor[]} sensors an array containing the sensors of this senseBox.
+ * @apiParam (RequestBody) {MqttOption} sensors an array containing the sensors of this senseBox.
+ * @apiParam (RequestBody) {Location} loc the location of this senseBox. Must be a GeoJSON Point Feature. (RFC7946)
+ *
  */
 
 /**
@@ -330,7 +355,11 @@ function decodeBase64Image (dataString) {
 /**
  * @api {put} /boxes/:senseBoxId Update a senseBox: Image and sensor names
  * @apiDescription Modify the specified senseBox.
+ *
  * @apiUse CommonBoxJSONBody
+ * @apiUse SensorBody
+ * @apiUse MqttBody
+ *
  * @apiParam (RequestBody) {String} description the updated description of this senseBox.
  * @apiParam (RequestBody) {String} image the updated image of this senseBox encoded as base64 data uri.
  * @apiParamExample {json} Request-Example:
@@ -1015,6 +1044,9 @@ function findBox (req, res, next) {
  * @apiGroup Boxes
  * @apiName postNewBox
  * @apiUse CommonBoxJSONBody
+ * @apiUse SensorBody
+ * @apiUse MqttBody
+ *
  * @apiParam (RequestBody) {String} firstname firstname of the user for the senseBox.
  * @apiParam (RequestBody) {String} lastname lastname of the user for the senseBox.
  * @apiParam (RequestBody) {String} email email of the user for the senseBox.
