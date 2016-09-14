@@ -289,10 +289,90 @@
           },
           {
             "group": "RequestBody",
+            "type": "String",
+            "allowedValues": [
+              "\"fixed\""
+            ],
+            "optional": false,
+            "field": "boxType",
+            "description": "<p>the type of the senseBox. Currently only 'fixed' is supported.</p>"
+          },
+          {
+            "group": "RequestBody",
             "type": "Sensor[]",
             "optional": false,
             "field": "sensors",
             "description": "<p>an array containing the sensors of this senseBox.</p>"
+          },
+          {
+            "group": "RequestBody",
+            "type": "Location",
+            "optional": false,
+            "field": "loc",
+            "description": "<p>the location of this senseBox. Must be a GeoJSON Point Feature. (RFC7946)</p>"
+          }
+        ],
+        "A single sensor for the nested Sensor parameter": [
+          {
+            "group": "Sensor",
+            "type": "String",
+            "optional": false,
+            "field": "title",
+            "description": "<p>the title of the phenomenon the sensor observes.</p>"
+          },
+          {
+            "group": "Sensor",
+            "type": "String",
+            "optional": false,
+            "field": "unit",
+            "description": "<p>the unit of the phenomenon the sensor observes.</p>"
+          },
+          {
+            "group": "Sensor",
+            "type": "String",
+            "optional": false,
+            "field": "sensorType",
+            "description": "<p>the type of the sensor.</p>"
+          },
+          {
+            "group": "Sensor",
+            "type": "String",
+            "optional": false,
+            "field": "icon",
+            "description": "<p>the visual representation for the openSenseMap of this sensor.</p>"
+          }
+        ],
+        "Settings for a senseBox connected through MQTT": [
+          {
+            "group": "MqttOption",
+            "type": "String",
+            "optional": false,
+            "field": "url",
+            "description": "<p>the url to the mqtt server.</p>"
+          },
+          {
+            "group": "MqttOption",
+            "type": "String",
+            "optional": false,
+            "field": "topic",
+            "description": "<p>the topic to subscribe to.</p>"
+          },
+          {
+            "group": "MqttOption",
+            "type": "String",
+            "allowedValues": [
+              "\"json\""
+            ],
+            "optional": false,
+            "field": "messageFormat",
+            "description": "<p>the format the mqtt messages are in.</p>"
+          },
+          {
+            "group": "MqttOption",
+            "type": "String",
+            "optional": false,
+            "field": "decodeOptions",
+            "description": "<p>a json encoded string with options for decoding the message. 'jsonPath' for 'json' messageFormat.</p>"
           }
         ]
       }
@@ -349,10 +429,90 @@
           },
           {
             "group": "RequestBody",
+            "type": "String",
+            "allowedValues": [
+              "\"fixed\""
+            ],
+            "optional": false,
+            "field": "boxType",
+            "description": "<p>the type of the senseBox. Currently only 'fixed' is supported.</p>"
+          },
+          {
+            "group": "RequestBody",
             "type": "Sensor[]",
             "optional": false,
             "field": "sensors",
             "description": "<p>an array containing the sensors of this senseBox.</p>"
+          },
+          {
+            "group": "RequestBody",
+            "type": "Location",
+            "optional": false,
+            "field": "loc",
+            "description": "<p>the location of this senseBox. Must be a GeoJSON Point Feature. (RFC7946)</p>"
+          }
+        ],
+        "A single sensor for the nested Sensor parameter": [
+          {
+            "group": "Sensor",
+            "type": "String",
+            "optional": false,
+            "field": "title",
+            "description": "<p>the title of the phenomenon the sensor observes.</p>"
+          },
+          {
+            "group": "Sensor",
+            "type": "String",
+            "optional": false,
+            "field": "unit",
+            "description": "<p>the unit of the phenomenon the sensor observes.</p>"
+          },
+          {
+            "group": "Sensor",
+            "type": "String",
+            "optional": false,
+            "field": "sensorType",
+            "description": "<p>the type of the sensor.</p>"
+          },
+          {
+            "group": "Sensor",
+            "type": "String",
+            "optional": false,
+            "field": "icon",
+            "description": "<p>the visual representation for the openSenseMap of this sensor.</p>"
+          }
+        ],
+        "Settings for a senseBox connected through MQTT": [
+          {
+            "group": "MqttOption",
+            "type": "String",
+            "optional": false,
+            "field": "url",
+            "description": "<p>the url to the mqtt server.</p>"
+          },
+          {
+            "group": "MqttOption",
+            "type": "String",
+            "optional": false,
+            "field": "topic",
+            "description": "<p>the topic to subscribe to.</p>"
+          },
+          {
+            "group": "MqttOption",
+            "type": "String",
+            "allowedValues": [
+              "\"json\""
+            ],
+            "optional": false,
+            "field": "messageFormat",
+            "description": "<p>the format the mqtt messages are in.</p>"
+          },
+          {
+            "group": "MqttOption",
+            "type": "String",
+            "optional": false,
+            "field": "decodeOptions",
+            "description": "<p>a json encoded string with options for decoding the message. 'jsonPath' for 'json' messageFormat.</p>"
           }
         ],
         "Parameter": [
