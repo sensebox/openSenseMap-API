@@ -7,10 +7,9 @@ module.exports = {
     if (message && options && options.jsonPath) {
       let json;
       try {
-        json = JSON.parse(message.toString());
+        json = JSON.parse(message);
       } catch (err) {
         console.log(err);
-        return;
       }
 
       if (typeof json !== 'undefined') {
@@ -19,8 +18,6 @@ module.exports = {
         if (result[0]) {
           return result[0];
         }
-      } else {
-        return;
       }
     }
   }

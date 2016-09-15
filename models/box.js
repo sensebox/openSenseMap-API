@@ -13,14 +13,14 @@ var LocationSchema = new Schema({
     type: String,
     required: true,
     default: 'Feature',
-    enum: ['Feature']
+    enum: ['Feature', 'feature']
   },
   geometry: {
     type: {
       type: String,
       required: true,
       default: 'Point',
-      enum: ['Point']
+      enum: ['Point', 'point']
     },
     coordinates: {
       type: Array,
@@ -74,8 +74,9 @@ boxSchema.add({
   mqtt: {
     url: { type: String, trim: true },
     topic: { type: String, trim: true },
-    messageFormat: { type: String, trim: true, enum: ['json'] }, // Future: 'plain', 'csv'
-    decodeOptions: { type: String, trim: true }
+    messageFormat: { type: String, trim: true, enum: ['json', 'csv', 'debug_plain'] }, // Future: 'plain', 'csv'
+    decodeOptions: { type: String, trim: true },
+    connectionOptions: { type: String, trim: true }
   }
 });
 
@@ -131,18 +132,26 @@ boxSchema.methods.saveMeasurements = function (measurements) {
   let box = this,
     qrys = [];
 
-  box.sensors.forEach(function (sensor, i) {
-    if (typeof measurements[sensor._id] !== 'undefined') {
-      let measurement = Measurement.initMeasurement(sensor._id, measurements[sensor._id]);
-      box.sensors[i].lastMeasurement = measurement._id;
-      // add one box save query if neccessary
-      if (qrys.length === 0) {
-        qrys.push(box.save());
+  if (!measurements) {
+    return Promise.reject('cannot save empty measurements');
+  }
+
+  try {
+    box.sensors.forEach(function (sensor, i) {
+      if (typeof measurements[sensor._id] !== 'undefined') {
+        let measurement = Measurement.initMeasurement(sensor._id, measurements[sensor._id]);
+        box.sensors[i].lastMeasurement = measurement._id;
+        // add one box save query if neccessary
+        if (qrys.length === 0) {
+          qrys.push(box.save());
+        }
+        qrys.push(measurement.save());
       }
-      qrys.push(measurement.save());
-    }
-  });
-  return Promise.all(qrys);
+    });
+    return Promise.all(qrys);
+  } catch (e) {
+    return Promise.reject(e);
+  }
 };
 
 boxSchema.methods.saveMeasurement = function (sensorId, value, createdAt) {
@@ -201,6 +210,7 @@ let reconnectMqttOnChanged = function (box) {
   if (box._mqttChanged === true) {
     console.log('mqtt credentials changed, reconnecting');
     mqttClient.connect(box);
+    box._mqttChanged = undefined;
   }
 };
 

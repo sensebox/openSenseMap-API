@@ -456,8 +456,10 @@ function updateBox (req, res, next) {
         return next(new restify.InternalServerError(JSON.stringify(e.message)));
       }
     }
-    if (typeof req.params.mqtt !== 'undefined' && typeof req.params.mqtt.url !== 'undefined' && typeof req.params.mqtt.topic !== 'undefined') {
-      qrys.push(Box.update({ 'mqtt': req.params.mqtt}));
+    if (req.params.mqtt === null) {
+      qrys.push(box.set('mqtt', { url: "" }));
+    } else if (typeof req.params.mqtt !== 'undefined' && typeof req.params.mqtt.url !== 'undefined' && typeof req.params.mqtt.topic !== 'undefined') {
+      qrys.push(box.set({ 'mqtt': req.params.mqtt}));
     }
     if (typeof req.params.sensors !== 'undefined' && req.params.sensors.length > 0) {
       req.params.sensors.forEach(function (updatedsensor) {
