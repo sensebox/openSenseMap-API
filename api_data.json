@@ -361,7 +361,8 @@
             "group": "MqttOption",
             "type": "String",
             "allowedValues": [
-              "\"json\""
+              "\"json\"",
+              "\"csv\""
             ],
             "optional": false,
             "field": "messageFormat",
@@ -373,6 +374,13 @@
             "optional": false,
             "field": "decodeOptions",
             "description": "<p>a json encoded string with options for decoding the message. 'jsonPath' for 'json' messageFormat.</p>"
+          },
+          {
+            "group": "MqttOption",
+            "type": "String",
+            "optional": false,
+            "field": "connectionOptions",
+            "description": "<p>a json encoded string with options to supply to the mqtt client (https://github.com/mqttjs/MQTT.js#client)</p>"
           }
         ]
       }
@@ -501,7 +509,8 @@
             "group": "MqttOption",
             "type": "String",
             "allowedValues": [
-              "\"json\""
+              "\"json\"",
+              "\"csv\""
             ],
             "optional": false,
             "field": "messageFormat",
@@ -513,6 +522,13 @@
             "optional": false,
             "field": "decodeOptions",
             "description": "<p>a json encoded string with options for decoding the message. 'jsonPath' for 'json' messageFormat.</p>"
+          },
+          {
+            "group": "MqttOption",
+            "type": "String",
+            "optional": false,
+            "field": "connectionOptions",
+            "description": "<p>a json encoded string with options to supply to the mqtt client (https://github.com/mqttjs/MQTT.js#client)</p>"
           }
         ],
         "Parameter": [
