@@ -62,6 +62,7 @@ let disconnect = function (box) {
   if (mqttConnections[box._id]) {
     mqttConnections[box._id].end(true);
     mqttConnections[box._id] = undefined;
+    console.log('disconnected mqtt for box', box._id);
   }
 };
 

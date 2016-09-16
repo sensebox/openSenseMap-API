@@ -220,7 +220,10 @@ boxSchema.pre('update', checkMqttChanged);
 boxSchema.post('save', reconnectMqttOnChanged);
 boxSchema.post('update', reconnectMqttOnChanged);
 
-boxSchema.post('delete', mqttClient.disconnect);
+boxSchema.pre('remove', function (next) {
+  mqttClient.disconnect(this);
+  next();
+});
 
 var boxModel = mongoose.model('Box', boxSchema);
 
