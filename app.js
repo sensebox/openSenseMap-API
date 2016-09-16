@@ -1044,7 +1044,29 @@ function findBox (req, res, next) {
 
 /**
  * @api {post} /boxes Post new senseBox
- * @apiDescription Create a new senseBox.
+ * @apiDescription Create a new senseBox. This method allows you to submit a new senseBox.
+ *
+ * Along with the senseBox, an user is created which then owns the senseBox.
+ *
+ * If you specify `mqtt` parameters, the openSenseMap API will try to connect to the MQTT broker
+ * specified by you. The parameter `messageFormat` tells the API in which format you are sending
+ * measurements in.
+ *
+ * For `json`, the format is:
+ * ```
+ * {
+ *   "sensorId": <value>,
+ *   "sensorId": [<value>,<createdAt>]
+ *   ...
+ * }
+ * ```
+ *
+ * For `csv`, the format is:
+ * ```
+ * sensorId,value
+ * sensorId,value,createdAt
+ * ...
+ * ```
  * @apiVersion 0.0.1
  * @apiGroup Boxes
  * @apiName postNewBox
