@@ -2,7 +2,7 @@
 
 let jsonHandler = require('./jsonHandler'),
   plainHandler = require('./plainHandler'),
-  csvHandler = require('./csvHandler')
+  csvHandler = require('./csvHandler');
 
 module.exports = {
   'json': jsonHandler,

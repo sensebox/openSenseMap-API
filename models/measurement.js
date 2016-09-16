@@ -19,6 +19,12 @@ measurementSchema.plugin(timestamp);
 measurementSchema.index({ sensor_id: 1, createdAt: -1 });
 
 measurementSchema.statics.initMeasurement = function (sensorId, value, createdAt) {
+  // check if second parameter is an array
+  if (Array.isArray(value)) {
+    createdAt = value[1];
+    value = value[0];
+  }
+
   // sanitize user input a little
   if (typeof value === 'string') {
     value = sanitizeString(value);

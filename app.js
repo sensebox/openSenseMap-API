@@ -457,7 +457,7 @@ function updateBox (req, res, next) {
       }
     }
     if (req.params.mqtt === null) {
-      qrys.push(box.set('mqtt', { url: "" }));
+      qrys.push(box.set('mqtt', { url: '' }));
     } else if (typeof req.params.mqtt !== 'undefined' && typeof req.params.mqtt.url !== 'undefined' && typeof req.params.mqtt.topic !== 'undefined') {
       qrys.push(box.set({ 'mqtt': req.params.mqtt}));
     }

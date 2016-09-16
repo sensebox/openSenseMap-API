@@ -32,12 +32,18 @@ let connect = function (box) {
         console.log('mqtt error:', err, 'box:', box._id);
       });
 
+      client.on('close', function () {
+        console.log('mqtt closed for box:', box._id);
+      });
+
       client.on('connect', function () {
+        console.log('connected mqtt for box', box._id);
         client.subscribe(box.mqtt.topic);
       });
 
       client.on('message', function (topic, message) {
-        let decoded = handler.decodeMessage(message.toString(), decodeOptions);
+        let msgStr = message.toString();
+        let decoded = handler.decodeMessage(msgStr, decodeOptions);
         box.saveMeasurements(decoded)
           .then(function (result) {
             if (result.length !== 0) {
@@ -45,7 +51,7 @@ let connect = function (box) {
             }
           })
           .catch(function (err) {
-            console.log('error saving mqtt message for box', box._id, 'error:', err, 'message:', message);
+            console.log('error saving mqtt message for box', box._id, 'error:', err, 'message:', msgStr);
           });
       });
     }

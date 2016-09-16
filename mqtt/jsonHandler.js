@@ -4,7 +4,7 @@ let jsonPath = require('jsonpath');
 
 module.exports = {
   decodeMessage: function (message, options) {
-    if (message && options && options.jsonPath) {
+    if (message) {
       let json;
       try {
         json = JSON.parse(message);
@@ -13,7 +13,12 @@ module.exports = {
       }
 
       if (typeof json !== 'undefined') {
-        let result = jsonPath.query(json, options.jsonPath, 1);
+        // use the root '$' if no jsonPath was specified
+        let path = '$';
+        if (options && options.jsonPath) {
+          path = options.jsonPath;
+        }
+        let result = jsonPath.query(json, path, 1);
 
         if (result[0]) {
           return result[0];
