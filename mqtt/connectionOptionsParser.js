@@ -39,6 +39,12 @@ module.exports = {
       opts.clientId = 'osem_' + Math.random().toString(16).substr(2, 8);
     }
 
+    // check if there was a user supplied connectTimeout
+    // and if not set to 5 seconds
+    if (!opts.connectTimeout || typeof opts.connectTimeout !== 'string') {
+      opts.connectTimeout = 5 * 1000;
+    }
+
     return opts;
   }
 };

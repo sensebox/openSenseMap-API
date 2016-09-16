@@ -133,7 +133,7 @@ boxSchema.methods.saveMeasurements = function (measurements) {
     qrys = [];
 
   if (!measurements) {
-    return Promise.reject('cannot save empty measurements');
+    return Promise.reject('cannot save empty or invalid measurements');
   }
 
   try {
