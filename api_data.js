@@ -227,7 +227,7 @@ define({ "api": [
     "type": "post",
     "url": "/boxes",
     "title": "Post new senseBox",
-    "description": "<p>Create a new senseBox.</p>",
+    "description": "<p>Create a new senseBox. This method allows you to submit a new senseBox.</p> <p>Along with the senseBox, an user is created which then owns the senseBox.</p> <p>If you specify <code>mqtt</code> parameters, the openSenseMap API will try to connect to the MQTT broker specified by you. The parameter <code>messageFormat</code> tells the API in which format you are sending measurements in.</p> <p>For <code>json</code>, the format is:</p> <pre><code>{   &quot;sensorId&quot;: &lt;value&gt;,   &quot;sensorId&quot;: [&lt;value&gt;,&lt;createdAt&gt;]   ... } </code></pre> <p>For <code>csv</code>, the format is:</p> <pre><code>sensorId,value sensorId,value,createdAt ... </code></pre>",
     "version": "0.0.1",
     "group": "Boxes",
     "name": "postNewBox",
