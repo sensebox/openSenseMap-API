@@ -148,7 +148,11 @@ boxSchema.methods.saveMeasurements = function (measurements) {
         qrys.push(measurement.save());
       }
     });
-    return Promise.all(qrys);
+    if (qrys.length !== 0) {
+      return Promise.all(qrys);
+    } else {
+      return Promise.reject('no matching sensor');
+    }
   } catch (e) {
     return Promise.reject(e);
   }

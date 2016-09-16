@@ -1,7 +1,7 @@
 'use strict';
 
 let csvLineHandler = function (line) {
-  return line.split(',');
+  return line.split(',').map(p => p.trim());
 };
 
 module.exports = {
