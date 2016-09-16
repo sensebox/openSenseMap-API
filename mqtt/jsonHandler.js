@@ -18,9 +18,14 @@ module.exports = {
         if (options && options.jsonPath) {
           path = options.jsonPath;
         }
-        let result = jsonPath.query(json, path, 1);
+        let result;
+        try {
+          result = jsonPath.query(json, path, 1);
+        } catch (err) {
+          console.log(err);
+        }
 
-        if (result[0]) {
+        if (result && result[0]) {
           return result[0];
         }
       }
