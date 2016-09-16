@@ -33,8 +33,9 @@
  *
  * @apiParam (MqttOption) {String} url the url to the mqtt server.
  * @apiParam (MqttOption) {String} topic the topic to subscribe to.
- * @apiParam (MqttOption) {String="json"} messageFormat the format the mqtt messages are in.
+ * @apiParam (MqttOption) {String="json","csv"} messageFormat the format the mqtt messages are in.
  * @apiParam (MqttOption) {String} decodeOptions a json encoded string with options for decoding the message. 'jsonPath' for 'json' messageFormat.
+ * @apiParam (MqttOption) {String} connectionOptions a json encoded string with options to supply to the mqtt client (https://github.com/mqttjs/MQTT.js#client)
  *
  */
 
