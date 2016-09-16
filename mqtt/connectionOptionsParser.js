@@ -10,25 +10,27 @@ const ALLOWED_KEYS = [
 ];
 
 module.exports = {
-  // userOpts is a string which contains json
-  parse (userOpts) {
+  // userConnectionOptions is a string which contains json
+  parse (userConnectionOptions) {
     let opts = {};
 
-    let userOptions;
+    if (userConnectionOptions) {
+      let userOptions;
 
-    try {
-      userOptions = JSON.parse(userOpts);
-    } catch (e) {
-      console.log('unable to parse user supplied connectionOptions', e);
-    }
+      try {
+        userOptions = JSON.parse(userConnectionOptions);
+      } catch (e) {
+        console.log('unable to parse user supplied connectionOptions', e);
+      }
 
-    if (userOptions) {
-      // just handle keys in the ALLOWED_KEYS array
-      ALLOWED_KEYS.forEach(function (key) {
-        if (userOptions[key]) {
-          opts[key] = userOptions[key];
-        }
-      });
+      if (userOptions) {
+        // just handle keys in the ALLOWED_KEYS array
+        ALLOWED_KEYS.forEach(function (key) {
+          if (userOptions[key]) {
+            opts[key] = userOptions[key];
+          }
+        });
+      }
     }
 
     // check if there was a user supplied clientId
