@@ -9,12 +9,34 @@
  */
 
 /**
- * @apiDefine SensorJSONBody
+ * define for a senseBox Sensor
+ * @apiDefine Sensor A single sensor for the nested Sensor parameter
+ */
+
+/**
+ * @apiDefine SensorBody
  *
- * @apiParam {String} title the title of the phenomenon the sensor observes.
- * @apiParam {String} unit the unit of the phenomenon the sensor observes.
- * @apiParam {String} sensorType the type of the sensor.
- * @apiParam {String} the visual representation for the openSenseMap of this sensor.
+ * @apiParam (Sensor) {String} title the title of the phenomenon the sensor observes.
+ * @apiParam (Sensor) {String} unit the unit of the phenomenon the sensor observes.
+ * @apiParam (Sensor) {String} sensorType the type of the sensor.
+ * @apiParam (Sensor) {String} icon the visual representation for the openSenseMap of this sensor.
+ *
+ */
+
+/**
+ * define for the MQTT options
+ * @apiDefine MqttOption Settings for a senseBox connected through MQTT
+ */
+
+/**
+ * @apiDefine MqttBody
+ *
+ * @apiParam (MqttOption) {String} url the url to the mqtt server.
+ * @apiParam (MqttOption) {String} topic the topic to subscribe to.
+ * @apiParam (MqttOption) {String="json","csv"} messageFormat the format the mqtt messages are in.
+ * @apiParam (MqttOption) {String} decodeOptions a json encoded string with options for decoding the message. 'jsonPath' for 'json' messageFormat.
+ * @apiParam (MqttOption) {String} connectionOptions a json encoded string with options to supply to the mqtt client (https://github.com/mqttjs/MQTT.js#client)
+ *
  */
 
 /**
@@ -24,7 +46,11 @@
  * @apiParam (RequestBody) {String} grouptag the grouptag of this senseBox.
  * @apiParam (RequestBody) {String="indoor","outdoor"} exposure the exposure of this senseBox.
  * @apiParam (RequestBody) {String} grouptag the grouptag of this senseBox.
+ * @apiParam (RequestBody) {String="fixed"} boxType the type of the senseBox. Currently only 'fixed' is supported.
  * @apiParam (RequestBody) {Sensor[]} sensors an array containing the sensors of this senseBox.
+ * @apiParam (RequestBody) {MqttOption} sensors an array containing the sensors of this senseBox.
+ * @apiParam (RequestBody) {Location} loc the location of this senseBox. Must be a GeoJSON Point Feature. (RFC7946)
+ *
  */
 
 /**
@@ -58,9 +84,7 @@ var restify = require('restify'),
   fs = require('fs'),
   GeoJSON = require('geojson'),
   _ = require('lodash'),
-  products = require('./products'),
-  cfg = require('./config'),
-  schemas = require('./schemas'),
+  models = require('./models'),
   csvstringify = require('csv-stringify'),
   csvtransform = require('stream-transform'),
   Stream = require('stream'),
@@ -68,16 +92,11 @@ var restify = require('restify'),
   request = require('request'),
   mails = require('./mails'),
   util = require('util'),
-  jsonstringify = require('stringify-stream');
+  jsonstringify = require('stringify-stream'),
+  utils = require('./utils');
 
-var Honeybadger = {
-  notify: function () {}
-};
-if (cfg.honeybadger_apikey && cfg.honeybadger_apikey !== '') {
-  Honeybadger = require('honeybadger').configure({
-    apiKey: cfg.honeybadger_apikey
-  });
-}
+var Honeybadger = utils.Honeybadger,
+  cfg = utils.config;
 
 mongoose.Promise = require('bluebird');
 
@@ -145,22 +164,16 @@ server.pre(function (request, response, next) {
   });
 })();
 
-
-var measurementSchema = schemas.measurementSchema;
-var sensorSchema = schemas.sensorSchema;
-var boxSchema = schemas.boxSchema;
-var userSchema = schemas.userSchema;
-
-var Measurement = mongoose.model('Measurement', measurementSchema);
-var Box = mongoose.model('Box', boxSchema);
-var Sensor = mongoose.model('Sensor', sensorSchema);
-var User = mongoose.model('User', userSchema);
+var Measurement = models.Measurement,
+  Box = models.Box,
+  Sensor = models.Sensor,
+  User = models.User;
 
 var PATH = '/boxes';
 var userPATH = 'users';
 
 // attach a function to validate boxId and sensorId parameters
-server.use(function validateAuthenticationRequest (req, res, next) {
+server.use(function validateIdParams (req, res, next) {
   if (typeof req.params['boxId'] !== 'undefined') {
     var boxId = req.params['boxId'].toString();
     if (boxId.indexOf(',') !== -1) {
@@ -343,7 +356,11 @@ function decodeBase64Image (dataString) {
 /**
  * @api {put} /boxes/:senseBoxId Update a senseBox: Image and sensor names
  * @apiDescription Modify the specified senseBox.
+ *
  * @apiUse CommonBoxJSONBody
+ * @apiUse SensorBody
+ * @apiUse MqttBody
+ *
  * @apiParam (RequestBody) {String} description the updated description of this senseBox.
  * @apiParam (RequestBody) {String} image the updated image of this senseBox encoded as base64 data uri.
  * @apiParamExample {json} Request-Example:
@@ -367,7 +384,13 @@ function decodeBase64Image (dataString) {
  *    "lng": 8.6956,
  *    "lat": 50.0430
  *  },
- *  "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAIVBMVEUAAABKrkMGteh0wW5Ixu931vKy3bO46fj/7hr/+J36/vyFw5EiAAAAAXRSTlMAQObYZgAAAF5JREFUeAFdjdECgzAIA1kIUvP/HzyhdrPe210L2GLYzhjj7VvRefmpn1MKFbdHUOzA9qRQEhIw3xMzEVeJDqkOrC9IJqWE7hFDLZ0Q6+zh7odsoU/j9qeDPXDf/cEX1xsDKIqAkK8AAAAASUVORK5CYII="
+ *  "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAIVBMVEUAAABKrkMGteh0wW5Ixu931vKy3bO46fj/7hr/+J36/vyFw5EiAAAAAXRSTlMAQObYZgAAAF5JREFUeAFdjdECgzAIA1kIUvP/HzyhdrPe210L2GLYzhjj7VvRefmpn1MKFbdHUOzA9qRQEhIw3xMzEVeJDqkOrC9IJqWE7hFDLZ0Q6+zh7odsoU/j9qeDPXDf/cEX1xsDKIqAkK8AAAAASUVORK5CYII=",
+ *  "mqtt": {
+ *    "url": "some url",
+ *    "topic": "some topic",
+ *    "messageFormat": "json",
+ *    "decodeOptions": "{\"jsonPath\":\"$.bla\"}"
+ *  }
  * }
  * @apiVersion 0.0.1
  * @apiGroup Boxes
@@ -433,6 +456,11 @@ function updateBox (req, res, next) {
       } catch (e) {
         return next(new restify.InternalServerError(JSON.stringify(e.message)));
       }
+    }
+    if (req.params.mqtt === null) {
+      qrys.push(box.set('mqtt', { url: '' }));
+    } else if (typeof req.params.mqtt !== 'undefined' && typeof req.params.mqtt.url !== 'undefined' && typeof req.params.mqtt.topic !== 'undefined') {
+      qrys.push(box.set({ 'mqtt': req.params.mqtt}));
     }
     if (typeof req.params.sensors !== 'undefined' && req.params.sensors.length > 0) {
       req.params.sensors.forEach(function (updatedsensor) {
@@ -714,7 +742,7 @@ function postNewMeasurement (req, res, next) {
       if (!box) {
         return next(new restify.NotFoundError('box not found'));
       }
-      saveMeasurement(box, req.params.sensorId, req.params.value, req.params.createdAt).then(function (result) {
+      box.saveMeasurement(req.params.sensorId, req.params.value, req.params.createdAt).then(function (result) {
         if (result) {
           res.send(201, 'Measurement saved in box');
         } else {
@@ -734,49 +762,6 @@ function postNewMeasurement (req, res, next) {
         });
     }
   });
-}
-
-function saveMeasurement (box, sensorId, value, createdAt) {
-  for (var i = box.sensors.length - 1; i >= 0; i--) {
-    if (box.sensors[i]._id.equals(sensorId)) {
-      // sanitize user input a little
-      if (typeof value === 'string') {
-        value = sanitizeString(value);
-      }
-
-      var measurementData = {
-        value: value,
-        _id: mongoose.Types.ObjectId(),
-        sensor_id: sensorId
-      };
-
-      if (typeof createdAt !== 'undefined') {
-        try {
-          measurementData.createdAt = new Date(createdAt);
-        } catch (e) {
-          Honeybadger.notify(e);
-          return Promise.reject(e);
-        }
-      }
-
-      var measurement = new Measurement(measurementData);
-
-      box.sensors[i].lastMeasurement = measurement._id;
-      var qrys = [
-        box.save(),
-        measurement.save()
-      ];
-      return Promise.all(qrys);
-    } else if (i === 0) {
-      return Promise.reject('sensor not found');
-    }
-  }
-}
-
-// http://stackoverflow.com/a/23453651
-function sanitizeString (str) {
-  str = str.replace(/[^a-z0-9áéíóúñü \.,_-]/gim, '');
-  return str.trim();
 }
 
 /**
@@ -800,61 +785,18 @@ function postNewMeasurements (req, res, next) {
     .then(function (box) {
       if (!box) {
         return next(new restify.NotFoundError('no senseBox found'));
+      } else {
+        return box.saveMeasurementArray(req.body);
       }
-      saveMeasurementArray(box, req.body)
-        .then(function () {
-          res.send(201, 'Measurements saved in box');
-        })
-        .catch(function (err) {
-          console.log(err);
-          Honeybadger.notify(err);
-          return next(new restify.InternalServerError(JSON.stringify(err)));
-        });
+    })
+    .then(function () {
+      res.send(201, 'Measurements saved in box');
     })
     .catch(function (err) {
       console.log(err);
       Honeybadger.notify(err);
-      return next(new restify.InternalServerError(JSON.stringify(err)));
+      return next(new restify.InvalidArgumentError(err.message + '. ' + err));
     });
-}
-
-function saveMeasurementArray (box, data) {
-  if (!Array.isArray(data)) {
-    return Promise.reject('array expected');
-  }
-
-  if (data.length > 2000) {
-    return Promise.reject('array too big. Please stay below 2000 items');
-  }
-
-  var qrys = [];
-  data.forEach(function (measurement) {
-    for (var i = box.sensors.length - 1; i >= 0; i--) {
-      if (box.sensors[i]._id.equals(measurement.sensor)) {
-        var measurementData = {
-          value: measurement.value,
-          _id: mongoose.Types.ObjectId(),
-          sensor_id: measurement.sensor
-        };
-
-        if (typeof measurement.createdAt !== 'undefined') {
-          try {
-            measurementData.createdAt = new Date(measurement.createdAt);
-          } catch (e) {
-            Honeybadger.notify(e);
-            return Promise.reject(e);
-          }
-        }
-
-        var mongoMeasurement = new Measurement(measurementData);
-
-        box.sensors[i].lastMeasurement = mongoMeasurement._id;
-        qrys.push(box.save());
-        qrys.push(mongoMeasurement.save());
-      }
-    }
-  });
-  return Promise.all(qrys);
 }
 
 /**
@@ -939,6 +881,7 @@ function findAllBoxes (req, res , next) {
       // clean up result..
         return result_boxes.map(function (box) {
           box.__v = undefined;
+          box.mqtt = undefined;
 
           box.sensor = box.sensors.map(function (sensor) {
             sensor.__v = undefined;
@@ -1064,6 +1007,7 @@ function findBox (req, res, next) {
 
       // clean up box
       box.__v = undefined;
+      box.mqtt = undefined;
 
       box.sensor = box.sensors.map(function (sensor) {
         sensor.__v = undefined;
@@ -1098,135 +1042,73 @@ function findBox (req, res, next) {
   });
 }
 
-function createNewUser (req) {
-  var userData = {
-    firstname: req.params.user.firstname,
-    lastname: req.params.user.lastname,
-    email: req.params.user.email,
-    apikey: req.params.orderID,
-    boxes: [],
-    language: req.params.user.lang
-  };
-
-  var user = new User(userData);
-
-  return user;
-}
-
-function createNewBox (req) {
-  var boxData = {
-    name: req.params.name,
-    boxType: req.params.boxType,
-    loc: req.params.loc,
-    grouptag: req.params.tag,
-    exposure: req.params.exposure,
-    _id: mongoose.Types.ObjectId(),
-    model: req.params.model,
-    sensors: []
-  };
-
-  var box = new Box(boxData);
-
-  if (req.params.model) {
-    switch (req.params.model) {
-    case 'homeEthernet':
-      req.params.sensors = products.senseboxhome;
-      break;
-    case 'homeWifi':
-      req.params.sensors = products.senseboxhome;
-      break;
-    case 'basicEthernet':
-      req.params.sensors = products.senseboxbasic;
-      break;
-    default:
-      break;
-    }
-  }
-
-  for (var i = req.params.sensors.length - 1; i >= 0; i--) {
-    var id = mongoose.Types.ObjectId();
-
-    var sensorData = {
-      _id: id,
-      title: req.params.sensors[i].title,
-      unit: req.params.sensors[i].unit,
-      sensorType: req.params.sensors[i].sensorType,
-      icon: req.params.sensors[i].icon
-    };
-
-    box.sensors.push(sensorData);
-  }
-
-  return box;
-}
-
 /**
  * @api {post} /boxes Post new senseBox
- * @apiDescription Create a new senseBox.
+ * @apiDescription Create a new senseBox. This method allows you to submit a new senseBox.
+ *
+ * Along with the senseBox, an user is created which then owns the senseBox.
+ *
+ * If you specify `mqtt` parameters, the openSenseMap API will try to connect to the MQTT broker
+ * specified by you. The parameter `messageFormat` tells the API in which format you are sending
+ * measurements in.
+ *
+ * For `json`, the format is:
+ * ```
+ * {
+ *   "sensorId": <value>,
+ *   "sensorId": [<value>,<createdAt>]
+ *   ...
+ * }
+ * ```
+ *
+ * For `csv`, the format is:
+ * ```
+ * sensorId,value
+ * sensorId,value,createdAt
+ * ...
+ * ```
  * @apiVersion 0.0.1
  * @apiGroup Boxes
  * @apiName postNewBox
  * @apiUse CommonBoxJSONBody
+ * @apiUse SensorBody
+ * @apiUse MqttBody
+ *
  * @apiParam (RequestBody) {String} firstname firstname of the user for the senseBox.
  * @apiParam (RequestBody) {String} lastname lastname of the user for the senseBox.
  * @apiParam (RequestBody) {String} email email of the user for the senseBox.
  * @apiParam (RequestBody) {String} orderID the apiKey of the user for the senseBox.
  */
 function postNewBox (req, res, next) {
-  User.findOne({apikey: req.params.orderID}, function (err, user) {
-    if (err) {
-      log.error(err);
-      Honeybadger.notify(err);
-      return res.send(400, 'An error occured');
-    } else {
+  log.debug('A new sensebox is being submitted');
+  var newBox = Box.newFromRequest(req);
 
-      log.debug('A new sensebox is being submitted');
-      if (!user) {
-        var newUser = createNewUser(req);
-        var newBox = createNewBox(req);
-
-        newUser._doc.boxes.push(newBox._doc._id.toString());
-        newBox.save(function (err, box) {
-          if (err) {
-            return next(new restify.InvalidArgumentError(JSON.stringify(err.message)));
-          }
-
+  User.createForBoxRequest(newBox, req)
+    .then(function (user) {
+      // user is saved at this point, newBox not
+      // try to save the box
+      return newBox.save()
+        .then(function (box) {
+          // box is now saved
+          // generate the script and send mails
+          // also post to slack
           try {
             genScript(box, box.model);
-
-            newUser.save(function (err, user) {
-              if (err) {
-                Honeybadger.notify(err);
-                return next(new restify.InvalidArgumentError(JSON.stringify(err.message)));
-              } else {
-                if (cfg.email_host !== '') {
-                  mails.sendWelcomeMail(user, newBox)
-                    .then((response) => {
-                      console.log('successfully sent mails: ' + JSON.stringify(response));
-                    })
-                    .catch((err) => {
-                      Honeybadger.notify(err);
-                      console.log(err.message);
-                    });
-                  _postToSlack('Eine neue <https://opensensemap.org/explore/' + newBox._id + '|senseBox> wurde registriert (' + newBox.name + ')');
-                }
-                return res.send(201, user);
-              }
-            });
-
-          } catch (e) {
-            log.error(e);
-            Honeybadger.notify(e);
-            return res.send(400, 'An error occured');
+          } catch (err) {
+            log.error(err);
+            Honeybadger.notify(err);
           }
+          res.send(201, user);
+          mails.sendWelcomeMail(user, box);
         });
-      } else {
-        log.error(err);
-        return res.send(400, 'An error occured');
-      }
-    }
-  });
-  next();
+    })
+    .then(function () {
+      _postToSlack('Eine neue <https://opensensemap.org/explore/' + newBox._id + '|senseBox> wurde registriert (' + newBox.name + ')');
+    })
+    .catch(function (err) {
+      log.error(err);
+      return next(new restify.InvalidArgumentError(err.message + '. ' + err));
+    });
 }
 
 // generate Arduino script
@@ -1394,6 +1276,7 @@ server.listen(cfg.port, function () {
   console.log('server file modified:', mtime);
   console.log('%s listening at %s', server.name, server.url);
   _postToSlack('openSenseMap API started. Server file modified: ' + mtime);
+  Box.connectMQTTBoxes();
 });
 
 server.on('uncaughtException', function (req, res, route, err) {
