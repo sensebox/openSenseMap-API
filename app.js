@@ -151,6 +151,7 @@ server.pre(function (request, response, next) {
   request.log.info({req: request}, 'REQUEST');
   return next();
 });
+server.pre(restify.pre.sanitizePath());
 
 // use this function to retry if a connection cannot be established immediately
 (function connectWithRetry () {
