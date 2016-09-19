@@ -1,6 +1,15 @@
 'use strict';
 let cfg = require('./config');
 
+let Honeybadger = {
+  notify: function () {}
+};
+if (cfg.honeybadger_apikey && cfg.honeybadger_apikey !== '') {
+  Honeybadger = require('honeybadger').configure({
+    apiKey: cfg.honeybadger_apikey
+  });
+}
+
 module.exports = {
   sendWelcomeMail () {
     return Promise.resolve({'msg': 'no mailer configured'});
@@ -62,7 +71,14 @@ if (cfg.mailer_url && cfg.mailer_url.trim() !== '') {
         }
       ];
 
-      return requestMailer(payload);
+      return requestMailer(payload)
+        .then((response) => {
+          console.log('successfully sent mails: ' + JSON.stringify(response));
+        })
+        .catch((err) => {
+          Honeybadger.notify(err);
+          console.error(err);
+        });
     }
   };
 }

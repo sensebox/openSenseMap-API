@@ -4,3 +4,10 @@ userimages
 usersketches
 .git
 osem-mongo
+docker-compose.yml
+Dockerfile
+.env
+.eslintrc.js
+.travis.yml
+/doc
+/utils
