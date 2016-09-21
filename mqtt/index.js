@@ -4,16 +4,25 @@ let mqtt = require('mqtt'),
   handlers = require('./handlers'),
   connOptsParser = require('./connectionOptionsParser');
 
+const RETRY_AFTER_MINUTES = 10;
+
 // use this object as simple key/value store for connecting/disconnecting
 let mqttConnections = {};
 
-let _connect = function (url, connOptions, topic, id, maxRetries) {
+let _retryAfter = function (box, afterSeconds) {
+  let theBox = box;
+  setTimeout(function () {
+    connect(theBox);
+  }, afterSeconds * 60000);
+}
+
+let _connect = function (box, maxRetries) {
   // parse mqtt connection options
-  let connectionOptions = connOptsParser.parse(connOptions);
+  let connectionOptions = connOptsParser.parse(box.connectionOptions);
   let errRetries = maxRetries,
     closeRetries = maxRetries;
 
-  let client = mqtt.connect(url, connectionOptions);
+  let client = mqtt.connect(box.mqtt.url, connectionOptions);
   client.reconnecting = true;
 
   return new Promise(function (resolve, reject) {
@@ -22,7 +31,12 @@ let _connect = function (url, connOptions, topic, id, maxRetries) {
       if (errRetries === 0) {
         client.reconnecting = false;
         client.end(true);
-        return reject('connection closed after 5 retries because of ' + err);
+        errRetries = maxRetries;
+        closeRetries = maxRetries;
+
+        // retry after..
+        _retryAfter(box, RETRY_AFTER_MINUTES);
+        return reject('connection closed after 5 retries because of ' + err + '. Retry after ' + RETRY_AFTER_MINUTES + ' minutes');
       }
     });
 
@@ -31,14 +45,17 @@ let _connect = function (url, connOptions, topic, id, maxRetries) {
       if (closeRetries === 0) {
         client.reconnecting = false;
         client.end(true);
-        return reject('connection closed 5 retries. No more retries');
+
+        // retry after..
+        _retryAfter(box, RETRY_AFTER_MINUTES);
+        return reject('connection closed after 5 retries. Retry after ' + RETRY_AFTER_MINUTES + ' minutes');
       }
     });
 
     client.on('connect', function () {
-      console.log('connected mqtt for box', id);
-      client.subscribe(topic);
-      mqttConnections[id] = client;
+      console.log('connected mqtt for box', box._id);
+      client.subscribe(box.mqtt.topic);
+      mqttConnections[box._id] = client;
       return resolve(client);
     });
   });
@@ -51,7 +68,7 @@ let connect = function (box) {
     let handler = handlers[box.mqtt.messageFormat];
 
     if (box.mqtt.url && box.mqtt.topic && handler) {
-      _connect(box.mqtt.url, box.mqtt.connectionOptions, box.mqtt.topic, box._id, 5)
+      _connect(box, 5)
         .then(function (client) {
           let decodeOptions;
           try {
@@ -79,7 +96,7 @@ let connect = function (box) {
           });
         })
         .catch(function (err) {
-          console.log(err);
+          console.log('mqtt error for box', box._id, err);
         });
     }
   }
