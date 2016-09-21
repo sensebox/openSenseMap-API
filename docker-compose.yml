@@ -6,9 +6,7 @@ services:
       - 8000:8000
     volumes:
       - ./app.js:/usr/src/app/app.js
-      - ./models:/usr/src/app/models
-      - ./mqtt:/usr/src/app/mqtt
-      - ./utils.js:/usr/src/app/utils.js
+      - ./lib:/usr/src/app/lib
       - ./config/index.js:/usr/src/app/config/index.js
       - ./usersketches:/var/OpenSenseMap-API/usersketches
       - ./userimages:/var/www/OpenSenseMap/app/userimages
