@@ -93,7 +93,8 @@ var restify = require('restify'),
   mails = require('./lib/mails'),
   util = require('util'),
   jsonstringify = require('stringify-stream'),
-  utils = require('./lib/utils');
+  utils = require('./lib/utils'),
+  decodeHandlers = require('./lib/decoding');
 
 var Honeybadger = utils.Honeybadger,
   cfg = utils.config;
@@ -145,7 +146,8 @@ var server = restify.createServer({
 server.use(restify.CORS({'origins': ['*'] })); //['http://localhost', 'https://opensensemap.org']}));
 server.use(restify.fullResponse());
 server.use(restify.queryParser());
-server.use(restify.bodyParser());
+//server.use(restify.bodyParser());
+server.use(restify.jsonBodyParser());
 server.pre(function (request, response, next) {
   response.charSet('utf-8');
   request.log.info({req: request}, 'REQUEST');
@@ -782,22 +784,34 @@ function postNewMeasurements (req, res, next) {
   // when the body is an array, restify overwrites the req.params with the given array.
   // to get the boxId, try to extract it from the path
   var boxId = req.path().split('/')[2];
-  Box.findOne({ _id: boxId })
-    .then(function (box) {
-      if (!box) {
-        return next(new restify.NotFoundError('no senseBox found'));
-      } else {
-        return box.saveMeasurementArray(req.body);
-      }
-    })
-    .then(function () {
-      res.send(201, 'Measurements saved in box');
-    })
-    .catch(function (err) {
-      console.log(err);
-      Honeybadger.notify(err);
-      return next(new restify.InvalidArgumentError(err.message + '. ' + err));
-    });
+  let handler = decodeHandlers[req.contentType().toLowerCase()];
+  if (handler) {
+    // decode the body..
+    let measurements;
+    try {
+      measurements = handler.decodeMessage(req.body);
+    } catch (err) {
+      return next(new restify.UnprocessableEntityError(err.message));
+    }
+    Box.findOne({ _id: boxId })
+      .then(function (box) {
+        if (!box) {
+          return next(new restify.NotFoundError('no senseBox found'));
+        } else {
+          return box.saveMeasurementsArray(measurements);
+        }
+      })
+      .then(function () {
+        res.send(201, 'Measurements saved in box');
+      })
+      .catch(function (err) {
+        console.log(err);
+        Honeybadger.notify(err);
+        return next(new restify.UnprocessableEntityError(err.message + '. ' + err));
+      });
+  } else {
+    return next(new restify.InvalidArgumentError('invalid content-type'));
+  }
 }
 
 /**
