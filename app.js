@@ -737,34 +737,34 @@ function getDataMulti (req, res, next) {
  * @apiParam (RequestBody) {String} createdAt the timestamp of the measurement. Should be parseable by JavaScript.
  */
 function postNewMeasurement (req, res, next) {
-  Box.findOne({_id: req.params.boxId}, function (error,box) {
-    if (error) {
-      Honeybadger.notify(error);
-      return next(new restify.InvalidArgumentError(JSON.stringify(error.message)));
-    } else {
+  let jsonHandler = decodeHandlers.json;
+  // decode the body..
+  let measurements;
+  try {
+    measurements = jsonHandler.decodeMessage([{
+      sensor_id: req.params.sensorId,
+      value: req.params.value,
+      createdAt: req.params.createdAt
+    }]);
+  } catch (err) {
+    return next(new restify.UnprocessableEntityError(err.message));
+  }
+  Box.findOne({ _id: req.params.boxId })
+    .then(function (box) {
       if (!box) {
-        return next(new restify.NotFoundError('box not found'));
+        return next(new restify.NotFoundError('no senseBox found'));
+      } else {
+        return box.saveMeasurement(measurements[0]);
       }
-      box.saveMeasurement(req.params.sensorId, req.params.value, req.params.createdAt).then(function (result) {
-        if (result) {
-          res.send(201, 'Measurement saved in box');
-        } else {
-          return next(new restify.BadRequestError('Measurement could not be saved'));
-        }
-      })
-        .catch(function (err) {
-          if (err === 'sensor not found') {
-            return next(new restify.NotFoundError('sensor not found in box'));
-          }
-          var errmsg = 'Measurement could not be saved';
-          if (err.message) {
-            errmsg += ': ' + err.message;
-          }
-          Honeybadger.notify(err);
-          return next(new restify.BadRequestError(errmsg));
-        });
-    }
-  });
+    })
+    .then(function () {
+      res.send(201, 'Measurement saved in box');
+    })
+    .catch(function (err) {
+      console.log(err);
+      Honeybadger.notify(err);
+      return next(new restify.UnprocessableEntityError(err.message + '. ' + err));
+    });
 }
 
 /**
