@@ -1,0 +1,19 @@
+version: "2"
+services:
+  osem-api:
+    build: .
+    volumes:
+      - ./app.js:/usr/src/app/app.js
+      - ./lib:/usr/src/app/lib
+      - ./config/index.js:/usr/src/app/config/index.js
+      - ./package.json:/usr/src/app/package.json
+      - ./tests:/usr/src/app/tests
+    env_file: .env
+    depends_on:
+      - db
+
+  db:
+    build:
+      context: ./osem-mongo
+    env_file: .env
+

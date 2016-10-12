@@ -21,10 +21,13 @@
     "stream-transform": "^0.1.1",
     "stringify-stream": "^1.0.5"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "chakram": "^1.5.0",
+    "mocha": "^3.1.2"
+  },
   "scripts": {
     "start": "node app.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node node_modules/.bin/mocha tests"
   },
   "repository": {
     "type": "git",
