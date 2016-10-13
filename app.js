@@ -56,9 +56,9 @@
 /**
  * @apiDefine AuthorizationRequiredError
  *
- * @apiHeader {String} x-APIKey the secret API key which corresponds to the <code>senseBoxId</code> parameter.
- * @apiHeaderExample {String} x-APIKey header example:
- *   x-APIKey: 576efef4cb9b9ebe057bf7b4
+ * @apiHeader {String} x-apikey the secret API key which corresponds to the <code>senseBoxId</code> parameter.
+ * @apiHeaderExample {String} x-apikey header example:
+ *   x-apikey: 576efef4cb9b9ebe057bf7b4
  * @apiError {Object} 403 the request has invalid or missing credentials.
  * @apiErrorExample {json} Error-Response:
  *     HTTP/1.1 403 Forbidden
