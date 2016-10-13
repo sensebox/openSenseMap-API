@@ -15,15 +15,15 @@ define({ "api": [
             "group": "Header",
             "type": "String",
             "optional": false,
-            "field": "x-APIKey",
+            "field": "x-apikey",
             "description": "<p>the secret API key which corresponds to the <code>senseBoxId</code> parameter.</p>"
           }
         ]
       },
       "examples": [
         {
-          "title": "x-APIKey header example:",
-          "content": "x-APIKey: 576efef4cb9b9ebe057bf7b4",
+          "title": "x-apikey header example:",
+          "content": "x-apikey: 576efef4cb9b9ebe057bf7b4",
           "type": "String"
         }
       ]
@@ -176,15 +176,15 @@ define({ "api": [
             "group": "Header",
             "type": "String",
             "optional": false,
-            "field": "x-APIKey",
+            "field": "x-apikey",
             "description": "<p>the secret API key which corresponds to the <code>senseBoxId</code> parameter.</p>"
           }
         ]
       },
       "examples": [
         {
-          "title": "x-APIKey header example:",
-          "content": "x-APIKey: 576efef4cb9b9ebe057bf7b4",
+          "title": "x-apikey header example:",
+          "content": "x-apikey: 576efef4cb9b9ebe057bf7b4",
           "type": "String"
         }
       ]
@@ -561,15 +561,15 @@ define({ "api": [
             "group": "Header",
             "type": "String",
             "optional": false,
-            "field": "x-APIKey",
+            "field": "x-apikey",
             "description": "<p>the secret API key which corresponds to the <code>senseBoxId</code> parameter.</p>"
           }
         ]
       },
       "examples": [
         {
-          "title": "x-APIKey header example:",
-          "content": "x-APIKey: 576efef4cb9b9ebe057bf7b4",
+          "title": "x-apikey header example:",
+          "content": "x-apikey: 576efef4cb9b9ebe057bf7b4",
           "type": "String"
         }
       ]
@@ -625,15 +625,15 @@ define({ "api": [
             "group": "Header",
             "type": "String",
             "optional": false,
-            "field": "x-APIKey",
+            "field": "x-apikey",
             "description": "<p>the secret API key which corresponds to the <code>senseBoxId</code> parameter.</p>"
           }
         ]
       },
       "examples": [
         {
-          "title": "x-APIKey header example:",
-          "content": "x-APIKey: 576efef4cb9b9ebe057bf7b4",
+          "title": "x-apikey header example:",
+          "content": "x-apikey: 576efef4cb9b9ebe057bf7b4",
           "type": "String"
         }
       ]
