@@ -1235,22 +1235,13 @@ function getScript (req, res, next) {
  * @apiUse BoxIdParam
  */
 function deleteBox (req, res, next) {
-  var qrys = [];
-
-  Box.findById(req.params.boxId, function (findboxerr, box) {
-    box.sensors.forEach(function (sensor) {
-      qrys.push(Measurement.find({ sensor_id: sensor._id }).remove());
+  Box.deleteBox(req.params.boxId)
+    .then(function () {
+      res.send(200, 'Box deleted');
+    }).catch(function (err) {
+      Honeybadger.notify(err);
+      return next(new restify.InternalServerError(err.message));
     });
-    qrys.push(box.remove());
-    qrys.push(req.authorized_user.remove());
-  });
-
-  Promise.all(qrys).then(function () {
-    res.send(200, 'Box deleted');
-  }).catch(function (err) {
-    Honeybadger.notify(err);
-    return next(new restify.InternalServerError(err.message));
-  });
 }
 
 /**
