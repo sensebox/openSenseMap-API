@@ -177,7 +177,7 @@ var userPATH = 'users';
 
 // the ones matching first are used
 // case is ignored
-let validBoxIdParams = [ 'senseboxid', 'senseboxids', 'boxid', 'boxids' ];
+const VALID_BOX_ID_PARAMS = [ 'senseboxid', 'senseboxids', 'boxid', 'boxids' ];
 
 // attach a function to validate boxId and sensorId parameters
 server.use(function validateIdParams (req, res, next) {
@@ -185,16 +185,17 @@ server.use(function validateIdParams (req, res, next) {
   // everything of the like
   // 'boxId', 'boxid', 'senseBoxIds', 'senseBoxId'
   // can be used
-  let boxId, boxIdParamName;
+  let boxIdParamName;
   for (let param of Object.keys(req.params)) {
-    if (validBoxIdParams.includes(param.toLowerCase())) {
+    if (VALID_BOX_ID_PARAMS.includes(param.toLowerCase())) {
       boxIdParamName = param;
-      boxId = req.params[param].toString();
+      req.boxId = req.params[param].toString();
       break;
     }
   }
 
-  if (typeof boxId !== 'undefined') {
+  if (typeof req.boxId !== 'undefined') {
+    let boxId = req.boxId;
     if (boxId.indexOf(',') !== -1) {
       boxId = boxId.split(',');
     } else {
@@ -206,7 +207,7 @@ server.use(function validateIdParams (req, res, next) {
   }
 
   if (typeof req.params['sensorId'] !== 'undefined') {
-    var sensorId = req.params['sensorId'].toString();
+    let sensorId = req.params['sensorId'].toString();
     if (sensorId && !mongoose.Types.ObjectId.isValid(sensorId)) {
       next(new restify.BadRequestError('Parameter :sensorId is not valid'));
     }
@@ -235,10 +236,10 @@ server.post({path: PATH + '/data', version: '0.1.0'}, getDataMulti);
 
 // attach a function to secured requests to validate api key and box id
 server.use(function validateAuthenticationRequest (req, res, next) {
-  if (req.headers['x-apikey'] && req.params.boxId) {
-    User.findOne({ apikey: req.headers['x-apikey'], boxes: { $in: [ req.params.boxId ] } })
+  if (req.headers['x-apikey'] && req.boxId) {
+    User.findOne({ apikey: req.headers['x-apikey'], boxes: { $in: [ req.boxId ] } })
       .then(function (user) {
-        if (user && user.boxes.length > 0 && user.boxes.indexOf(req.params.boxId) !== -1) {
+        if (user && user.boxes.length > 0 && user.boxes.includes(req.boxId)) {
           req.authorized_user = user;
           next();
         } else {
@@ -434,7 +435,7 @@ function updateBox (req, res, next) {
   */
 
   var qrys = [];
-  Box.findById(req.params.boxId).then(function (box) {
+  Box.findById(req.boxId).then(function (box) {
     if (typeof req.params.name !== 'undefined' && req.params.name !== '') {
       if (box.name !== req.params.name) {
         qrys.push(box.set({name: req.params.name}));
@@ -470,8 +471,8 @@ function updateBox (req, res, next) {
       var imageBuffer = decodeBase64Image(data);
       var extension = (imageBuffer.type === 'image/jpeg') ? '.jpg' : '.png';
       try {
-        fs.writeFileSync(cfg.imageFolder + '' + req.params.boxId + extension, imageBuffer.data);
-        qrys.push(box.set({image: req.params.boxId + extension + '?' + (new Date().getTime())}));
+        fs.writeFileSync(cfg.imageFolder + '' + req.boxId + extension, imageBuffer.data);
+        qrys.push(box.set({image: req.boxId + extension + '?' + (new Date().getTime())}));
       } catch (e) {
         return next(new restify.InternalServerError(JSON.stringify(e.message)));
       }
@@ -530,7 +531,7 @@ function updateBox (req, res, next) {
  * @apiUse BoxIdParam
  */
 function getMeasurements (req, res, next) {
-  Box.findOne({ _id: req.params.boxId }, { sensors: 1 })
+  Box.findOne({ _id: req.boxId }, { sensors: 1 })
     .populate('sensors.lastMeasurement')
     .lean()
     .exec()
@@ -674,9 +675,9 @@ function getDataMulti (req, res, next) {
     return next(timesValid);
   }
 
-  if (req.params['phenomenon'] && req.params['boxid']) {
+  if (req.params['phenomenon'] && req.boxId) {
     var phenom = req.params['phenomenon'].toString();
-    var boxId = req.params['boxid'].toString();
+    var boxId = req.boxId.toString();
     var boxIds = boxId.split(',');
 
     res.header('Content-Type', 'text/csv');
@@ -765,7 +766,7 @@ function postNewMeasurement (req, res, next) {
   } catch (err) {
     return next(new restify.UnprocessableEntityError(err.message));
   }
-  Box.findOne({ _id: req.params.boxId })
+  Box.findOne({ _id: req.boxId })
     .then(function (box) {
       if (!box) {
         return next(new restify.NotFoundError('no senseBox found'));
@@ -1226,7 +1227,7 @@ function genScript (box, model) {
  * @apiUse BoxIdParam
  */
 function getScript (req, res, next) {
-  Box.findById(req.params.boxId)
+  Box.findById(req.boxId)
     .then(function (box) {
       var file = cfg.targetFolder + '' + box._id + '.ino';
 
@@ -1251,7 +1252,7 @@ function getScript (req, res, next) {
  * @apiUse BoxIdParam
  */
 function deleteBox (req, res, next) {
-  Box.deleteBox(req.params.boxId)
+  Box.deleteBox(req.boxId)
     .then(function () {
       res.send(200, 'Box deleted');
     }).catch(function (err) {
