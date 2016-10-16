@@ -175,17 +175,33 @@ var Measurement = models.Measurement,
 var PATH = '/boxes';
 var userPATH = 'users';
 
+// the ones matching first are used
+// case is ignored
+let validBoxIdParams = [ 'senseboxid', 'senseboxids', 'boxid', 'boxids' ];
+
 // attach a function to validate boxId and sensorId parameters
 server.use(function validateIdParams (req, res, next) {
-  if (typeof req.params['boxId'] !== 'undefined') {
-    var boxId = req.params['boxId'].toString();
+  // check parmeters for possible box Id parameters
+  // everything of the like
+  // 'boxId', 'boxid', 'senseBoxIds', 'senseBoxId'
+  // can be used
+  let boxId, boxIdParamName;
+  for (let param of Object.keys(req.params)) {
+    if (validBoxIdParams.includes(param.toLowerCase())) {
+      boxIdParamName = param;
+      boxId = req.params[param].toString();
+      break;
+    }
+  }
+
+  if (typeof boxId !== 'undefined') {
     if (boxId.indexOf(',') !== -1) {
       boxId = boxId.split(',');
     } else {
       boxId = [boxId];
     }
     if (boxId.some(id => !mongoose.Types.ObjectId.isValid(id))) {
-      next(new restify.BadRequestError('Parameter :boxId is not valid'));
+      next(new restify.BadRequestError('Parameter :' + boxIdParamName + ' is not valid'));
     }
   }
 
