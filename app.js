@@ -217,6 +217,9 @@ server.use(function validateIdParams (req, res, next) {
 
 // GET
 server.get({path: PATH , version: '0.0.1'} , findAllBoxes);
+// explanation for this route:
+// the regex matches strings like 'boxes.blabla' where 'blaba' could be 'geojson' or 'json'
+// this does not work anymore but I might consider reimplementing it..
 server.get({path: /(boxes)\.([a-z]+)/, version: '0.1.0'} , findAllBoxes);
 server.get({path: PATH + '/:boxId' , version: '0.0.1'} , findBox);
 server.get({path: PATH + '/:boxId/sensors', version: '0.0.1'}, getMeasurements);
