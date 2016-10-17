@@ -294,39 +294,6 @@ function getSeparator (req) {
   }
 }
 
-function parseTimeParameter (req, next, paramName, defaultValue) {
-  var param = req.params[paramName];
-  if (typeof param === 'undefined' || param.trim() === '') {
-    return defaultValue;
-  }
-
-  var time = moment(param);
-
-  if (!time.isValid()) {
-    return new restify.InvalidArgumentError('Invalid date format for ' + paramName);
-  }
-
-  return time;
-}
-
-function validateTimeParameters (toDate, fromDate) {
-  var now = moment();
-  if (toDate.isAfter(now)) {
-    return new restify.InvalidArgumentError('Invalid time frame specified: to-date is in the future');
-  }
-  if (fromDate.isAfter(now)) {
-    return new restify.InvalidArgumentError('Invalid time frame specified: from-date is in the future');
-  }
-
-  if (fromDate.isAfter(toDate)) {
-    return new restify.InvalidArgumentError('Invalid time frame specified: from-date (' + fromDate.format() + ') is after to-date (' + toDate.format() + ')');
-  }
-
-  if (Math.abs(toDate.diff(fromDate, 'days')) > 31) {
-    return new restify.InvalidArgumentError('Please choose a time frame up to 31 days maximum');
-  }
-}
-
 function unknownMethodHandler (req, res) {
   if (req.method.toLowerCase() === 'options') {
     var allowHeaders = ['Accept', 'X-ApiKey', 'Accept-Version', 'Content-Type', 'Api-Version', 'Origin', 'X-Requested-With']; // added Origin & X-Requested-With
@@ -576,19 +543,19 @@ function getMeasurements (req, res, next) {
  */
 function getData (req, res, next) {
   // default to now
-  var toDate = parseTimeParameter(req, next, 'to-date', moment());
+  var toDate = utils.parseTimeParameter(req, next, 'to-date', moment());
   if (!moment.isMoment(toDate)) {
     return next(toDate);
   }
 
   // default to 48 hours earlier from to-date
-  var fromDate = parseTimeParameter(req, next, 'from-date', toDate.clone().subtract(48, 'hours'));
+  var fromDate = utils.parseTimeParameter(req, next, 'from-date', toDate.clone().subtract(48, 'hours'));
   if (!moment.isMoment(fromDate)) {
     return next(fromDate);
   }
 
   // validate time parameters
-  var timesValid = validateTimeParameters(toDate, fromDate, next);
+  var timesValid = utils.validateTimeParameters(toDate, fromDate);
   if (typeof timesValid !== 'undefined') {
     return next(timesValid);
   }
@@ -658,22 +625,26 @@ function getData (req, res, next) {
  * @apiParam {String} from-date Beginning date of measurement data (default: 15 days ago from now)
  * @apiParam {String} to-date End date of measurement data (default: now)
  * @apiUse SeparatorParam
+ * @apiParam {String} columns (optional) Comma separated list of columns to export. If omitted, columns createdAt, value, lat, lng are returned. Possible allowed values are createdAt, value, lat, lng, unit, boxId, sensorId, phenomenon, sensorType, boxName. The columns in the csv are like the order supplied in this parameter
  */
+const GET_DATA_MULTI_DEFAULT_COLUMNS = ['createdAt', 'value', 'lat', 'lng'];
+const GET_DATA_MULTI_ALLOWED_COLUMNS = ['createdAt', 'value', 'lat', 'lng', 'unit', 'boxId', 'sensorId', 'phenomenon', 'sensorType', 'boxName'];
+
 function getDataMulti (req, res, next) {
   // default to now
-  var toDate = parseTimeParameter(req, next, 'to-date', moment());
+  var toDate = utils.parseTimeParameter(req, next, 'to-date', moment().utc());
   if (!moment.isMoment(toDate)) {
     return next(toDate);
   }
 
   // default to 15 days earlier
-  var fromDate = parseTimeParameter(req, next, 'from-date', toDate.clone().subtract(15, 'days'));
+  var fromDate = utils.parseTimeParameter(req, next, 'from-date', toDate.clone().subtract(15, 'days'));
   if (!moment.isMoment(fromDate)) {
     return next(fromDate);
   }
 
   // validate time parameters
-  var timesValid = validateTimeParameters(toDate, fromDate, next);
+  var timesValid = utils.validateTimeParameters(toDate, fromDate);
   if (typeof timesValid !== 'undefined') {
     return next(timesValid);
   }
@@ -698,19 +669,40 @@ function getDataMulti (req, res, next) {
         for (var i = 0, len = boxData.length; i < len; i++) {
           for (var j = 0, sensorslen = boxData[i].sensors.length; j < sensorslen; j++) {
             if (boxData[i].sensors[j].title === phenom) {
-              sensors[boxData[i].sensors[j]['_id']] = Object.create(null);
-              sensors[boxData[i].sensors[j]['_id']].lat = boxData[i].loc[0].geometry.coordinates[0];
-              sensors[boxData[i].sensors[j]['_id']].lng = boxData[i].loc[0].geometry.coordinates[1];
+              let sensor = boxData[i].sensors[j];
+
+              sensor.lat = boxData[i].loc[0].geometry.coordinates[0];
+              sensor.lng = boxData[i].loc[0].geometry.coordinates[1];
+              sensor.boxId = boxData[i]._id.toString();
+              sensor.boxName = boxData[i].name;
+              sensor.sensorId = sensor._id.toString();
+              sensor.phenomenon = sensor.title;
+
+              sensors[boxData[i].sensors[j]['_id']] = sensor;
             }
           }
         }
 
-        var sep = getSeparator(req);
-        var stringifier = csvstringify({ columns: ['createdAt', 'value', 'lat', 'lng'], header: 1, delimiter: sep });
-        var transformer = csvtransform(function (data) {
-          data.createdAt = new Date(data.createdAt).toISOString();
-          data.lat = sensors[data.sensor_id].lat;
-          data.lng = sensors[data.sensor_id].lng;
+        let sep = getSeparator(req);
+        let columns = GET_DATA_MULTI_DEFAULT_COLUMNS;
+        let columnsParam = req.params['columns'];
+        if (typeof columnsParam !== 'undefined' && columnsParam.trim() !== '') {
+          columns = columnsParam.split(',');
+          if (columns.some(c => !GET_DATA_MULTI_ALLOWED_COLUMNS.includes(c))) {
+            return next(new restify.UnprocessableEntityError('illegal columns'));
+          }
+        }
+
+        let stringifier = csvstringify({ columns: columns, header: 1, delimiter: sep });
+        let transformer = csvtransform(function (data) {
+          data.createdAt = utils.parseTimestamp(data.createdAt).toISOString();
+
+          for (let col of columns) {
+            if (!data[col]) {
+              data[col] = sensors[data.sensor_id][col];
+            }
+          }
+
           return data;
         });
 
