@@ -242,12 +242,14 @@ server.use(function validateAuthenticationRequest (req, res, next) {
   if (req.headers['x-apikey'] && req.boxId) {
     User.findOne({ apikey: req.headers['x-apikey'], boxes: { $in: [ req.boxId ] } })
       .then(function (user) {
-        if (user && user.boxes.length > 0 && user.boxes.includes(req.boxId)) {
-          req.authorized_user = user;
-          next();
-        } else {
-          next(new restify.NotAuthorizedError('ApiKey is invalid or missing'));
+        if (user && user.boxes.length > 0) {
+          const boxIds = user.boxes.map(boxId => boxId.toString());
+          if(boxIds.includes(req.boxId)) {
+            req.authorized_user = user;
+            return next();
+          }
         }
+        next(new restify.NotAuthorizedError('ApiKey is invalid or missing'));
       })
       .catch(function (err) {
         console.log(err);
