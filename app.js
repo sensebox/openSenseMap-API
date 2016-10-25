@@ -138,30 +138,44 @@ var Logger = require('bunyan'),
     }
   });
 
+var PATH = '/boxes';
+var userPATH = 'users';
+
 var server = restify.createServer({
   name: 'opensensemap-api',
   version: '0.0.1',
   log: reqlog
 });
-server.use(restify.CORS({'origins': ['*'] })); //['http://localhost', 'https://opensensemap.org']}));
-server.use(restify.fullResponse());
-server.use(restify.queryParser());
-//server.use(restify.bodyParser());
-server.use(restify.jsonBodyParser());
+
+// We're using caddy as proxy. It supplies a 'X-Forwarded-Proto' header
+// which contains the request scheme (http/https)
+// respond every GET request with a notice to use the https api.
+// Also allow POST measurements through unsecured
+// /boxes/:boxId/data and /boxes/:boxId/:sensorId for arduinos
+// and set utf-8 charset
+let validUnsecuredPathRegex = new RegExp('^\\' + PATH + '\/[a-f\\d]{24}\/((data)|([a-f\\d]{24}))\/?$', 'i');
 server.pre(function (request, response, next) {
   response.charSet('utf-8');
   request.log.info({req: request}, 'REQUEST');
+
+  if (process.env.ENV === 'prod'
+    && (!request.headers['x-forwarded-proto'] || request.headers['x-forwarded-proto'] !== 'https')) {
+    if (request.method !== 'POST' || !validUnsecuredPathRegex.test(request.url)) {
+      return next(new restify.NotAuthorizedError('Access through http is not allowed'));
+    }
+  }
   return next();
 });
+server.use(restify.CORS({'origins': ['*'] })); //['http://localhost', 'https://opensensemap.org']}));
+server.use(restify.fullResponse());
+server.use(restify.queryParser());
+server.use(restify.jsonBodyParser());
 server.pre(restify.pre.sanitizePath());
 
 var Measurement = models.Measurement,
   Box = models.Box,
   Sensor = models.Sensor,
   User = models.User;
-
-var PATH = '/boxes';
-var userPATH = 'users';
 
 // the ones matching first are used
 // case is ignored
@@ -1291,7 +1305,6 @@ utils.connectWithRetry(function () {
 
 server.on('uncaughtException', function (req, res, route, err) {
   Honeybadger.notify(err);
-  _postToSlack('Error in API (' + route.spec.method + ' ' + route.spec.path + ', ' + req.href() + '): ' + err);
   log.error('Uncaught error', err);
   console.log(err.stack);
   return res.send(500, 'An error occured');
