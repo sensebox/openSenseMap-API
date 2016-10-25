@@ -232,7 +232,7 @@ server.use(function validateAuthenticationRequest (req, res, next) {
       .then(function (user) {
         if (user && user.boxes.length > 0) {
           const boxIds = user.boxes.map(boxId => boxId.toString());
-          if(boxIds.includes(req.boxId)) {
+          if (boxIds.includes(req.boxId)) {
             req.authorized_user = user;
             return next();
           }
