@@ -322,13 +322,30 @@ server.on('MethodNotAllowed', unknownMethodHandler);
  * @apiGroup Boxes
  * @apiUse AuthorizationRequiredError
  * @apiUse BoxIdParam
+ * @apiParam {String} returnBox if supplied and non-empty, returns the senseBox with the senseBoxId with hidden fields
  * @apiDescription Validate authorization through API key and senseBoxId. Will return status code 403 if invalid, 200 if valid.
  * @apiSuccess {String} Response ApiKey is valid
  * @apiVersion 0.0.1
  * @apiName validApiKey
  */
 function validApiKey (req, res) {
-  res.send(200, 'ApiKey is valid');
+  if (req.params["returnBox"]) {
+    Box.findAndPopulateBoxById(req.boxId)
+      .then(function (box) {
+        if (box) {
+          res.send(box);
+        } else {
+          return next(new restify.NotFoundError('senseBox not found'));
+        }
+      })
+      .catch(function (error) {
+        var e = error.errors;
+        Honeybadger.notify(error);
+        return next(new restify.InternalServerError(e));
+      });
+  } else {
+    res.send(200, 'ApiKey is valid');
+  }
 }
 
 function decodeBase64Image (dataString) {
@@ -1030,45 +1047,33 @@ function findBox (req, res, next) {
     return next(new restify.InvalidArgumentError('Invalid format: ' + req.params['format']));
   }
 
-  Box.findOne({_id: id}).exec().then(function (box) {
-    if (box) {
-      box.populate('sensors.lastMeasurement');
-
-      // clean up box
-      box.__v = undefined;
-      box.mqtt = undefined;
-
-      box.sensor = box.sensors.map(function (sensor) {
-        sensor.__v = undefined;
-        if (sensor.lastMeasurement) {
-          sensor.lastMeasurement.__v = undefined;
+  Box.findAndPopulateBoxById(req.boxId)
+    .then(function (box) {
+      if (box) {
+        // do not send out mqtt credentials to everyone
+        box.mqtt = undefined;
+        if (format === 'json') {
+          res.send(box);
+        } else if (format === 'geojson') {
+          var tmp = JSON.stringify(box);
+          tmp = JSON.parse(tmp);
+          var lat = tmp.loc[0].geometry.coordinates[1];
+          var lng = tmp.loc[0].geometry.coordinates[0];
+          tmp['loc'] = undefined;
+          tmp['lat'] = lat;
+          tmp['lng'] = lng;
+          var geojson = [tmp];
+          res.send(GeoJSON.parse(geojson, {Point: ['lat','lng']}));
         }
-        return sensor;
-      });
-
-      box.loc[0]._id = undefined;
-
-      if (format === 'json') {
-        res.send(box);
-      } else if (format === 'geojson') {
-        var tmp = JSON.stringify(box);
-        tmp = JSON.parse(tmp);
-        var lat = tmp.loc[0].geometry.coordinates[1];
-        var lng = tmp.loc[0].geometry.coordinates[0];
-        tmp['loc'] = undefined;
-        tmp['lat'] = lat;
-        tmp['lng'] = lng;
-        var geojson = [tmp];
-        res.send(GeoJSON.parse(geojson, {Point: ['lat','lng']}));
+      } else {
+        return next(new restify.NotFoundError('No senseBox found'));
       }
-    } else {
-      return next(new restify.NotFoundError('No senseBox found'));
-    }
-  }).catch(function (error) {
-    var e = error.errors;
-    Honeybadger.notify(error);
-    return next(new restify.InternalServerError(e));
-  });
+    })
+    .catch(function (error) {
+      var e = error.errors;
+      Honeybadger.notify(error);
+      return next(new restify.InternalServerError(e));
+    });
 }
 
 /**
