@@ -155,18 +155,6 @@ server.pre(function (request, response, next) {
 });
 server.pre(restify.pre.sanitizePath());
 
-// use this function to retry if a connection cannot be established immediately
-(function connectWithRetry () {
-  return mongoose.connect(cfg.dbconnectionstring, {
-    keepAlive: 1
-  }, function (err) {
-    if (err) {
-      console.error('Failed to connect to mongo on startup - retrying in 5 sec', err);
-      setTimeout(connectWithRetry, 5000);
-    }
-  });
-})();
-
 var Measurement = models.Measurement,
   Box = models.Box,
   Sensor = models.Sensor,
@@ -1292,11 +1280,13 @@ function _postToSlack (text) {
 var stats = fs.statSync('./app.js');
 var mtime = new Date(util.inspect(stats.mtime));
 
-server.listen(cfg.port, function () {
-  console.log('server file modified:', mtime);
-  console.log('%s listening at %s', server.name, server.url);
-  _postToSlack('openSenseMap API started. Server file modified: ' + mtime);
-  Box.connectMQTTBoxes();
+utils.connectWithRetry(function () {
+  server.listen(cfg.port, function () {
+    console.log('server file modified:', mtime);
+    console.log('%s listening at %s', server.name, server.url);
+    _postToSlack('openSenseMap API started. Server file modified: ' + mtime);
+    Box.connectMQTTBoxes();
+  });
 });
 
 server.on('uncaughtException', function (req, res, route, err) {
