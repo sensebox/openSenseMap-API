@@ -138,42 +138,44 @@ var Logger = require('bunyan'),
     }
   });
 
+var PATH = '/boxes';
+var userPATH = 'users';
+
 var server = restify.createServer({
   name: 'opensensemap-api',
   version: '0.0.1',
   log: reqlog
 });
-server.use(restify.CORS({'origins': ['*'] })); //['http://localhost', 'https://opensensemap.org']}));
-server.use(restify.fullResponse());
-server.use(restify.queryParser());
-//server.use(restify.bodyParser());
-server.use(restify.jsonBodyParser());
+
+// We're using caddy as proxy. It supplies a 'X-Forwarded-Proto' header
+// which contains the request scheme (http/https)
+// respond every GET request with a notice to use the https api.
+// Also allow POST measurements through unsecured
+// /boxes/:boxId/data and /boxes/:boxId/:sensorId for arduinos
+// and set utf-8 charset
+let validUnsecuredPathRegex = new RegExp('^\\' + PATH + '\/[a-f\\d]{24}\/((data)|([a-f\\d]{24}))\/?$', 'i');
 server.pre(function (request, response, next) {
   response.charSet('utf-8');
   request.log.info({req: request}, 'REQUEST');
+
+  if (process.env.ENV === 'prod'
+    && (!request.headers['x-forwarded-proto'] || request.headers['x-forwarded-proto'] !== 'https')) {
+    if (request.method !== 'POST' || !validUnsecuredPathRegex.test(request.url)) {
+      return next(new restify.NotAuthorizedError('Access through http is not allowed'));
+    }
+  }
   return next();
 });
+server.use(restify.CORS({'origins': ['*'] })); //['http://localhost', 'https://opensensemap.org']}));
+server.use(restify.fullResponse());
+server.use(restify.queryParser());
+server.use(restify.jsonBodyParser());
 server.pre(restify.pre.sanitizePath());
-
-// use this function to retry if a connection cannot be established immediately
-(function connectWithRetry () {
-  return mongoose.connect(cfg.dbconnectionstring, {
-    keepAlive: 1
-  }, function (err) {
-    if (err) {
-      console.error('Failed to connect to mongo on startup - retrying in 5 sec', err);
-      setTimeout(connectWithRetry, 5000);
-    }
-  });
-})();
 
 var Measurement = models.Measurement,
   Box = models.Box,
   Sensor = models.Sensor,
   User = models.User;
-
-var PATH = '/boxes';
-var userPATH = 'users';
 
 // the ones matching first are used
 // case is ignored
@@ -244,7 +246,7 @@ server.use(function validateAuthenticationRequest (req, res, next) {
       .then(function (user) {
         if (user && user.boxes.length > 0) {
           const boxIds = user.boxes.map(boxId => boxId.toString());
-          if(boxIds.includes(req.boxId)) {
+          if (boxIds.includes(req.boxId)) {
             req.authorized_user = user;
             return next();
           }
@@ -1297,16 +1299,17 @@ function _postToSlack (text) {
 var stats = fs.statSync('./app.js');
 var mtime = new Date(util.inspect(stats.mtime));
 
-server.listen(cfg.port, function () {
-  console.log('server file modified:', mtime);
-  console.log('%s listening at %s', server.name, server.url);
-  _postToSlack('openSenseMap API started. Server file modified: ' + mtime);
-  Box.connectMQTTBoxes();
+utils.connectWithRetry(function () {
+  server.listen(cfg.port, function () {
+    console.log('server file modified:', mtime);
+    console.log('%s listening at %s', server.name, server.url);
+    _postToSlack('openSenseMap API started. Server file modified: ' + mtime);
+    Box.connectMQTTBoxes();
+  });
 });
 
 server.on('uncaughtException', function (req, res, route, err) {
   Honeybadger.notify(err);
-  _postToSlack('Error in API (' + route.spec.method + ' ' + route.spec.path + ', ' + req.href() + '): ' + err);
   log.error('Uncaught error', err);
   console.log(err.stack);
   return res.send(500, 'An error occured');
