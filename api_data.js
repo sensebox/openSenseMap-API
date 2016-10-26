@@ -600,6 +600,26 @@ define({ "api": [
     "url": "/users/:senseBoxId",
     "title": "Validate authorization",
     "group": "Boxes",
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": false,
+            "field": "returnBox",
+            "description": "<p>if supplied and non-empty, returns the senseBox with the senseBoxId with hidden fields</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": false,
+            "field": ":senseBoxId",
+            "description": "<p>the ID of the senseBox you are referring to.</p>"
+          }
+        ]
+      }
+    },
     "description": "<p>Validate authorization through API key and senseBoxId. Will return status code 403 if invalid, 200 if valid.</p>",
     "success": {
       "fields": {
@@ -657,19 +677,6 @@ define({ "api": [
           "type": "json"
         }
       ]
-    },
-    "parameter": {
-      "fields": {
-        "Parameter": [
-          {
-            "group": "Parameter",
-            "type": "String",
-            "optional": false,
-            "field": ":senseBoxId",
-            "description": "<p>the ID of the senseBox you are referring to.</p>"
-          }
-        ]
-      }
     }
   },
   {
