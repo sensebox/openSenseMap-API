@@ -238,7 +238,6 @@ server.post({path: PATH + '/data', version: '0.1.0'}, getDataMulti);
 
 // Secured (needs authorization through apikey)
 
-
 // attach a function to secured requests to validate api key and box id
 server.use(function validateAuthenticationRequest (req, res, next) {
   if (req.headers['x-apikey'] && req.boxId) {
@@ -330,8 +329,8 @@ server.on('MethodNotAllowed', unknownMethodHandler);
  * @apiVersion 0.0.1
  * @apiName validApiKey
  */
-function validApiKey (req, res) {
-  if (req.params["returnBox"]) {
+function validApiKey (req, res, next) {
+  if (req.params['returnBox']) {
     Box.findAndPopulateBoxById(req.boxId)
       .then(function (box) {
         if (box) {
@@ -424,6 +423,7 @@ function updateBox (req, res, next) {
     image
   };
   */
+  utils.checkContentType(req, next);
 
   var qrys = [];
   Box.findById(req.boxId).then(function (box) {
@@ -469,7 +469,7 @@ function updateBox (req, res, next) {
       }
     }
     if (req.params.mqtt === null) {
-      qrys.push(box.set('mqtt', { url: '' }));
+      qrys.push(box.set('mqtt', {}));
     } else if (typeof req.params.mqtt !== 'undefined' && typeof req.params.mqtt.url !== 'undefined' && typeof req.params.mqtt.topic !== 'undefined') {
       qrys.push(box.set({ 'mqtt': req.params.mqtt}));
     }
@@ -843,7 +843,7 @@ function postNewMeasurements (req, res, next) {
         return next(new restify.UnprocessableEntityError(err.message + '. ' + err));
       });
   } else {
-    return next(new restify.InvalidArgumentError('invalid content-type'));
+    return next(new restify.UnsupportedMediaTypeError('Unsupported content-type.'));
   }
 }
 
@@ -1043,7 +1043,6 @@ function findAllBoxes (req, res , next) {
  */
 
 function findBox (req, res, next) {
-  var id = req.params['boxId'].toString();
   var format = getFormat(req, ['json', 'geojson'], 'json');
   if (typeof format === 'undefined') {
     return next(new restify.InvalidArgumentError('Invalid format: ' + req.params['format']));
@@ -1116,6 +1115,7 @@ function findBox (req, res, next) {
  * @apiParam (RequestBody) {String} orderID the apiKey of the user for the senseBox.
  */
 function postNewBox (req, res, next) {
+  utils.checkContentType(req, next);
   log.debug('A new sensebox is being submitted');
   var newBox = Box.newFromRequest(req);
 
