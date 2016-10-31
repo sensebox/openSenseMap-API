@@ -626,10 +626,10 @@
         "Success 200": [
           {
             "group": "Success 200",
-            "type": "String",
+            "type": "json",
             "optional": false,
             "field": "Response",
-            "description": "<p>ApiKey is valid</p>"
+            "description": "<p><code>{&quot;code&quot;: &quot;Authorized&quot;, &quot;message&quot;:&quot;ApiKey is valid&quot;}</code></p>"
           }
         ]
       }
