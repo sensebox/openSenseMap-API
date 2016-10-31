@@ -325,7 +325,7 @@ server.on('MethodNotAllowed', unknownMethodHandler);
  * @apiUse BoxIdParam
  * @apiParam {String} returnBox if supplied and non-empty, returns the senseBox with the senseBoxId with hidden fields
  * @apiDescription Validate authorization through API key and senseBoxId. Will return status code 403 if invalid, 200 if valid.
- * @apiSuccess {String} Response ApiKey is valid
+ * @apiSuccess {json} Response `{"code": "Authorized", "message":"ApiKey is valid"}`
  * @apiVersion 0.0.1
  * @apiName validApiKey
  */
@@ -345,7 +345,7 @@ function validApiKey (req, res, next) {
         return next(new restify.InternalServerError(e));
       });
   } else {
-    res.send(200, 'ApiKey is valid');
+    res.send(200, { code: 'Authorized', message: 'ApiKey is valid' });
   }
 }
 
