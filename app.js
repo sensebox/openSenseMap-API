@@ -331,7 +331,7 @@ server.on('MethodNotAllowed', unknownMethodHandler);
  */
 function validApiKey (req, res, next) {
   if (req.params['returnBox']) {
-    Box.findAndPopulateBoxById(req.boxId)
+    Box.findAndPopulateBoxById(req.boxId, { includeSecrets: true })
       .then(function (box) {
         if (box) {
           res.send(box);
@@ -522,29 +522,18 @@ function updateBox (req, res, next) {
  * @apiUse BoxIdParam
  */
 function getMeasurements (req, res, next) {
-  Box.findOne({ _id: req.boxId }, { sensors: 1 })
-    .populate('sensors.lastMeasurement')
-    .lean()
-    .exec()
-    .then(function (box_with_sensors) {
-      if (box_with_sensors) {
-        box_with_sensors.sensors = box_with_sensors.sensors.map(function (sensor) {
-          if (sensor.lastMeasurement) {
-            sensor.lastMeasurement.__v = undefined;
-            sensor.lastMeasurement.updatedAt = undefined;
-          }
-
-          return sensor;
-        });
-        res.send(200, box_with_sensors);
+  Box.findAndPopulateBoxById(req.boxId, { onlyLastMeasurements: true })
+    .then(function (box) {
+      if (box) {
+        res.send(box);
       } else {
-        return next(new restify.NotFoundError('box not found'));
+        return next(new restify.NotFoundError('No senseBox found'));
       }
     })
     .catch(function (error) {
-      console.log(error);
+      var e = error.errors;
       Honeybadger.notify(error);
-      return next(new restify.InternalServerError());
+      return next(new restify.InternalServerError(e));
     });
 }
 
@@ -1051,8 +1040,6 @@ function findBox (req, res, next) {
   Box.findAndPopulateBoxById(req.boxId)
     .then(function (box) {
       if (box) {
-        // do not send out mqtt credentials to everyone
-        box.mqtt = undefined;
         if (format === 'json') {
           res.send(box);
         } else if (format === 'geojson') {
