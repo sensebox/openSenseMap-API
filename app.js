@@ -15,7 +15,6 @@ var restify = require('restify'),
   csvtransform = require('stream-transform'),
   Stream = require('stream'),
   moment = require('moment'),
-  request = require('request'),
   mails = require('./lib/mails'),
   util = require('util'),
   jsonstringify = require('stringify-stream'),
@@ -198,30 +197,6 @@ server.put({path: PATH + '/:boxId' , version: '0.1.0'} , updateBox);
 // DELETE
 server.del({path: PATH + '/:boxId' , version: '0.1.0'} , deleteBox);
 
-
-// helper function to determine the requested format
-function getFormat (req, allowed_formats, default_format) {
-  if (typeof req.params['format'] === 'undefined' || req.params['format'].trim() === '') {
-    return default_format;
-  } else if (allowed_formats.indexOf(req.params['format'].trim().toLowerCase()) !== -1) {
-    return req.params['format'].trim().toLowerCase();
-  }
-}
-
-/**
- * @apiDefine SeparatorParam
- *
- * @apiParam {String} separator Only for csv: the separator for csv. Possible values: `comma` for comma as separator, everything else: semicolon. Per default a semicolon is used.
- */
-
-// helper to determine the requested separator for csv
-function getSeparator (req) {
-  if (typeof req.params['separator'] !== 'undefined' && req.params['separator'].trim().toLowerCase() === 'comma') {
-    return ',';
-  } else {
-    return ';';
-  }
-}
 
 function unknownMethodHandler (req, res) {
   if (req.method.toLowerCase() === 'options') {
@@ -457,10 +432,11 @@ function getMeasurements (req, res, next) {
  * @apiName getData
  * @apiUse BoxIdParam
  * @apiUse SensorIdParam
- * @apiParam {String} from-date Beginning date of measurement data (default: 48 hours ago from now)
- * @apiParam {String} to-date End date of measurement data (default: now)
+ * @apiParam {ISO8601Date} from-date Beginning date of measurement data (default: 48 hours ago from now)
+ * @apiParam {ISO8601Date} to-date End date of measurement data (default: now)
  * @apiParam {String="true","false"} download If set, offer download to the user (default: false, always on if CSV is used)
  * @apiParam {String="json","csv"} format=json Can be 'json' (default) or 'csv' (default: json)
+ * @apiParam {Boolean} download if specified, the api will set the `content-disposition` header thus forcing browsers to download instead of displaying. Is always true for format csv.
  * @apiUse SeparatorParam
  */
 function getData (req, res, next) {
@@ -482,7 +458,7 @@ function getData (req, res, next) {
     return next(timesValid);
   }
 
-  var format = getFormat(req, ['json', 'csv'], 'json');
+  var format = utils.getRequestedFormat(req, ['json', 'csv'], 'json');
   if (typeof format === 'undefined') {
     return next(new restify.InvalidArgumentError('Invalid format: ' + req.params['format']));
   }
@@ -501,8 +477,8 @@ function getData (req, res, next) {
 
   if (format === 'csv') {
     res.header('Content-Type', 'text/csv');
-    var sep = getSeparator(req);
-    stringifier = csvstringify({ columns: ['createdAt', 'value'], header: 1, delimiter: sep });
+    let delim = utils.getDelimiter(req);
+    stringifier = csvstringify({ columns: ['createdAt', 'value'], header: 1, delimiter: delim });
   } else if (format === 'json') {
     res.header('Content-Type', 'application/json; charset=utf-8');
     stringifier = jsonstringify({ open: '[', close: ']' });
@@ -544,8 +520,8 @@ function getData (req, res, next) {
  * @apiName getDataMulti
  * @apiParam {String} senseBoxIds Comma separated list of senseBox IDs.
  * @apiParam {String} phenomenon the name of the phenomenon you want to download the data for.
- * @apiParam {String} from-date Beginning date of measurement data (default: 15 days ago from now)
- * @apiParam {String} to-date End date of measurement data (default: now)
+ * @apiParam {ISO8601Date} from-date Beginning date of measurement data (default: 15 days ago from now)
+ * @apiParam {ISO8601Date} to-date End date of measurement data (default: now)
  * @apiUse SeparatorParam
  * @apiParam {String} columns (optional) Comma separated list of columns to export. If omitted, columns createdAt, value, lat, lng are returned. Possible allowed values are createdAt, value, lat, lng, unit, boxId, sensorId, phenomenon, sensorType, boxName. The columns in the csv are like the order supplied in this parameter
  */
@@ -605,7 +581,7 @@ function getDataMulti (req, res, next) {
           }
         }
 
-        let sep = getSeparator(req);
+        let delim = utils.getDelimiter(req);
         let columns = GET_DATA_MULTI_DEFAULT_COLUMNS;
         let columnsParam = req.params['columns'];
         if (typeof columnsParam !== 'undefined' && columnsParam.trim() !== '') {
@@ -615,7 +591,7 @@ function getDataMulti (req, res, next) {
           }
         }
 
-        let stringifier = csvstringify({ columns: columns, header: 1, delimiter: sep });
+        let stringifier = csvstringify({ columns: columns, header: 1, delimiter: delim });
         let transformer = csvtransform(function (data) {
           data.createdAt = utils.parseTimestamp(data.createdAt).toISOString();
 
@@ -765,7 +741,7 @@ function findAllBoxes (req, res , next) {
   var activityAroundDate = (typeof req.params['date'] === 'undefined' || req.params['date'] === '') ? undefined : req.params['date'];
   var phenomenon = (typeof req.params['phenomenon'] === 'undefined' || req.params['phenomenon'] === '') ? undefined : req.params['phenomenon'];
 
-  var format = getFormat(req, ['json', 'geojson'], 'json');
+  var format = utils.getRequestedFormat(req, ['json', 'geojson'], 'json');
   if (typeof format === 'undefined') {
     return next(new restify.InvalidArgumentError('Invalid format: ' + req.params['format']));
   }
@@ -944,7 +920,7 @@ function findAllBoxes (req, res , next) {
  */
 
 function findBox (req, res, next) {
-  var format = getFormat(req, ['json', 'geojson'], 'json');
+  var format = utils.getRequestedFormat(req, ['json', 'geojson'], 'json');
   if (typeof format === 'undefined') {
     return next(new restify.InvalidArgumentError('Invalid format: ' + req.params['format']));
   }
@@ -1038,7 +1014,7 @@ function postNewBox (req, res, next) {
         });
     })
     .then(function () {
-      _postToSlack('Eine neue <https://opensensemap.org/explore/' + newBox._id + '|senseBox> wurde registriert (' + newBox.name + ')');
+      utils.postToSlack('Eine neue <https://opensensemap.org/explore/' + newBox._id + '|senseBox> wurde registriert (' + newBox.name + ')');
     })
     .catch(function (err) {
       log.error(err);
@@ -1189,12 +1165,6 @@ function getStatistics (req, res) {
   });
 }
 
-function _postToSlack (text) {
-  if (cfg.slack_url) {
-    request.post({ url: cfg.slack_url, json: { text: text }});
-  }
-}
-
 var stats = fs.statSync('./app.js');
 var mtime = new Date(util.inspect(stats.mtime));
 
@@ -1202,7 +1172,7 @@ utils.connectWithRetry(function () {
   server.listen(cfg.port, function () {
     console.log('server file modified:', mtime);
     console.log('%s listening at %s', server.name, server.url);
-    _postToSlack('openSenseMap API started. Server file modified: ' + mtime);
+    utils.postToSlack('openSenseMap API started. Server file modified: ' + mtime);
     Box.connectMQTTBoxes();
   });
 });
