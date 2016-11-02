@@ -692,14 +692,14 @@ define({ "api": [
         "Parameter": [
           {
             "group": "Parameter",
-            "type": "String",
+            "type": "ISO8601Date",
             "optional": false,
             "field": "from-date",
             "description": "<p>Beginning date of measurement data (default: 48 hours ago from now)</p>"
           },
           {
             "group": "Parameter",
-            "type": "String",
+            "type": "ISO8601Date",
             "optional": false,
             "field": "to-date",
             "description": "<p>End date of measurement data (default: now)</p>"
@@ -746,7 +746,7 @@ define({ "api": [
             "type": "String",
             "optional": false,
             "field": "separator",
-            "description": "<p>Only for csv: the separator for csv. Possible values: <code>comma</code> for comma as separator, everything else: semicolon. Per default a semicolon is used.</p>"
+            "description": "<p>Only for csv: the separator for csv. Possible values: <code>comma</code> for comma as separator, everything else: semicolon. Per default a semicolon is used. Alternatively you can use delimiter as parameter name.</p>"
           }
         ]
       }
@@ -781,14 +781,14 @@ define({ "api": [
           },
           {
             "group": "Parameter",
-            "type": "String",
+            "type": "ISO8601Date",
             "optional": false,
             "field": "from-date",
             "description": "<p>Beginning date of measurement data (default: 15 days ago from now)</p>"
           },
           {
             "group": "Parameter",
-            "type": "String",
+            "type": "ISO8601Date",
             "optional": false,
             "field": "to-date",
             "description": "<p>End date of measurement data (default: now)</p>"
@@ -805,7 +805,7 @@ define({ "api": [
             "type": "String",
             "optional": false,
             "field": "separator",
-            "description": "<p>Only for csv: the separator for csv. Possible values: <code>comma</code> for comma as separator, everything else: semicolon. Per default a semicolon is used.</p>"
+            "description": "<p>Only for csv: the separator for csv. Possible values: <code>comma</code> for comma as separator, everything else: semicolon. Per default a semicolon is used. Alternatively you can use delimiter as parameter name.</p>"
           }
         ]
       }
