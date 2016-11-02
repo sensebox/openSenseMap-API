@@ -275,20 +275,6 @@ function validApiKey (req, res, next) {
   }
 }
 
-function decodeBase64Image (dataString) {
-  var matches = dataString.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/),
-    response = {};
-
-  if (matches.length !== 3) {
-    return new Error('Invalid input string');
-  }
-
-  response.type = matches[1];
-  response.data = new Buffer(matches[2], 'base64');
-
-  return response;
-}
-
 /**
  * @api {put} /boxes/:senseBoxId Update a senseBox: Image and sensor names
  * @apiDescription Modify the specified senseBox.
@@ -385,7 +371,7 @@ function updateBox (req, res, next) {
     }
     if (typeof req.params.image !== 'undefined' && req.params.image !== '') {
       var data = req.params.image.toString();
-      var imageBuffer = decodeBase64Image(data);
+      var imageBuffer = utils.decodeBase64Image(data);
       var extension = (imageBuffer.type === 'image/jpeg') ? '.jpg' : '.png';
       try {
         fs.writeFileSync(cfg.imageFolder + '' + req.boxId + extension, imageBuffer.data);
