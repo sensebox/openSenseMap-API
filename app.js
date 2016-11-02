@@ -156,7 +156,7 @@ server.get({path: '/stats', version: '0.1.0'}, getStatistics);
 server.get({path: PATH + '/:boxId/:sensorId/submitMeasurement/:value' , version: '0.0.1'}, postNewMeasurement);
 
 // POST
-server.post({path: PATH , version: '0.0.1'}, postNewBox);
+server.post({path: PATH , version: '0.0.1'}, utils.checkContentType, postNewBox);
 server.post({path: PATH + '/:boxId/:sensorId' , version: '0.0.1'}, postNewMeasurement);
 server.post({path: PATH + '/:boxId/data' , version: '0.1.0'}, postNewMeasurements);
 server.post({path: PATH + '/data', version: '0.1.0'}, getDataMulti);
@@ -192,10 +192,10 @@ server.get({path: userPATH + '/:boxId', version: '0.0.1'}, validApiKey);
 server.get({path: PATH + '/:boxId/script', version: '0.1.0'}, getScript);
 
 // PUT
-server.put({path: PATH + '/:boxId' , version: '0.1.0'} , updateBox);
+server.put({path: PATH + '/:boxId' , version: '0.1.0'}, utils.checkContentType, updateBox);
 
 // DELETE
-server.del({path: PATH + '/:boxId' , version: '0.1.0'} , deleteBox);
+server.del({path: PATH + '/:boxId' , version: '0.1.0'}, deleteBox);
 
 
 function unknownMethodHandler (req, res) {
@@ -310,7 +310,6 @@ function updateBox (req, res, next) {
     image
   };
   */
-  utils.checkContentType(req, next);
 
   var qrys = [];
   Box.findById(req.boxId).then(function (box) {
@@ -990,7 +989,6 @@ function findBox (req, res, next) {
  * @apiParam (RequestBody) {String} orderID the apiKey of the user for the senseBox.
  */
 function postNewBox (req, res, next) {
-  utils.checkContentType(req, next);
   log.debug('A new sensebox is being submitted');
   var newBox = Box.newFromRequest(req);
 
@@ -1135,8 +1133,12 @@ function deleteBox (req, res, next) {
     .then(function () {
       res.send(200, 'Box deleted');
     }).catch(function (err) {
-      Honeybadger.notify(err);
-      return next(new restify.InternalServerError(err.message));
+      if (err === 'senseBox not found') {
+        return next(new restify.NotFoundError(err));
+      } else {
+        Honeybadger.notify(err);
+        return next(new restify.InternalServerError(err));
+      }
     });
 }
 
