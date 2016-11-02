@@ -33,7 +33,7 @@ describe('openSenseMap API', function () {
       return chakram.wait();
     });
 
-    let boxId, apiKey;
+    let boxId, apiKey, boxObj;
 
     it('should allow to create a senseBox via POST', function () {
       return chakram.post(BASE_URL + '/boxes', valid_sensebox)
@@ -44,11 +44,37 @@ describe('openSenseMap API', function () {
 
           boxId = response.body.boxes[0];
           apiKey = response.body.apikey;
-          return chakram.get(BASE_URL + '/boxes/' + boxId)
+          return chakram.get(BASE_URL + '/boxes/' + boxId);
         })
         .then(function (response) {
+          boxObj = response;
           expect(response).to.have.status(200);
           expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
+          expect(response).to.have.schema(senseBoxSchema);
+
+          expect(response).to.not.have.keys('mqtt');
+
+          return chakram.get(BASE_URL + '/boxes/' + boxId + '/sensors');
+        });
+    });
+
+    it('should let users validate their api-key', function () {
+      return chakram.get(BASE_URL + '/users/' + boxId, { headers: { "x-apikey": apiKey  } })
+        .then(function (response) {
+          return expect(response).to.comprise.of.json({"code":"Authorized","message":"ApiKey is valid"});
+        });
+    });
+
+    it('should deny access when apikey is missing', function () {
+      return chakram.get(BASE_URL + '/users/' + boxId, {})
+        .then(function (response) {
+          return expect(response).to.have.status(403);
+        });
+    });
+
+    it('should let users retrieve their box with all fields', function () {
+      return chakram.get(BASE_URL + '/users/' + boxId + '?returnBox=t', { headers: { "x-apikey": apiKey  } })
+        .then(function (response) {
           expect(response).to.have.schema(senseBoxSchema);
         });
     });
