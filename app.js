@@ -15,11 +15,11 @@ var restify = require('restify'),
   csvtransform = require('stream-transform'),
   Stream = require('stream'),
   moment = require('moment'),
-  mails = require('./lib/mails'),
   util = require('util'),
   jsonstringify = require('stringify-stream'),
   utils = require('./lib/utils'),
-  decodeHandlers = require('./lib/decoding');
+  decodeHandlers = require('./lib/decoding'),
+  sketches = require('./lib/sketches');
 
 var Honeybadger = utils.Honeybadger,
   cfg = utils.config;
@@ -387,7 +387,7 @@ function updateBox (req, res, next) {
     qrys.push(box.save());
 
     Promise.all(qrys).then(function () {
-      genScript(box, box.model);
+      sketches.generateSketch(box);
       res.send(200, box);
     }).catch(function (err) {
       Honeybadger.notify(err);
@@ -990,107 +990,19 @@ function findBox (req, res, next) {
  */
 function postNewBox (req, res, next) {
   log.debug('A new sensebox is being submitted');
-  var newBox = Box.newFromRequest(req);
 
-  User.createForBoxRequest(newBox, req)
+  Box.newFromRequest(req)
     .then(function (user) {
-      // user is saved at this point, newBox not
-      // try to save the box
-      return newBox.save()
-        .then(function (box) {
-          // box is now saved
-          // generate the script and send mails
-          // also post to slack
-          try {
-            genScript(box, box.model);
-          } catch (err) {
-            log.error(err);
-            Honeybadger.notify(err);
-          }
-          res.send(201, user);
-          mails.sendWelcomeMail(user, box);
-        });
-    })
-    .then(function () {
-      utils.postToSlack('Eine neue <https://opensensemap.org/explore/' + newBox._id + '|senseBox> wurde registriert (' + newBox.name + ')');
+      res.send(201, user);
     })
     .catch(function (err) {
-      log.error(err);
-      return next(new restify.InvalidArgumentError(err.message + '. ' + err));
-    });
-}
-
-// generate Arduino script
-function genScript (box, model) {
-  var output = cfg.targetFolder + '' + box._id + '.ino';
-  // remove old script it it exists
-  try {
-    if (fs.statSync(output)) {
-      fs.unlinkSync(output);
-      console.log('deleted old sketch. (' + output + ') bye bye!');
-    }
-  } catch (e) {
-    // don't notify honeybadger on ENOENT. The file isn't there if the script is first generated..
-    if (e.code !== 'ENOENT') {
-      Honeybadger.notify(e);
-    }
-  }
-
-  var isCustom = false;
-  var filename;
-  switch (model) {
-  case 'homeEthernet':
-    filename = 'files/template_home/template_home.ino';
-    break;
-  case 'basicEthernet':
-    filename = 'files/template_basic/template_basic.ino';
-    break;
-  case 'homeWifi':
-    filename = 'files/template_home_wifi/template_home_wifi.ino';
-    break;
-  default:
-    isCustom = true;
-    filename = 'files/template_custom_setup/template_custom_setup.ino';
-    break;
-  }
-
-  fs.readFileSync(filename)
-    .toString()
-    .split('\n')
-    .forEach(function (line) {
-      if (line.indexOf('//senseBox ID') !== -1) {
-        fs.appendFileSync(output, line.toString() + '\n');
-        fs.appendFileSync(output, '#define SENSEBOX_ID "' + box._id + '"\n');
-      } else if (line.indexOf('//Sensor IDs') !== -1) {
-        fs.appendFileSync(output, line.toString() + '\n');
-        var customSensorindex = 1;
-        for (var i = box.sensors.length - 1; i >= 0; i--) {
-          var sensor = box.sensors[i];
-          log.debug(sensor);
-          if (!isCustom && sensor.title === 'Temperatur') {
-            fs.appendFileSync(output, '#define TEMPSENSOR_ID "' + sensor._id + '"\n');
-          } else if (!isCustom && sensor.title === 'rel. Luftfeuchte') {
-            fs.appendFileSync(output, '#define HUMISENSOR_ID "' + sensor._id + '"\n');
-          } else if (!isCustom && sensor.title === 'Luftdruck') {
-            fs.appendFileSync(output, '#define PRESSURESENSOR_ID "' + sensor._id + '"\n');
-          } else if (!isCustom && sensor.title === 'Lautstärke') {
-            fs.appendFileSync(output, '#define NOISESENSOR_ID "' + sensor._id + '"\n');
-          } else if (!isCustom && sensor.title === 'Helligkeit') {
-            fs.appendFileSync(output, '#define LIGHTSENSOR_ID "' + sensor._id + '"\n');
-          } else if (!isCustom && sensor.title === 'Beleuchtungsstärke') {
-            fs.appendFileSync(output, '#define LUXSENSOR_ID "' + sensor._id + '"\n');
-          } else if (!isCustom && sensor.title === 'UV-Intensität') {
-            fs.appendFileSync(output, '#define UVSENSOR_ID "' + sensor._id + '"\n');
-          } else {
-            fs.appendFileSync(output, '#define SENSOR' + customSensorindex + '_ID "' + sensor._id + '" \/\/ ' + sensor.title + '\n');
-            customSensorindex++;
-          }
-        }
-      } else if (line.indexOf('@@OSEM_POST_DOMAIN@@') !== -1) {
-        var newLine = line.toString().replace('@@OSEM_POST_DOMAIN@@', cfg.measurements_post_domain);
-        fs.appendFileSync(output, newLine + '\n');
+      if (Array.isArray(err)) {
+        next(new restify.UnprocessableEntityError({ message: err.toString()}));
+      } else if (err.toString().endsWith('Duplicate senseBox found')) {
+        next(new restify.BadRequestError(err.toString().slice(7)));
       } else {
-        fs.appendFileSync(output, line.toString() + '\n');
+        Honeybadger.notify(err);
+        next(new restify.InternalServerError(err.message));
       }
     });
 }
@@ -1109,7 +1021,7 @@ function getScript (req, res, next) {
       var file = cfg.targetFolder + '' + box._id + '.ino';
 
       if (!fs.existsSync(file)) {
-        genScript(box, box.model);
+        sketches.generateSketch(box);
       }
 
       return res.send(200, fs.readFileSync(file, 'utf-8'));

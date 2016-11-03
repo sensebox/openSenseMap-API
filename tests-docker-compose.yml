@@ -9,6 +9,9 @@ services:
       - ./package.json:/usr/src/app/package.json
       - ./tests:/usr/src/app/tests
     env_file: .env
+    environment:
+      OSEM_targetFolder: ./usersketches
+      OSEM_imageFolder: ./userimages
     depends_on:
       - db
 
