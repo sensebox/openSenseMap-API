@@ -460,10 +460,10 @@ function getData (req, res, next) {
  * @apiParam {ISO8601Date} from-date Beginning date of measurement data (default: 15 days ago from now)
  * @apiParam {ISO8601Date} to-date End date of measurement data (default: now)
  * @apiUse SeparatorParam
- * @apiParam {String} columns (optional) Comma separated list of columns to export. If omitted, columns createdAt, value, lat, lng are returned. Possible allowed values are createdAt, value, lat, lng, unit, boxId, sensorId, phenomenon, sensorType, boxName. The columns in the csv are like the order supplied in this parameter
+ * @apiParam {String} columns (optional) Comma separated list of columns to export. If omitted, columns createdAt, value, lat, lng are returned. Possible allowed values are createdAt, value, lat, lng, unit, boxId, sensorId, phenomenon, sensorType, boxName, exposure. The columns in the csv are like the order supplied in this parameter
  */
 const GET_DATA_MULTI_DEFAULT_COLUMNS = ['createdAt', 'value', 'lat', 'lng'];
-const GET_DATA_MULTI_ALLOWED_COLUMNS = ['createdAt', 'value', 'lat', 'lng', 'unit', 'boxId', 'sensorId', 'phenomenon', 'sensorType', 'boxName'];
+const GET_DATA_MULTI_ALLOWED_COLUMNS = ['createdAt', 'value', 'lat', 'lng', 'unit', 'boxId', 'sensorId', 'phenomenon', 'sensorType', 'boxName', 'exposure'];
 
 function getDataMulti (req, res, next) {
   // default to now
@@ -510,6 +510,7 @@ function getDataMulti (req, res, next) {
               sensor.lng = boxData[i].loc[0].geometry.coordinates[1];
               sensor.boxId = boxData[i]._id.toString();
               sensor.boxName = boxData[i].name;
+              sensor.exposure = boxData[i].exposure;
               sensor.sensorId = sensor._id.toString();
               sensor.phenomenon = sensor.title;
 
