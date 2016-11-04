@@ -236,24 +236,10 @@ define({ "api": [
         "JSON request body": [
           {
             "group": "RequestBody",
-            "type": "String",
+            "type": "User",
             "optional": false,
-            "field": "firstname",
-            "description": "<p>firstname of the user for the senseBox.</p>"
-          },
-          {
-            "group": "RequestBody",
-            "type": "String",
-            "optional": false,
-            "field": "lastname",
-            "description": "<p>lastname of the user for the senseBox.</p>"
-          },
-          {
-            "group": "RequestBody",
-            "type": "String",
-            "optional": false,
-            "field": "email",
-            "description": "<p>email of the user for the senseBox.</p>"
+            "field": "user",
+            "description": "<p>the user for this senseBox.</p>"
           },
           {
             "group": "RequestBody",
@@ -310,6 +296,36 @@ define({ "api": [
             "optional": false,
             "field": "loc",
             "description": "<p>the location of this senseBox. Must be a GeoJSON Point Feature. (RFC7946)</p>"
+          }
+        ],
+        "Parameter for creating the user for a senseBox": [
+          {
+            "group": "User",
+            "type": "String",
+            "optional": false,
+            "field": "firstname",
+            "description": "<p>the firstname of the user.</p>"
+          },
+          {
+            "group": "User",
+            "type": "String",
+            "optional": false,
+            "field": "lastname",
+            "description": "<p>the ths lastname of the user.</p>"
+          },
+          {
+            "group": "User",
+            "type": "String",
+            "optional": false,
+            "field": "email",
+            "description": "<p>the email for the user. is used for sending the arduino sketch.</p>"
+          },
+          {
+            "group": "User",
+            "type": "String",
+            "optional": false,
+            "field": "lang",
+            "description": "<p>the language of the user.</p>"
           }
         ],
         "A single sensor for the nested Sensor parameter": [
