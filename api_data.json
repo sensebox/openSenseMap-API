@@ -820,6 +820,13 @@
             "group": "Parameter",
             "type": "String",
             "optional": false,
+            "field": "exposure",
+            "description": "<p>(optional) only return sensors of boxes with the specified exposure. Can be indoor or outdoor</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": false,
             "field": "separator",
             "description": "<p>Only for csv: the separator for csv. Possible values: <code>comma</code> for comma as separator, everything else: semicolon. Per default a semicolon is used. Alternatively you can use delimiter as parameter name.</p>"
           },
