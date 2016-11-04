@@ -29,6 +29,9 @@ mv doc/* .
 # delete doc folder
 rm -rf doc
 
+# add .nojekyll file
+touch .nojekyll
+
 # add everything
 git add -A
 
