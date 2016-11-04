@@ -980,12 +980,11 @@ function findBox (req, res, next) {
  * @apiGroup Boxes
  * @apiName postNewBox
  * @apiUse CommonBoxJSONBody
+ * @apiUse UserBody
  * @apiUse SensorBody
  * @apiUse MqttBody
  *
- * @apiParam (RequestBody) {String} firstname firstname of the user for the senseBox.
- * @apiParam (RequestBody) {String} lastname lastname of the user for the senseBox.
- * @apiParam (RequestBody) {String} email email of the user for the senseBox.
+ * @apiParam (RequestBody) {User} user the user for this senseBox.
  * @apiParam (RequestBody) {String} orderID the apiKey of the user for the senseBox.
  */
 function postNewBox (req, res, next) {
