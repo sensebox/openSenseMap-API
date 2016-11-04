@@ -4,7 +4,6 @@
   "description": "API for opensensemap.org",
   "main": "app.js",
   "dependencies": {
-    "bluebird": "^3.3.3",
     "bunyan": "^1.3.3",
     "csv-stringify": "^1.0.4",
     "geojson": "^0.4.0",

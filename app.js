@@ -25,7 +25,7 @@ var restify = require('restify'),
 var Honeybadger = utils.Honeybadger,
   cfg = utils.config;
 
-mongoose.Promise = require('bluebird');
+mongoose.Promise = global.Promise;
 
 // Logging
 var consoleStream = new Stream();

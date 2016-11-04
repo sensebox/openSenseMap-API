@@ -79,6 +79,14 @@ describe('openSenseMap API', function () {
         });
     });
 
+    it('should let users retrieve their arduino sketch', function () {
+      return chakram.get(BASE_URL + '/boxes/' + boxId + '/script', { headers: { "x-apikey": apiKey  } })
+        .then(function (response) {
+          expect(response).to.have.status(200);
+          expect(response.body).not.to.be.empty;
+        });
+    });
+
     it('should allow to delete a senseBox via DELETE', function () {
       return chakram.delete(BASE_URL + '/boxes/' + boxId, {}, { headers: { "x-apikey": apiKey  } })
         .then(function (response) {
