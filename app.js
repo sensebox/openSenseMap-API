@@ -484,6 +484,17 @@ function getDataMulti (req, res, next) {
     return next(timesValid);
   }
 
+  // column parameter
+  let delim = requestUtils.getDelimiter(req);
+  let columns = GET_DATA_MULTI_DEFAULT_COLUMNS;
+  let columnsParam = req.params['columns'];
+  if (typeof columnsParam !== 'undefined' && columnsParam.trim() !== '') {
+    columns = columnsParam.split(',');
+    if (columns.some(c => !GET_DATA_MULTI_ALLOWED_COLUMNS.includes(c))) {
+      return next(new restify.UnprocessableEntityError('illegal columns'));
+    }
+  }
+
   if (req.params['phenomenon'] && req.boxId) {
     var phenom = req.params['phenomenon'].toString();
     var boxId = req.boxId.toString();
@@ -519,15 +530,6 @@ function getDataMulti (req, res, next) {
           }
         }
 
-        let delim = requestUtils.getDelimiter(req);
-        let columns = GET_DATA_MULTI_DEFAULT_COLUMNS;
-        let columnsParam = req.params['columns'];
-        if (typeof columnsParam !== 'undefined' && columnsParam.trim() !== '') {
-          columns = columnsParam.split(',');
-          if (columns.some(c => !GET_DATA_MULTI_ALLOWED_COLUMNS.includes(c))) {
-            return next(new restify.UnprocessableEntityError('illegal columns'));
-          }
-        }
 
         let stringifier = csvstringify({ columns: columns, header: 1, delimiter: delim });
         let transformer = csvtransform(function (data) {
