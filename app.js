@@ -378,19 +378,19 @@ function getMeasurements (req, res, next) {
  */
 function getData (req, res, next) {
   // default to now
-  var toDate = requestUtils.parseTimeParameter(req, next, 'to-date', moment());
+  var toDate = utils.parseTimeParameter(req, next, 'to-date', moment());
   if (!moment.isMoment(toDate)) {
     return next(toDate);
   }
 
   // default to 48 hours earlier from to-date
-  var fromDate = requestUtils.parseTimeParameter(req, next, 'from-date', toDate.clone().subtract(48, 'hours'));
+  var fromDate = utils.parseTimeParameter(req, next, 'from-date', toDate.clone().subtract(48, 'hours'));
   if (!moment.isMoment(fromDate)) {
     return next(fromDate);
   }
 
   // validate time parameters
-  var timesValid = requestUtils.validateTimeParameters(toDate, fromDate);
+  var timesValid = utils.validateTimeParameters(toDate, fromDate);
   if (typeof timesValid !== 'undefined') {
     return next(timesValid);
   }
