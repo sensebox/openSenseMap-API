@@ -110,7 +110,7 @@ server.get({path: /(boxes)\.([a-z]+)/, version: '0.1.0'} , findAllBoxes);
 server.get({path: PATH + '/:boxId' , version: '0.0.1'} , findBox);
 server.get({path: PATH + '/:boxId/sensors', version: '0.0.1'}, getMeasurements);
 server.get({path: PATH + '/:boxId/data/:sensorId', version: '0.0.1'}, getData);
-server.get({path: PATH + '/data', version: '0.1.0'}, getDataMulti);
+server.get({path: PATH + '/data', version: '0.1.0'}, requestUtils.validateBboxParam, getDataMulti);
 server.get({path: '/stats', version: '0.1.0'}, getStatistics);
 server.get({path: PATH + '/:boxId/:sensorId/submitMeasurement/:value' , version: '0.0.1'}, postNewMeasurement);
 
@@ -118,7 +118,7 @@ server.get({path: PATH + '/:boxId/:sensorId/submitMeasurement/:value' , version:
 server.post({path: PATH , version: '0.0.1'}, requestUtils.checkContentType, postNewBox);
 server.post({path: PATH + '/:boxId/:sensorId' , version: '0.0.1'}, requestUtils.checkContentType, postNewMeasurement);
 server.post({path: PATH + '/:boxId/data' , version: '0.1.0'}, postNewMeasurements);
-server.post({path: PATH + '/data', version: '0.1.0'}, getDataMulti);
+server.post({path: PATH + '/data', version: '0.1.0'}, requestUtils.validateBboxParam, getDataMulti);
 
 // Secured (needs authorization through apikey)
 
@@ -460,6 +460,7 @@ function getData (req, res, next) {
  * @apiParam {ISO8601Date} from-date Beginning date of measurement data (default: 15 days ago from now)
  * @apiParam {ISO8601Date} to-date End date of measurement data (default: now)
  * @apiUse SeparatorParam
+ * @apiUse BBoxParam
  * @apiParam {String} columns (optional) Comma separated list of columns to export. If omitted, columns createdAt, value, lat, lng are returned. Possible allowed values are createdAt, value, lat, lng, unit, boxId, sensorId, phenomenon, sensorType, boxName, exposure. The columns in the csv are like the order supplied in this parameter
  */
 const GET_DATA_MULTI_DEFAULT_COLUMNS = ['createdAt', 'value', 'lat', 'lng'];
@@ -491,88 +492,117 @@ function getDataMulti (req, res, next) {
   if (typeof columnsParam !== 'undefined' && columnsParam.trim() !== '') {
     columns = columnsParam.split(',');
     if (columns.some(c => !GET_DATA_MULTI_ALLOWED_COLUMNS.includes(c))) {
-      return next(new restify.UnprocessableEntityError('illegal columns'));
+      return next(new restify.UnprocessableEntityError('illegal columns parameter'));
     }
   }
 
-  if (req.params['phenomenon'] && req.boxId) {
-    var phenom = req.params['phenomenon'].toString();
-    var boxId = req.boxId.toString();
-    var boxIds = boxId.split(',');
+  // build query
+  let queryParams = {},
+    phenomenon = req.params['phenomenon'];
+  if (phenomenon && phenomenon.trim() !== '') {
+    phenomenon = phenomenon.trim();
+    queryParams['sensors.title'] = phenomenon;
+  } else {
+    return next(new restify.BadRequestError('invalid phenomenon parameter'));
+  }
 
-    res.header('Content-Type', 'text/csv');
-    Box.find({
-      '_id': {
+  if (req.boxId && req.bbox) {
+    return next(new restify.BadRequestError('please specify only boxId or bbox'));
+  } else if (req.boxId || req.bbox) {
+    if (req.boxId) {
+      let boxIds = req.boxId.split(',');
+      queryParams['_id'] = {
         '$in': boxIds
-      },
-      'sensors.title': req.params['phenomenon'].toString()
-    })
-      .lean()
-      .exec()
-      .then(function (boxData) {
-        var sensors = Object.create(null);
+      };
+    } else if (req.bbox) {
+      // transform bounds to polygon
+      queryParams['loc.geometry'] = {
+        '$geoWithin': {
+          '$geometry':
+          {
+            type: 'Polygon',
+            coordinates: [ [
+           [req.bbox[0], req.bbox[1]],
+           [req.bbox[0], req.bbox[3]],
+           [req.bbox[2], req.bbox[3]],
+           [req.bbox[2], req.bbox[1]],
+           [req.bbox[0], req.bbox[1]]
+            ] ]
+          }
+        }
+      };
 
-        for (var i = 0, len = boxData.length; i < len; i++) {
-          for (var j = 0, sensorslen = boxData[i].sensors.length; j < sensorslen; j++) {
-            if (boxData[i].sensors[j].title === phenom) {
-              let sensor = boxData[i].sensors[j];
 
-              sensor.lat = boxData[i].loc[0].geometry.coordinates[0];
-              sensor.lng = boxData[i].loc[0].geometry.coordinates[1];
-              sensor.boxId = boxData[i]._id.toString();
-              sensor.boxName = boxData[i].name;
-              sensor.exposure = boxData[i].exposure;
-              sensor.sensorId = sensor._id.toString();
-              sensor.phenomenon = sensor.title;
+      console.log(JSON.stringify(queryParams['loc.geometry'].coordinates));
+    }
+  } else {
+    return next(new restify.BadRequestError('please specify either boxId or bbox'));
+  }
 
-              sensors[boxData[i].sensors[j]['_id']] = sensor;
-            }
+  Box.find(queryParams)
+    .lean()
+    .exec()
+    .then(function (boxData) {
+      var sensors = Object.create(null);
+
+      for (var i = 0, len = boxData.length; i < len; i++) {
+        for (var j = 0, sensorslen = boxData[i].sensors.length; j < sensorslen; j++) {
+          if (boxData[i].sensors[j].title === phenomenon) {
+            let sensor = boxData[i].sensors[j];
+
+            sensor.lat = boxData[i].loc[0].geometry.coordinates[0];
+            sensor.lng = boxData[i].loc[0].geometry.coordinates[1];
+            sensor.boxId = boxData[i]._id.toString();
+            sensor.boxName = boxData[i].name;
+            sensor.exposure = boxData[i].exposure;
+            sensor.sensorId = sensor._id.toString();
+            sensor.phenomenon = sensor.title;
+
+            sensors[boxData[i].sensors[j]['_id']] = sensor;
+          }
+        }
+      }
+
+      let stringifier = csvstringify({ columns: columns, header: 1, delimiter: delim });
+      let transformer = csvtransform(function (data) {
+        data.createdAt = utils.parseTimestamp(data.createdAt).toISOString();
+
+        for (let col of columns) {
+          if (!data[col]) {
+            data[col] = sensors[data.sensor_id][col];
           }
         }
 
-
-        let stringifier = csvstringify({ columns: columns, header: 1, delimiter: delim });
-        let transformer = csvtransform(function (data) {
-          data.createdAt = utils.parseTimestamp(data.createdAt).toISOString();
-
-          for (let col of columns) {
-            if (!data[col]) {
-              data[col] = sensors[data.sensor_id][col];
-            }
-          }
-
-          return data;
-        });
-
-        transformer.on('error', function (err) {
-          console.log(err.message);
-          Honeybadger.notify(err);
-          return next(new restify.InternalServerError(JSON.stringify(err.message)));
-        });
-
-        Measurement.find({
-          'sensor_id': {
-            '$in': Object.keys(sensors)
-          },
-          createdAt: {
-            '$gt': fromDate.toDate(),
-            '$lt': toDate.toDate()
-          }
-        }, {'createdAt': 1, 'value': 1, '_id': 0, 'sensor_id': 1})
-          .lean()
-          .cursor({ batchSize: 500 })
-          .pipe(transformer)
-          .pipe(stringifier)
-          .pipe(res);
-      })
-      .catch(function (err) {
-        console.log(err);
-        Honeybadger.notify(err);
-        return next(new restify.InternalServerError(JSON.stringify(err.errors)));
+        return data;
       });
-  } else {
-    return next(new restify.InvalidArgumentError('Invalid parameters'));
-  }
+
+      transformer.on('error', function (err) {
+        console.log(err.message);
+        Honeybadger.notify(err);
+        return next(new restify.InternalServerError(JSON.stringify(err.message)));
+      });
+
+      res.header('Content-Type', 'text/csv');
+      Measurement.find({
+        'sensor_id': {
+          '$in': Object.keys(sensors)
+        },
+        createdAt: {
+          '$gt': fromDate.toDate(),
+          '$lt': toDate.toDate()
+        }
+      }, {'createdAt': 1, 'value': 1, '_id': 0, 'sensor_id': 1})
+        .lean()
+        .cursor({ batchSize: 500 })
+        .pipe(transformer)
+        .pipe(stringifier)
+        .pipe(res);
+    })
+    .catch(function (err) {
+      console.log(err);
+      Honeybadger.notify(err);
+      return next(new restify.InternalServerError(JSON.stringify(err.errors)));
+    });
 }
 
 /**
