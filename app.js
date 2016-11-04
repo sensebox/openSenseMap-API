@@ -19,7 +19,8 @@ var restify = require('restify'),
   jsonstringify = require('stringify-stream'),
   utils = require('./lib/utils'),
   decodeHandlers = require('./lib/decoding'),
-  sketches = require('./lib/sketches');
+  sketches = require('./lib/sketches'),
+  requestUtils = require('./lib/requestUtils');
 
 var Honeybadger = utils.Honeybadger,
   cfg = utils.config;
@@ -63,8 +64,8 @@ var Logger = require('bunyan'),
     }
   });
 
-var PATH = '/boxes';
-var userPATH = 'users';
+let PATH = cfg.basePath,
+  userPATH = cfg.userPath;
 
 var server = restify.createServer({
   name: 'opensensemap-api',
@@ -78,19 +79,8 @@ var server = restify.createServer({
 // Also allow POST measurements through unsecured
 // /boxes/:boxId/data and /boxes/:boxId/:sensorId for arduinos
 // and set utf-8 charset
-let validUnsecuredPathRegex = new RegExp('^\\' + PATH + '\/[a-f\\d]{24}\/((data)|([a-f\\d]{24}))\/?$', 'i');
-server.pre(function (request, response, next) {
-  response.charSet('utf-8');
-  request.log.info({req: request}, 'REQUEST');
+server.pre(requestUtils.checkUnsecuredAccess);
 
-  if (process.env.ENV === 'prod'
-    && (!request.headers['x-forwarded-proto'] || request.headers['x-forwarded-proto'] !== 'https')) {
-    if (request.method !== 'POST' || !validUnsecuredPathRegex.test(request.url)) {
-      return next(new restify.NotAuthorizedError('Access through http is not allowed'));
-    }
-  }
-  return next();
-});
 server.use(restify.CORS({'origins': ['*'] })); //['http://localhost', 'https://opensensemap.org']}));
 server.use(restify.fullResponse());
 server.use(restify.queryParser());
@@ -99,48 +89,17 @@ server.pre(restify.pre.sanitizePath());
 
 var Measurement = models.Measurement,
   Box = models.Box,
-  Sensor = models.Sensor,
-  User = models.User;
+  Sensor = models.Sensor;
 
 // the ones matching first are used
 // case is ignored
-const VALID_BOX_ID_PARAMS = [ 'senseboxid', 'senseboxids', 'boxid', 'boxids' ];
 
 // attach a function to validate boxId and sensorId parameters
-server.use(function validateIdParams (req, res, next) {
-  // check parmeters for possible box Id parameters
-  // everything of the like
-  // 'boxId', 'boxid', 'senseBoxIds', 'senseBoxId'
-  // can be used
-  let boxIdParamName;
-  for (let param of Object.keys(req.params)) {
-    if (VALID_BOX_ID_PARAMS.includes(param.toLowerCase())) {
-      boxIdParamName = param;
-      req.boxId = req.params[param].toString();
-      break;
-    }
-  }
-
-  if (typeof req.boxId !== 'undefined') {
-    let boxId = req.boxId;
-    if (boxId.indexOf(',') !== -1) {
-      boxId = boxId.split(',');
-    } else {
-      boxId = [boxId];
-    }
-    if (boxId.some(id => !mongoose.Types.ObjectId.isValid(id))) {
-      next(new restify.BadRequestError('Parameter :' + boxIdParamName + ' is not valid'));
-    }
-  }
-
-  if (typeof req.params['sensorId'] !== 'undefined') {
-    let sensorId = req.params['sensorId'].toString();
-    if (sensorId && !mongoose.Types.ObjectId.isValid(sensorId)) {
-      next(new restify.BadRequestError('Parameter :sensorId is not valid'));
-    }
-  }
-  next();
-});
+// check parmeters for possible box Id parameters
+// everything of the like
+// 'boxId', 'boxid', 'senseBoxIds', 'senseBoxId'
+// can be used
+server.use(requestUtils.validateIdParams);
 
 // GET
 server.get({path: PATH , version: '0.0.1'} , findAllBoxes);
@@ -156,43 +115,22 @@ server.get({path: '/stats', version: '0.1.0'}, getStatistics);
 server.get({path: PATH + '/:boxId/:sensorId/submitMeasurement/:value' , version: '0.0.1'}, postNewMeasurement);
 
 // POST
-server.post({path: PATH , version: '0.0.1'}, utils.checkContentType, postNewBox);
-server.post({path: PATH + '/:boxId/:sensorId' , version: '0.0.1'}, postNewMeasurement);
+server.post({path: PATH , version: '0.0.1'}, requestUtils.checkContentType, postNewBox);
+server.post({path: PATH + '/:boxId/:sensorId' , version: '0.0.1'}, requestUtils.checkContentType, postNewMeasurement);
 server.post({path: PATH + '/:boxId/data' , version: '0.1.0'}, postNewMeasurements);
 server.post({path: PATH + '/data', version: '0.1.0'}, getDataMulti);
 
 // Secured (needs authorization through apikey)
 
 // attach a function to secured requests to validate api key and box id
-server.use(function validateAuthenticationRequest (req, res, next) {
-  if (req.headers['x-apikey'] && req.boxId) {
-    User.findOne({ apikey: req.headers['x-apikey'], boxes: { $in: [ req.boxId ] } })
-      .then(function (user) {
-        if (user && user.boxes.length > 0) {
-          const boxIds = user.boxes.map(boxId => boxId.toString());
-          if (boxIds.includes(req.boxId)) {
-            req.authorized_user = user;
-            return next();
-          }
-        }
-        next(new restify.NotAuthorizedError('ApiKey is invalid or missing'));
-      })
-      .catch(function (err) {
-        console.log(err);
-        Honeybadger.notify(err);
-        next(new restify.InternalServerError());
-      });
-  } else {
-    next(new restify.NotAuthorizedError('ApiKey is invalid or missing'));
-  }
-});
+server.use(requestUtils.validateAuthenticationRequest);
 
 // GET
 server.get({path: userPATH + '/:boxId', version: '0.0.1'}, validApiKey);
 server.get({path: PATH + '/:boxId/script', version: '0.1.0'}, getScript);
 
 // PUT
-server.put({path: PATH + '/:boxId' , version: '0.1.0'}, utils.checkContentType, updateBox);
+server.put({path: PATH + '/:boxId' , version: '0.1.0'}, requestUtils.checkContentType, updateBox);
 
 // DELETE
 server.del({path: PATH + '/:boxId' , version: '0.1.0'}, deleteBox);
@@ -345,7 +283,7 @@ function updateBox (req, res, next) {
     }
     if (typeof req.params.image !== 'undefined' && req.params.image !== '') {
       var data = req.params.image.toString();
-      var imageBuffer = utils.decodeBase64Image(data);
+      var imageBuffer = requestUtils.decodeBase64Image(data);
       var extension = (imageBuffer.type === 'image/jpeg') ? '.jpg' : '.png';
       try {
         fs.writeFileSync(cfg.imageFolder + '' + req.boxId + extension, imageBuffer.data);
@@ -440,24 +378,24 @@ function getMeasurements (req, res, next) {
  */
 function getData (req, res, next) {
   // default to now
-  var toDate = utils.parseTimeParameter(req, next, 'to-date', moment());
+  var toDate = requestUtils.parseTimeParameter(req, next, 'to-date', moment());
   if (!moment.isMoment(toDate)) {
     return next(toDate);
   }
 
   // default to 48 hours earlier from to-date
-  var fromDate = utils.parseTimeParameter(req, next, 'from-date', toDate.clone().subtract(48, 'hours'));
+  var fromDate = requestUtils.parseTimeParameter(req, next, 'from-date', toDate.clone().subtract(48, 'hours'));
   if (!moment.isMoment(fromDate)) {
     return next(fromDate);
   }
 
   // validate time parameters
-  var timesValid = utils.validateTimeParameters(toDate, fromDate);
+  var timesValid = requestUtils.validateTimeParameters(toDate, fromDate);
   if (typeof timesValid !== 'undefined') {
     return next(timesValid);
   }
 
-  var format = utils.getRequestedFormat(req, ['json', 'csv'], 'json');
+  var format = requestUtils.getRequestedFormat(req, ['json', 'csv'], 'json');
   if (typeof format === 'undefined') {
     return next(new restify.InvalidArgumentError('Invalid format: ' + req.params['format']));
   }
@@ -476,7 +414,7 @@ function getData (req, res, next) {
 
   if (format === 'csv') {
     res.header('Content-Type', 'text/csv');
-    let delim = utils.getDelimiter(req);
+    let delim = requestUtils.getDelimiter(req);
     stringifier = csvstringify({ columns: ['createdAt', 'value'], header: 1, delimiter: delim });
   } else if (format === 'json') {
     res.header('Content-Type', 'application/json; charset=utf-8');
@@ -580,7 +518,7 @@ function getDataMulti (req, res, next) {
           }
         }
 
-        let delim = utils.getDelimiter(req);
+        let delim = requestUtils.getDelimiter(req);
         let columns = GET_DATA_MULTI_DEFAULT_COLUMNS;
         let columnsParam = req.params['columns'];
         if (typeof columnsParam !== 'undefined' && columnsParam.trim() !== '') {
@@ -740,7 +678,7 @@ function findAllBoxes (req, res , next) {
   var activityAroundDate = (typeof req.params['date'] === 'undefined' || req.params['date'] === '') ? undefined : req.params['date'];
   var phenomenon = (typeof req.params['phenomenon'] === 'undefined' || req.params['phenomenon'] === '') ? undefined : req.params['phenomenon'];
 
-  var format = utils.getRequestedFormat(req, ['json', 'geojson'], 'json');
+  var format = requestUtils.getRequestedFormat(req, ['json', 'geojson'], 'json');
   if (typeof format === 'undefined') {
     return next(new restify.InvalidArgumentError('Invalid format: ' + req.params['format']));
   }
@@ -919,7 +857,7 @@ function findAllBoxes (req, res , next) {
  */
 
 function findBox (req, res, next) {
-  var format = utils.getRequestedFormat(req, ['json', 'geojson'], 'json');
+  var format = requestUtils.getRequestedFormat(req, ['json', 'geojson'], 'json');
   if (typeof format === 'undefined') {
     return next(new restify.InvalidArgumentError('Invalid format: ' + req.params['format']));
   }

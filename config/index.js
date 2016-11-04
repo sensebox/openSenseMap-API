@@ -11,6 +11,8 @@ var config = {
   dbuserpass: '',
 
   port: 8000,
+  basePath: '/boxes',
+  userPath: '/users',
 
   mailer_url: '', // leave empty to not send emails
   mailer_cert: '',
