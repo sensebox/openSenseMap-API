@@ -462,6 +462,7 @@ function getData (req, res, next) {
  * @apiUse SeparatorParam
  * @apiUse BBoxParam
  * @apiParam {String} columns (optional) Comma separated list of columns to export. If omitted, columns createdAt, value, lat, lng are returned. Possible allowed values are createdAt, value, lat, lng, unit, boxId, sensorId, phenomenon, sensorType, boxName, exposure. The columns in the csv are like the order supplied in this parameter
+ * @apiParam {String} exposure (optional) only return sensors of boxes with the specified exposure. Can be indoor or outdoor
  */
 const GET_DATA_MULTI_DEFAULT_COLUMNS = ['createdAt', 'value', 'lat', 'lng'];
 const GET_DATA_MULTI_ALLOWED_COLUMNS = ['createdAt', 'value', 'lat', 'lng', 'unit', 'boxId', 'sensorId', 'phenomenon', 'sensorType', 'boxName', 'exposure'];
@@ -522,21 +523,28 @@ function getDataMulti (req, res, next) {
           {
             type: 'Polygon',
             coordinates: [ [
-           [req.bbox[0], req.bbox[1]],
-           [req.bbox[0], req.bbox[3]],
-           [req.bbox[2], req.bbox[3]],
-           [req.bbox[2], req.bbox[1]],
-           [req.bbox[0], req.bbox[1]]
+              [req.bbox[0], req.bbox[1]],
+              [req.bbox[0], req.bbox[3]],
+              [req.bbox[2], req.bbox[3]],
+              [req.bbox[2], req.bbox[1]],
+              [req.bbox[0], req.bbox[1]]
             ] ]
           }
         }
       };
-
-
-      console.log(JSON.stringify(queryParams['loc.geometry'].coordinates));
     }
   } else {
     return next(new restify.BadRequestError('please specify either boxId or bbox'));
+  }
+
+  // exposure parameter
+  if (req.params['exposure']) {
+    let exposureParam = req.params['exposure'].trim();
+    if (exposureParam === 'indoor' || exposureParam === 'outdoor') {
+      queryParams['exposure'] = exposureParam;
+    } else {
+      return next(new restify.UnprocessableEntityError('exposure column should be indoor or outdoor'));
+    }
   }
 
   Box.find(queryParams)
