@@ -64,9 +64,6 @@ var Logger = require('bunyan'),
     }
   });
 
-let PATH = cfg.basePath,
-  userPATH = cfg.userPath;
-
 var server = restify.createServer({
   name: 'opensensemap-api',
   version: '0.0.1',
@@ -101,24 +98,25 @@ var Measurement = models.Measurement,
 // can be used
 server.use(requestUtils.validateIdParams);
 
+console.log(cfg);
 // GET
-server.get({path: PATH , version: '0.0.1'} , findAllBoxes);
+server.get({path: cfg.basePath , version: '0.0.1'} , findAllBoxes);
 // explanation for this route:
 // the regex matches strings like 'boxes.blabla' where 'blaba' could be 'geojson' or 'json'
 // this does not work anymore but I might consider reimplementing it..
 server.get({path: /(boxes)\.([a-z]+)/, version: '0.1.0'} , findAllBoxes);
-server.get({path: PATH + '/:boxId' , version: '0.0.1'} , findBox);
-server.get({path: PATH + '/:boxId/sensors', version: '0.0.1'}, getMeasurements);
-server.get({path: PATH + '/:boxId/data/:sensorId', version: '0.0.1'}, getData);
-server.get({path: PATH + '/data', version: '0.1.0'}, requestUtils.validateBboxParam, getDataMulti);
+server.get({path: cfg.basePath + '/:boxId' , version: '0.0.1'} , findBox);
+server.get({path: cfg.basePath + '/:boxId/sensors', version: '0.0.1'}, getMeasurements);
+server.get({path: cfg.basePath + '/:boxId/data/:sensorId', version: '0.0.1'}, getData);
+server.get({path: cfg.basePath + '/data', version: '0.1.0'}, requestUtils.validateBboxParam, getDataMulti);
 server.get({path: '/stats', version: '0.1.0'}, getStatistics);
-server.get({path: PATH + '/:boxId/:sensorId/submitMeasurement/:value' , version: '0.0.1'}, postNewMeasurement);
+server.get({path: cfg.basePath + '/:boxId/:sensorId/submitMeasurement/:value' , version: '0.0.1'}, postNewMeasurement);
 
 // POST
-server.post({path: PATH , version: '0.0.1'}, requestUtils.checkContentType, postNewBox);
-server.post({path: PATH + '/:boxId/:sensorId' , version: '0.0.1'}, requestUtils.checkContentType, postNewMeasurement);
-server.post({path: PATH + '/:boxId/data' , version: '0.1.0'}, postNewMeasurements);
-server.post({path: PATH + '/data', version: '0.1.0'}, requestUtils.validateBboxParam, getDataMulti);
+server.post({path: cfg.basePath , version: '0.0.1'}, requestUtils.checkContentType, postNewBox);
+server.post({path: cfg.basePath + '/:boxId/:sensorId' , version: '0.0.1'}, requestUtils.checkContentType, postNewMeasurement);
+server.post({path: cfg.basePath + '/:boxId/data' , version: '0.1.0'}, postNewMeasurements);
+server.post({path: cfg.basePath + '/data', version: '0.1.0'}, requestUtils.validateBboxParam, getDataMulti);
 
 // Secured (needs authorization through apikey)
 
@@ -126,14 +124,14 @@ server.post({path: PATH + '/data', version: '0.1.0'}, requestUtils.validateBboxP
 server.use(requestUtils.validateAuthenticationRequest);
 
 // GET
-server.get({path: userPATH + '/:boxId', version: '0.0.1'}, validApiKey);
-server.get({path: PATH + '/:boxId/script', version: '0.1.0'}, getScript);
+server.get({path: cfg.userPath + '/:boxId', version: '0.0.1'}, validApiKey);
+server.get({path: cfg.basePath + '/:boxId/script', version: '0.1.0'}, getScript);
 
 // PUT
-server.put({path: PATH + '/:boxId' , version: '0.1.0'}, requestUtils.checkContentType, updateBox);
+server.put({path: cfg.basePath + '/:boxId' , version: '0.1.0'}, requestUtils.checkContentType, updateBox);
 
 // DELETE
-server.del({path: PATH + '/:boxId' , version: '0.1.0'}, deleteBox);
+server.del({path: cfg.basePath + '/:boxId' , version: '0.1.0'}, deleteBox);
 
 
 function unknownMethodHandler (req, res) {
