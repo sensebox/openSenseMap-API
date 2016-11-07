@@ -98,7 +98,6 @@ var Measurement = models.Measurement,
 // can be used
 server.use(requestUtils.validateIdParams);
 
-console.log(cfg);
 // GET
 server.get({path: cfg.basePath , version: '0.0.1'} , findAllBoxes);
 // explanation for this route:
