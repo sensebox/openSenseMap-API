@@ -106,8 +106,8 @@ server.get({path: cfg.basePath , version: '0.0.1'} , findAllBoxes);
 server.get({path: /(boxes)\.([a-z]+)/, version: '0.1.0'} , findAllBoxes);
 server.get({path: cfg.basePath + '/:boxId' , version: '0.0.1'} , findBox);
 server.get({path: cfg.basePath + '/:boxId/sensors', version: '0.0.1'}, getMeasurements);
-server.get({path: cfg.basePath + '/:boxId/data/:sensorId', version: '0.0.1'}, getData);
-server.get({path: cfg.basePath + '/data', version: '0.1.0'}, requestUtils.validateBboxParam, getDataMulti);
+server.get({path: cfg.basePath + '/:boxId/data/:sensorId', version: '0.0.1'}, requestUtils.parseAndValidateTimeParams, getData);
+server.get({path: cfg.basePath + '/data', version: '0.1.0'}, requestUtils.parseAndValidateTimeParams, requestUtils.validateBboxParam, getDataMulti);
 server.get({path: '/stats', version: '0.1.0'}, getStatistics);
 server.get({path: cfg.basePath + '/:boxId/:sensorId/submitMeasurement/:value' , version: '0.0.1'}, postNewMeasurement);
 
@@ -374,24 +374,6 @@ function getMeasurements (req, res, next) {
  * @apiUse SeparatorParam
  */
 function getData (req, res, next) {
-  // default to now
-  var toDate = utils.parseTimeParameter(req, next, 'to-date', moment());
-  if (!moment.isMoment(toDate)) {
-    return next(toDate);
-  }
-
-  // default to 48 hours earlier from to-date
-  var fromDate = utils.parseTimeParameter(req, next, 'from-date', toDate.clone().subtract(48, 'hours'));
-  if (!moment.isMoment(fromDate)) {
-    return next(fromDate);
-  }
-
-  // validate time parameters
-  var timesValid = utils.validateTimeParameters(toDate, fromDate);
-  if (typeof timesValid !== 'undefined') {
-    return next(timesValid);
-  }
-
   var format = requestUtils.getRequestedFormat(req, ['json', 'csv'], 'json');
   if (typeof format === 'undefined') {
     return next(new restify.InvalidArgumentError('Invalid format: ' + req.params['format']));
@@ -434,7 +416,7 @@ function getData (req, res, next) {
 
   var qry = {
     sensor_id: req.params.sensorId,
-    createdAt: { $gte: fromDate.toDate(), $lte: toDate.toDate() }
+    createdAt: { $gte: req['from-date'].toDate(), $lte: req['to-date'].toDate() }
   };
 
   Measurement.find(qry,{'createdAt': 1, 'value': 1, '_id': 0}) // do not send _id column
@@ -454,7 +436,7 @@ function getData (req, res, next) {
  * @apiName getDataMulti
  * @apiParam {String} senseBoxIds Comma separated list of senseBox IDs.
  * @apiParam {String} phenomenon the name of the phenomenon you want to download the data for.
- * @apiParam {ISO8601Date} from-date Beginning date of measurement data (default: 15 days ago from now)
+ * @apiParam {ISO8601Date} from-date Beginning date of measurement data (default: 2 days ago from now)
  * @apiParam {ISO8601Date} to-date End date of measurement data (default: now)
  * @apiUse SeparatorParam
  * @apiUse BBoxParam
@@ -465,23 +447,8 @@ const GET_DATA_MULTI_DEFAULT_COLUMNS = ['createdAt', 'value', 'lat', 'lng'];
 const GET_DATA_MULTI_ALLOWED_COLUMNS = ['createdAt', 'value', 'lat', 'lng', 'unit', 'boxId', 'sensorId', 'phenomenon', 'sensorType', 'boxName', 'exposure'];
 
 function getDataMulti (req, res, next) {
-  // default to now
-  var toDate = utils.parseTimeParameter(req, next, 'to-date', moment().utc());
-  if (!moment.isMoment(toDate)) {
-    return next(toDate);
-  }
-
-  // default to 15 days earlier
-  var fromDate = utils.parseTimeParameter(req, next, 'from-date', toDate.clone().subtract(15, 'days'));
-  if (!moment.isMoment(fromDate)) {
-    return next(fromDate);
-  }
-
-  // validate time parameters
-  var timesValid = utils.validateTimeParameters(toDate, fromDate);
-  if (typeof timesValid !== 'undefined') {
-    return next(timesValid);
-  }
+  let toDate = req['to-date'],
+    fromDate = req['from-date'];
 
   // column parameter
   let delim = requestUtils.getDelimiter(req);
