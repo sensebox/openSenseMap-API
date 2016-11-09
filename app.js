@@ -12,7 +12,6 @@ var restify = require('restify'),
   _ = require('lodash'),
   models = require('./lib/models'),
   csvstringify = require('csv-stringify'),
-  csvtransform = require('stream-transform'),
   Stream = require('stream'),
   moment = require('moment'),
   util = require('util'),
@@ -374,27 +373,18 @@ function getMeasurements (req, res, next) {
  * @apiUse SeparatorParam
  */
 function getData (req, res, next) {
-  var format = requestUtils.getRequestedFormat(req, ['json', 'csv'], 'json');
+  let format = requestUtils.getRequestedFormat(req, ['json', 'csv'], 'json');
   if (typeof format === 'undefined') {
     return next(new restify.InvalidArgumentError('Invalid format: ' + req.params['format']));
   }
 
-  var stringifier;
-
-  var csvTransformer = csvtransform(function (data) {
-    data.createdAt = new Date(data.createdAt).toISOString();
-    return data;
-  });
-  csvTransformer.on('error', (err) => {
-    console.log(err.message);
-    Honeybadger.notify(err);
-    return next(new restify.InternalServerError(err.message));
-  });
+  let stringifier;
+  let columns = ['createdAt', 'value'];
 
   if (format === 'csv') {
     res.header('Content-Type', 'text/csv');
     let delim = requestUtils.getDelimiter(req);
-    stringifier = csvstringify({ columns: ['createdAt', 'value'], header: 1, delimiter: delim });
+    stringifier = csvstringify({ columns: columns, header: 1, delimiter: delim });
   } else if (format === 'json') {
     res.header('Content-Type', 'application/json; charset=utf-8');
     stringifier = jsonstringify({ open: '[', close: ']' });
@@ -411,21 +401,23 @@ function getData (req, res, next) {
     res.header('Content-Disposition', 'attachment; filename=' + req.params.sensorId + '.' + format);
   }
 
-  // finally execute the query
-  var queryLimit = 10000;
+  Box.findMeasurementsOfBoxesStream({
+    '_id': {
+      '$in': req.boxId
+    },
+    'sensors._id': req.params.sensorId
+  }, req.params.sensorId, req['from-date'].toDate(), req['to-date'].toDate(), columns)
+    .then(function (cursor) {
+      cursor
+        .pipe(stringifier)
+        .pipe(res);
 
-  var qry = {
-    sensor_id: req.params.sensorId,
-    createdAt: { $gte: req['from-date'].toDate(), $lte: req['to-date'].toDate() }
-  };
-
-  Measurement.find(qry,{'createdAt': 1, 'value': 1, '_id': 0}) // do not send _id column
-    .limit(queryLimit)
-    .lean()
-    .cursor({ batchSize: 500 })
-    .pipe(csvTransformer)
-    .pipe(stringifier)
-    .pipe(res);
+    })
+    .catch(function (err) {
+      console.log(err);
+      Honeybadger.notify(err);
+      return next(new restify.InternalServerError(JSON.stringify(err.errors)));
+    });
 }
 
 /**
@@ -447,9 +439,6 @@ const GET_DATA_MULTI_DEFAULT_COLUMNS = ['createdAt', 'value', 'lat', 'lng'];
 const GET_DATA_MULTI_ALLOWED_COLUMNS = ['createdAt', 'value', 'lat', 'lng', 'unit', 'boxId', 'sensorId', 'phenomenon', 'sensorType', 'boxName', 'exposure'];
 
 function getDataMulti (req, res, next) {
-  let toDate = req['to-date'],
-    fromDate = req['from-date'];
-
   // column parameter
   let delim = requestUtils.getDelimiter(req);
   let columns = GET_DATA_MULTI_DEFAULT_COLUMNS;
@@ -511,64 +500,15 @@ function getDataMulti (req, res, next) {
     }
   }
 
-  Box.find(queryParams)
-    .lean()
-    .exec()
-    .then(function (boxData) {
-      var sensors = Object.create(null);
-
-      for (var i = 0, len = boxData.length; i < len; i++) {
-        for (var j = 0, sensorslen = boxData[i].sensors.length; j < sensorslen; j++) {
-          if (boxData[i].sensors[j].title === phenomenon) {
-            let sensor = boxData[i].sensors[j];
-
-            sensor.lat = boxData[i].loc[0].geometry.coordinates[0];
-            sensor.lng = boxData[i].loc[0].geometry.coordinates[1];
-            sensor.boxId = boxData[i]._id.toString();
-            sensor.boxName = boxData[i].name;
-            sensor.exposure = boxData[i].exposure;
-            sensor.sensorId = sensor._id.toString();
-            sensor.phenomenon = sensor.title;
-
-            sensors[boxData[i].sensors[j]['_id']] = sensor;
-          }
-        }
-      }
-
+  Box.findMeasurementsOfBoxesStream(queryParams, phenomenon, req['from-date'].toDate(), req['to-date'].toDate(), columns)
+    .then(function (cursor) {
       let stringifier = csvstringify({ columns: columns, header: 1, delimiter: delim });
-      let transformer = csvtransform(function (data) {
-        data.createdAt = utils.parseTimestamp(data.createdAt).toISOString();
-
-        for (let col of columns) {
-          if (!data[col]) {
-            data[col] = sensors[data.sensor_id][col];
-          }
-        }
-
-        return data;
-      });
-
-      transformer.on('error', function (err) {
-        console.log(err.message);
-        Honeybadger.notify(err);
-        return next(new restify.InternalServerError(JSON.stringify(err.message)));
-      });
 
       res.header('Content-Type', 'text/csv');
-      Measurement.find({
-        'sensor_id': {
-          '$in': Object.keys(sensors)
-        },
-        createdAt: {
-          '$gt': fromDate.toDate(),
-          '$lt': toDate.toDate()
-        }
-      }, {'createdAt': 1, 'value': 1, '_id': 0, 'sensor_id': 1})
-        .lean()
-        .cursor({ batchSize: 500 })
-        .pipe(transformer)
+      cursor
         .pipe(stringifier)
         .pipe(res);
+
     })
     .catch(function (err) {
       console.log(err);
