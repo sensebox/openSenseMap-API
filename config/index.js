@@ -6,9 +6,9 @@
 var config = {
   targetFolder: '/var/OpenSenseMap-API/usersketches/',
   imageFolder: '/var/www/OpenSenseMap/app/userimages/',
-  dbhost: 'db',
-  dbuser: '',
-  dbuserpass: '',
+  dbhost: 'localhost',
+  dbuser: 'senseboxapiuser',
+  dbuserpass: 'userpass',
 
   port: 8000,
   basePath: '/boxes',
