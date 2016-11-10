@@ -6,6 +6,13 @@
   dependencies:
     "@turf/meta" "^3.5.3"
 
+"@turf/centroid":
+  version "3.5.3"
+  resolved "https://registry.yarnpkg.com/@turf/centroid/-/centroid-3.5.3.tgz#35f47ca27d9a7febe1c0cb50d4431f7f2e613a23"
+  dependencies:
+    "@turf/helpers" "^3.5.3"
+    "@turf/meta" "^3.5.3"
+
 "@turf/distance", "@turf/distance@^3.5.3":
   version "3.5.3"
   resolved "https://registry.yarnpkg.com/@turf/distance/-/distance-3.5.3.tgz#0f8a87675d98bd45cfe48c754df83fdc1d05436a"
@@ -13,7 +20,7 @@
     "@turf/helpers" "^3.5.3"
     "@turf/invariant" "^3.5.2"
 
-"@turf/helpers@^3.5.3":
+"@turf/helpers", "@turf/helpers@^3.5.3":
   version "3.5.3"
   resolved "https://registry.yarnpkg.com/@turf/helpers/-/helpers-3.5.3.tgz#32142d2c1aec9c3e92c6855fb8988b18a487cf9b"
 

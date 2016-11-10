@@ -19,7 +19,8 @@ var restify = require('restify'),
   utils = require('./lib/utils'),
   decodeHandlers = require('./lib/decoding'),
   sketches = require('./lib/sketches'),
-  requestUtils = require('./lib/requestUtils');
+  requestUtils = require('./lib/requestUtils'),
+  statistics = require('./lib/statistics');
 
 var Honeybadger = utils.Honeybadger,
   cfg = utils.config;
@@ -109,6 +110,8 @@ server.get({path: cfg.basePath + '/:boxId/data/:sensorId', version: '0.0.1'}, re
 server.get({path: cfg.basePath + '/data', version: '0.1.0'}, requestUtils.parseAndValidateTimeParams, requestUtils.validateBboxParam, getDataMulti);
 server.get({path: '/stats', version: '0.1.0'}, getStatistics);
 server.get({path: cfg.basePath + '/:boxId/:sensorId/submitMeasurement/:value' , version: '0.0.1'}, postNewMeasurement);
+
+server.get({path: 'test_' + cfg.statisticsPath + '/idw'}, requestUtils.parseAndValidateTimeParams, requestUtils.validateBboxParam, statistics.idw);
 
 // POST
 server.post({path: cfg.basePath , version: '0.0.1'}, requestUtils.checkContentType, postNewBox);

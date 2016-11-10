@@ -13,6 +13,7 @@ var config = {
   port: 8000,
   basePath: '/boxes',
   userPath: '/users',
+  statisticsPath: '/statistics',
 
   mailer_url: '', // leave empty to not send emails
   mailer_cert: '',
