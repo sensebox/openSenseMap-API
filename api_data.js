@@ -800,7 +800,7 @@ define({ "api": [
             "type": "ISO8601Date",
             "optional": false,
             "field": "from-date",
-            "description": "<p>Beginning date of measurement data (default: 2 days ago from now)</p>"
+            "description": "<p>Beginning date of measurement data (default: 15 days ago from now)</p>"
           },
           {
             "group": "Parameter",
