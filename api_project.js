@@ -14,14 +14,13 @@ define({
     "getScript",
     "postNewMeasurement",
     "getMeasurements",
-    "getData",
-    "calculateIdw"
+    "getData"
   ],
   "sampleUrl": false,
   "apidoc": "0.2.0",
   "generator": {
     "name": "apidoc",
-    "time": "2016-11-11T13:10:40.367Z",
+    "time": "2016-11-11T21:34:42.492Z",
     "url": "http://apidocjs.com",
     "version": "0.16.1"
   }
