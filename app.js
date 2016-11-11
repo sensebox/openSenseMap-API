@@ -111,7 +111,7 @@ server.get({path: cfg.basePath + '/data', version: '0.1.0'}, requestUtils.parseA
 server.get({path: '/stats', version: '0.1.0'}, getStatistics);
 server.get({path: cfg.basePath + '/:boxId/:sensorId/submitMeasurement/:value' , version: '0.0.1'}, postNewMeasurement);
 
-server.get({path: 'test_' + cfg.statisticsPath + '/idw'}, requestUtils.parseAndValidateTimeParams, requestUtils.validateBboxParam, statistics.idw);
+server.get({path: 'test_' + cfg.statisticsPath + '/idw'}, ...statistics.idw.handlerChain);
 
 // POST
 server.post({path: cfg.basePath , version: '0.0.1'}, requestUtils.checkContentType, postNewBox);
