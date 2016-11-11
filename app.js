@@ -159,14 +159,14 @@ server.on('MethodNotAllowed', unknownMethodHandler);
  * @apiGroup Boxes
  * @apiUse AuthorizationRequiredError
  * @apiUse BoxIdParam
- * @apiParam {String} returnBox if supplied and non-empty, returns the senseBox with the senseBoxId with hidden fields
+ * @apiParam {String} [returnBox] if supplied and non-empty, returns the senseBox with the senseBoxId with hidden fields
  * @apiDescription Validate authorization through API key and senseBoxId. Will return status code 403 if invalid, 200 if valid.
  * @apiSuccess {json} Response `{"code": "Authorized", "message":"ApiKey is valid"}`
  * @apiVersion 0.0.1
  * @apiName validApiKey
  */
 function validApiKey (req, res, next) {
-  if (req.params['returnBox']) {
+  if (req.params['returnBox'] !== '') {
     Box.findAndPopulateBoxById(req.boxId, { includeSecrets: true })
       .then(function (box) {
         if (box) {
@@ -366,11 +366,10 @@ function getMeasurements (req, res, next) {
  * @apiName getData
  * @apiUse BoxIdParam
  * @apiUse SensorIdParam
- * @apiParam {ISO8601Date} from-date Beginning date of measurement data (default: 48 hours ago from now)
- * @apiParam {ISO8601Date} to-date End date of measurement data (default: now)
- * @apiParam {String="true","false"} download If set, offer download to the user (default: false, always on if CSV is used)
- * @apiParam {String="json","csv"} format=json Can be 'json' (default) or 'csv' (default: json)
- * @apiParam {Boolean} download if specified, the api will set the `content-disposition` header thus forcing browsers to download instead of displaying. Is always true for format csv.
+ * @apiParam {ISO8601Date} [from-date] Beginning date of measurement data (default: 48 hours ago from now)
+ * @apiParam {ISO8601Date} [to-date] End date of measurement data (default: now)
+ * @apiParam {String="json","csv"} [format=json] Can be 'json' (default) or 'csv' (default: json)
+ * @apiParam {Boolean="true","false"} [download] if specified, the api will set the `content-disposition` header thus forcing browsers to download instead of displaying. Is always true for format csv.
  * @apiUse SeparatorParam
  */
 function getData (req, res, next) {
@@ -454,12 +453,12 @@ function getData (req, res, next) {
  * @apiName getDataMulti
  * @apiParam {String} senseBoxIds Comma separated list of senseBox IDs.
  * @apiParam {String} phenomenon the name of the phenomenon you want to download the data for.
- * @apiParam {ISO8601Date} from-date Beginning date of measurement data (default: 15 days ago from now)
- * @apiParam {ISO8601Date} to-date End date of measurement data (default: now)
+ * @apiParam {ISO8601Date} [from-date] Beginning date of measurement data (default: 15 days ago from now)
+ * @apiParam {ISO8601Date} [to-date] End date of measurement data (default: now)
  * @apiUse SeparatorParam
  * @apiUse BBoxParam
- * @apiParam {String} columns (optional) Comma separated list of columns to export. If omitted, columns createdAt, value, lat, lng are returned. Possible allowed values are createdAt, value, lat, lng, unit, boxId, sensorId, phenomenon, sensorType, boxName, exposure. The columns in the csv are like the order supplied in this parameter
- * @apiParam {String} exposure (optional) only return sensors of boxes with the specified exposure. Can be indoor or outdoor
+ * @apiParam {String} [columns=createdAt,value,lat,lng] (optional) Comma separated list of columns to export. If omitted, columns createdAt, value, lat, lng are returned. Possible allowed values are createdAt, value, lat, lng, unit, boxId, sensorId, phenomenon, sensorType, boxName, exposure. The columns in the csv are like the order supplied in this parameter
+ * @apiParam {String="indoor","outdoor"} [exposure] (optional) only return sensors of boxes with the specified exposure. Can be indoor or outdoor
  */
 const GET_DATA_MULTI_DEFAULT_COLUMNS = ['createdAt', 'value', 'lat', 'lng'];
 const GET_DATA_MULTI_ALLOWED_COLUMNS = ['createdAt', 'value', 'lat', 'lng', 'unit', 'boxId', 'sensorId', 'phenomenon', 'sensorType', 'boxName', 'exposure'];
@@ -619,7 +618,7 @@ function getDataMulti (req, res, next) {
  * @apiUse BoxIdParam
  * @apiUse SensorIdParam
  * @apiParam (RequestBody) {String} value the measured value of the sensor. Also accepts JSON float numbers.
- * @apiParam (RequestBody) {String} createdAt the timestamp of the measurement. Should be parseable by JavaScript.
+ * @apiParam (RequestBody) {ISO8601Date} [createdAt] the timestamp of the measurement. Should be parseable by JavaScript.
  */
 function postNewMeasurement (req, res, next) {
   let jsonHandler = decodeHandlers.json;
@@ -653,17 +652,43 @@ function postNewMeasurement (req, res, next) {
 }
 
 /**
- * I think this shouldn't be documented for now
- * api {post} /boxes/:boxId/data Post multiple new measurements
- * @apiDescription Post multiple new measurements as an JSON array to a box.
+ * @api {post} /boxes/:boxId/data Post multiple new measurements
+ * @apiDescription Post multiple new measurements in multiple formats to a box. Allows the use of csv, json array and json object notation.
+ *
+ * **CSV:**<br/>
+ * For data in csv format, first use `content-type: text/csv` as header, then submit multiple values as lines in `sensorId,value,[createdAt]` form.
+ * Timestamp is optional. Do not submit a header.
+ *
+ * **JSON Array:**<br/>
+ * You can submit your data as array. Your measurements should be objects with the keys `sensor`, `value` and optionally `createdAt`. Specify the header `content-type: application/json`.
+ *
+ * **JSON Object:**<br/>
+ * The third form is to encode your measurements in an object. Here, the keys of the object are the sensorIds, the values of the object are either just the `value` of your measurement or an array of the form `[value, createdAt]`
+ *
+ * For all encodings, the maximum count of values in one request is 2500.
+ *
  * @apiVersion 0.1.0
  * @apiGroup Measurements
  * @apiName postNewMeasurements
  * @apiUse BoxIdParam
- * @apiParam (RequestBody) {Object[]} bla bla
- * @apiSampleRequest
- * [{ "sensor": "56cb7c25b66992a02fe389de", "value": "3" },{ "sensor": "56cb7c25b66992a02fe389df", "value": "2" }]
- * curl -X POST -H 'Content-type:application/json' -d "[{ \"sensor\": \"56cb7c25b66992a02fe389de\", \"value\": \"3\" },{ \"sensor\": \"56cb7c25b66992a02fe389df\", \"value\": \"2\" }]" localhost:8000/boxes/56cb7c25b66992a02fe389d9/data
+ * @apiParamExample {application/json} JSON-Object:
+ * {
+ *   "sensorID": "value",
+ *   "anotherSensorID": ["value", "createdAt as ISO8601-timestamp"],
+ *   "sensorIDtheThird": ["value"]
+ *   ...
+ * }
+ * @apiParamExample {application/json} JSON-Array:
+ * [
+ *   {"sensor":"sensorID", "value":"value"},
+ *   {"sensor":"anotherSensorId", "value":"value", "createdAt": "ISO8601-timestamp"}
+ *   ...
+ * ]
+ * @apiParamExample {text/csv} CSV:
+ * sensorID,value
+ * anotherSensorId,value,ISO8601-timestamp
+ * sensorIDtheThird,value
+ * ...
  */
 function postNewMeasurements (req, res, next) {
   // when the body is an array, restify overwrites the req.params with the given array.
@@ -705,9 +730,9 @@ function postNewMeasurements (req, res, next) {
  * @apiName findAllBoxes
  * @apiGroup Boxes
  * @apiVersion 0.1.0
- * @apiParam {String} date A date or datetime (UTC) where a station should provide measurements. Use in combination with `phenomenon`.
- * @apiParam {String} phenomenon A sensor phenomenon (determined by sensor name) such as temperature, humidity or UV intensity. Use in combination with `date`.
- * @apiParam {String="json","geojson"} format=json the format the sensor data is returned in.
+ * @apiParam {ISO8601Date} [date] One or two ISO8601 timestamps at which boxes should provide measurements. Use in combination with `phenomenon`.
+ * @apiParam {String} [phenomenon] A sensor phenomenon (determined by sensor name) such as temperature, humidity or UV intensity. Use in combination with `date`.
+ * @apiParam {String="json","geojson"} [format=json] the format the sensor data is returned in.
  * @apiSampleRequest https://api.opensensemap.org/boxes
  * @apiSampleRequest https://api.opensensemap.org/boxes?date=2015-03-07T02:50Z&phenomenon=Temperatur
  * @apiSampleRequest https://api.opensensemap.org/boxes?date=2015-03-07T02:50Z,2015-04-07T02:50Z&phenomenon=Temperatur
@@ -856,41 +881,102 @@ function findAllBoxes (req, res , next) {
  * @apiVersion 0.0.1
  * @apiGroup Boxes
  * @apiUse BoxIdParam
- * @apiParam {String="json","geojson"} format=json the format the sensor data is returned in.
+ * @apiParam {String="json","geojson"} [format=json] the format the sensor data is returned in.
  * @apiSuccessExample Example data on success:
  * {
-  "_id": "5386e44d5f08822009b8b614",
-  "name": "PHOBOS",
+  "_id": "57000b8745fd40c8196ad04c",
   "boxType": "fixed",
-  "sensors": [
-    {
-      "_id": "5386e44d5f08822009b8b615",
-      "boxes_id": "5386e44d5f08822009b8b614",
-      "lastMeasurement": {
-        "_id": "5388d07f5f08822009b937b7",
-        "createdAt": "2014-05-30T18:39:59.353Z",
-        "updatedAt": "2014-05-30T18:39:59.353Z",
-        "value": "584",
-        "sensor_id": "5386e44d5f08822009b8b615",
-      },
-      "sensorType": "GL5528",
-      "title": "Helligkeit",
-      "unit": "Pegel"
-    }
-  ],
+  "createdAt": "2016-06-02T11:22:51.817Z",
+  "exposure": "outdoor",
+  "grouptag": "",
+  "image": "57000b8745fd40c8196ad04c.png?1466435154159",
   "loc": [
     {
-      "_id": "5386e44d5f08822009b8b61a",
       "geometry": {
         "coordinates": [
-          10.54555893642828,
-          49.61361673283691
+          7.64568,
+          51.962372
         ],
         "type": "Point"
       },
       "type": "feature"
     }
-  ]
+  ],
+  "name": "Oststr/Mauritzsteinpfad",
+  "sensors": [
+    {
+      "_id": "57000b8745fd40c8196ad04e",
+      "lastMeasurement": {
+        "value": "0",
+        "createdAt": "2016-11-11T21:22:01.675Z"
+      },
+      "sensorType": "VEML6070",
+      "title": "UV-Intensität",
+      "unit": "μW/cm²"
+    },
+    {
+      "_id": "57000b8745fd40c8196ad04f",
+      "lastMeasurement": {
+        "value": "0",
+        "createdAt": "2016-11-11T21:22:01.675Z"
+      },
+      "sensorType": "TSL45315",
+      "title": "Beleuchtungsstärke",
+      "unit": "lx"
+    },
+    {
+      "_id": "57000b8745fd40c8196ad050",
+      "lastMeasurement": {
+        "value": "1019.21",
+        "createdAt": "2016-11-11T21:22:01.675Z"
+      },
+      "sensorType": "BMP280",
+      "title": "Luftdruck",
+      "unit": "hPa"
+    },
+    {
+      "_id": "57000b8745fd40c8196ad051",
+      "lastMeasurement": {
+        "value": "99.38",
+        "createdAt": "2016-11-11T21:22:01.675Z"
+      },
+      "sensorType": "HDC1008",
+      "title": "rel. Luftfeuchte",
+      "unit": "%"
+    },
+    {
+      "_id": "57000b8745fd40c8196ad052",
+      "lastMeasurement": {
+        "value": "0.21",
+        "createdAt": "2016-11-11T21:22:01.675Z"
+      },
+      "sensorType": "HDC1008",
+      "title": "Temperatur",
+      "unit": "°C"
+    },
+    {
+      "_id": "576996be6c521810002479dd",
+      "sensorType": "WiFi",
+      "unit": "dBm",
+      "title": "Wifi-Stärke",
+      "lastMeasurement": {
+        "value": "-66",
+        "createdAt": "2016-11-11T21:22:01.675Z"
+      }
+    },
+    {
+      "_id": "579f9eae68b4a2120069edc8",
+      "sensorType": "VCC",
+      "unit": "V",
+      "title": "Eingangsspannung",
+      "lastMeasurement": {
+        "value": "2.73",
+        "createdAt": "2016-11-11T21:22:01.675Z"
+      },
+      "icon": "osem-shock"
+    }
+  ],
+  "updatedAt": "2016-11-11T21:22:01.686Z"
 }
  */
 
