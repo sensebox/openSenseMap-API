@@ -6,7 +6,7 @@
     "name": "deleteBox",
     "group": "Boxes",
     "version": "0.1.0",
-    "filename": "./app.js",
+    "filename": "./lib/controllers/boxesController.js",
     "groupTitle": "Boxes",
     "header": {
       "fields": {
@@ -113,7 +113,7 @@
         "url": "https://api.opensensemap.org/boxes?date=2015-03-07T02:50Z,2015-04-07T02:50Z&phenomenon=Temperatur"
       }
     ],
-    "filename": "./app.js",
+    "filename": "./lib/controllers/boxesController.js",
     "groupTitle": "Boxes"
   },
   {
@@ -157,7 +157,7 @@
         }
       ]
     },
-    "filename": "./app.js",
+    "filename": "./lib/controllers/boxesController.js",
     "groupTitle": "Boxes"
   },
   {
@@ -167,7 +167,7 @@
     "name": "getScript",
     "group": "Boxes",
     "version": "0.1.0",
-    "filename": "./app.js",
+    "filename": "./lib/controllers/boxesController.js",
     "groupTitle": "Boxes",
     "header": {
       "fields": {
@@ -401,7 +401,7 @@
         ]
       }
     },
-    "filename": "./app.js",
+    "filename": "./lib/controllers/boxesController.js",
     "groupTitle": "Boxes"
   },
   {
@@ -568,7 +568,7 @@
     "version": "0.0.1",
     "group": "Boxes",
     "name": "updateBox",
-    "filename": "./app.js",
+    "filename": "./lib/controllers/boxesController.js",
     "groupTitle": "Boxes",
     "header": {
       "fields": {
@@ -652,7 +652,7 @@
     },
     "version": "0.0.1",
     "name": "validApiKey",
-    "filename": "./app.js",
+    "filename": "./lib/controllers/usersController.js",
     "groupTitle": "Boxes",
     "header": {
       "fields": {
@@ -770,7 +770,7 @@
         ]
       }
     },
-    "filename": "./app.js",
+    "filename": "./lib/controllers/boxesController.js",
     "groupTitle": "Measurements"
   },
   {
@@ -851,7 +851,7 @@
         ]
       }
     },
-    "filename": "./app.js",
+    "filename": "./lib/controllers/boxesController.js",
     "groupTitle": "Measurements"
   },
   {
@@ -862,7 +862,7 @@
     "version": "0.0.1",
     "group": "Measurements",
     "name": "getMeasurements",
-    "filename": "./app.js",
+    "filename": "./lib/controllers/boxesController.js",
     "groupTitle": "Measurements",
     "parameter": {
       "fields": {
@@ -922,7 +922,7 @@
         ]
       }
     },
-    "filename": "./app.js",
+    "filename": "./lib/controllers/boxesController.js",
     "groupTitle": "Measurements"
   },
   {
@@ -963,14 +963,14 @@
         ]
       }
     },
-    "filename": "./app.js",
+    "filename": "./lib/controllers/boxesController.js",
     "groupTitle": "Measurements"
   },
   {
     "type": "get",
     "url": "/stats",
     "title": "Get some statistics about the database",
-    "description": "<p>8 boxes, 13 measurements in the database, 2 measurements in the last minute</p>",
+    "description": "<p>returns an array with three numbers which denominates the count of senseBoxes, the count of measurements and the count of measurements in the last minute.</p>",
     "name": "getStatistics",
     "group": "Misc",
     "version": "0.1.0",
@@ -983,7 +983,7 @@
         }
       ]
     },
-    "filename": "./app.js",
+    "filename": "./lib/controllers/statisticsController.js",
     "groupTitle": "Misc"
   }
 ]
