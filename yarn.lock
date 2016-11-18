@@ -1059,11 +1059,7 @@ mocha@^3.1.2:
     mkdirp "0.5.1"
     supports-color "3.1.2"
 
-moment@^2.10.6:
-  version "2.15.1"
-  resolved "https://registry.yarnpkg.com/moment/-/moment-2.15.1.tgz#e979c2a29e22888e60f396f2220a6118f85cd94c"
-
-moment@^2.16.0:
+moment@^2.10.6, moment@^2.16.0:
   version "2.16.0"
   resolved "https://registry.yarnpkg.com/moment/-/moment-2.16.0.tgz#f38f2c97c9889b0ee18fc6cc392e1e443ad2da8e"
 
@@ -1479,6 +1475,10 @@ semver@^4.3.3:
 semver@^5.1.0:
   version "5.3.0"
   resolved "https://registry.yarnpkg.com/semver/-/semver-5.3.0.tgz#9b2ce5d3de02d17c6012ad326aa6b4d0cf54f94f"
+
+simple-statistics@^2.2.0:
+  version "2.2.0"
+  resolved "https://registry.yarnpkg.com/simple-statistics/-/simple-statistics-2.2.0.tgz#e1e298a89d814f7729b5fda37801a2e4b97c9db0"
 
 sliced@0.0.5:
   version "0.0.5"
