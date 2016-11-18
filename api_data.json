@@ -697,6 +697,216 @@
   },
   {
     "type": "get",
+    "url": "/statistics/idw",
+    "title": "Get a Inverse Distance Weighting Interpolation as FeatureCollection",
+    "description": "<p>Retrieve a JSON object containing a GeoJSON FeatureCollection with a computed Inverse Distance Interpolation for a certain region of interest and phenomenon and an array with equal interval breaks. Please be aware that requests with (areaSquareKilometers / cellWidth) &gt; 2500 will be rejected.</p>",
+    "version": "0.0.1",
+    "group": "Interpolation",
+    "name": "calculateIdw",
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": false,
+            "field": "phenomenon",
+            "description": "<p>the name of the phenomenon you want to download the data for.</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "ISO8601Date",
+            "optional": true,
+            "field": "from-date",
+            "description": "<p>Beginning date of measurement data (default: 2 days ago from now)</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "ISO8601Date",
+            "optional": true,
+            "field": "to-date",
+            "description": "<p>End date of measurement data (default: now)</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "String",
+            "allowedValues": [
+              "\"indoor\"",
+              "\"outdoor\""
+            ],
+            "optional": true,
+            "field": "exposure",
+            "description": "<p>only return sensors of boxes with the specified exposure. Can be indoor or outdoor. Default undecided.</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "String",
+            "allowedValues": [
+              "\"hex\"",
+              "\"square\"",
+              "\"triangle\""
+            ],
+            "optional": true,
+            "field": "gridType",
+            "defaultValue": "hex",
+            "description": "<p>The type of the grid for IDW calculation</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "String",
+            "allowedValues": [
+              "\"kilometers\"",
+              "\"miles\""
+            ],
+            "optional": true,
+            "field": "cellUnit",
+            "defaultValue": "kilometers",
+            "description": "<p>The unit for the width of the grid cells</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "Number",
+            "optional": true,
+            "field": "cellWidth",
+            "defaultValue": "50",
+            "description": "<p>The width of the grid cells in the unit given by the cellUnit parameter</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "Number",
+            "optional": true,
+            "field": "power",
+            "defaultValue": "1",
+            "description": "<p>The power of the IDW calculation</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "Number",
+            "optional": true,
+            "field": "numClasses",
+            "defaultValue": "6",
+            "description": "<p>Number of classes in the breaks array</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": false,
+            "field": "bbox",
+            "description": "<p>A bounding box containing 4 WGS84 coordinates separated by comata (,). Order is latitude, longitude and southwest, northeast.</p>"
+          }
+        ]
+      }
+    },
+    "filename": "./lib/controllers/statisticsController.js",
+    "groupTitle": "Interpolation"
+  },
+  {
+    "type": "get",
+    "url": "/statistics/idw",
+    "title": "Get a Inverse Distance Weighting Interpolation as FeatureCollection",
+    "description": "<p>Retrieve a JSON object containing a GeoJSON FeatureCollection with a computed Inverse Distance Interpolation for a certain region of interest and phenomenon and an array with equal interval breaks. Please be aware that requests with (areaSquareKilometers / cellWidth) &gt; 2500 will be rejected.</p>",
+    "version": "0.0.1",
+    "group": "Interpolation",
+    "name": "calculateIdw",
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": false,
+            "field": "phenomenon",
+            "description": "<p>the name of the phenomenon you want to download the data for.</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "ISO8601Date",
+            "optional": true,
+            "field": "from-date",
+            "description": "<p>Beginning date of measurement data (default: 2 days ago from now)</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "ISO8601Date",
+            "optional": true,
+            "field": "to-date",
+            "description": "<p>End date of measurement data (default: now)</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "String",
+            "allowedValues": [
+              "\"indoor\"",
+              "\"outdoor\""
+            ],
+            "optional": true,
+            "field": "exposure",
+            "description": "<p>only return sensors of boxes with the specified exposure. Can be indoor or outdoor. Default undecided.</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "String",
+            "allowedValues": [
+              "\"hex\"",
+              "\"square\"",
+              "\"triangle\""
+            ],
+            "optional": true,
+            "field": "gridType",
+            "defaultValue": "hex",
+            "description": "<p>The type of the grid for IDW calculation</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "String",
+            "allowedValues": [
+              "\"kilometers\"",
+              "\"miles\""
+            ],
+            "optional": true,
+            "field": "cellUnit",
+            "defaultValue": "kilometers",
+            "description": "<p>The unit for the width of the grid cells</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "Number",
+            "optional": true,
+            "field": "cellWidth",
+            "defaultValue": "50",
+            "description": "<p>The width of the grid cells in the unit given by the cellUnit parameter</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "Number",
+            "optional": true,
+            "field": "power",
+            "defaultValue": "1",
+            "description": "<p>The power of the IDW calculation</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "Number",
+            "optional": true,
+            "field": "numClasses",
+            "defaultValue": "6",
+            "description": "<p>Number of classes in the breaks array</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": false,
+            "field": "bbox",
+            "description": "<p>A bounding box containing 4 WGS84 coordinates separated by comata (,). Order is latitude, longitude and southwest, northeast.</p>"
+          }
+        ]
+      }
+    },
+    "filename": "./lib/statistics/idw.js",
+    "groupTitle": "Interpolation"
+  },
+  {
+    "type": "get",
     "url": "/boxes/:senseBoxId/data/:sensorId?from-date=fromDate&to-datetoDate&download=true&format=json",
     "title": "Get the 10000 latest measurements for a sensor",
     "description": "<p>Get up to 10000 measurements from a sensor for a specific time frame, parameters <code>from-date</code> and <code>to-date</code> are optional. If not set, the last 48 hours are used. The maximum time frame is 1 month. If <code>download=true</code> <code>Content-disposition</code> headers will be set. Allows for JSON or CSV format.</p>",
