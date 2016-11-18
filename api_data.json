@@ -6,7 +6,7 @@
     "name": "deleteBox",
     "group": "Boxes",
     "version": "0.1.0",
-    "filename": "./lib/controllers/boxesController.js",
+    "filename": "./app.js",
     "groupTitle": "Boxes",
     "header": {
       "fields": {
@@ -75,15 +75,15 @@
         "Parameter": [
           {
             "group": "Parameter",
-            "type": "ISO8601Date",
-            "optional": true,
+            "type": "String",
+            "optional": false,
             "field": "date",
-            "description": "<p>One or two ISO8601 timestamps at which boxes should provide measurements. Use in combination with <code>phenomenon</code>.</p>"
+            "description": "<p>A date or datetime (UTC) where a station should provide measurements. Use in combination with <code>phenomenon</code>.</p>"
           },
           {
             "group": "Parameter",
             "type": "String",
-            "optional": true,
+            "optional": false,
             "field": "phenomenon",
             "description": "<p>A sensor phenomenon (determined by sensor name) such as temperature, humidity or UV intensity. Use in combination with <code>date</code>.</p>"
           },
@@ -94,7 +94,7 @@
               "\"json\"",
               "\"geojson\""
             ],
-            "optional": true,
+            "optional": false,
             "field": "format",
             "defaultValue": "json",
             "description": "<p>the format the sensor data is returned in.</p>"
@@ -113,7 +113,7 @@
         "url": "https://api.opensensemap.org/boxes?date=2015-03-07T02:50Z,2015-04-07T02:50Z&phenomenon=Temperatur"
       }
     ],
-    "filename": "./lib/controllers/boxesController.js",
+    "filename": "./app.js",
     "groupTitle": "Boxes"
   },
   {
@@ -133,7 +133,7 @@
               "\"json\"",
               "\"geojson\""
             ],
-            "optional": true,
+            "optional": false,
             "field": "format",
             "defaultValue": "json",
             "description": "<p>the format the sensor data is returned in.</p>"
@@ -152,12 +152,12 @@
       "examples": [
         {
           "title": "Example data on success:",
-          "content": "{\n  \"_id\": \"57000b8745fd40c8196ad04c\",\n  \"boxType\": \"fixed\",\n  \"createdAt\": \"2016-06-02T11:22:51.817Z\",\n  \"exposure\": \"outdoor\",\n  \"grouptag\": \"\",\n  \"image\": \"57000b8745fd40c8196ad04c.png?1466435154159\",\n  \"loc\": [\n    {\n      \"geometry\": {\n        \"coordinates\": [\n          7.64568,\n          51.962372\n        ],\n        \"type\": \"Point\"\n      },\n      \"type\": \"feature\"\n    }\n  ],\n  \"name\": \"Oststr/Mauritzsteinpfad\",\n  \"sensors\": [\n    {\n      \"_id\": \"57000b8745fd40c8196ad04e\",\n      \"lastMeasurement\": {\n        \"value\": \"0\",\n        \"createdAt\": \"2016-11-11T21:22:01.675Z\"\n      },\n      \"sensorType\": \"VEML6070\",\n      \"title\": \"UV-Intensität\",\n      \"unit\": \"μW/cm²\"\n    },\n    {\n      \"_id\": \"57000b8745fd40c8196ad04f\",\n      \"lastMeasurement\": {\n        \"value\": \"0\",\n        \"createdAt\": \"2016-11-11T21:22:01.675Z\"\n      },\n      \"sensorType\": \"TSL45315\",\n      \"title\": \"Beleuchtungsstärke\",\n      \"unit\": \"lx\"\n    },\n    {\n      \"_id\": \"57000b8745fd40c8196ad050\",\n      \"lastMeasurement\": {\n        \"value\": \"1019.21\",\n        \"createdAt\": \"2016-11-11T21:22:01.675Z\"\n      },\n      \"sensorType\": \"BMP280\",\n      \"title\": \"Luftdruck\",\n      \"unit\": \"hPa\"\n    },\n    {\n      \"_id\": \"57000b8745fd40c8196ad051\",\n      \"lastMeasurement\": {\n        \"value\": \"99.38\",\n        \"createdAt\": \"2016-11-11T21:22:01.675Z\"\n      },\n      \"sensorType\": \"HDC1008\",\n      \"title\": \"rel. Luftfeuchte\",\n      \"unit\": \"%\"\n    },\n    {\n      \"_id\": \"57000b8745fd40c8196ad052\",\n      \"lastMeasurement\": {\n        \"value\": \"0.21\",\n        \"createdAt\": \"2016-11-11T21:22:01.675Z\"\n      },\n      \"sensorType\": \"HDC1008\",\n      \"title\": \"Temperatur\",\n      \"unit\": \"°C\"\n    },\n    {\n      \"_id\": \"576996be6c521810002479dd\",\n      \"sensorType\": \"WiFi\",\n      \"unit\": \"dBm\",\n      \"title\": \"Wifi-Stärke\",\n      \"lastMeasurement\": {\n        \"value\": \"-66\",\n        \"createdAt\": \"2016-11-11T21:22:01.675Z\"\n      }\n    },\n    {\n      \"_id\": \"579f9eae68b4a2120069edc8\",\n      \"sensorType\": \"VCC\",\n      \"unit\": \"V\",\n      \"title\": \"Eingangsspannung\",\n      \"lastMeasurement\": {\n        \"value\": \"2.73\",\n        \"createdAt\": \"2016-11-11T21:22:01.675Z\"\n      },\n      \"icon\": \"osem-shock\"\n    }\n  ],\n  \"updatedAt\": \"2016-11-11T21:22:01.686Z\"\n}",
+          "content": "{\n  \"_id\": \"5386e44d5f08822009b8b614\",\n  \"name\": \"PHOBOS\",\n  \"boxType\": \"fixed\",\n  \"sensors\": [\n    {\n      \"_id\": \"5386e44d5f08822009b8b615\",\n      \"boxes_id\": \"5386e44d5f08822009b8b614\",\n      \"lastMeasurement\": {\n        \"_id\": \"5388d07f5f08822009b937b7\",\n        \"createdAt\": \"2014-05-30T18:39:59.353Z\",\n        \"updatedAt\": \"2014-05-30T18:39:59.353Z\",\n        \"value\": \"584\",\n        \"sensor_id\": \"5386e44d5f08822009b8b615\",\n      },\n      \"sensorType\": \"GL5528\",\n      \"title\": \"Helligkeit\",\n      \"unit\": \"Pegel\"\n    }\n  ],\n  \"loc\": [\n    {\n      \"_id\": \"5386e44d5f08822009b8b61a\",\n      \"geometry\": {\n        \"coordinates\": [\n          10.54555893642828,\n          49.61361673283691\n        ],\n        \"type\": \"Point\"\n      },\n      \"type\": \"feature\"\n    }\n  ]\n}",
           "type": "json"
         }
       ]
     },
-    "filename": "./lib/controllers/boxesController.js",
+    "filename": "./app.js",
     "groupTitle": "Boxes"
   },
   {
@@ -167,7 +167,7 @@
     "name": "getScript",
     "group": "Boxes",
     "version": "0.1.0",
-    "filename": "./lib/controllers/boxesController.js",
+    "filename": "./app.js",
     "groupTitle": "Boxes",
     "header": {
       "fields": {
@@ -353,7 +353,7 @@
           {
             "group": "Sensor",
             "type": "String",
-            "optional": true,
+            "optional": false,
             "field": "icon",
             "description": "<p>the visual representation for the openSenseMap of this sensor.</p>"
           }
@@ -401,7 +401,7 @@
         ]
       }
     },
-    "filename": "./lib/controllers/boxesController.js",
+    "filename": "./app.js",
     "groupTitle": "Boxes"
   },
   {
@@ -501,7 +501,7 @@
           {
             "group": "Sensor",
             "type": "String",
-            "optional": true,
+            "optional": false,
             "field": "icon",
             "description": "<p>the visual representation for the openSenseMap of this sensor.</p>"
           }
@@ -568,7 +568,7 @@
     "version": "0.0.1",
     "group": "Boxes",
     "name": "updateBox",
-    "filename": "./lib/controllers/boxesController.js",
+    "filename": "./app.js",
     "groupTitle": "Boxes",
     "header": {
       "fields": {
@@ -622,7 +622,7 @@
           {
             "group": "Parameter",
             "type": "String",
-            "optional": true,
+            "optional": false,
             "field": "returnBox",
             "description": "<p>if supplied and non-empty, returns the senseBox with the senseBoxId with hidden fields</p>"
           },
@@ -652,7 +652,7 @@
     },
     "version": "0.0.1",
     "name": "validApiKey",
-    "filename": "./lib/controllers/usersController.js",
+    "filename": "./app.js",
     "groupTitle": "Boxes",
     "header": {
       "fields": {
@@ -694,111 +694,6 @@
         }
       ]
     }
-  },
-  {
-    "type": "get",
-    "url": "/statistics/idw",
-    "title": "Get a Inverse Distance Weighting Interpolation as FeatureCollection",
-    "description": "<p>Retrieve a JSON object containing a GeoJSON FeatureCollection with a computed Inverse Distance Interpolation for a certain region of interest and phenomenon and an array with equal interval breaks. Please be aware that requests with (areaSquareKilometers / cellWidth) &gt; 2500 will be rejected.</p>",
-    "version": "0.0.1",
-    "group": "Interpolation",
-    "name": "calculateIdw",
-    "parameter": {
-      "fields": {
-        "Parameter": [
-          {
-            "group": "Parameter",
-            "type": "String",
-            "optional": false,
-            "field": "phenomenon",
-            "description": "<p>the name of the phenomenon you want to download the data for.</p>"
-          },
-          {
-            "group": "Parameter",
-            "type": "ISO8601Date",
-            "optional": true,
-            "field": "from-date",
-            "description": "<p>Beginning date of measurement data (default: 2 days ago from now)</p>"
-          },
-          {
-            "group": "Parameter",
-            "type": "ISO8601Date",
-            "optional": true,
-            "field": "to-date",
-            "description": "<p>End date of measurement data (default: now)</p>"
-          },
-          {
-            "group": "Parameter",
-            "type": "String",
-            "allowedValues": [
-              "\"indoor\"",
-              "\"outdoor\""
-            ],
-            "optional": true,
-            "field": "exposure",
-            "description": "<p>only return sensors of boxes with the specified exposure. Can be indoor or outdoor. Default undecided.</p>"
-          },
-          {
-            "group": "Parameter",
-            "type": "String",
-            "allowedValues": [
-              "\"hex\"",
-              "\"square\"",
-              "\"triangle\""
-            ],
-            "optional": true,
-            "field": "gridType",
-            "defaultValue": "hex",
-            "description": "<p>The type of the grid for IDW calculation</p>"
-          },
-          {
-            "group": "Parameter",
-            "type": "String",
-            "allowedValues": [
-              "\"kilometers\"",
-              "\"miles\""
-            ],
-            "optional": true,
-            "field": "cellUnit",
-            "defaultValue": "kilometers",
-            "description": "<p>The unit for the width of the grid cells</p>"
-          },
-          {
-            "group": "Parameter",
-            "type": "Number",
-            "optional": true,
-            "field": "cellWidth",
-            "defaultValue": "50",
-            "description": "<p>The width of the grid cells in the unit given by the cellUnit parameter</p>"
-          },
-          {
-            "group": "Parameter",
-            "type": "Number",
-            "optional": true,
-            "field": "power",
-            "defaultValue": "1",
-            "description": "<p>The power of the IDW calculation</p>"
-          },
-          {
-            "group": "Parameter",
-            "type": "Number",
-            "optional": true,
-            "field": "numClasses",
-            "defaultValue": "6",
-            "description": "<p>Number of classes in the breaks array</p>"
-          },
-          {
-            "group": "Parameter",
-            "type": "String",
-            "optional": false,
-            "field": "bbox",
-            "description": "<p>A bounding box containing 4 WGS84 coordinates separated by comata (,). Order is latitude, longitude and southwest, northeast.</p>"
-          }
-        ]
-      }
-    },
-    "filename": "./lib/controllers/statisticsController.js",
-    "groupTitle": "Interpolation"
   },
   {
     "type": "get",
@@ -919,16 +814,27 @@
           {
             "group": "Parameter",
             "type": "ISO8601Date",
-            "optional": true,
+            "optional": false,
             "field": "from-date",
             "description": "<p>Beginning date of measurement data (default: 48 hours ago from now)</p>"
           },
           {
             "group": "Parameter",
             "type": "ISO8601Date",
-            "optional": true,
+            "optional": false,
             "field": "to-date",
             "description": "<p>End date of measurement data (default: now)</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "String",
+            "allowedValues": [
+              "\"true\"",
+              "\"false\""
+            ],
+            "optional": false,
+            "field": "download",
+            "description": "<p>If set, offer download to the user (default: false, always on if CSV is used)</p>"
           },
           {
             "group": "Parameter",
@@ -937,21 +843,10 @@
               "\"json\"",
               "\"csv\""
             ],
-            "optional": true,
+            "optional": false,
             "field": "format",
             "defaultValue": "json",
             "description": "<p>Can be 'json' (default) or 'csv' (default: json)</p>"
-          },
-          {
-            "group": "Parameter",
-            "type": "Boolean",
-            "allowedValues": [
-              "\"true\"",
-              "\"false\""
-            ],
-            "optional": true,
-            "field": "download",
-            "description": "<p>if specified, the api will set the <code>content-disposition</code> header thus forcing browsers to download instead of displaying. Is always true for format csv.</p>"
           },
           {
             "group": "Parameter",
@@ -970,17 +865,14 @@
           {
             "group": "Parameter",
             "type": "String",
-            "allowedValues": [
-              "\"comma\""
-            ],
-            "optional": true,
+            "optional": false,
             "field": "separator",
             "description": "<p>Only for csv: the separator for csv. Possible values: <code>comma</code> for comma as separator, everything else: semicolon. Per default a semicolon is used. Alternatively you can use delimiter as parameter name.</p>"
           }
         ]
       }
     },
-    "filename": "./lib/controllers/boxesController.js",
+    "filename": "./app.js",
     "groupTitle": "Measurements"
   },
   {
@@ -1011,43 +903,35 @@
           {
             "group": "Parameter",
             "type": "ISO8601Date",
-            "optional": true,
+            "optional": false,
             "field": "from-date",
-            "description": "<p>Beginning date of measurement data (default: 15 days ago from now)</p>"
+            "description": "<p>Beginning date of measurement data (default: 2 days ago from now)</p>"
           },
           {
             "group": "Parameter",
             "type": "ISO8601Date",
-            "optional": true,
+            "optional": false,
             "field": "to-date",
             "description": "<p>End date of measurement data (default: now)</p>"
           },
           {
             "group": "Parameter",
             "type": "String",
-            "optional": true,
+            "optional": false,
             "field": "columns",
-            "defaultValue": "createdAt,value,lat,lng",
             "description": "<p>(optional) Comma separated list of columns to export. If omitted, columns createdAt, value, lat, lng are returned. Possible allowed values are createdAt, value, lat, lng, unit, boxId, sensorId, phenomenon, sensorType, boxName, exposure. The columns in the csv are like the order supplied in this parameter</p>"
           },
           {
             "group": "Parameter",
             "type": "String",
-            "allowedValues": [
-              "\"indoor\"",
-              "\"outdoor\""
-            ],
-            "optional": true,
+            "optional": false,
             "field": "exposure",
             "description": "<p>(optional) only return sensors of boxes with the specified exposure. Can be indoor or outdoor</p>"
           },
           {
             "group": "Parameter",
             "type": "String",
-            "allowedValues": [
-              "\"comma\""
-            ],
-            "optional": true,
+            "optional": false,
             "field": "separator",
             "description": "<p>Only for csv: the separator for csv. Possible values: <code>comma</code> for comma as separator, everything else: semicolon. Per default a semicolon is used. Alternatively you can use delimiter as parameter name.</p>"
           },
@@ -1061,7 +945,7 @@
         ]
       }
     },
-    "filename": "./lib/controllers/boxesController.js",
+    "filename": "./app.js",
     "groupTitle": "Measurements"
   },
   {
@@ -1072,7 +956,7 @@
     "version": "0.0.1",
     "group": "Measurements",
     "name": "getMeasurements",
-    "filename": "./lib/controllers/boxesController.js",
+    "filename": "./app.js",
     "groupTitle": "Measurements",
     "parameter": {
       "fields": {
@@ -1108,8 +992,8 @@
           },
           {
             "group": "RequestBody",
-            "type": "ISO8601Date",
-            "optional": true,
+            "type": "String",
+            "optional": false,
             "field": "createdAt",
             "description": "<p>the timestamp of the measurement. Should be parseable by JavaScript.</p>"
           }
@@ -1132,36 +1016,25 @@
         ]
       }
     },
-    "filename": "./lib/controllers/boxesController.js",
+    "filename": "./app.js",
     "groupTitle": "Measurements"
   },
   {
-    "type": "post",
-    "url": "/boxes/:boxId/data",
-    "title": "Post multiple new measurements",
-    "description": "<p>Post multiple new measurements in multiple formats to a box. Allows the use of csv, json array and json object notation.</p> <p><strong>CSV:</strong><br/> For data in csv format, first use <code>content-type: text/csv</code> as header, then submit multiple values as lines in <code>sensorId,value,[createdAt]</code> form. Timestamp is optional. Do not submit a header.</p> <p><strong>JSON Array:</strong><br/> You can submit your data as array. Your measurements should be objects with the keys <code>sensor</code>, <code>value</code> and optionally <code>createdAt</code>. Specify the header <code>content-type: application/json</code>.</p> <p><strong>JSON Object:</strong><br/> The third form is to encode your measurements in an object. Here, the keys of the object are the sensorIds, the values of the object are either just the <code>value</code> of your measurement or an array of the form <code>[value, createdAt]</code></p> <p>For all encodings, the maximum count of values in one request is 2500.</p>",
+    "description": "<p>Post multiple new measurements as an JSON array to a box.</p>",
     "version": "0.1.0",
     "group": "Measurements",
     "name": "postNewMeasurements",
     "parameter": {
-      "examples": [
-        {
-          "title": "JSON-Object:",
-          "content": "{\n  \"sensorID\": \"value\",\n  \"anotherSensorID\": [\"value\", \"createdAt as ISO8601-timestamp\"],\n  \"sensorIDtheThird\": [\"value\"]\n  ...\n}",
-          "type": "application/json"
-        },
-        {
-          "title": "JSON-Array:",
-          "content": "[\n  {\"sensor\":\"sensorID\", \"value\":\"value\"},\n  {\"sensor\":\"anotherSensorId\", \"value\":\"value\", \"createdAt\": \"ISO8601-timestamp\"}\n  ...\n]",
-          "type": "application/json"
-        },
-        {
-          "title": "CSV:",
-          "content": "sensorID,value\nanotherSensorId,value,ISO8601-timestamp\nsensorIDtheThird,value\n...",
-          "type": "text/csv"
-        }
-      ],
       "fields": {
+        "JSON request body": [
+          {
+            "group": "RequestBody",
+            "type": "Object[]",
+            "optional": false,
+            "field": "bla",
+            "description": "<p>bla</p>"
+          }
+        ],
         "Parameter": [
           {
             "group": "Parameter",
@@ -1173,14 +1046,21 @@
         ]
       }
     },
-    "filename": "./lib/controllers/boxesController.js",
+    "sampleRequest": [
+      {
+        "url": "[{ \"sensor\": \"56cb7c25b66992a02fe389de\", \"value\": \"3\" },{ \"sensor\": \"56cb7c25b66992a02fe389df\", \"value\": \"2\" }]\ncurl -X POST -H 'Content-type:application/json' -d \"[{ \\\"sensor\\\": \\\"56cb7c25b66992a02fe389de\\\", \\\"value\\\": \\\"3\\\" },{ \\\"sensor\\\": \\\"56cb7c25b66992a02fe389df\\\", \\\"value\\\": \\\"2\\\" }]\" localhost:8000/boxes/56cb7c25b66992a02fe389d9/data"
+      }
+    ],
+    "type": "",
+    "url": "",
+    "filename": "./app.js",
     "groupTitle": "Measurements"
   },
   {
     "type": "get",
     "url": "/stats",
     "title": "Get some statistics about the database",
-    "description": "<p>returns an array with three numbers which denominates the count of senseBoxes, the count of measurements and the count of measurements in the last minute.</p>",
+    "description": "<p>8 boxes, 13 measurements in the database, 2 measurements in the last minute</p>",
     "name": "getStatistics",
     "group": "Misc",
     "version": "0.1.0",
@@ -1193,7 +1073,7 @@
         }
       ]
     },
-    "filename": "./lib/controllers/statisticsController.js",
+    "filename": "./app.js",
     "groupTitle": "Misc"
   }
 ]
