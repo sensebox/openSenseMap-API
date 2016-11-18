@@ -17,6 +17,8 @@ services:
   db:
     build:
       context: ./osem-mongo
+    ports:
+      - "27017:27017"
     volumes:
       - ./mongo-data:/data/db
     env_file: .env
