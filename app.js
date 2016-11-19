@@ -70,22 +70,11 @@ const server = restify.createServer({
 // and set utf-8 charset
 server.pre(requestUtils.checkUnsecuredAccess);
 
-server.use(restify.CORS({ 'origins': ['*'] })); //['http://localhost', 'https://opensensemap.org']}));
+server.use(restify.CORS({ 'origins': ['*'] }));
 server.use(restify.fullResponse());
 server.use(restify.queryParser());
 server.use(restify.jsonBodyParser());
 server.pre(restify.pre.sanitizePath());
-
-
-// the ones matching first are used
-// case is ignored
-
-// attach a function to validate boxId and sensorId parameters
-// check parmeters for possible box Id parameters
-// everything of the like
-// 'boxId', 'boxid', 'senseBoxIds', 'senseBoxId'
-// can be used
-server.use(requestUtils.validateIdParams);
 
 // attach Routes
 routes(server);

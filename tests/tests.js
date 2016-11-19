@@ -30,9 +30,9 @@ describe('openSenseMap API', function () {
       return chakram.wait();
     });
 
-    it('should return 409 error on wrong format parameter', function () {
+    it('should return 422 error on wrong format parameter', function () {
       const response = chakram.get(`${BASE_URL}/boxes?format=potato`);
-      expect(response).to.have.status(409);
+      expect(response).to.have.status(422);
       expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
 
       return chakram.wait();
@@ -298,7 +298,7 @@ describe('openSenseMap API', function () {
         });
     });
 
-    it('should allow download data through /:boxid/data/:sensorid', function () {
+    it('should allow download data through /boxes/:boxid/data/:sensorid', function () {
       return chakram.get(`${BASE_URL}/boxes/${boxId}/data/${boxObj.sensors[0]._id}`)
         .then(function (response) {
           expect(response).to.have.status(200);
