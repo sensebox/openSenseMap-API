@@ -310,13 +310,24 @@ describe('openSenseMap API', function () {
         });
     });
 
-    it('should allow download data through /:boxid/data/:sensorid as csv', function () {
+    it('should allow download data through /boxes/:boxid/data/:sensorid as csv', function () {
       return chakram.get(`${BASE_URL}/boxes/${boxId}/data/${boxObj.sensors[1]._id}?format=csv`)
         .then(function (response) {
           expect(response).to.have.status(200);
           expect(response.body).not.to.be.empty;
           expect(response).to.have.header('content-type', 'text/csv');
           expect(response).to.have.header('Content-Disposition', `attachment; filename=${boxObj.sensors[1]._id}.csv`);
+
+          return chakram.wait();
+        });
+    });
+
+    it('should allow download data through /boxes/data/:sensorid as csv', function () {
+      return chakram.get(`${BASE_URL}/boxes/data/?boxid=${boxId}&phenomenon=Temperatur`)
+        .then(function (response) {
+          expect(response).to.have.status(200);
+          expect(response.body).not.to.be.empty;
+          expect(response).to.have.header('content-type', 'text/csv');
 
           return chakram.wait();
         });
