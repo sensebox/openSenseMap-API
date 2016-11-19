@@ -298,6 +298,30 @@ describe('openSenseMap API', function () {
         });
     });
 
+    it('should allow download data through /:boxid/data/:sensorid', function () {
+      return chakram.get(`${BASE_URL}/boxes/${boxId}/data/${boxObj.sensors[0]._id}`)
+        .then(function (response) {
+          expect(response).to.have.status(200);
+          expect(Array.isArray(response.body)).to.be.true;
+          expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
+          expect(response.body.length).to.be.above(4);
+
+          return chakram.wait();
+        });
+    });
+
+    it('should allow download data through /:boxid/data/:sensorid as csv', function () {
+      return chakram.get(`${BASE_URL}/boxes/${boxId}/data/${boxObj.sensors[1]._id}?format=csv`)
+        .then(function (response) {
+          expect(response).to.have.status(200);
+          expect(response.body).not.to.be.empty;
+          expect(response).to.have.header('content-type', 'text/csv');
+          expect(response).to.have.header('Content-Disposition', `attachment; filename=${boxObj.sensors[1]._id}.csv`);
+
+          return chakram.wait();
+        });
+    });
+
     it('should allow to delete a senseBox via DELETE', function () {
       return chakram.delete(`${BASE_URL}/boxes/${boxId}`, {}, { headers: { 'x-apikey': apiKey } })
         .then(function (response) {
