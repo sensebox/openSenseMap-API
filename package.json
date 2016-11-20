@@ -14,10 +14,8 @@
     "@turf/triangle-grid": "^3.5.3",
     "bunyan": "^1.8.5",
     "csv-stringify": "^1.0.4",
-    "geojson": "^0.4.0",
     "honeybadger": "^1.2.0",
     "jsonpath": "^0.2.8",
-    "lodash": "^4.17.2",
     "moment": "^2.16.0",
     "mongoose": "^4.6.8",
     "mongoose-timestamp": "^0.6",
@@ -25,7 +23,6 @@
     "request": "^2.79.0",
     "request-promise": "^4.1.1",
     "restify": "^4.3.0",
-    "simple-statistics": "^2.2.0",
     "stream-transform": "^0.1.1",
     "stringify-stream": "^1.0.5"
   },
