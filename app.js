@@ -117,5 +117,10 @@ server.on('uncaughtException', function (req, res, route, err) {
   log.error('Uncaught error', err);
   console.log(err.stack);
 
-  return res.send(500, 'An error occured');
+  // check if headers were sent..
+  if (res._headerSent === true) {
+    return res.end(`An error occured: ${err}`);
+  }
+
+  return res.send(500, `An error occured: ${err}`);
 });
