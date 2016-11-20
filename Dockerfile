@@ -8,7 +8,7 @@ RUN npm install -g yarn
 
 COPY package.json /usr/src/app/
 COPY yarn.lock /usr/src/app/
-RUN yarn
+RUN yarn install --production
 COPY . /usr/src/app
 
 CMD [ "npm", "start" ]
