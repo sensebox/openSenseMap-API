@@ -34,9 +34,23 @@ const with_too_many = function (sensors) {
   return str;
 };
 
+const ten_days_ago_many = function (sensors) {
+  const ct_iterations = 5;
+  const basetimestamp = moment.utc().subtract(10, 'days');
+  let str = "";
+  for (let i = 0; i < ct_iterations; i ++) {
+    str = str + '\n' + sensors.map(function (sensor, index) {
+      return `${sensor._id},${index},${basetimestamp.subtract(index + i, 'minutes').toISOString()}`;
+    }).join('\n');
+  }
+
+  return str;
+}
+
 module.exports = {
   no_timestamps,
   with_timestamps,
   with_timestamps_future,
-  with_too_many
+  with_too_many,
+  ten_days_ago_many
 };

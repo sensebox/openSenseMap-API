@@ -28,7 +28,8 @@
   },
   "devDependencies": {
     "chakram": "^1.5.0",
-    "mocha": "^3.1.2"
+    "mocha": "^3.1.2",
+    "randomgeojson": "^1.0.0"
   },
   "scripts": {
     "start": "node app.js",

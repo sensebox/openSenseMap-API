@@ -1,13 +1,18 @@
 'use strict';
 
-let chakram = require('chakram'),
+/* global describe it */
+
+const chakram = require('chakram'),
   expect = chakram.expect,
   moment = require('moment');
 
 const BASE_URL = 'http://localhost:8000',
   valid_sensebox = require('./data/valid_sensebox'),
   senseBoxSchema = require('./data/senseBoxSchema'),
-  senseBoxCreateSchema = require('./data/senseBoxCreateSchema');
+  senseBoxCreateSchema = require('./data/senseBoxCreateSchema'),
+  findAllSchema = require('./data/findAllSchema'),
+  csv_example_data = require('./data/csv_example_data'),
+  json_submit_data = require('./data/json_submit_data');
 
 describe('openSenseMap API', function () {
   describe('/boxes', function () {
@@ -39,9 +44,13 @@ describe('openSenseMap API', function () {
     });
 
     let boxId, apiKey, boxObj;
+    const boxes = {};
+    const boxIds = [];
+    let boxCount = 0;
+
 
     it('should allow to create a senseBox via POST', function () {
-      return chakram.post(`${BASE_URL}/boxes`, valid_sensebox)
+      return chakram.post(`${BASE_URL}/boxes`, valid_sensebox())
         .then(function (response) {
           expect(response).to.have.status(201);
           expect(response).to.have.schema(senseBoxCreateSchema);
@@ -49,11 +58,41 @@ describe('openSenseMap API', function () {
 
           boxId = response.body.boxes[0];
           apiKey = response.body.apikey;
+          boxCount = boxCount + 1;
+          boxIds.push(boxId);
 
           return chakram.get(`${BASE_URL}/boxes/${boxId}`);
         })
         .then(function (response) {
           boxObj = response.body;
+          boxes[boxId] = boxObj;
+          expect(response).to.have.status(200);
+          expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
+          expect(response).to.have.schema(senseBoxSchema);
+
+          expect(response).to.not.have.keys('mqtt');
+
+          return chakram.wait();
+        });
+    });
+
+    it('should allow to create a second senseBox via POST', function () {
+      let apikey_2;
+      return chakram.post(`${BASE_URL}/boxes`, valid_sensebox())
+        .then(function (response) {
+          expect(response).to.have.status(201);
+          expect(response).to.have.schema(senseBoxCreateSchema);
+          expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
+
+          boxCount = boxCount + 1;
+          apikey_2 = response.body.apikey;
+          boxIds.push(response.body.boxes[0]);
+
+          return chakram.get(`${BASE_URL}/boxes/${response.body.boxes[0]}`);
+        })
+        .then(function (response) {
+          boxes[response.body._id] = response.body;
+          boxes[response.body._id]._apikey = apikey_2;
           expect(response).to.have.status(200);
           expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
           expect(response).to.have.schema(senseBoxSchema);
@@ -118,7 +157,7 @@ describe('openSenseMap API', function () {
               }
             });
           });
-          countMeasurements += 1;
+          countMeasurements = countMeasurements + 1;
 
           return chakram.wait();
         });
@@ -146,14 +185,15 @@ describe('openSenseMap API', function () {
               }
             });
           });
-          countMeasurements += 1;
+          countMeasurements = countMeasurements + 1;
 
           return chakram.wait();
         });
     });
 
     it('should reject a single measurement with timestamp too far into the future via POST', function () {
-      const submitTime = moment.utc().add(1.5, 'minutes').toISOString();
+      const submitTime = moment.utc().add(1.5, 'minutes')
+        .toISOString();
 
       return chakram.post(`${BASE_URL}/boxes/${boxId}/${boxObj.sensors[1]._id}`, { 'value': 123.4, 'createdAt': submitTime })
         .then(function (response) {
@@ -163,7 +203,6 @@ describe('openSenseMap API', function () {
         });
     });
 
-    const csv_example_data = require('./data/csv_example_data');
 
     it('should accept multiple measurements as csv via POST', function () {
       let submitTime;
@@ -184,7 +223,7 @@ describe('openSenseMap API', function () {
               expect(createdAt.diff(submitTime)).to.be.below(1000);
             });
           });
-          countMeasurements += boxObj.sensors.length;
+          countMeasurements = countMeasurements + boxObj.sensors.length;
 
           return chakram.wait();
         });
@@ -206,10 +245,10 @@ describe('openSenseMap API', function () {
               expect(sensor.lastMeasurement).not.to.be.null;
               expect(sensor.lastMeasurement.createdAt).to.exist;
               const createdAt = moment.utc(sensor.lastMeasurement.createdAt);
-              expect(submitTime.diff(createdAt, 'minutes')).to.be.below(4);
+              expect(submitTime.diff(createdAt, 'minutes')).to.be.below(5);
             });
           });
-          countMeasurements += boxObj.sensors.length;
+          countMeasurements = countMeasurements + boxObj.sensors.length;
 
           return chakram.wait();
         });
@@ -233,7 +272,6 @@ describe('openSenseMap API', function () {
         });
     });
 
-    const json_submit_data = require('./data/json_submit_data');
 
     it('should accept multiple measurements with timestamps as json object via POST', function () {
       let submitTime;
@@ -255,7 +293,7 @@ describe('openSenseMap API', function () {
               expect(submitTime.diff(createdAt, 'minutes')).to.be.below(4);
             });
           });
-          countMeasurements += boxObj.sensors.length;
+          countMeasurements = countMeasurements + boxObj.sensors.length;
 
           return chakram.wait();
         });
@@ -281,7 +319,7 @@ describe('openSenseMap API', function () {
               expect(submitTime.diff(createdAt, 'minutes')).to.be.below(4);
             });
           });
-          countMeasurements += boxObj.sensors.length;
+          countMeasurements = countMeasurements + boxObj.sensors.length;
 
           return chakram.wait();
         });
@@ -290,8 +328,8 @@ describe('openSenseMap API', function () {
     it('should return /stats correctly', function () {
       return chakram.get(`${BASE_URL}/stats`)
         .then(function (response) {
-          let [boxes, measurements] = response.body;
-          expect(boxes).to.equal(1);
+          const [boxes, measurements] = response.body;
+          expect(boxes).to.equal(boxCount);
           expect(measurements).to.equal(countMeasurements);
 
           return chakram.wait();
@@ -328,6 +366,170 @@ describe('openSenseMap API', function () {
           expect(response).to.have.status(200);
           expect(response.body).not.to.be.empty;
           expect(response).to.have.header('content-type', 'text/csv');
+
+          return chakram.wait();
+        });
+    });
+
+    it('should multiple csv measurements', function () {
+      const boxId = boxIds[1];
+
+      return chakram.post(`${BASE_URL}/boxes/${boxId}/data`, csv_example_data.ten_days_ago_many(boxes[boxId].sensors), { json: false, headers: { 'content-type': 'text/csv' } })
+        .then(function (response) {
+          expect(response).to.have.status(201);
+
+          return chakram.get(`${BASE_URL}/boxes/${boxId}`);
+        })
+        .then(function (response) {
+          expect(response).to.have.json('sensors', function (sensors) {
+            sensors.forEach(function (sensor) {
+              expect(sensor.lastMeasurement).not.to.be.null;
+              expect(sensor.lastMeasurement.createdAt).to.exist;
+            });
+          });
+
+          return chakram.wait();
+        });
+    });
+
+
+    it('should return the correct count and correct schema of boxes for /boxes GET', function () {
+      return chakram.get(`${BASE_URL}/boxes`)
+        .then(function (response) {
+          expect(response).to.have.status(200);
+          expect(Array.isArray(response.body)).to.be.true;
+          expect(response.body.length).to.be.equal(boxCount);
+          expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
+          expect(response).to.have.schema(findAllSchema);
+
+          return chakram.wait();
+        });
+    });
+
+    it('should return the correct count and correct schema of boxes for /boxes GET with date parameter', function () {
+      const ten_days_ago = moment.utc().subtract(10, 'days');
+
+      return chakram.get(`${BASE_URL}/boxes?date=${ten_days_ago.toISOString()}`)
+        .then(function (response) {
+          expect(response).to.have.status(200);
+          expect(Array.isArray(response.body)).to.be.true;
+          expect(response.body.length).to.be.equal(1);
+          expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
+          expect(response).to.have.schema(findAllSchema);
+
+          return chakram.wait();
+        });
+    });
+
+    it('should return the correct count and correct schema of boxes for /boxes GET with date parameter outside of data range', function () {
+      const eleven_days_ago = moment.utc().subtract(11, 'days');
+
+      return chakram.get(`${BASE_URL}/boxes?date=${eleven_days_ago.toISOString()}`)
+        .then(function (response) {
+          expect(response).to.have.status(200);
+          expect(Array.isArray(response.body)).to.be.true;
+          expect(response.body.length).to.be.equal(0);
+          expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
+          expect(response).to.have.schema(findAllSchema);
+
+          return chakram.wait();
+        });
+    });
+
+    it('should return the correct count and correct schema of boxes for /boxes GET with two date parameters', function () {
+      const now = moment.utc();
+
+      return chakram.get(`${BASE_URL}/boxes?date=${now.clone().subtract(1,'minute')},${now.toISOString()}`)
+        .then(function (response) {
+          expect(response).to.have.status(200);
+          expect(Array.isArray(response.body)).to.be.true;
+          expect(response.body.length).to.be.equal(1);
+          expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
+          expect(response).to.have.schema(findAllSchema);
+
+          return chakram.get(`${BASE_URL}/boxes?date=${now.clone().subtract(10,'days').subtract(10, 'minutes')},${now.toISOString()}`);
+        })
+        .then(function (response) {
+          expect(response).to.have.status(200);
+          expect(Array.isArray(response.body)).to.be.true;
+          expect(response.body.length).to.be.equal(2);
+          expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
+          expect(response).to.have.schema(findAllSchema);
+
+          return chakram.wait();
+        });
+    });
+
+    it('should allow to delete a single sensor via PUT', function () {
+      const tempsensor_id = boxObj.sensors[boxObj.sensors.findIndex(s => s.title === 'Temperatur')]._id;
+      const delete_payload = { sensors: [{deleted:true, _id: tempsensor_id}] };
+      return chakram.put(`${BASE_URL}/boxes/${boxId}`, delete_payload, { headers: { 'x-apikey': apiKey } })
+        .then(function (response) {
+          expect(response).to.have.status(200);
+
+          return chakram.get(`${BASE_URL}/boxes/${boxId}`);
+        })
+        .then(function (response) {
+          expect(response.body.sensors.length).to.be.equal(4);
+          return chakram.wait();
+        });
+    });
+
+    it('should allow to delete a single sensor via PUT of another box', function () {
+      const pressuresensor_id = boxes[boxIds[1]].sensors[boxes[boxIds[1]].sensors.findIndex(s => s.title === 'Luftdruck')]._id;
+      const delete_payload = { sensors: [{deleted:true, _id: pressuresensor_id}] };
+      return chakram.put(`${BASE_URL}/boxes/${boxIds[1]}`, delete_payload, { headers: { 'x-apikey': boxes[boxIds[1]]._apikey } })
+        .then(function (response) {
+          expect(response).to.have.status(200);
+
+          return chakram.get(`${BASE_URL}/boxes/${boxIds[1]}`);
+        })
+        .then(function (response) {
+          expect(response.body.sensors.length).to.be.equal(4);
+          return chakram.wait();
+        });
+    });
+
+    it('should return the correct count and correct schema of boxes for /boxes GET with date parameter after deleted sensor', function () {
+      const now = moment.utc();
+
+      return chakram.get(`${BASE_URL}/boxes?date=${now.toISOString()}&phenomenon=Temperatur`)
+        .then(function (response) {
+          expect(response).to.have.status(200);
+          expect(Array.isArray(response.body)).to.be.true;
+          expect(response.body.length).to.be.equal(0);
+          expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
+          expect(response).to.have.schema(findAllSchema);
+
+          return chakram.wait();
+        });
+    });
+
+    it('should return the correct count and correct schema of boxes for /boxes GET with date parameter after deleted sensor #2', function () {
+      const ten_days_ago = moment.utc().subtract(10, 'days');
+
+      return chakram.get(`${BASE_URL}/boxes?date=${ten_days_ago.toISOString()}&phenomenon=Luftdruck`)
+        .then(function (response) {
+          expect(response).to.have.status(200);
+          expect(Array.isArray(response.body)).to.be.true;
+          expect(response.body.length).to.be.equal(0);
+          expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
+          expect(response).to.have.schema(findAllSchema);
+
+          return chakram.wait();
+        });
+    });
+
+    it('should return the correct count and correct schema of boxes for /boxes GET with two date parameters after deleted sensor', function () {
+      const now = moment.utc();
+
+      return chakram.get(`${BASE_URL}/boxes?date=${now.clone().subtract(5,'minutes')},${now.toISOString()}&phenomenon=Temperatur`)
+        .then(function (response) {
+          expect(response).to.have.status(200);
+          expect(Array.isArray(response.body)).to.be.true;
+          expect(response.body.length).to.be.equal(0);
+          expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
+          expect(response).to.have.schema(findAllSchema);
 
           return chakram.wait();
         });

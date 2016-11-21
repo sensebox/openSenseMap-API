@@ -1,25 +1,19 @@
-const apiKey = require('./randomApiKey')();
-module.exports = {
-  'name': 'senseBox',
-  'model': 'homeEthernet',
-  'boxType': 'fixed',
-  'exposure': 'indoor',
-  'orderID': apiKey,
-  'loc': [
-    {
-      'type': 'feature',
-      'geometry': {
-        'type': 'Point',
-        'coordinates': [
-          -39.19921875,
-          47.754097979680026
-        ]
-      }
+const apiKey = require('./randomApiKey'),
+  randomGeojson = require('randomgeojson');
+module.exports = function () {
+  return {
+    'name': 'senseBox',
+    'model': 'homeEthernet',
+    'boxType': 'fixed',
+    'exposure': 'indoor',
+    'orderID': apiKey(),
+    'loc': [
+      randomGeojson.generateGeoJSON({ featureTypes: ['Point'] }).features[0]
+    ],
+    'user': {
+      'firstname': 'TestBox',
+      'lastname': 'TestBoxNachname',
+      'email': 'testmail@testmail.mail'
     }
-  ],
-  'user': {
-    'firstname': 'TestBox',
-    'lastname': 'TestBoxNachname',
-    'email': 'testmail@testmail.mail'
-  }
+  };
 };
