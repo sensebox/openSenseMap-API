@@ -48,12 +48,6 @@ module.exports = {
             "lastMeasurement": {
               "type": "object",
               "properties": {
-                "_id": {
-                  "type": "string"
-                },
-                "sensor_id": {
-                  "type": "string"
-                },
                 "value": {
                   "type": "string"
                 },
@@ -62,8 +56,6 @@ module.exports = {
                 }
               },
               "required": [
-                "_id",
-                "sensor_id",
                 "value",
                 "createdAt"
               ]

@@ -371,6 +371,17 @@ describe('openSenseMap API', function () {
         });
     });
 
+    it('should allow download data via POST through /boxes/data/:sensorid as csv', function () {
+      return chakram.post(`${BASE_URL}/boxes/data`, {boxid: boxId, phenomenon: 'Temperatur'})
+        .then(function (response) {
+          expect(response).to.have.status(200);
+          expect(response.body).not.to.be.empty;
+          expect(response).to.have.header('content-type', 'text/csv');
+
+          return chakram.wait();
+        });
+    });
+
     it('should multiple csv measurements', function () {
       const boxId = boxIds[1];
 
@@ -416,6 +427,9 @@ describe('openSenseMap API', function () {
           expect(response.body.length).to.be.equal(1);
           expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
           expect(response).to.have.schema(findAllSchema);
+          expect(response.body[0].sensors.some(function (sensor) {
+            return moment.utc(sensor.lastMeasurement.createdAt).diff(ten_days_ago) < 10;
+          })).to.be.true;
 
           return chakram.wait();
         });
@@ -439,7 +453,7 @@ describe('openSenseMap API', function () {
     it('should return the correct count and correct schema of boxes for /boxes GET with two date parameters', function () {
       const now = moment.utc();
 
-      return chakram.get(`${BASE_URL}/boxes?date=${now.clone().subtract(1,'minute')},${now.toISOString()}`)
+      return chakram.get(`${BASE_URL}/boxes?date=${now.clone().subtract(1, 'minute').toISOString()},${now.toISOString()}`)
         .then(function (response) {
           expect(response).to.have.status(200);
           expect(Array.isArray(response.body)).to.be.true;
@@ -447,7 +461,7 @@ describe('openSenseMap API', function () {
           expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
           expect(response).to.have.schema(findAllSchema);
 
-          return chakram.get(`${BASE_URL}/boxes?date=${now.clone().subtract(10,'days').subtract(10, 'minutes')},${now.toISOString()}`);
+          return chakram.get(`${BASE_URL}/boxes?date=${now.clone().subtract(10, 'days').subtract(10, 'minutes').toISOString()},${now.toISOString()}`);
         })
         .then(function (response) {
           expect(response).to.have.status(200);
@@ -462,8 +476,9 @@ describe('openSenseMap API', function () {
 
     it('should allow to delete a single sensor via PUT', function () {
       const tempsensor_id = boxObj.sensors[boxObj.sensors.findIndex(s => s.title === 'Temperatur')]._id;
-      const delete_payload = { sensors: [{deleted:true, _id: tempsensor_id}] };
-      return chakram.put(`${BASE_URL}/boxes/${boxId}`, delete_payload, { headers: { 'x-apikey': apiKey } })
+      const delete_payload = { sensors: [{ deleted: true, _id: tempsensor_id }] };
+
+       return chakram.put(`${BASE_URL}/boxes/${boxId}`, delete_payload, { headers: { 'x-apikey': apiKey } })
         .then(function (response) {
           expect(response).to.have.status(200);
 
@@ -471,13 +486,15 @@ describe('openSenseMap API', function () {
         })
         .then(function (response) {
           expect(response.body.sensors.length).to.be.equal(4);
+
           return chakram.wait();
         });
     });
 
     it('should allow to delete a single sensor via PUT of another box', function () {
       const pressuresensor_id = boxes[boxIds[1]].sensors[boxes[boxIds[1]].sensors.findIndex(s => s.title === 'Luftdruck')]._id;
-      const delete_payload = { sensors: [{deleted:true, _id: pressuresensor_id}] };
+      const delete_payload = { sensors: [{ deleted: true, _id: pressuresensor_id }] };
+
       return chakram.put(`${BASE_URL}/boxes/${boxIds[1]}`, delete_payload, { headers: { 'x-apikey': boxes[boxIds[1]]._apikey } })
         .then(function (response) {
           expect(response).to.have.status(200);
@@ -486,6 +503,7 @@ describe('openSenseMap API', function () {
         })
         .then(function (response) {
           expect(response.body.sensors.length).to.be.equal(4);
+
           return chakram.wait();
         });
     });
@@ -523,7 +541,7 @@ describe('openSenseMap API', function () {
     it('should return the correct count and correct schema of boxes for /boxes GET with two date parameters after deleted sensor', function () {
       const now = moment.utc();
 
-      return chakram.get(`${BASE_URL}/boxes?date=${now.clone().subtract(5,'minutes')},${now.toISOString()}&phenomenon=Temperatur`)
+      return chakram.get(`${BASE_URL}/boxes?date=${now.clone().subtract(5, 'minutes').toISOString()},${now.toISOString()}&phenomenon=Temperatur`)
         .then(function (response) {
           expect(response).to.have.status(200);
           expect(Array.isArray(response.body)).to.be.true;
