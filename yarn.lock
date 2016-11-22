@@ -8,58 +8,58 @@
   dependencies:
     geojson-area "^0.2.1"
 
-"@turf/bbox@^3.5.3":
-  version "3.5.3"
-  resolved "https://registry.yarnpkg.com/@turf/bbox/-/bbox-3.5.3.tgz#2d2b67c15b51ca145ad65836c799f21868ddf6c3"
+"@turf/bbox@^3.6.1":
+  version "3.6.1"
+  resolved "https://registry.yarnpkg.com/@turf/bbox/-/bbox-3.6.1.tgz#c37fed009d7fc355837bbdd69bab996b24730f6a"
   dependencies:
-    "@turf/meta" "^3.5.3"
+    "@turf/meta" "^3.6.1"
 
-"@turf/centroid@^3.5.3":
-  version "3.5.3"
-  resolved "https://registry.yarnpkg.com/@turf/centroid/-/centroid-3.5.3.tgz#35f47ca27d9a7febe1c0cb50d4431f7f2e613a23"
+"@turf/centroid@^3.6.1":
+  version "3.6.1"
+  resolved "https://registry.yarnpkg.com/@turf/centroid/-/centroid-3.6.1.tgz#aa4785180a6f75e8d439d2b61388402ba7f8241e"
   dependencies:
-    "@turf/helpers" "^3.5.3"
-    "@turf/meta" "^3.5.3"
+    "@turf/helpers" "^3.6.1"
+    "@turf/meta" "^3.6.1"
 
-"@turf/distance@^3.5.3":
-  version "3.5.3"
-  resolved "https://registry.yarnpkg.com/@turf/distance/-/distance-3.5.3.tgz#0f8a87675d98bd45cfe48c754df83fdc1d05436a"
+"@turf/distance@^3.6.1":
+  version "3.6.1"
+  resolved "https://registry.yarnpkg.com/@turf/distance/-/distance-3.6.1.tgz#73e08208366b07a5ade32b65108ade1c4ce823d5"
   dependencies:
-    "@turf/helpers" "^3.5.3"
+    "@turf/helpers" "^3.6.1"
     "@turf/invariant" "^3.5.2"
 
-"@turf/helpers@^3.5.3":
-  version "3.5.3"
-  resolved "https://registry.yarnpkg.com/@turf/helpers/-/helpers-3.5.3.tgz#32142d2c1aec9c3e92c6855fb8988b18a487cf9b"
+"@turf/helpers@^3.6.1":
+  version "3.6.1"
+  resolved "https://registry.yarnpkg.com/@turf/helpers/-/helpers-3.6.1.tgz#378342aa28ec0c20d9988891eec03a1b797b4760"
 
-"@turf/hex-grid@^3.5.3":
-  version "3.5.3"
-  resolved "https://registry.yarnpkg.com/@turf/hex-grid/-/hex-grid-3.5.3.tgz#a50c92cbdca03874793338be82728c910c674521"
+"@turf/hex-grid@^3.6.1":
+  version "3.6.1"
+  resolved "https://registry.yarnpkg.com/@turf/hex-grid/-/hex-grid-3.6.1.tgz#82511cde30ffc0a4bf879e4d24e15be8b241d41c"
   dependencies:
-    "@turf/distance" "^3.5.3"
-    "@turf/helpers" "^3.5.3"
+    "@turf/distance" "^3.6.1"
+    "@turf/helpers" "^3.6.1"
 
 "@turf/invariant@^3.5.2":
   version "3.5.2"
   resolved "https://registry.yarnpkg.com/@turf/invariant/-/invariant-3.5.2.tgz#a4cbdfa625acbc57fe320db0c2a6325812a3291e"
 
-"@turf/meta@^3.5.3":
-  version "3.5.3"
-  resolved "https://registry.yarnpkg.com/@turf/meta/-/meta-3.5.3.tgz#91bc7883e3ab8e76a9b09b9ea7b82cca24e35f05"
+"@turf/meta@^3.6.1":
+  version "3.6.1"
+  resolved "https://registry.yarnpkg.com/@turf/meta/-/meta-3.6.1.tgz#e2e76519e8e536f83e397d0f8c2dde53c3dcfdc4"
 
-"@turf/square-grid@^3.5.3":
-  version "3.5.3"
-  resolved "https://registry.yarnpkg.com/@turf/square-grid/-/square-grid-3.5.3.tgz#6954c83b2a373c9ae606400458b69a6f2b49dae3"
+"@turf/square-grid@^3.6.1":
+  version "3.6.1"
+  resolved "https://registry.yarnpkg.com/@turf/square-grid/-/square-grid-3.6.1.tgz#890a6af341ece22db35a34784059f4a8d2293c41"
   dependencies:
-    "@turf/distance" "^3.5.3"
-    "@turf/helpers" "^3.5.3"
+    "@turf/distance" "^3.6.1"
+    "@turf/helpers" "^3.6.1"
 
-"@turf/triangle-grid@^3.5.3":
-  version "3.5.3"
-  resolved "https://registry.yarnpkg.com/@turf/triangle-grid/-/triangle-grid-3.5.3.tgz#0e5a07e65a35c872b39a5f24589d516d6e83561f"
+"@turf/triangle-grid@^3.6.1":
+  version "3.6.1"
+  resolved "https://registry.yarnpkg.com/@turf/triangle-grid/-/triangle-grid-3.6.1.tgz#45b7769061b6c2aa7700b624c155eee4e6a8476e"
   dependencies:
-    "@turf/distance" "^3.5.3"
-    "@turf/helpers" "^3.5.3"
+    "@turf/distance" "^3.6.1"
+    "@turf/helpers" "^3.6.1"
 
 JSONSelect@0.4.0:
   version "0.4.0"
@@ -1065,9 +1065,13 @@ mocha@^3.1.2:
     mkdirp "0.5.1"
     supports-color "3.1.2"
 
-moment@^2.10.6, moment@^2.16.0:
+moment@^2.10.6:
   version "2.16.0"
   resolved "https://registry.yarnpkg.com/moment/-/moment-2.16.0.tgz#f38f2c97c9889b0ee18fc6cc392e1e443ad2da8e"
+
+moment@^2.17.0:
+  version "2.17.0"
+  resolved "https://registry.yarnpkg.com/moment/-/moment-2.17.0.tgz#a4c292e02aac5ddefb29a6eed24f51938dd3b74f"
 
 mongodb-core@2.0.13:
   version "2.0.13"
