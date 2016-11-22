@@ -372,7 +372,7 @@ describe('openSenseMap API', function () {
     });
 
     it('should allow download data via POST through /boxes/data/:sensorid as csv', function () {
-      return chakram.post(`${BASE_URL}/boxes/data`, {boxid: boxId, phenomenon: 'Temperatur'})
+      return chakram.post(`${BASE_URL}/boxes/data`, { boxid: boxId, phenomenon: 'Temperatur' })
         .then(function (response) {
           expect(response).to.have.status(200);
           expect(response.body).not.to.be.empty;
@@ -402,7 +402,6 @@ describe('openSenseMap API', function () {
           return chakram.wait();
         });
     });
-
 
     it('should return the correct count and correct schema of boxes for /boxes GET', function () {
       return chakram.get(`${BASE_URL}/boxes`)
