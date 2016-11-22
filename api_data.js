@@ -98,6 +98,17 @@ define({ "api": [
             "field": "format",
             "defaultValue": "json",
             "description": "<p>the format the sensor data is returned in.</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "String",
+            "allowedValues": [
+              "\"indoor\"",
+              "\"outdoor\""
+            ],
+            "optional": true,
+            "field": "exposure",
+            "description": "<p>(optional) only return sensors of boxes with the specified exposure. Can be indoor or outdoor</p>"
           }
         ]
       }
