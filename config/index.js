@@ -1,11 +1,11 @@
+'use strict';
+
 // specify your config items
 // environment variables starting with `OSEM_` will override the values here.
 // Example: `OSEM_targetfolder` will override the setting for `targetFolder`
-'use strict';
-
-var config = {
-  targetFolder: '/var/OpenSenseMap-API/usersketches/',
-  imageFolder: '/var/www/OpenSenseMap/app/userimages/',
+const config = {
+  targetFolder: './usersketches/',
+  imageFolder: './userimages/',
   dbhost: 'localhost',
   dbuser: 'senseboxapiuser',
   dbuserpass: 'userpass',
@@ -27,10 +27,10 @@ var config = {
   honeybadger_apikey: ''
 };
 
-var env_has_dbconnectionstring = false;
-for (var envKey in process.env) {
+let env_has_dbconnectionstring = false;
+for (const envKey in process.env) {
   if (envKey.indexOf('OSEM_') === 0) {
-    var configKey = envKey.substring(5);
+    const configKey = envKey.substring(5);
     if (env_has_dbconnectionstring === false && configKey === 'dbconnectionstring') {
       env_has_dbconnectionstring = true;
     }
@@ -39,7 +39,7 @@ for (var envKey in process.env) {
 }
 
 if (env_has_dbconnectionstring === false) {
-  config.dbconnectionstring = 'mongodb://' + config.dbuser + ':' + config.dbuserpass + '@' + config.dbhost + '/OSeM-api?authSource=OSeM-api';
+  config.dbconnectionstring = `mongodb://${config.dbuser}:${config.dbuserpass}@${config.dbhost}/OSeM-api?authSource=OSeM-api`;
 }
 
 module.exports = config;
