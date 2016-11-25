@@ -15,9 +15,9 @@
     "bunyan": "^1.8.5",
     "csv-stringify": "^1.0.4",
     "honeybadger": "^1.2.0",
-    "jsonpath": "^0.2.8",
+    "jsonpath": "^0.2.9",
     "moment": "^2.17.0",
-    "mongoose": "^4.6.8",
+    "mongoose": "^4.7.0",
     "mongoose-timestamp": "^0.6",
     "mqtt": "^2.1.3",
     "request": "^2.79.0",
@@ -28,7 +28,7 @@
   },
   "devDependencies": {
     "chakram": "^1.5.0",
-    "mocha": "^3.1.2",
+    "mocha": "^3.2.0",
     "randomgeojson": "^1.0.0"
   },
   "scripts": {
