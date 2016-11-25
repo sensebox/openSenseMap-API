@@ -29,8 +29,5 @@ docker-compose -p osemapitest -f tests-docker-compose.yml down -v
 #docker-compose -p osemapitest -f tests-docker-compose.yml up -d --build --force-recreate --remove-orphans
 docker-compose -p osemapitest -f tests-docker-compose.yml up -d --force-recreate --remove-orphans
 
-echo "running tests after 10 second sleep"
-sleep 10
-
 docker-compose -p osemapitest -f tests-docker-compose.yml exec osem-api npm test
 

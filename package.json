@@ -33,7 +33,8 @@
   },
   "scripts": {
     "start": "node app.js",
-    "test": "node node_modules/.bin/mocha tests"
+    "test": "node node_modules/.bin/mocha tests",
+    "pretest": "node tests/waitForDb"
   },
   "repository": {
     "type": "git",
