@@ -710,7 +710,7 @@
     "type": "get",
     "url": "/statistics/idw",
     "title": "Get a Inverse Distance Weighting Interpolation as FeatureCollection",
-    "description": "<p>Retrieve a JSON object containing a GeoJSON FeatureCollection with a computed Inverse Distance Interpolation for a certain region of interest and phenomenon and an array with equal interval breaks. Please be aware that requests with (areaSquareKilometers / cellWidth) &gt; 2500 will be rejected.</p>",
+    "description": "<p>Retrieve a JSON object containing a GeoJSON FeatureCollection with a computed Inverse Distance Interpolation for a certain region of interest and phenomenon. Please be aware that requests with (areaSquareKilometers / cellWidth) &gt; 2500 will be rejected.</p>",
     "version": "0.0.1",
     "group": "Interpolation",
     "name": "calculateIdw",
@@ -789,14 +789,6 @@
             "field": "power",
             "defaultValue": "1",
             "description": "<p>The power of the IDW calculation</p>"
-          },
-          {
-            "group": "Parameter",
-            "type": "Number",
-            "optional": true,
-            "field": "numClasses",
-            "defaultValue": "6",
-            "description": "<p>Number of classes in the breaks array</p>"
           },
           {
             "group": "Parameter",
@@ -919,7 +911,7 @@
             "type": "ISO8601Date",
             "optional": true,
             "field": "from-date",
-            "description": "<p>Beginning date of measurement data (default: 15 days ago from now)</p>"
+            "description": "<p>Beginning date of measurement data (default: 2 days ago from now)</p>"
           },
           {
             "group": "Parameter",
