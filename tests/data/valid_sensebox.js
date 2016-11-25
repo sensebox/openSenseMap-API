@@ -14,6 +14,14 @@ module.exports = function () {
       'firstname': 'TestBox',
       'lastname': 'TestBoxNachname',
       'email': 'testmail@testmail.mail'
+    },
+    'mqtt': {
+      'enabled': false,
+      'url': '',
+      'topic': '',
+      'messageFormat': '',
+      'decodeOptions': '',
+      'connectionOptions': ''
     }
   };
 };

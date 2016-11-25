@@ -9,6 +9,7 @@ const chakram = require('chakram'),
 const BASE_URL = 'http://localhost:8000',
   valid_sensebox = require('./data/valid_sensebox'),
   senseBoxSchema = require('./data/senseBoxSchema'),
+  senseBoxSchemaAllFields = require('./data/senseBoxSchemaAllFieldsUsers'),
   senseBoxCreateSchema = require('./data/senseBoxCreateSchema'),
   findAllSchema = require('./data/findAllSchema'),
   csv_example_data = require('./data/csv_example_data'),
@@ -70,7 +71,7 @@ describe('openSenseMap API', function () {
           expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
           expect(response).to.have.schema(senseBoxSchema);
 
-          expect(response).to.not.have.keys('mqtt');
+          expect(response.body).to.not.have.keys('mqtt');
 
           return chakram.wait();
         });
@@ -78,6 +79,7 @@ describe('openSenseMap API', function () {
 
     it('should allow to create a second senseBox via POST', function () {
       let apikey_2;
+
       return chakram.post(`${BASE_URL}/boxes`, valid_sensebox())
         .then(function (response) {
           expect(response).to.have.status(201);
@@ -97,7 +99,7 @@ describe('openSenseMap API', function () {
           expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
           expect(response).to.have.schema(senseBoxSchema);
 
-          expect(response).to.not.have.keys('mqtt');
+          expect(response.body).to.not.have.keys('mqtt');
 
           return chakram.wait();
         });
@@ -120,7 +122,8 @@ describe('openSenseMap API', function () {
     it('should let users retrieve their box with all fields', function () {
       return chakram.get(`${BASE_URL}/users/${boxId}?returnBox=t`, { headers: { 'x-apikey': apiKey } })
         .then(function (response) {
-          expect(response).to.have.schema(senseBoxSchema);
+          expect(response).to.have.schema(senseBoxSchemaAllFields);
+          expect(response).to.comprise.of.json({ mqtt: { enabled: false } });
         });
     });
 
@@ -477,7 +480,7 @@ describe('openSenseMap API', function () {
       const tempsensor_id = boxObj.sensors[boxObj.sensors.findIndex(s => s.title === 'Temperatur')]._id;
       const delete_payload = { sensors: [{ deleted: true, _id: tempsensor_id }] };
 
-       return chakram.put(`${BASE_URL}/boxes/${boxId}`, delete_payload, { headers: { 'x-apikey': apiKey } })
+      return chakram.put(`${BASE_URL}/boxes/${boxId}`, delete_payload, { headers: { 'x-apikey': apiKey } })
         .then(function (response) {
           expect(response).to.have.status(200);
 
@@ -563,6 +566,23 @@ describe('openSenseMap API', function () {
         .then(function (response) {
           expect(response).to.have.status(404);
           expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
+        });
+    });
+
+    it('should allow to enable mqtt via PUT', function () {
+      const update_payload = { mqtt: { enabled: true, url: 'mqtt://', topic: 'mytopic', messageFormat: 'json' } };
+
+      return chakram.put(`${BASE_URL}/boxes/${boxIds[1]}`, update_payload, { headers: { 'x-apikey': boxes[boxIds[1]]._apikey } })
+        .then(function (response) {
+          expect(response).to.have.status(200);
+
+          return chakram.get(`${BASE_URL}/users/${boxIds[1]}?returnBox=t`, { headers: { 'x-apikey': boxes[boxIds[1]]._apikey } });
+        })
+        .then(function (response) {
+          expect(response).to.have.schema(senseBoxSchemaAllFields);
+          expect(response).to.comprise.of.json({ mqtt: { enabled: true } });
+
+          return chakram.wait();
         });
     });
   });
