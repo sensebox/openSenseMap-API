@@ -53,6 +53,7 @@ describe('openSenseMap API', function () {
     it('should allow to create a senseBox via POST', function () {
       return chakram.post(`${BASE_URL}/boxes`, valid_sensebox())
         .then(function (response) {
+          console.log(response.body)
           expect(response).to.have.status(201);
           expect(response).to.have.schema(senseBoxCreateSchema);
           expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
