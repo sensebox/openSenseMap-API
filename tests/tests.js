@@ -53,7 +53,6 @@ describe('openSenseMap API', function () {
     it('should allow to create a senseBox via POST', function () {
       return chakram.post(`${BASE_URL}/boxes`, valid_sensebox())
         .then(function (response) {
-          console.log(response.body)
           expect(response).to.have.status(201);
           expect(response).to.have.schema(senseBoxCreateSchema);
           expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
@@ -582,6 +581,34 @@ describe('openSenseMap API', function () {
         .then(function (response) {
           expect(response).to.have.schema(senseBoxSchemaAllFields);
           expect(response).to.comprise.of.json({ mqtt: { enabled: true } });
+
+          return chakram.wait();
+        });
+    });
+
+    it('should allow to delete all data for a single sensor', function () {
+      const tempsensor_id = boxes[boxIds[1]].sensors[boxes[boxIds[1]].sensors.findIndex(s => s.title === 'Temperatur')]._id;
+
+      return chakram.delete(`${BASE_URL}/boxes/${boxIds[1]}/${tempsensor_id}/measurements`, undefined, { headers: { 'x-apikey': boxes[boxIds[1]]._apikey } })
+        .then(function (response) {
+          expect(response).to.have.status(200);
+
+          return chakram.get(`${BASE_URL}/boxes/${boxIds[1]}/data/${tempsensor_id}`);
+        })
+        .then(function (response) {
+          expect(Array.isArray(response.body)).to.be.true;
+          expect(response.body.length).to.equal(0);
+
+          return chakram.get(`${BASE_URL}/boxes/${boxIds[1]}`);
+        })
+        .then(function (response) {
+          expect(response).to.have.json('sensors', function (sensors) {
+            sensors.forEach(function (sensor) {
+              if (sensor._id === tempsensor_id) {
+                expect(sensor.lastMeasurement).not.to.exist;
+              }
+            });
+          });
 
           return chakram.wait();
         });
