@@ -588,8 +588,9 @@ describe('openSenseMap API', function () {
 
     it('should allow to delete all data for a single sensor', function () {
       const tempsensor_id = boxes[boxIds[1]].sensors[boxes[boxIds[1]].sensors.findIndex(s => s.title === 'Temperatur')]._id;
+      const payload = { 'deleteAllMeasurements': true };
 
-      return chakram.delete(`${BASE_URL}/boxes/${boxIds[1]}/${tempsensor_id}/measurements`, undefined, { headers: { 'x-apikey': boxes[boxIds[1]]._apikey } })
+      return chakram.delete(`${BASE_URL}/boxes/${boxIds[1]}/${tempsensor_id}/measurements`, payload, { headers: { 'content-type': 'application/json', 'x-apikey': boxes[boxIds[1]]._apikey } })
         .then(function (response) {
           expect(response).to.have.status(200);
 
