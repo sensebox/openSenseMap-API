@@ -372,6 +372,14 @@ define({ "api": [
         "Settings for a senseBox connected through MQTT": [
           {
             "group": "MqttOption",
+            "type": "Boolean",
+            "optional": false,
+            "field": "enabled",
+            "defaultValue": "false",
+            "description": "<p>enable or disable mqtt</p>"
+          },
+          {
+            "group": "MqttOption",
             "type": "String",
             "optional": false,
             "field": "url",
@@ -518,6 +526,14 @@ define({ "api": [
           }
         ],
         "Settings for a senseBox connected through MQTT": [
+          {
+            "group": "MqttOption",
+            "type": "Boolean",
+            "optional": false,
+            "field": "enabled",
+            "defaultValue": "false",
+            "description": "<p>enable or disable mqtt</p>"
+          },
           {
             "group": "MqttOption",
             "type": "String",
@@ -802,6 +818,134 @@ define({ "api": [
     },
     "filename": "./lib/controllers/statisticsController.js",
     "groupTitle": "Interpolation"
+  },
+  {
+    "type": "delete",
+    "url": "/boxes/:senseBoxId/:sensorId/measurements",
+    "title": "Delete measurements of a sensor",
+    "description": "<p>This method allows to delete measurements for the specified sensor. Use the request body to specify which measurements should be deleted.</p>",
+    "name": "deleteMeasurements",
+    "group": "Measurements",
+    "parameter": {
+      "fields": {
+        "JSON request body": [
+          {
+            "group": "RequestBody",
+            "type": "ISO8601Date",
+            "optional": true,
+            "field": "from-date",
+            "description": "<p>Beginning date of measurement data (no default)</p>"
+          },
+          {
+            "group": "RequestBody",
+            "type": "ISO8601Date",
+            "optional": true,
+            "field": "to-date",
+            "description": "<p>End date of measurement data (no default)</p>"
+          },
+          {
+            "group": "RequestBody",
+            "type": "ISO8601Date[]",
+            "optional": true,
+            "field": "timestamps",
+            "description": "<p>Allows to specify timestamps which should be deleted</p>"
+          },
+          {
+            "group": "RequestBody",
+            "type": "Boolean",
+            "allowedValues": [
+              "true",
+              "false"
+            ],
+            "optional": true,
+            "field": "deleteAllMeasurements",
+            "defaultValue": "false",
+            "description": "<p>Specify <code>deleteAllMeasurements</code> with a value of <code>true</code> to delete all measurements of this sensor</p>"
+          }
+        ],
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": false,
+            "field": ":senseBoxId",
+            "description": "<p>the ID of the senseBox you are referring to.</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": false,
+            "field": ":sensorId",
+            "description": "<p>the ID of the sensor you are referring to.</p>"
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "./lib/controllers/sensorsController.js",
+    "groupTitle": "Measurements",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "String",
+            "optional": false,
+            "field": "x-apikey",
+            "description": "<p>the secret API key which corresponds to the <code>senseBoxId</code> parameter.</p>"
+          },
+          {
+            "group": "Header",
+            "type": "String",
+            "allowedValues": [
+              "application/json"
+            ],
+            "optional": false,
+            "field": "content-type",
+            "description": "<p>Should be <code>application/json</code> or <code>application/json; charset=utf-8</code></p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "x-apikey header example:",
+          "content": "x-apikey: 576efef4cb9b9ebe057bf7b4",
+          "type": "String"
+        }
+      ]
+    },
+    "error": {
+      "fields": {
+        "Error 4xx": [
+          {
+            "group": "Error 4xx",
+            "type": "Object",
+            "optional": false,
+            "field": "403",
+            "description": "<p>the request has invalid or missing credentials.</p>"
+          },
+          {
+            "group": "Error 4xx",
+            "type": "Object",
+            "optional": false,
+            "field": "415",
+            "description": "<p>the request has invalid or missing content type.</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "Error-Response:",
+          "content": "HTTP/1.1 403 Forbidden\n{\"code\":\"NotAuthorized\",\"message\":\"ApiKey is invalid or missing\"}",
+          "type": "json"
+        },
+        {
+          "title": "Error-Response:",
+          "content": "HTTP/1.1 415 Unsupported Media Type\n{\"code\":\"NotAuthorized\",\"message\":\"Unsupported content-type. Try application/json\"}",
+          "type": "json"
+        }
+      ]
+    }
   },
   {
     "type": "get",
