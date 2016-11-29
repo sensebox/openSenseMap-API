@@ -421,7 +421,43 @@ define({ "api": [
       }
     },
     "filename": "./lib/controllers/boxesController.js",
-    "groupTitle": "Boxes"
+    "groupTitle": "Boxes",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "String",
+            "allowedValues": [
+              "application/json"
+            ],
+            "optional": false,
+            "field": "content-type",
+            "description": "<p>Should be <code>application/json</code> or <code>application/json; charset=utf-8</code></p>"
+          }
+        ]
+      }
+    },
+    "error": {
+      "fields": {
+        "Error 4xx": [
+          {
+            "group": "Error 4xx",
+            "type": "Object",
+            "optional": false,
+            "field": "415",
+            "description": "<p>the request has invalid or missing content type.</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "Error-Response:",
+          "content": "HTTP/1.1 415 Unsupported Media Type\n{\"code\":\"NotAuthorized\",\"message\":\"Unsupported content-type. Try application/json\"}",
+          "type": "json"
+        }
+      ]
+    }
   },
   {
     "type": "put",
@@ -606,6 +642,16 @@ define({ "api": [
             "optional": false,
             "field": "x-apikey",
             "description": "<p>the secret API key which corresponds to the <code>senseBoxId</code> parameter.</p>"
+          },
+          {
+            "group": "Header",
+            "type": "String",
+            "allowedValues": [
+              "application/json"
+            ],
+            "optional": false,
+            "field": "content-type",
+            "description": "<p>Should be <code>application/json</code> or <code>application/json; charset=utf-8</code></p>"
           }
         ]
       },
@@ -626,6 +672,13 @@ define({ "api": [
             "optional": false,
             "field": "403",
             "description": "<p>the request has invalid or missing credentials.</p>"
+          },
+          {
+            "group": "Error 4xx",
+            "type": "Object",
+            "optional": false,
+            "field": "415",
+            "description": "<p>the request has invalid or missing content type.</p>"
           }
         ]
       },
@@ -633,6 +686,11 @@ define({ "api": [
         {
           "title": "Error-Response:",
           "content": "HTTP/1.1 403 Forbidden\n{\"code\":\"NotAuthorized\",\"message\":\"ApiKey is invalid or missing\"}",
+          "type": "json"
+        },
+        {
+          "title": "Error-Response:",
+          "content": "HTTP/1.1 415 Unsupported Media Type\n{\"code\":\"NotAuthorized\",\"message\":\"Unsupported content-type. Try application/json\"}",
           "type": "json"
         }
       ]
@@ -1175,7 +1233,43 @@ define({ "api": [
       }
     },
     "filename": "./lib/controllers/boxesController.js",
-    "groupTitle": "Measurements"
+    "groupTitle": "Measurements",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "String",
+            "allowedValues": [
+              "application/json"
+            ],
+            "optional": false,
+            "field": "content-type",
+            "description": "<p>Should be <code>application/json</code> or <code>application/json; charset=utf-8</code></p>"
+          }
+        ]
+      }
+    },
+    "error": {
+      "fields": {
+        "Error 4xx": [
+          {
+            "group": "Error 4xx",
+            "type": "Object",
+            "optional": false,
+            "field": "415",
+            "description": "<p>the request has invalid or missing content type.</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "Error-Response:",
+          "content": "HTTP/1.1 415 Unsupported Media Type\n{\"code\":\"NotAuthorized\",\"message\":\"Unsupported content-type. Try application/json\"}",
+          "type": "json"
+        }
+      ]
+    }
   },
   {
     "type": "post",
