@@ -2,64 +2,64 @@
 # yarn lockfile v1
 
 
-"@turf/area":
+"@turf/area@^3.5.2":
   version "3.5.2"
   resolved "https://registry.yarnpkg.com/@turf/area/-/area-3.5.2.tgz#a01d6b1bbbde00b68385fea158433ea75890018e"
   dependencies:
     geojson-area "^0.2.1"
 
-"@turf/bbox@^3.6.1":
-  version "3.6.1"
-  resolved "https://registry.yarnpkg.com/@turf/bbox/-/bbox-3.6.1.tgz#c37fed009d7fc355837bbdd69bab996b24730f6a"
+"@turf/bbox@^3.7.0":
+  version "3.7.0"
+  resolved "https://registry.yarnpkg.com/@turf/bbox/-/bbox-3.7.0.tgz#1334ba579bcc72e1a33e40bee8bf86fd2adbb10b"
   dependencies:
-    "@turf/meta" "^3.6.1"
+    "@turf/meta" "^3.7.0"
 
-"@turf/centroid@^3.6.1":
-  version "3.6.1"
-  resolved "https://registry.yarnpkg.com/@turf/centroid/-/centroid-3.6.1.tgz#aa4785180a6f75e8d439d2b61388402ba7f8241e"
+"@turf/centroid@^3.7.0":
+  version "3.7.0"
+  resolved "https://registry.yarnpkg.com/@turf/centroid/-/centroid-3.7.0.tgz#394fbb4c51f7cb044091c95df016a34025c75de0"
   dependencies:
-    "@turf/helpers" "^3.6.1"
-    "@turf/meta" "^3.6.1"
+    "@turf/helpers" "^3.6.3"
+    "@turf/meta" "^3.7.0"
 
-"@turf/distance@^3.6.1":
-  version "3.6.1"
-  resolved "https://registry.yarnpkg.com/@turf/distance/-/distance-3.6.1.tgz#73e08208366b07a5ade32b65108ade1c4ce823d5"
+"@turf/distance@^3.7.0":
+  version "3.7.0"
+  resolved "https://registry.yarnpkg.com/@turf/distance/-/distance-3.7.0.tgz#ce229d1b27205534a64ac018fa3247f9e2adc400"
   dependencies:
-    "@turf/helpers" "^3.6.1"
-    "@turf/invariant" "^3.5.2"
+    "@turf/helpers" "^3.6.3"
+    "@turf/invariant" "^3.7.0"
 
-"@turf/helpers@^3.6.1":
-  version "3.6.1"
-  resolved "https://registry.yarnpkg.com/@turf/helpers/-/helpers-3.6.1.tgz#378342aa28ec0c20d9988891eec03a1b797b4760"
+"@turf/helpers@^3.6.3":
+  version "3.6.3"
+  resolved "https://registry.yarnpkg.com/@turf/helpers/-/helpers-3.6.3.tgz#742e834f792f60dfa429df664d66ae31500bc051"
 
-"@turf/hex-grid@^3.6.1":
-  version "3.6.1"
-  resolved "https://registry.yarnpkg.com/@turf/hex-grid/-/hex-grid-3.6.1.tgz#82511cde30ffc0a4bf879e4d24e15be8b241d41c"
+"@turf/hex-grid@^3.7.0":
+  version "3.7.0"
+  resolved "https://registry.yarnpkg.com/@turf/hex-grid/-/hex-grid-3.7.0.tgz#c350dcc7d38b8915eb733a8f8d76cbd2aca7a076"
   dependencies:
-    "@turf/distance" "^3.6.1"
-    "@turf/helpers" "^3.6.1"
+    "@turf/distance" "^3.7.0"
+    "@turf/helpers" "^3.6.3"
 
-"@turf/invariant@^3.5.2":
-  version "3.5.2"
-  resolved "https://registry.yarnpkg.com/@turf/invariant/-/invariant-3.5.2.tgz#a4cbdfa625acbc57fe320db0c2a6325812a3291e"
+"@turf/invariant@^3.7.0":
+  version "3.7.0"
+  resolved "https://registry.yarnpkg.com/@turf/invariant/-/invariant-3.7.0.tgz#0d90b5033e70e6f567dde5981bdf3a1f0d77cab1"
 
-"@turf/meta@^3.6.1":
-  version "3.6.1"
-  resolved "https://registry.yarnpkg.com/@turf/meta/-/meta-3.6.1.tgz#e2e76519e8e536f83e397d0f8c2dde53c3dcfdc4"
+"@turf/meta@^3.7.0":
+  version "3.7.0"
+  resolved "https://registry.yarnpkg.com/@turf/meta/-/meta-3.7.0.tgz#c7dad3dd6e04113c0df252cc17f37d9958d5eacc"
 
-"@turf/square-grid@^3.6.1":
-  version "3.6.1"
-  resolved "https://registry.yarnpkg.com/@turf/square-grid/-/square-grid-3.6.1.tgz#890a6af341ece22db35a34784059f4a8d2293c41"
+"@turf/square-grid@^3.7.0":
+  version "3.7.0"
+  resolved "https://registry.yarnpkg.com/@turf/square-grid/-/square-grid-3.7.0.tgz#955dcb9f995d397d74d0b0b3ecffa7a4fcf5465f"
   dependencies:
-    "@turf/distance" "^3.6.1"
-    "@turf/helpers" "^3.6.1"
+    "@turf/distance" "^3.7.0"
+    "@turf/helpers" "^3.6.3"
 
-"@turf/triangle-grid@^3.6.1":
-  version "3.6.1"
-  resolved "https://registry.yarnpkg.com/@turf/triangle-grid/-/triangle-grid-3.6.1.tgz#45b7769061b6c2aa7700b624c155eee4e6a8476e"
+"@turf/triangle-grid@^3.7.0":
+  version "3.7.0"
+  resolved "https://registry.yarnpkg.com/@turf/triangle-grid/-/triangle-grid-3.7.0.tgz#35d8da0db0d081070d438dfada67152ee6b0f333"
   dependencies:
-    "@turf/distance" "^3.6.1"
-    "@turf/helpers" "^3.6.1"
+    "@turf/distance" "^3.7.0"
+    "@turf/helpers" "^3.6.3"
 
 JSONSelect@0.4.0:
   version "0.4.0"
@@ -1086,9 +1086,9 @@ mongoose-timestamp@^0.6:
   dependencies:
     defaults "^1.0.3"
 
-mongoose@^4.7.0:
-  version "4.7.0"
-  resolved "https://registry.yarnpkg.com/mongoose/-/mongoose-4.7.0.tgz#adb7c6b73dfb76f204a70ba6cd364f887dcc2012"
+mongoose@^4.7.1:
+  version "4.7.1"
+  resolved "https://registry.yarnpkg.com/mongoose/-/mongoose-4.7.1.tgz#3842df23f5eb5db31d27311d2a3fb4cca2b5cd9e"
   dependencies:
     async "2.1.2"
     bson "~0.5.4"
