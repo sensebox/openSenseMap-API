@@ -816,8 +816,8 @@
             "group": "Parameter",
             "type": "String",
             "allowedValues": [
-              "\"indoor\"",
-              "\"outdoor\""
+              "indoor",
+              "outdoor"
             ],
             "optional": true,
             "field": "exposure",
@@ -827,9 +827,9 @@
             "group": "Parameter",
             "type": "String",
             "allowedValues": [
-              "\"hex\"",
-              "\"square\"",
-              "\"triangle\""
+              "hex",
+              "square",
+              "triangle"
             ],
             "optional": true,
             "field": "gridType",
@@ -838,23 +838,11 @@
           },
           {
             "group": "Parameter",
-            "type": "String",
-            "allowedValues": [
-              "\"kilometers\"",
-              "\"miles\""
-            ],
-            "optional": true,
-            "field": "cellUnit",
-            "defaultValue": "kilometers",
-            "description": "<p>The unit for the width of the grid cells</p>"
-          },
-          {
-            "group": "Parameter",
             "type": "Number",
             "optional": true,
             "field": "cellWidth",
             "defaultValue": "50",
-            "description": "<p>The width of the grid cells in the unit given by the cellUnit parameter</p>"
+            "description": "<p>The width of the grid cells in kilometers</p>"
           },
           {
             "group": "Parameter",
@@ -863,6 +851,14 @@
             "field": "power",
             "defaultValue": "1",
             "description": "<p>The power of the IDW calculation</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "Number",
+            "optional": true,
+            "field": "numTimeSteps",
+            "defaultValue": "6",
+            "description": "<p>Return this many timesteps between <code>from-date</code> and <code>to-date</code></p>"
           },
           {
             "group": "Parameter",
