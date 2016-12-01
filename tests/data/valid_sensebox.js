@@ -1,6 +1,10 @@
 const apiKey = require('./randomApiKey'),
   randomGeojson = require('randomgeojson');
-module.exports = function () {
+module.exports = function (bbox) {
+  const randomGeojsonOptions = { featureTypes: ['Point'] };
+  if (bbox) {
+    randomGeojsonOptions.bbox = bbox;
+  }
   return {
     'name': 'senseBox',
     'model': 'homeEthernet',
@@ -8,7 +12,7 @@ module.exports = function () {
     'exposure': 'indoor',
     'orderID': apiKey(),
     'loc': [
-      randomGeojson.generateGeoJSON({ featureTypes: ['Point'] }).features[0]
+      randomGeojson.generateGeoJSON(randomGeojsonOptions).features[0]
     ],
     'user': {
       'firstname': 'TestBox',
