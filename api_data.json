@@ -782,9 +782,9 @@
   },
   {
     "type": "get",
-    "url": "/statistics/idw",
+    "url": "/statistics/idw?bbox=7.6,51.2,7.8,51.4&phenomenon=Temperatur",
     "title": "Get a Inverse Distance Weighting Interpolation as FeatureCollection",
-    "description": "<p>Retrieve a JSON object containing a GeoJSON FeatureCollection with a computed Inverse Distance Interpolation for a certain region of interest and phenomenon. Please be aware that requests with (areaSquareKilometers / cellWidth) &gt; 2500 will be rejected.</p>",
+    "description": "<p>Retrieve a JSON object containing</p> <ul> <li><code>breaks</code>: an array containing equal distance breaks. use <code>numClasses</code> parameter to control how many breaks to return</li> <li><code>featureCollection</code>: a GeoJSON FeatureCollection with a computed Inverse Distance Interpolation for a certain region of interest and phenomenon.</li> </ul> <p>The properties of each feature in the featureCollection is an object with ISO8601 timestamps which are the timeSteps. The number of the timesteps can be controlled using the <code>numTimeSteps</code> parameter. Values falling inside each timestep are first averaged. Please be aware that requests with (areaSquareKilometers / cellWidth) &gt; 2500 will be rejected.</p>",
     "version": "0.0.1",
     "group": "Interpolation",
     "name": "calculateIdw",
@@ -842,11 +842,14 @@
             "optional": true,
             "field": "cellWidth",
             "defaultValue": "50",
-            "description": "<p>The width of the grid cells in kilometers</p>"
+            "description": "<p>The width of the grid cells in kilometers. Must be positive</p>"
           },
           {
             "group": "Parameter",
             "type": "Number",
+            "allowedValues": [
+              "1-9"
+            ],
             "optional": true,
             "field": "power",
             "defaultValue": "1",
@@ -855,6 +858,9 @@
           {
             "group": "Parameter",
             "type": "Number",
+            "allowedValues": [
+              "1-10"
+            ],
             "optional": true,
             "field": "numTimeSteps",
             "defaultValue": "6",
@@ -862,10 +868,18 @@
           },
           {
             "group": "Parameter",
+            "type": "Number",
+            "optional": true,
+            "field": "numClasses",
+            "defaultValue": "6",
+            "description": "<p>Number of classes in the breaks array. Must be positive</p>"
+          },
+          {
+            "group": "Parameter",
             "type": "String",
             "optional": false,
             "field": "bbox",
-            "description": "<p>A bounding box containing 4 WGS84 coordinates separated by comata (,). Order is latitude, longitude and southwest, northeast.</p>"
+            "description": "<p>A bounding box containing 4 WGS84 coordinates separated by comata (,). Order is longitude, latitude and southwest, northeast.</p>"
           }
         ]
       }
@@ -1152,7 +1166,7 @@
             "type": "String",
             "optional": false,
             "field": "bbox",
-            "description": "<p>A bounding box containing 4 WGS84 coordinates separated by comata (,). Order is latitude, longitude and southwest, northeast.</p>"
+            "description": "<p>A bounding box containing 4 WGS84 coordinates separated by comata (,). Order is longitude, latitude and southwest, northeast.</p>"
           }
         ]
       }
