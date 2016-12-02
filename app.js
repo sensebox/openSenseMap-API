@@ -6,7 +6,6 @@
 'use strict';
 
 const restify = require('restify'),
-  mongoose = require('mongoose'),
   fs = require('fs'),
   Stream = require('stream'),
   util = require('util'),
@@ -16,8 +15,6 @@ const restify = require('restify'),
   routes = require('./lib/routes');
 
 const { config, Honeybadger } = utils;
-
-mongoose.Promise = global.Promise;
 
 // Logging
 const consoleStream = new Stream();
