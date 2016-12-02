@@ -24,7 +24,8 @@ const config = {
   slack_url: '',
   measurements_post_domain: '',
 
-  honeybadger_apikey: ''
+  honeybadger_apikey: '',
+  jwt_secret: 'OH GOD THIS IS SO INSECURE PLS CHANGE ME'
 };
 
 let env_has_dbconnectionstring = false;

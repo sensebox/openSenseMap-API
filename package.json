@@ -12,6 +12,7 @@
     "@turf/hex-grid": "^3.7.0",
     "@turf/square-grid": "^3.7.0",
     "@turf/triangle-grid": "^3.7.0",
+    "bcrypt-nodejs": "^0.0.3",
     "bunyan": "^1.8.5",
     "csv-stringify": "^1.0.4",
     "honeybadger": "^1.2.0",
