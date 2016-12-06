@@ -155,6 +155,7 @@ module.exports = {
     'template-curly-spacing': [
       'error',
       'never'
-    ]
+    ],
+    'no-warning-comments': 'error'
   }
 };
