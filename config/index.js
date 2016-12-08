@@ -25,7 +25,10 @@ const config = {
   measurements_post_domain: '',
 
   honeybadger_apikey: '',
-  jwt_secret: 'OH GOD THIS IS SO INSECURE PLS CHANGE ME'
+
+  jwt_secret: 'OH GOD THIS IS SO INSECURE PLS CHANGE ME',
+  salt_factor: 13, // use at least 10, max 31 (because the lib only allows this much. maybe switch later)
+  password_min_length: 8
 };
 
 let env_has_dbconnectionstring = false;

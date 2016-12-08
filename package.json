@@ -12,7 +12,7 @@
     "@turf/hex-grid": "^3.7.0",
     "@turf/square-grid": "^3.7.0",
     "@turf/triangle-grid": "^3.7.0",
-    "bcrypt-nodejs": "^0.0.3",
+    "bcrypt": "^1.0.1",
     "bunyan": "^1.8.5",
     "csv-stringify": "^1.0.4",
     "honeybadger": "^1.2.0",
@@ -25,7 +25,8 @@
     "request-promise-native": "^1.0.3",
     "restify": "^4.3.0",
     "stream-transform": "^0.1.1",
-    "stringify-stream": "^1.0.5"
+    "stringify-stream": "^1.0.5",
+    "uuid": "^3.0.1"
   },
   "devDependencies": {
     "chakram": "^1.5.0",

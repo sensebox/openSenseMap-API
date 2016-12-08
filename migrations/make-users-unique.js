@@ -5,6 +5,9 @@ const utils = require('../lib/utils'),
 
 const { User, Box } = models;
 
+// TODO: drop unique index on apikey
+// TODO: remove apikey field and save in box
+
 utils.connectWithRetry(function () {
   console.log('starting "make-users-unique" migration');
   User
