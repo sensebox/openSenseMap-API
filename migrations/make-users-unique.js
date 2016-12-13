@@ -7,6 +7,7 @@ const { User, Box } = models;
 
 // TODO: drop unique index on apikey
 // TODO: remove apikey field and save in box
+// TODO: remove required property from firstname and lastname
 
 utils.connectWithRetry(function () {
   console.log('starting "make-users-unique" migration');

@@ -12,7 +12,8 @@ const restify = require('restify'),
   utils = require('./lib/utils'),
   requestUtils = require('./lib/requestUtils'),
   Box = require('./lib/models').Box,
-  routes = require('./lib/routes');
+  routes = require('./lib/routes'),
+  passport = require('passport');
 
 const { config, Honeybadger } = utils;
 
@@ -72,6 +73,8 @@ server.use(restify.fullResponse());
 server.use(restify.queryParser());
 server.use(restify.jsonBodyParser());
 server.pre(restify.pre.sanitizePath());
+
+server.use(passport.initialize());
 
 // attach Routes
 routes(server);
