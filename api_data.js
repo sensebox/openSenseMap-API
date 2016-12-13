@@ -313,14 +313,14 @@ define({ "api": [
           {
             "group": "User",
             "type": "String",
-            "optional": false,
+            "optional": true,
             "field": "firstname",
             "description": "<p>the firstname of the user.</p>"
           },
           {
             "group": "User",
             "type": "String",
-            "optional": false,
+            "optional": true,
             "field": "lastname",
             "description": "<p>the ths lastname of the user.</p>"
           },
@@ -329,14 +329,22 @@ define({ "api": [
             "type": "String",
             "optional": false,
             "field": "email",
-            "description": "<p>the email for the user. is used for sending the arduino sketch.</p>"
+            "description": "<p>the email for the user. Is used for signing in and for sending the arduino sketch.</p>"
           },
           {
             "group": "User",
             "type": "String",
             "optional": false,
-            "field": "lang",
-            "description": "<p>the language of the user.</p>"
+            "field": "password",
+            "description": "<p>the desired password for the user. Must be at least 8 characters long.</p>"
+          },
+          {
+            "group": "User",
+            "type": "String",
+            "optional": true,
+            "field": "language",
+            "defaultValue": "de_DE",
+            "description": "<p>the language of the user. Used for the website and mails</p>"
           }
         ],
         "A single sensor for the nested Sensor parameter": [
