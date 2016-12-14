@@ -6,9 +6,10 @@ const utils = require('../lib/utils'),
 const { User, Box } = models;
 
 // TODO: drop unique index on apikey
-// TODO: remove apikey field and save in box
-// TODO: remove required property from firstname and lastname
+// TODO: remove apikey field https://team.goodeggs.com/how-to-remove-a-property-from-a-mongoose-js-schema-1947330c6974#.d3sk59hlz
+// TODO: remove required property from lastname
 // TODO: switch to reference of boxes instead of box id strings
+// TODO: reset passwords for all users -> email with password reset link
 
 utils.connectWithRetry(function () {
   console.log('starting "make-users-unique" migration');
