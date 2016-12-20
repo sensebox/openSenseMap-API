@@ -6,7 +6,6 @@ const models = require('../lib/models'),
 const { User, Box } = models;
 
 // TODO: email with password reset link
-// TODO: check if boxes of users still exist
 
 module.exports = function () {
   console.log('starting "make-users-unique" migration');
@@ -23,6 +22,13 @@ module.exports = function () {
       );
     })
     .then(function () {
+      return Box.find({})
+        .exec()
+        .then(function (boxes) {
+          return boxes.map(b => b._id.toString());
+        });
+    })
+    .then(function (boxes) {
       return User
         .find({})
         .exec()
@@ -33,6 +39,16 @@ module.exports = function () {
           const unique_users = {};
 
           for (const user of users) {
+            // remove boxes that does not exist
+            for (const box of user.boxes) {
+              const index = boxes.findIndex(e => e === box.toString());
+
+              if (index === -1) {
+                console.log(`${box.toString()} does not exist. removing`);
+                user.boxes.splice(index, 1);
+              }
+            }
+
             if (!(user.email in unique_users)) {
               unique_users[user.email] = [];
             }
@@ -56,12 +72,19 @@ module.exports = function () {
           }
           console.log(`${users_to_remove.length} will be removed`);
 
+
           const promises = [];
           // set the boxes to the users
           for (const user of users) {
             if (user._id.toString() in users_boxids) {
-              user.set('boxes', users_boxids[user._id.toString()]);
+
+              const oid_boxes = users_boxids[user._id.toString()].filter(function (b) {
+                return b !== null || typeof b !== 'undefined';
+              });
+
+              user.set('boxes', oid_boxes);
               user.set('password', uuid());
+              user.set('language', 'de_DE');
 
               promises.push(user.save());
             }
@@ -73,9 +96,19 @@ module.exports = function () {
           return Promise.all(promises)
             .then(function () {
               console.log('done');
+
+              return User.find({}).populate('boxes')
+                .exec();
+            })
+            .then(function (users) {
+              JSON.stringify(users.map(u => u.toJSON()));
             });
 
         });
+    })
+    .catch(function (err) {
+      console.log('Error occurred:');
+      console.log(err);
     });
 
 };
