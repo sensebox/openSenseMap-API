@@ -82,9 +82,14 @@ module.exports = function () {
                 return b !== null || typeof b !== 'undefined';
               });
 
+              let lang = user.language;
+              if (typeof lang === 'undefined') {
+                lang = 'de_DE';
+              }
+
               user.set('boxes', oid_boxes);
               user.set('password', uuid());
-              user.set('language', 'de_DE');
+              user.set('language', lang);
 
               promises.push(user.save());
             }
