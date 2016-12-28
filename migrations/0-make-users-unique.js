@@ -2,7 +2,8 @@
 
 const models = require('../lib/models'),
   uuid = require('uuid'),
-  moment = require('moment');
+  moment = require('moment'),
+  mails = require('../lib/mails');
 
 const { User, Box } = models;
 
@@ -91,7 +92,9 @@ module.exports = function () {
               user.set('boxes', oid_boxes);
               user.set('password', uuid());
               user.set('language', lang);
-              user.set('resetPasswordExpires', moment.utc().add(2, 'months').toDate());
+              user.set('resetPasswordExpires', moment.utc()
+                .add(2, 'months')
+                .toDate());
 
               promises.push(user.save());
             }
@@ -109,6 +112,9 @@ module.exports = function () {
             })
             .then(function (users) {
               JSON.stringify(users.map(u => u.toJSON()));
+              for (const user of users) {
+                mails.sendAddUserManagementMail(user, user.boxes);
+              }
             });
 
         });

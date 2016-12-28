@@ -103,6 +103,32 @@ describe('openSenseMap API', function () {
         });
     });
 
+    it('should allow to request a password reset token', function () {
+      return chakram.post(`${BASE_URL}/users/request-password-reset`, valid_user)
+        .then(function (response) {
+          expect(response).to.have.status(200);
+
+          return chakram.wait();
+        });
+    });
+
+    it('should deny password request with wrong token', function () {
+      return chakram.post(`${BASE_URL}/users/password-reset`, { password: 'ignored_anyway', token: 'invalid_password-reset_token', email: 'tester@test.test' })
+        .then(function (response) {
+          expect(response).to.have.status(403);
+
+          return chakram.wait();
+        });
+    });
+
+    it('should deny email confirmation with wrong token', function () {
+      return chakram.post(`${BASE_URL}/users/confirm-email`, { token: 'invalid_password-reset_token', email: 'tester@test.test' })
+        .then(function (response) {
+          expect(response).to.have.status(403);
+
+          return chakram.wait();
+        });
+    });
   });
 
   describe('/boxes', function () {
