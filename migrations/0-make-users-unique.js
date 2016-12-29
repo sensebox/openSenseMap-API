@@ -2,12 +2,9 @@
 
 const models = require('../lib/models'),
   uuid = require('uuid'),
-  moment = require('moment'),
-  mails = require('../lib/mails');
+  moment = require('moment');
 
 const { User, Box } = models;
-
-// TODO: email with password reset link
 
 module.exports = function () {
   console.log('starting "make-users-unique" migration');
@@ -113,7 +110,7 @@ module.exports = function () {
             .then(function (users) {
               JSON.stringify(users.map(u => u.toJSON()));
               for (const user of users) {
-                mails.sendAddUserManagementMail(user, user.boxes);
+                user.mail('newUserManagement', user.boxes);
               }
             });
 
