@@ -238,15 +238,27 @@ define({ "api": [
     "type": "post",
     "url": "/boxes",
     "title": "Post new senseBox",
-    "description": "<p>Create a new senseBox. This method allows you to submit a new senseBox.</p> <p>If you specify <code>mqtt</code> parameters, the openSenseMap API will try to connect to the MQTT broker specified by you. The parameter <code>messageFormat</code> tells the API in which format you are sending measurements in.</p> <p>For <code>json</code>, the format is:</p> <pre><code>{   &quot;sensorId&quot;: &lt;value&gt;,   &quot;sensorId&quot;: [&lt;value&gt;,&lt;createdAt&gt;]   ... } </code></pre> <p>For <code>csv</code>, the format is:</p> <pre><code>sensorId,value sensorId,value,createdAt ... </code></pre>",
+    "description": "<p>Create a new senseBox. This method allows you to submit a new senseBox.</p> <p>Along with the senseBox, an user is created which then owns the senseBox.</p> <p>If you specify <code>mqtt</code> parameters, the openSenseMap API will try to connect to the MQTT broker specified by you. The parameter <code>messageFormat</code> tells the API in which format you are sending measurements in.</p> <p>For <code>json</code>, the format is:</p> <pre><code>{   &quot;sensorId&quot;: &lt;value&gt;,   &quot;sensorId&quot;: [&lt;value&gt;,&lt;createdAt&gt;]   ... } </code></pre> <p>For <code>csv</code>, the format is:</p> <pre><code>sensorId,value sensorId,value,createdAt ... </code></pre>",
     "version": "0.0.1",
     "group": "Boxes",
     "name": "postNewBox",
-    "filename": "./lib/controllers/boxesController.js",
-    "groupTitle": "Boxes",
     "parameter": {
       "fields": {
         "JSON request body": [
+          {
+            "group": "RequestBody",
+            "type": "User",
+            "optional": false,
+            "field": "user",
+            "description": "<p>the user for this senseBox.</p>"
+          },
+          {
+            "group": "RequestBody",
+            "type": "String",
+            "optional": false,
+            "field": "orderID",
+            "description": "<p>the apiKey of the user for the senseBox.</p>"
+          },
           {
             "group": "RequestBody",
             "type": "String",
@@ -295,6 +307,36 @@ define({ "api": [
             "optional": false,
             "field": "loc",
             "description": "<p>the location of this senseBox. Must be a GeoJSON Point Feature. (RFC7946)</p>"
+          }
+        ],
+        "Parameter for creating the user for a senseBox": [
+          {
+            "group": "User",
+            "type": "String",
+            "optional": false,
+            "field": "firstname",
+            "description": "<p>the firstname of the user.</p>"
+          },
+          {
+            "group": "User",
+            "type": "String",
+            "optional": false,
+            "field": "lastname",
+            "description": "<p>the ths lastname of the user.</p>"
+          },
+          {
+            "group": "User",
+            "type": "String",
+            "optional": false,
+            "field": "email",
+            "description": "<p>the email for the user. is used for sending the arduino sketch.</p>"
+          },
+          {
+            "group": "User",
+            "type": "String",
+            "optional": false,
+            "field": "lang",
+            "description": "<p>the language of the user.</p>"
           }
         ],
         "A single sensor for the nested Sensor parameter": [
@@ -378,6 +420,8 @@ define({ "api": [
         ]
       }
     },
+    "filename": "./lib/controllers/boxesController.js",
+    "groupTitle": "Boxes",
     "header": {
       "fields": {
         "Header": [
