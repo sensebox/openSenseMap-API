@@ -2,9 +2,9 @@
 # yarn lockfile v1
 
 
-"@turf/area@^3.5.2":
-  version "3.5.2"
-  resolved "https://registry.yarnpkg.com/@turf/area/-/area-3.5.2.tgz#a01d6b1bbbde00b68385fea158433ea75890018e"
+"@turf/area@^3.6.3":
+  version "3.6.3"
+  resolved "https://registry.yarnpkg.com/@turf/area/-/area-3.6.3.tgz#ce025ca5899553d9d25db9ae839d77cddbe3481e"
   dependencies:
     geojson-area "^0.2.1"
 
@@ -1224,9 +1224,13 @@ mocha@^3.2.0:
     mkdirp "0.5.1"
     supports-color "3.1.2"
 
-moment@2.x.x, moment@^2.10.6, moment@^2.17.0:
+moment@2.x.x, moment@^2.10.6:
   version "2.17.0"
   resolved "https://registry.yarnpkg.com/moment/-/moment-2.17.0.tgz#a4c292e02aac5ddefb29a6eed24f51938dd3b74f"
+
+moment@^2.17.1:
+  version "2.17.1"
+  resolved "https://registry.yarnpkg.com/moment/-/moment-2.17.1.tgz#fed9506063f36b10f066c8b59a144d7faebe1d82"
 
 mongodb-core@2.1.2:
   version "2.1.2"
@@ -1249,9 +1253,9 @@ mongoose-timestamp@^0.6:
   dependencies:
     defaults "^1.0.3"
 
-mongoose@^4.7.4:
-  version "4.7.4"
-  resolved "https://registry.yarnpkg.com/mongoose/-/mongoose-4.7.4.tgz#e92e16ec75ad62f3b56f7209612d65dd25b3f0bd"
+mongoose@^4.7.5:
+  version "4.7.5"
+  resolved "https://registry.yarnpkg.com/mongoose/-/mongoose-4.7.5.tgz#e3d7ecaeba6c2231ff991417622e3894865dccb5"
   dependencies:
     async "2.1.4"
     bson "~0.5.4"
