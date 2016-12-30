@@ -1300,6 +1300,115 @@ define({ "api": [
   },
   {
     "type": "post",
+    "url": "/users/confirm-email",
+    "title": "confirm email address",
+    "name": "confirmEmailUser",
+    "description": "<p>confirm email address to the system</p>",
+    "group": "Users",
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": false,
+            "field": "email",
+            "description": "<p>the email of the user to confirm</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": false,
+            "field": "token",
+            "description": "<p>the email confirmation token which was sent via email to the user</p>"
+          }
+        ]
+      }
+    },
+    "success": {
+      "fields": {
+        "Success 200": [
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": false,
+            "field": "code",
+            "description": "<p><code>Ok</code></p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": false,
+            "field": "message",
+            "description": "<p><code>E-Mail successfully confirmed. Thank you</code></p>"
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "./lib/controllers/usersController.js",
+    "groupTitle": "Users"
+  },
+  {
+    "type": "post",
+    "url": "/users/password-reset",
+    "title": "reset password with passwordResetToken",
+    "name": "passwordResetUser",
+    "description": "<p>reset password with token sent through email</p>",
+    "group": "Users",
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": false,
+            "field": "email",
+            "description": "<p>the email of the user to reset</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": false,
+            "field": "password",
+            "description": "<p>new password. needs to be at least 8 characters</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": false,
+            "field": "token",
+            "description": "<p>the password reset token which was sent via email to the user</p>"
+          }
+        ]
+      }
+    },
+    "success": {
+      "fields": {
+        "Success 200": [
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": false,
+            "field": "code",
+            "description": "<p><code>Ok</code></p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": false,
+            "field": "message",
+            "description": "<p><code>Password successfully changed. You can now login with your new password</code></p>"
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "./lib/controllers/usersController.js",
+    "groupTitle": "Users"
+  },
+  {
+    "type": "post",
     "url": "/users/register",
     "title": "Register new",
     "name": "registerUser",
@@ -1390,8 +1499,41 @@ define({ "api": [
     "url": "/users/request-password-reset",
     "title": "request password reset",
     "name": "requestPasswordResetUser",
-    "description": "<p>request a password reset in case of a forgotten password</p>",
+    "description": "<p>request a password reset in case of a forgotten password. Sends a link with instructions to reset the users password to the specified email address. The link is valid for 12 hours.</p>",
     "group": "Users",
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": false,
+            "field": "email",
+            "description": "<p>the email of the user to request the password reset for</p>"
+          }
+        ]
+      }
+    },
+    "success": {
+      "fields": {
+        "Success 200": [
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": false,
+            "field": "code",
+            "description": "<p><code>Ok</code></p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": false,
+            "field": "message",
+            "description": "<p><code>Password reset initiated</code></p>"
+          }
+        ]
+      }
+    },
     "version": "0.0.0",
     "filename": "./lib/controllers/usersController.js",
     "groupTitle": "Users"
