@@ -10,7 +10,7 @@ dont_recreate=${dont_recreate:-}
 function cleanup {
   if [[ -z "$dont_clean_up" ]]; then
     echo 'cleanup!'
-#    docker-compose -p osemapitest -f tests-docker-compose.yml logs osem-api
+#    docker-compose -p osemapitest -f tests-docker-compose.yml logs osem-api mailer
     docker-compose -p osemapitest -f tests-docker-compose.yml down -v
   fi
 }

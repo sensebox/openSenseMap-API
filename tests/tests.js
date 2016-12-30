@@ -54,7 +54,7 @@ describe('openSenseMap API', function () {
     });
 
     it('should deny to sign in with wrong password', function () {
-      return chakram.post(`${BASE_URL}/users/signin`, { email: 'tester@test.test', password: 'wrong password' })
+      return chakram.post(`${BASE_URL}/users/sign-in`, { email: 'tester@test.test', password: 'wrong password' })
         .then(function (response) {
           expect(response).to.have.status(401);
 
@@ -63,7 +63,7 @@ describe('openSenseMap API', function () {
     });
 
     it('should allow to sign in an user with email and password', function () {
-      return chakram.post(`${BASE_URL}/users/signin`, valid_user)
+      return chakram.post(`${BASE_URL}/users/sign-in`, valid_user)
         .then(function (response) {
           expect(response).to.have.status(200);
           expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
@@ -76,7 +76,7 @@ describe('openSenseMap API', function () {
     });
 
     it('should allow to sign out with jwt', function () {
-      return chakram.post(`${BASE_URL}/users/signout`, {}, { headers: { 'Authorization': `Bearer ${jwt}` } })
+      return chakram.post(`${BASE_URL}/users/sign-out`, {}, { headers: { 'Authorization': `Bearer ${jwt}` } })
         .then(function (response) {
           expect(response).to.have.status(200);
           expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
@@ -90,7 +90,7 @@ describe('openSenseMap API', function () {
         .then(function (response) {
           expect(response).to.have.status(401);
 
-          return chakram.post(`${BASE_URL}/users/signin`, valid_user);
+          return chakram.post(`${BASE_URL}/users/sign-in`, valid_user);
         })
         .then(function (response) {
           expect(response).to.have.status(200);
