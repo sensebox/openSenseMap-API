@@ -24,7 +24,16 @@ const config = {
   slack_url: '',
   measurements_post_domain: '',
 
-  honeybadger_apikey: ''
+  honeybadger_apikey: '',
+
+  // TODO: add config key to osem-compose
+  jwt_secret: 'OH GOD THIS IS SO INSECURE PLS CHANGE ME', // should be at least 32 characters
+  jwt_algorithm: 'HS256',
+  origin: 'localhost:8000', // usually the base url of the api. for example api.opensensemap.org
+  salt_factor: (process.env.ENV === 'prod' ? 13 : 1), // use at least 10, max 31 (because the lib only allows this much. maybe switch later)
+
+
+  password_min_length: 8
 };
 
 let env_has_dbconnectionstring = false;

@@ -6,18 +6,16 @@
 'use strict';
 
 const restify = require('restify'),
-  mongoose = require('mongoose'),
   fs = require('fs'),
   Stream = require('stream'),
   util = require('util'),
   utils = require('./lib/utils'),
   requestUtils = require('./lib/requestUtils'),
   Box = require('./lib/models').Box,
-  routes = require('./lib/routes');
+  routes = require('./lib/routes'),
+  passport = require('passport');
 
 const { config, Honeybadger } = utils;
-
-mongoose.Promise = global.Promise;
 
 // Logging
 const consoleStream = new Stream();
@@ -75,6 +73,8 @@ server.use(restify.fullResponse());
 server.use(restify.queryParser());
 server.use(restify.jsonBodyParser());
 server.pre(restify.pre.sanitizePath());
+
+server.use(passport.initialize());
 
 // attach Routes
 routes(server);

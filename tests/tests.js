@@ -8,14 +8,129 @@ const chakram = require('chakram'),
 
 const BASE_URL = 'http://localhost:8000',
   valid_sensebox = require('./data/valid_sensebox'),
+  valid_user = require('./data/valid_user'),
   senseBoxSchema = require('./data/senseBoxSchema'),
   senseBoxSchemaAllFields = require('./data/senseBoxSchemaAllFieldsUsers'),
-  senseBoxCreateSchema = require('./data/senseBoxCreateSchema'),
   findAllSchema = require('./data/findAllSchema'),
   csv_example_data = require('./data/csv_example_data'),
   json_submit_data = require('./data/json_submit_data');
 
 describe('openSenseMap API', function () {
+  let jwt, jwt2;
+
+  describe('/users', function () {
+    it('should allow to register an user via POST', function () {
+      return chakram.post(`${BASE_URL}/users/register`, valid_user)
+        .then(function (response) {
+          expect(response).to.have.status(201);
+          expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
+          expect(response.body.token).to.exist;
+
+          return chakram.wait();
+        });
+    });
+
+    it('should deny to register an user with the same email', function () {
+      return chakram.post(`${BASE_URL}/users/register`, valid_user)
+        .then(function (response) {
+          expect(response).to.have.status(400);
+          expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
+
+          return chakram.wait();
+        });
+    });
+
+    it('should allow to register a second user via POST', function () {
+      return chakram.post(`${BASE_URL}/users/register`, { firstname: 'mrtest', email: 'tester2@test.test', password: '12345678' })
+        .then(function (response) {
+          expect(response).to.have.status(201);
+          expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
+          expect(response.body.token).to.exist;
+
+          jwt2 = response.body.token;
+
+          return chakram.wait();
+        });
+    });
+
+    it('should deny to sign in with wrong password', function () {
+      return chakram.post(`${BASE_URL}/users/sign-in`, { email: 'tester@test.test', password: 'wrong password' })
+        .then(function (response) {
+          expect(response).to.have.status(401);
+
+          return chakram.wait();
+        });
+    });
+
+    it('should allow to sign in an user with email and password', function () {
+      return chakram.post(`${BASE_URL}/users/sign-in`, valid_user)
+        .then(function (response) {
+          expect(response).to.have.status(200);
+          expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
+          expect(response.body.token).to.exist;
+
+          jwt = response.body.token;
+
+          return chakram.wait();
+        });
+    });
+
+    it('should allow to sign out with jwt', function () {
+      return chakram.post(`${BASE_URL}/users/sign-out`, {}, { headers: { 'Authorization': `Bearer ${jwt}` } })
+        .then(function (response) {
+          expect(response).to.have.status(200);
+          expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
+
+          return chakram.wait();
+        });
+    });
+
+    it('should deny to use revoked jwt', function () {
+      return chakram.post(`${BASE_URL}/boxes`, valid_sensebox(), { headers: { 'Authorization': `Bearer ${jwt}` } })
+        .then(function (response) {
+          expect(response).to.have.status(401);
+
+          return chakram.post(`${BASE_URL}/users/sign-in`, valid_user);
+        })
+        .then(function (response) {
+          expect(response).to.have.status(200);
+          expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
+          expect(response.body.token).to.exist;
+
+          jwt = response.body.token;
+
+          return chakram.wait();
+        });
+    });
+
+    it('should allow to request a password reset token', function () {
+      return chakram.post(`${BASE_URL}/users/request-password-reset`, valid_user)
+        .then(function (response) {
+          expect(response).to.have.status(200);
+
+          return chakram.wait();
+        });
+    });
+
+    it('should deny password request with wrong token', function () {
+      return chakram.post(`${BASE_URL}/users/password-reset`, { password: 'ignored_anyway', token: 'invalid_password-reset_token', email: 'tester@test.test' })
+        .then(function (response) {
+          expect(response).to.have.status(403);
+
+          return chakram.wait();
+        });
+    });
+
+    it('should deny email confirmation with wrong token', function () {
+      return chakram.post(`${BASE_URL}/users/confirm-email`, { token: 'invalid_password-reset_token', email: 'tester@test.test' })
+        .then(function (response) {
+          expect(response).to.have.status(403);
+
+          return chakram.wait();
+        });
+    });
+  });
+
   describe('/boxes', function () {
 
     it('should return an empty array', function () {
@@ -44,21 +159,18 @@ describe('openSenseMap API', function () {
       return chakram.wait();
     });
 
-    let boxId, apiKey, boxObj;
+    let boxId, boxObj;
     const boxes = {};
     const boxIds = [];
     let boxCount = 0;
 
-
     it('should allow to create a senseBox via POST', function () {
-      return chakram.post(`${BASE_URL}/boxes`, valid_sensebox())
+      return chakram.post(`${BASE_URL}/boxes`, valid_sensebox(), { headers: { 'Authorization': `Bearer ${jwt}` } })
         .then(function (response) {
           expect(response).to.have.status(201);
-          expect(response).to.have.schema(senseBoxCreateSchema);
           expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
 
-          boxId = response.body.boxes[0];
-          apiKey = response.body.apikey;
+          boxId = response.body.data._id;
           boxCount = boxCount + 1;
           boxIds.push(boxId);
 
@@ -78,23 +190,19 @@ describe('openSenseMap API', function () {
     });
 
     it('should allow to create a second senseBox via POST', function () {
-      let apikey_2;
 
-      return chakram.post(`${BASE_URL}/boxes`, valid_sensebox())
+      return chakram.post(`${BASE_URL}/boxes`, valid_sensebox(), { headers: { 'Authorization': `Bearer ${jwt2}` } })
         .then(function (response) {
           expect(response).to.have.status(201);
-          expect(response).to.have.schema(senseBoxCreateSchema);
           expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
 
           boxCount = boxCount + 1;
-          apikey_2 = response.body.apikey;
-          boxIds.push(response.body.boxes[0]);
+          boxIds.push(response.body.data._id);
 
-          return chakram.get(`${BASE_URL}/boxes/${response.body.boxes[0]}`);
+          return chakram.get(`${BASE_URL}/boxes/${response.body.data._id}`);
         })
         .then(function (response) {
           boxes[response.body._id] = response.body;
-          boxes[response.body._id]._apikey = apikey_2;
           expect(response).to.have.status(200);
           expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
           expect(response).to.have.schema(senseBoxSchema);
@@ -105,22 +213,8 @@ describe('openSenseMap API', function () {
         });
     });
 
-    it('should let users validate their api-key', function () {
-      return chakram.get(`${BASE_URL}/users/${boxId}`, { headers: { 'x-apikey': apiKey } })
-        .then(function (response) {
-          return expect(response).to.comprise.of.json({ 'code': 'Authorized', 'message': 'ApiKey is valid' });
-        });
-    });
-
-    it('should deny access when apikey is missing', function () {
-      return chakram.get(`${BASE_URL}/users/${boxId}`, {})
-        .then(function (response) {
-          return expect(response).to.have.status(403);
-        });
-    });
-
     it('should let users retrieve their box with all fields', function () {
-      return chakram.get(`${BASE_URL}/users/${boxId}?returnBox=t`, { headers: { 'x-apikey': apiKey } })
+      return chakram.get(`${BASE_URL}/users/${boxId}?returnBox=t`, { headers: { 'Authorization': `Bearer ${jwt}` } })
         .then(function (response) {
           expect(response).to.have.schema(senseBoxSchemaAllFields);
           expect(response).to.comprise.of.json({ mqtt: { enabled: false } });
@@ -128,7 +222,7 @@ describe('openSenseMap API', function () {
     });
 
     it('should let users retrieve their arduino sketch', function () {
-      return chakram.get(`${BASE_URL}/boxes/${boxId}/script`, { headers: { 'x-apikey': apiKey } })
+      return chakram.get(`${BASE_URL}/boxes/${boxId}/script`, { headers: { 'Authorization': `Bearer ${jwt}` } })
         .then(function (response) {
           expect(response).to.have.status(200);
           expect(response.body).not.to.be.empty;
@@ -480,7 +574,7 @@ describe('openSenseMap API', function () {
       const tempsensor_id = boxObj.sensors[boxObj.sensors.findIndex(s => s.title === 'Temperatur')]._id;
       const delete_payload = { sensors: [{ deleted: true, _id: tempsensor_id }] };
 
-      return chakram.put(`${BASE_URL}/boxes/${boxId}`, delete_payload, { headers: { 'x-apikey': apiKey } })
+      return chakram.put(`${BASE_URL}/boxes/${boxId}`, delete_payload, { headers: { 'Authorization': `Bearer ${jwt}` } })
         .then(function (response) {
           expect(response).to.have.status(200);
 
@@ -497,7 +591,7 @@ describe('openSenseMap API', function () {
       const pressuresensor_id = boxes[boxIds[1]].sensors[boxes[boxIds[1]].sensors.findIndex(s => s.title === 'Luftdruck')]._id;
       const delete_payload = { sensors: [{ deleted: true, _id: pressuresensor_id }] };
 
-      return chakram.put(`${BASE_URL}/boxes/${boxIds[1]}`, delete_payload, { headers: { 'x-apikey': boxes[boxIds[1]]._apikey } })
+      return chakram.put(`${BASE_URL}/boxes/${boxIds[1]}`, delete_payload, { headers: { 'Authorization': `Bearer ${jwt}` } })
         .then(function (response) {
           expect(response).to.have.status(200);
 
@@ -556,27 +650,36 @@ describe('openSenseMap API', function () {
     });
 
     it('should allow to delete a senseBox via DELETE', function () {
-      return chakram.delete(`${BASE_URL}/boxes/${boxId}`, {}, { headers: { 'x-apikey': apiKey } })
+      return chakram.delete(`${BASE_URL}/boxes/${boxId}`, {}, { headers: { 'Authorization': `Bearer ${jwt}` } })
         .then(function (response) {
           expect(response).to.have.status(200);
           expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
+          boxCount = boxCount - 1;
 
           return chakram.get(`${BASE_URL}/boxes/${boxId}`);
         })
         .then(function (response) {
           expect(response).to.have.status(404);
           expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
+
+          return chakram.get(`${BASE_URL}/stats`);
+        })
+        .then(function (response) {
+          const [boxes] = response.body;
+          expect(boxes).to.equal(boxCount);
+
+          return chakram.wait();
         });
     });
 
     it('should allow to enable mqtt via PUT', function () {
       const update_payload = { mqtt: { enabled: true, url: 'mqtt://', topic: 'mytopic', messageFormat: 'json' } };
 
-      return chakram.put(`${BASE_URL}/boxes/${boxIds[1]}`, update_payload, { headers: { 'x-apikey': boxes[boxIds[1]]._apikey } })
+      return chakram.put(`${BASE_URL}/boxes/${boxIds[1]}`, update_payload, { headers: { 'Authorization': `Bearer ${jwt}` } })
         .then(function (response) {
           expect(response).to.have.status(200);
 
-          return chakram.get(`${BASE_URL}/users/${boxIds[1]}?returnBox=t`, { headers: { 'x-apikey': boxes[boxIds[1]]._apikey } });
+          return chakram.get(`${BASE_URL}/users/${boxIds[1]}?returnBox=t`, { headers: { 'Authorization': `Bearer ${jwt}` } });
         })
         .then(function (response) {
           expect(response).to.have.schema(senseBoxSchemaAllFields);
@@ -590,7 +693,7 @@ describe('openSenseMap API', function () {
       const tempsensor_id = boxes[boxIds[1]].sensors[boxes[boxIds[1]].sensors.findIndex(s => s.title === 'Temperatur')]._id;
       const payload = { 'deleteAllMeasurements': true };
 
-      return chakram.delete(`${BASE_URL}/boxes/${boxIds[1]}/${tempsensor_id}/measurements`, payload, { headers: { 'content-type': 'application/json', 'x-apikey': boxes[boxIds[1]]._apikey } })
+      return chakram.delete(`${BASE_URL}/boxes/${boxIds[1]}/${tempsensor_id}/measurements`, payload, { headers: { 'content-type': 'application/json', 'Authorization': `Bearer ${jwt}` } })
         .then(function (response) {
           expect(response).to.have.status(200);
 
