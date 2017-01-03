@@ -238,27 +238,15 @@
     "type": "post",
     "url": "/boxes",
     "title": "Post new senseBox",
-    "description": "<p>Create a new senseBox. This method allows you to submit a new senseBox.</p> <p>Along with the senseBox, an user is created which then owns the senseBox.</p> <p>If you specify <code>mqtt</code> parameters, the openSenseMap API will try to connect to the MQTT broker specified by you. The parameter <code>messageFormat</code> tells the API in which format you are sending measurements in.</p> <p>For <code>json</code>, the format is:</p> <pre><code>{   &quot;sensorId&quot;: &lt;value&gt;,   &quot;sensorId&quot;: [&lt;value&gt;,&lt;createdAt&gt;]   ... } </code></pre> <p>For <code>csv</code>, the format is:</p> <pre><code>sensorId,value sensorId,value,createdAt ... </code></pre>",
+    "description": "<p>Create a new senseBox. This method allows you to submit a new senseBox.</p> <p>If you specify <code>mqtt</code> parameters, the openSenseMap API will try to connect to the MQTT broker specified by you. The parameter <code>messageFormat</code> tells the API in which format you are sending measurements in.</p> <p>For <code>json</code>, the format is:</p> <pre><code>{   &quot;sensorId&quot;: &lt;value&gt;,   &quot;sensorId&quot;: [&lt;value&gt;,&lt;createdAt&gt;]   ... } </code></pre> <p>For <code>csv</code>, the format is:</p> <pre><code>sensorId,value sensorId,value,createdAt ... </code></pre>",
     "version": "0.0.1",
     "group": "Boxes",
     "name": "postNewBox",
+    "filename": "./lib/controllers/boxesController.js",
+    "groupTitle": "Boxes",
     "parameter": {
       "fields": {
         "JSON request body": [
-          {
-            "group": "RequestBody",
-            "type": "User",
-            "optional": false,
-            "field": "user",
-            "description": "<p>the user for this senseBox.</p>"
-          },
-          {
-            "group": "RequestBody",
-            "type": "String",
-            "optional": false,
-            "field": "orderID",
-            "description": "<p>the apiKey of the user for the senseBox.</p>"
-          },
           {
             "group": "RequestBody",
             "type": "String",
@@ -307,36 +295,6 @@
             "optional": false,
             "field": "loc",
             "description": "<p>the location of this senseBox. Must be a GeoJSON Point Feature. (RFC7946)</p>"
-          }
-        ],
-        "Parameter for creating the user for a senseBox": [
-          {
-            "group": "User",
-            "type": "String",
-            "optional": false,
-            "field": "firstname",
-            "description": "<p>the firstname of the user.</p>"
-          },
-          {
-            "group": "User",
-            "type": "String",
-            "optional": false,
-            "field": "lastname",
-            "description": "<p>the ths lastname of the user.</p>"
-          },
-          {
-            "group": "User",
-            "type": "String",
-            "optional": false,
-            "field": "email",
-            "description": "<p>the email for the user. is used for sending the arduino sketch.</p>"
-          },
-          {
-            "group": "User",
-            "type": "String",
-            "optional": false,
-            "field": "lang",
-            "description": "<p>the language of the user.</p>"
           }
         ],
         "A single sensor for the nested Sensor parameter": [
@@ -420,8 +378,6 @@
         ]
       }
     },
-    "filename": "./lib/controllers/boxesController.js",
-    "groupTitle": "Boxes",
     "header": {
       "fields": {
         "Header": [
@@ -1017,7 +973,7 @@
   },
   {
     "type": "get",
-    "url": "/boxes/:senseBoxId/data/:sensorId?from-date=fromDate&to-date=toDate&download=true&format=json",
+    "url": "/boxes/:senseBoxId/data/:sensorId?from-date=fromDate&to-datetoDate&download=true&format=json",
     "title": "Get the 10000 latest measurements for a sensor",
     "description": "<p>Get up to 10000 measurements from a sensor for a specific time frame, parameters <code>from-date</code> and <code>to-date</code> are optional. If not set, the last 48 hours are used. The maximum time frame is 1 month. If <code>download=true</code> <code>Content-disposition</code> headers will be set. Allows for JSON or CSV format.</p>",
     "version": "0.0.1",
@@ -1330,16 +1286,421 @@
     "name": "getStatistics",
     "group": "Misc",
     "version": "0.1.0",
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "Boolean",
+            "allowedValues": [
+              "true",
+              "false"
+            ],
+            "optional": true,
+            "field": "human",
+            "defaultValue": "false",
+            "description": "<p>if true, make numbers easier human readable.</p>"
+          }
+        ]
+      }
+    },
     "success": {
       "examples": [
         {
-          "title": "[8,13, 2]",
-          "content": "[8,13, 2]",
+          "title": "[human=false]",
+          "content": "[318,118241889,393]",
+          "type": "json"
+        },
+        {
+          "title": "[human=true]",
+          "content": "[\"318\",\"118M\",\"393\"]",
           "type": "json"
         }
       ]
     },
     "filename": "./lib/controllers/statisticsController.js",
     "groupTitle": "Misc"
+  },
+  {
+    "type": "post",
+    "url": "/users/confirm-email",
+    "title": "confirm email address",
+    "name": "confirmEmailUser",
+    "description": "<p>confirm email address to the system</p>",
+    "group": "Users",
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": false,
+            "field": "email",
+            "description": "<p>the email of the user to confirm</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": false,
+            "field": "token",
+            "description": "<p>the email confirmation token which was sent via email to the user</p>"
+          }
+        ]
+      }
+    },
+    "success": {
+      "fields": {
+        "Success 200": [
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": false,
+            "field": "code",
+            "description": "<p><code>Ok</code></p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": false,
+            "field": "message",
+            "description": "<p><code>E-Mail successfully confirmed. Thank you</code></p>"
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "./lib/controllers/usersController.js",
+    "groupTitle": "Users"
+  },
+  {
+    "type": "post",
+    "url": "/users/password-reset",
+    "title": "reset password with passwordResetToken",
+    "name": "passwordResetUser",
+    "description": "<p>reset password with token sent through email</p>",
+    "group": "Users",
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": false,
+            "field": "email",
+            "description": "<p>the email of the user to reset</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": false,
+            "field": "password",
+            "description": "<p>new password. needs to be at least 8 characters</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": false,
+            "field": "token",
+            "description": "<p>the password reset token which was sent via email to the user</p>"
+          }
+        ]
+      }
+    },
+    "success": {
+      "fields": {
+        "Success 200": [
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": false,
+            "field": "code",
+            "description": "<p><code>Ok</code></p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": false,
+            "field": "message",
+            "description": "<p><code>Password successfully changed. You can now login with your new password</code></p>"
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "./lib/controllers/usersController.js",
+    "groupTitle": "Users"
+  },
+  {
+    "type": "post",
+    "url": "/users/register",
+    "title": "Register new",
+    "name": "registerUser",
+    "description": "<p>Register a new openSenseMap user</p>",
+    "group": "Users",
+    "success": {
+      "fields": {
+        "Created 201": [
+          {
+            "group": "Created 201",
+            "type": "String",
+            "optional": false,
+            "field": "code",
+            "description": "<p><code>Created</code></p>"
+          },
+          {
+            "group": "Created 201",
+            "type": "String",
+            "optional": false,
+            "field": "message",
+            "description": "<p><code>Successfully registered new user</code></p>"
+          },
+          {
+            "group": "Created 201",
+            "type": "String",
+            "optional": false,
+            "field": "token",
+            "description": "<p>valid json web token</p>"
+          },
+          {
+            "group": "Created 201",
+            "type": "Object",
+            "optional": false,
+            "field": "data",
+            "description": "<p><code>{ &quot;user&quot;: {&quot;firstname&quot;:&quot;firstname&quot;,&quot;fullname&quot;:&quot;firstname&quot;,&quot;email&quot;:&quot;test@test.de&quot;,&quot;role&quot;:&quot;user&quot;,&quot;language&quot;:&quot;en_US&quot;,&quot;boxes&quot;:[]} }</code></p>"
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "./lib/controllers/usersController.js",
+    "groupTitle": "Users",
+    "parameter": {
+      "fields": {
+        "Parameters for creating a new openSenseMap user": [
+          {
+            "group": "User",
+            "type": "String",
+            "optional": false,
+            "field": "firstname",
+            "description": "<p>the firstname or nickname of the user.</p>"
+          },
+          {
+            "group": "User",
+            "type": "String",
+            "optional": true,
+            "field": "lastname",
+            "description": "<p>the lastname of the user.</p>"
+          },
+          {
+            "group": "User",
+            "type": "String",
+            "optional": false,
+            "field": "email",
+            "description": "<p>the email for the user. Is used for signing in and for sending the arduino sketch.</p>"
+          },
+          {
+            "group": "User",
+            "type": "String",
+            "optional": false,
+            "field": "password",
+            "description": "<p>the desired password for the user. Must be at least 8 characters long.</p>"
+          },
+          {
+            "group": "User",
+            "type": "String",
+            "optional": true,
+            "field": "language",
+            "defaultValue": "en_US",
+            "description": "<p>the language of the user. Used for the website and mails</p>"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "type": "post",
+    "url": "/users/request-password-reset",
+    "title": "request password reset",
+    "name": "requestPasswordResetUser",
+    "description": "<p>request a password reset in case of a forgotten password. Sends a link with instructions to reset the users password to the specified email address. The link is valid for 12 hours.</p>",
+    "group": "Users",
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": false,
+            "field": "email",
+            "description": "<p>the email of the user to request the password reset for</p>"
+          }
+        ]
+      }
+    },
+    "success": {
+      "fields": {
+        "Success 200": [
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": false,
+            "field": "code",
+            "description": "<p><code>Ok</code></p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": false,
+            "field": "message",
+            "description": "<p><code>Password reset initiated</code></p>"
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "./lib/controllers/usersController.js",
+    "groupTitle": "Users"
+  },
+  {
+    "type": "post",
+    "url": "/users/sign-in",
+    "title": "Sign in",
+    "name": "signInUser",
+    "description": "<p>Sign in using email and password. The response contains a valid JSON Web Token</p>",
+    "group": "Users",
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": false,
+            "field": "email",
+            "description": "<p>the email of the user</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": false,
+            "field": "password",
+            "description": "<p>the password of the user</p>"
+          }
+        ]
+      }
+    },
+    "success": {
+      "fields": {
+        "Success 200": [
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": false,
+            "field": "code",
+            "description": "<p><code>Authorized</code></p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": false,
+            "field": "message",
+            "description": "<p><code>Successfully signed in</code></p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": false,
+            "field": "token",
+            "description": "<p>valid json web token</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "Object",
+            "optional": false,
+            "field": "data",
+            "description": "<p><code>{ &quot;user&quot;: {&quot;firstname&quot;:&quot;firstname&quot;,&quot;lastname&quot;:&quot;last&quot;, &quot;fullname&quot;:&quot;firstname last&quot;,&quot;email&quot;:&quot;test@test.de&quot;,&quot;role&quot;:&quot;user&quot;,&quot;language&quot;:&quot;en_US&quot;,&quot;boxes&quot;:[]} }</code></p>"
+          }
+        ]
+      }
+    },
+    "error": {
+      "fields": {
+        "Error 4xx": [
+          {
+            "group": "Error 4xx",
+            "type": "String",
+            "optional": false,
+            "field": "403",
+            "description": "<p>Unauthorized</p>"
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "./lib/controllers/usersController.js",
+    "groupTitle": "Users"
+  },
+  {
+    "type": "post",
+    "url": "/users/sign-out",
+    "title": "Sign out",
+    "name": "signOutUser",
+    "description": "<p>Sign out using a valid JSON Web Token. Invalidates the current JSON Web Token</p>",
+    "group": "Users",
+    "success": {
+      "fields": {
+        "Success 200": [
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": false,
+            "field": "code",
+            "description": "<p><code>Ok</code></p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": false,
+            "field": "message",
+            "description": "<p><code>Successfully signed out</code></p>"
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "./lib/controllers/usersController.js",
+    "groupTitle": "Users",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "String",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>allows to send a valid JSON Web Token along with this request with <code>Bearer</code> prefix.</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "Authorization Header Example",
+          "content": "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE0ODMwMDYxNTIsImV4cCI6MTQ4MzAwOTc1MiwiaXNzIjoibG9jYWxob3N0OjgwMDAiLCJzdWIiOiJ0ZXN0QHRlc3QuZGUiLCJqdGkiOiJmMjNiOThkNi1mMjRlLTRjOTQtYWE5Ni1kMWI4M2MzNmY1MjAifQ.QegeWHWetw19vfgOvkTCsBfaSOPnjakhzzRjVtNi-2Q",
+          "type": "String"
+        }
+      ]
+    },
+    "error": {
+      "fields": {
+        "Error 4xx": [
+          {
+            "group": "Error 4xx",
+            "type": "String",
+            "optional": false,
+            "field": "403",
+            "description": "<p>Unauthorized</p>"
+          }
+        ]
+      }
+    }
   }
 ]
