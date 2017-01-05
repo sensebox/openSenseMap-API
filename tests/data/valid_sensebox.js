@@ -1,5 +1,4 @@
-const apiKey = require('./randomApiKey'),
-  randomGeojson = require('randomgeojson');
+const randomGeojson = require('randomgeojson');
 module.exports = function (bbox) {
   const randomGeojsonOptions = { featureTypes: ['Point'] };
   if (bbox) {
@@ -10,15 +9,9 @@ module.exports = function (bbox) {
     'model': 'homeEthernet',
     'boxType': 'fixed',
     'exposure': 'indoor',
-    'orderID': apiKey(),
     'loc': [
       randomGeojson.generateGeoJSON(randomGeojsonOptions).features[0]
     ],
-    'user': {
-      'firstname': 'TestBox',
-      'lastname': 'TestBoxNachname',
-      'email': 'testmail@testmail.mail'
-    },
     'mqtt': {
       'enabled': false,
       'url': '',

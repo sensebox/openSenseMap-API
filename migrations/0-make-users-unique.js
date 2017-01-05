@@ -2,7 +2,8 @@
 
 const models = require('../lib/models'),
   uuid = require('uuid'),
-  moment = require('moment');
+  moment = require('moment'),
+  mongoose = require('mongoose');
 
 const { User, Box } = models;
 
@@ -66,7 +67,11 @@ module.exports = function () {
 
             for (const user of unique_users[email]) {
               users_to_remove.push(user);
-              users_boxids[uid].push(user.boxes[0]);
+              for (const box of user.boxes) {
+                if (box !== null || typeof box !== 'undefined') {
+                  users_boxids[uid].push(box);
+                }
+              }
             }
           }
           console.log(`${users_to_remove.length} will be removed`);
@@ -77,8 +82,13 @@ module.exports = function () {
           for (const user of users) {
             if (user._id.toString() in users_boxids) {
 
-              const oid_boxes = users_boxids[user._id.toString()].filter(function (b) {
+              const oid_boxes = users_boxids[user._id.toString()]
+              .filter(function (b) {
                 return b !== null || typeof b !== 'undefined';
+              })
+              .filter(n => n)
+              .map(function (id) {
+                return mongoose.Types.ObjectId(id);
               });
 
               let lang = user.language;
@@ -86,6 +96,7 @@ module.exports = function () {
                 lang = 'de_DE';
               }
 
+              user.set('name', `${user.firstname} ${user.lastname}`);
               user.set('boxes', oid_boxes);
               user.set('password', uuid());
               user.set('language', lang);
@@ -101,6 +112,12 @@ module.exports = function () {
           promises.push(User.remove({ _id: { $in: users_to_remove } }).exec());
 
           return Promise.all(promises)
+            .then(function () {
+              return User.collection.update({},
+                { $unset: { firstname: true, lastname: true } },
+                { multi: true, safe: true }
+              );
+            })
             .then(function () {
               console.log('done');
 

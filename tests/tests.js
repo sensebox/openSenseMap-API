@@ -41,7 +41,7 @@ describe('openSenseMap API', function () {
     });
 
     it('should allow to register a second user via POST', function () {
-      return chakram.post(`${BASE_URL}/users/register`, { firstname: 'mrtest', email: 'tester2@test.test', password: '12345678' })
+      return chakram.post(`${BASE_URL}/users/register`, { name: 'mrtest', email: 'tester2@test.test', password: '12345678' })
         .then(function (response) {
           expect(response).to.have.status(201);
           expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
