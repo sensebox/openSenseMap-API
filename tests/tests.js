@@ -216,8 +216,16 @@ describe('openSenseMap API', function () {
     it('should let users retrieve their box with all fields', function () {
       return chakram.get(`${BASE_URL}/users/${boxId}?returnBox=t`, { headers: { 'Authorization': `Bearer ${jwt}` } })
         .then(function (response) {
+          expect(response).to.have.status(200);
           expect(response).to.have.schema(senseBoxSchemaAllFields);
           expect(response).to.comprise.of.json({ mqtt: { enabled: false } });
+        });
+    });
+
+    it('should deny access to boxes of other users', function () {
+      return chakram.get(`${BASE_URL}/users/${boxIds[1]}?returnBox=t`, { headers: { 'Authorization': `Bearer ${jwt}` } })
+        .then(function (response) {
+          expect(response).to.have.status(401);
         });
     });
 
@@ -591,7 +599,7 @@ describe('openSenseMap API', function () {
       const pressuresensor_id = boxes[boxIds[1]].sensors[boxes[boxIds[1]].sensors.findIndex(s => s.title === 'Luftdruck')]._id;
       const delete_payload = { sensors: [{ deleted: true, _id: pressuresensor_id }] };
 
-      return chakram.put(`${BASE_URL}/boxes/${boxIds[1]}`, delete_payload, { headers: { 'Authorization': `Bearer ${jwt}` } })
+      return chakram.put(`${BASE_URL}/boxes/${boxIds[1]}`, delete_payload, { headers: { 'Authorization': `Bearer ${jwt2}` } })
         .then(function (response) {
           expect(response).to.have.status(200);
 
@@ -675,11 +683,11 @@ describe('openSenseMap API', function () {
     it('should allow to enable mqtt via PUT', function () {
       const update_payload = { mqtt: { enabled: true, url: 'mqtt://', topic: 'mytopic', messageFormat: 'json' } };
 
-      return chakram.put(`${BASE_URL}/boxes/${boxIds[1]}`, update_payload, { headers: { 'Authorization': `Bearer ${jwt}` } })
+      return chakram.put(`${BASE_URL}/boxes/${boxIds[1]}`, update_payload, { headers: { 'Authorization': `Bearer ${jwt2}` } })
         .then(function (response) {
           expect(response).to.have.status(200);
 
-          return chakram.get(`${BASE_URL}/users/${boxIds[1]}?returnBox=t`, { headers: { 'Authorization': `Bearer ${jwt}` } });
+          return chakram.get(`${BASE_URL}/users/${boxIds[1]}?returnBox=t`, { headers: { 'Authorization': `Bearer ${jwt2}` } });
         })
         .then(function (response) {
           expect(response).to.have.schema(senseBoxSchemaAllFields);
@@ -693,7 +701,7 @@ describe('openSenseMap API', function () {
       const tempsensor_id = boxes[boxIds[1]].sensors[boxes[boxIds[1]].sensors.findIndex(s => s.title === 'Temperatur')]._id;
       const payload = { 'deleteAllMeasurements': true };
 
-      return chakram.delete(`${BASE_URL}/boxes/${boxIds[1]}/${tempsensor_id}/measurements`, payload, { headers: { 'content-type': 'application/json', 'Authorization': `Bearer ${jwt}` } })
+      return chakram.delete(`${BASE_URL}/boxes/${boxIds[1]}/${tempsensor_id}/measurements`, payload, { headers: { 'content-type': 'application/json', 'Authorization': `Bearer ${jwt2}` } })
         .then(function (response) {
           expect(response).to.have.status(200);
 
