@@ -2,7 +2,6 @@ node_modules
 mongo-data
 userimages
 usersketches
-.git
 osem-mongo
 docker-compose.yml
 Dockerfile
@@ -11,3 +10,4 @@ Dockerfile
 .travis.yml
 /doc
 /utils
+revision

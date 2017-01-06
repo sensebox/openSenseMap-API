@@ -11,4 +11,7 @@ COPY yarn.lock /usr/src/app/
 RUN yarn install
 COPY . /usr/src/app
 
+# for git 2.1.4
+RUN echo -n $(git rev-parse --abbrev-ref HEAD) $(TZ=UTC git log --date=local --pretty=format:"%ct %h" -n 1) > revision; rm -rf .git
+
 CMD [ "npm", "start" ]
