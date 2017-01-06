@@ -6,9 +6,7 @@
 'use strict';
 
 const restify = require('restify'),
-  fs = require('fs'),
   Stream = require('stream'),
-  util = require('util'),
   utils = require('./lib/utils'),
   requestUtils = require('./lib/requestUtils'),
   Box = require('./lib/models').Box,
@@ -55,7 +53,7 @@ const Logger = require('bunyan'),
   });
 
 const server = restify.createServer({
-  name: 'opensensemap-api',
+  name: `opensensemap-api (${utils.softwareRevision})`,
   version: '0.0.1',
   log: reqlog
 });
@@ -100,14 +98,10 @@ const unknownMethodHandler = function unknownMethodHandler (req, res) {
 
 server.on('MethodNotAllowed', unknownMethodHandler);
 
-const stats = fs.statSync('./app.js');
-const mtime = new Date(util.inspect(stats.mtime));
-
 utils.connectWithRetry(function () {
   server.listen(config.port, function () {
-    console.log('server file modified:', mtime);
     console.log('%s listening at %s', server.name, server.url);
-    utils.postToSlack(`openSenseMap API started. Server file modified: ${mtime}`);
+    utils.postToSlack(`openSenseMap API started. Revision: ${utils.softwareRevision}`);
     Box.connectMQTTBoxes();
   });
 });
