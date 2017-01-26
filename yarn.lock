@@ -1737,6 +1737,10 @@ signal-exit@^3.0.0:
   version "3.0.2"
   resolved "https://registry.yarnpkg.com/signal-exit/-/signal-exit-3.0.2.tgz#b5fdc08f1287ea1178628e415e25132b73646c6d"
 
+simple-statistics@^2.2.0:
+  version "2.2.0"
+  resolved "https://registry.yarnpkg.com/simple-statistics/-/simple-statistics-2.2.0.tgz#e1e298a89d814f7729b5fda37801a2e4b97c9db0"
+
 sliced@0.0.5:
   version "0.0.5"
   resolved "https://registry.yarnpkg.com/sliced/-/sliced-0.0.5.tgz#5edc044ca4eb6f7816d50ba2fc63e25d8fe4707f"
