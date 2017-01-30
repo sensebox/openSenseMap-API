@@ -13,7 +13,8 @@ const BASE_URL = 'http://localhost:8000',
   senseBoxSchemaAllFields = require('./data/senseBoxSchemaAllFieldsUsers'),
   findAllSchema = require('./data/findAllSchema'),
   csv_example_data = require('./data/csv_example_data'),
-  json_submit_data = require('./data/json_submit_data');
+  json_submit_data = require('./data/json_submit_data'),
+  getUserBoxesSchema = require('./data/getUserBoxesSchema');
 
 describe('openSenseMap API', function () {
   let jwt, jwt2;
@@ -214,18 +215,13 @@ describe('openSenseMap API', function () {
     });
 
     it('should let users retrieve their box with all fields', function () {
-      return chakram.get(`${BASE_URL}/users/${boxId}?returnBox=t`, { headers: { 'Authorization': `Bearer ${jwt}` } })
+      return chakram.get(`${BASE_URL}/users/me/boxes`, { headers: { 'Authorization': `Bearer ${jwt}` } })
         .then(function (response) {
           expect(response).to.have.status(200);
-          expect(response).to.have.schema(senseBoxSchemaAllFields);
-          expect(response).to.comprise.of.json({ mqtt: { enabled: false } });
-        });
-    });
+          expect(response).to.have.schema(getUserBoxesSchema);
+          expect(response).to.comprise.of.json({ data: { boxes: [ { mqtt: { enabled: false } } ] } });
 
-    it('should deny access to boxes of other users', function () {
-      return chakram.get(`${BASE_URL}/users/${boxIds[1]}?returnBox=t`, { headers: { 'Authorization': `Bearer ${jwt}` } })
-        .then(function (response) {
-          expect(response).to.have.status(401);
+          return chakram.wait();
         });
     });
 
@@ -234,6 +230,8 @@ describe('openSenseMap API', function () {
         .then(function (response) {
           expect(response).to.have.status(200);
           expect(response.body).not.to.be.empty;
+
+          return chakram.wait();
         });
     });
 
@@ -681,17 +679,17 @@ describe('openSenseMap API', function () {
     });
 
     it('should allow to enable mqtt via PUT', function () {
-      const update_payload = { mqtt: { enabled: true, url: 'mqtt://', topic: 'mytopic', messageFormat: 'json' } };
+      const update_payload = { mqtt: { enabled: true, url: 'mqtt://', topic: 'mytopic', messageFormat: 'json', decodeOptions: '{}', connectionOptions: '{}' } };
 
       return chakram.put(`${BASE_URL}/boxes/${boxIds[1]}`, update_payload, { headers: { 'Authorization': `Bearer ${jwt2}` } })
         .then(function (response) {
           expect(response).to.have.status(200);
 
-          return chakram.get(`${BASE_URL}/users/${boxIds[1]}?returnBox=t`, { headers: { 'Authorization': `Bearer ${jwt2}` } });
+          return chakram.get(`${BASE_URL}/users/me/boxes`, { headers: { 'Authorization': `Bearer ${jwt2}` } });
         })
         .then(function (response) {
-          expect(response).to.have.schema(senseBoxSchemaAllFields);
-          expect(response).to.comprise.of.json({ mqtt: { enabled: true } });
+          expect(response).to.have.schema(getUserBoxesSchema);
+          expect(response).to.comprise.of.json({ data: { boxes: [ { mqtt: { enabled: true } } ] } });
 
           return chakram.wait();
         });
