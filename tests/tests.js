@@ -14,7 +14,8 @@ const BASE_URL = 'http://localhost:8000',
   findAllSchema = require('./data/findAllSchema'),
   csv_example_data = require('./data/csv_example_data'),
   json_submit_data = require('./data/json_submit_data'),
-  getUserBoxesSchema = require('./data/getUserBoxesSchema');
+  getUserBoxesSchema = require('./data/getUserBoxesSchema'),
+  getUserSchema = require('./data/getUserSchema');
 
 describe('openSenseMap API', function () {
   let jwt, jwt2;
@@ -130,6 +131,19 @@ describe('openSenseMap API', function () {
           return chakram.wait();
         });
     });
+
+    it('should allow users to request their details', function () {
+      return chakram.get(`${BASE_URL}/users/me`, { headers: { 'Authorization': `Bearer ${jwt}` } })
+        .then(function (response) {
+          expect(response).to.have.status(200);
+          expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
+          expect(response).to.have.schema(getUserSchema);
+          expect(response).to.comprise.of.json({ code: 'Ok', data: { me: { email: 'tester@test.test' } } });
+
+          return chakram.wait();
+        });
+    });
+
   });
 
   describe('/boxes', function () {
