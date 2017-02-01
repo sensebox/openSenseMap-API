@@ -29,12 +29,14 @@
     "request": "^2.79.0",
     "request-promise-native": "^1.0.3",
     "restify": "^4.3.0",
+    "rss": "^1.2.2",
     "stream-transform": "^0.1.1",
     "stringify-stream": "^1.0.5",
     "uuid": "^3.0.1"
   },
   "devDependencies": {
     "chakram": "^1.5.0",
+    "eslint": "^3.14.1",
     "mocha": "^3.2.0",
     "randomgeojson": "^1.0.0"
   },
