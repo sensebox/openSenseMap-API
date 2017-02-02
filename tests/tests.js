@@ -42,6 +42,26 @@ describe('openSenseMap API', function () {
         });
     });
 
+    it('should deny to register an user with too short password', function () {
+      return chakram.post(`${BASE_URL}/users/register`, { name: 'tester', password: 'short', email: 'address@email.com' })
+        .then(function (response) {
+          expect(response).to.have.status(422);
+          expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
+
+          return chakram.wait();
+        });
+    });
+
+    it('should deny to register an user with no name', function () {
+      return chakram.post(`${BASE_URL}/users/register`, { name: '', password: 'longenough', email: 'address@email.com' })
+        .then(function (response) {
+          expect(response).to.have.status(400);
+          expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
+
+          return chakram.wait();
+        });
+    });
+
     it('should allow to register a second user via POST', function () {
       return chakram.post(`${BASE_URL}/users/register`, { name: 'mrtest', email: 'tester2@test.test', password: '12345678' })
         .then(function (response) {
