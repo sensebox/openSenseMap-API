@@ -296,10 +296,21 @@
           },
           {
             "group": "RequestBody",
+            "type": "String",
+            "allowedValues": [
+              "\"homeEthernet\"",
+              "\"homeWifi\""
+            ],
+            "optional": false,
+            "field": "model",
+            "description": "<p>specify the model if you want to use a predefined senseBox model.</p>"
+          },
+          {
+            "group": "RequestBody",
             "type": "Sensor[]",
             "optional": false,
             "field": "sensors",
-            "description": "<p>an array containing the sensors of this senseBox.</p>"
+            "description": "<p>an array containing the sensors of this senseBox. Only use if model is unspecified</p>"
           },
           {
             "group": "RequestBody",
@@ -518,10 +529,21 @@
           },
           {
             "group": "RequestBody",
+            "type": "String",
+            "allowedValues": [
+              "\"homeEthernet\"",
+              "\"homeWifi\""
+            ],
+            "optional": false,
+            "field": "model",
+            "description": "<p>specify the model if you want to use a predefined senseBox model.</p>"
+          },
+          {
+            "group": "RequestBody",
             "type": "Sensor[]",
             "optional": false,
             "field": "sensors",
-            "description": "<p>an array containing the sensors of this senseBox.</p>"
+            "description": "<p>an array containing the sensors of this senseBox. Only use if model is unspecified</p>"
           },
           {
             "group": "RequestBody",
