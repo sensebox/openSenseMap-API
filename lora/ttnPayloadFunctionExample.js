@@ -32,20 +32,6 @@ function decode (bytes) {
   };
   uint16.BYTES = 2;
 
-  var temperature = function (bytes) {
-    if (bytes.length !== temperature.BYTES) {
-      throw new Error('Temperature must have exactly 2 bytes');
-    }
-
-    var t = bytesToInt(bytes);
-    if ((bytes[1] & 0x60)) {
-      t = ~t + 1;
-    }
-
-    return t / 1e2;
-  };
-  temperature.BYTES = 2;
-
   var humidity = function (bytes) {
     if (bytes.length !== humidity.BYTES) {
       throw new Error('Humidity must have exactly 2 bytes');
@@ -84,7 +70,7 @@ function decode (bytes) {
     try {
       json = decode(bytes,
         [
-          temperature,
+          uint16,
           humidity,
           uint16,
           uint8,
@@ -103,13 +89,17 @@ function decode (bytes) {
         ]);
 
       //temp
-      json[TEMPSENSOR_ID] = parseFloat(json[TEMPSENSOR_ID].toFixed(1));
+      json[TEMPSENSOR_ID] = parseFloat(((json[TEMPSENSOR_ID] / 771) - 18).toFixed(1));
 
       //hum
       json[HUMISENSOR_ID] = parseFloat(json[HUMISENSOR_ID].toFixed(1));
 
       // pressure
-      json[PRESSURESENSOR_ID] = parseFloat(((json[PRESSURESENSOR_ID] / 81.9187) + 300).toFixed(1));
+      if (json[PRESSURESENSOR_ID] !== '0') {
+        json[PRESSURESENSOR_ID] = parseFloat(((json[PRESSURESENSOR_ID] / 81.9187) + 300).toFixed(1));
+      } else {
+        delete json[PRESSURESENSOR_ID];
+      }
 
       // lux
       json[LUXSENSOR_ID] = (json[LUXSENSOR_ID + '_times'] * 255) + json[LUXSENSOR_ID + '_mod'];
