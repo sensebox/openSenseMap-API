@@ -36,12 +36,14 @@
   },
   "devDependencies": {
     "chakram": "^1.5.0",
+    "cheerio": "^0.22.0",
+    "mimelib": "^0.3.0",
     "mocha": "^3.2.0",
     "randomgeojson": "^1.0.0"
   },
   "scripts": {
     "start": "node app.js",
-    "test": "node node_modules/.bin/mocha tests/tests.js",
+    "test": "node node_modules/.bin/mocha tests/tests.js && sleep 2 && node node_modules/.bin/mocha tests/mail_tests.js",
     "pretest": "node tests/waitForHttp"
   },
   "repository": {

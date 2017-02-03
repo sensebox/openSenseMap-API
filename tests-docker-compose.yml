@@ -15,7 +15,7 @@ services:
       OSEM_targetFolder: ./usersketches
       OSEM_imageFolder: ./userimages
       OSEM_mailer_url: https://mailer:3924/
-      OSEM_mailer_origin: osem-api:8000
+      OSEM_mailer_origin: http://osem-api:8000
       OSEM_mailer_cert: |-
         -----BEGIN CERTIFICATE-----
         MIIDMDCCAhgCCQDVuxUPFKIywjANBgkqhkiG9w0BAQsFADCBijEaMBgGCSqGSIb3
