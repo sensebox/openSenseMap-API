@@ -66,8 +66,7 @@ module.exports = {
             'unit',
             'sensorType',
             'icon',
-            '_id',
-            'lastMeasurement'
+            '_id'
           ]
         }
       },

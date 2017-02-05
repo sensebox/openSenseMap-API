@@ -11,10 +11,14 @@ const chakram = require('chakram'),
 const BASE_URL = 'http://localhost:8000',
   valid_user = require('./data/valid_user');
 
-const findMailAndParseBody = function findMailAndParseBody (mails, address, subject) {
-  return $.load(mimelib.decodeQuotedPrintable(mails[mails.findIndex(function (item) {
+const findMail = function findMail (mails, address, subject) {
+  return mails[mails.findIndex(function (item) {
     return (item.Raw.To[0] === address && item.Content.Headers.Subject.includes(subject));
-  })].Content.Body));
+  })];
+};
+
+const findMailAndParseBody = function findMailAndParseBody (mails, address, subject) {
+  return $.load(mimelib.decodeQuotedPrintable(findMail(mails, address, subject).Content.Body));
 };
 
 describe('mails', function () {
@@ -163,6 +167,34 @@ describe('mails', function () {
       })
       .then(function (response) {
         expect(response).to.have.status(401);
+
+        return chakram.wait();
+      });
+  });
+
+  it('should have sent senseBox registration mail with the sketch as attachment', function () {
+    const mail = findMail(mails, 'tester3@test.test', 'Your senseBox registration');
+    expect(mail).to.exist;
+    expect(mail.MIME.Parts).to.not.be.undefined;
+    expect(mail.MIME.Parts[1].Body).to.not.be.undefined;
+    const ino = mimelib.decodeBase64(mail.MIME.Parts[1].Body);
+    const boxId = mail.MIME.Parts[0].Body.substr(mail.MIME.Parts[0].Body.indexOf('Your senseBox ID is: ') + 21, 24);
+
+    // sign in to get jwt
+    return chakram.post(`${BASE_URL}/users/sign-in`, { email: 'tester3@test.test', password: '12345678' })
+      .then(function (response) {
+        expect(response).to.have.status(200);
+        expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
+        expect(response.body.token).to.exist;
+
+        const jwt = response.body.token;
+
+        return chakram.get(`${BASE_URL}/boxes/${boxId}/script`, { headers: { 'Authorization': `Bearer ${jwt}` } });
+      })
+      .then(function (response) {
+        expect(response).to.have.status(200);
+        expect(response.body).not.to.be.empty;
+        expect(response.body).to.equal(ino);
 
         return chakram.wait();
       });

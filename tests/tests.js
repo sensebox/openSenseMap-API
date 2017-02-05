@@ -248,6 +248,38 @@ describe('openSenseMap API', function () {
         });
     });
 
+    it('should allow to register a third box via POST', function () {
+      return chakram.post(`${BASE_URL}/users/register`, { name: 'mrtest2', email: 'tester3@test.test', password: '12345678' })
+        .then(function (response) {
+          expect(response).to.have.status(201);
+          expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
+          expect(response.body.token).to.exist;
+
+          const token = response.body.token;
+
+          return chakram.post(`${BASE_URL}/boxes`, valid_sensebox(), { headers: { 'Authorization': `Bearer ${token}` } });
+        })
+        .then(function (response) {
+          expect(response).to.have.status(201);
+          expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
+
+          boxCount = boxCount + 1;
+          //boxIds.push(response.body.data._id);
+
+          return chakram.get(`${BASE_URL}/boxes/${response.body.data._id}`);
+        })
+        .then(function (response) {
+          boxes[response.body._id] = response.body;
+          expect(response).to.have.status(200);
+          expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
+          expect(response).to.have.schema(senseBoxSchema);
+
+          expect(response.body).to.not.have.keys('mqtt');
+
+          return chakram.wait();
+        });
+    });
+
     it('should let users retrieve their box with all fields', function () {
       return chakram.get(`${BASE_URL}/users/me/boxes`, { headers: { 'Authorization': `Bearer ${jwt}` } })
         .then(function (response) {
