@@ -13,7 +13,9 @@ const BASE_URL = 'http://localhost:8000',
   senseBoxSchemaAllFields = require('./data/senseBoxSchemaAllFieldsUsers'),
   findAllSchema = require('./data/findAllSchema'),
   csv_example_data = require('./data/csv_example_data'),
-  json_submit_data = require('./data/json_submit_data');
+  json_submit_data = require('./data/json_submit_data'),
+  getUserBoxesSchema = require('./data/getUserBoxesSchema'),
+  getUserSchema = require('./data/getUserSchema');
 
 describe('openSenseMap API', function () {
   let jwt, jwt2;
@@ -40,11 +42,135 @@ describe('openSenseMap API', function () {
         });
     });
 
+    it('should deny to register an user with too short password', function () {
+      return chakram.post(`${BASE_URL}/users/register`, { name: 'tester', password: 'short', email: 'address@email.com' })
+        .then(function (response) {
+          expect(response).to.have.status(422);
+          expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
+
+          return chakram.wait();
+        });
+    });
+
+    it('should deny to register an user with no name', function () {
+      return chakram.post(`${BASE_URL}/users/register`, { name: '', password: 'longenough', email: 'address@email.com' })
+        .then(function (response) {
+          expect(response).to.have.status(400);
+          expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
+
+          return chakram.wait();
+        });
+    });
+
     it('should allow to register a second user via POST', function () {
       return chakram.post(`${BASE_URL}/users/register`, { name: 'mrtest', email: 'tester2@test.test', password: '12345678' })
         .then(function (response) {
           expect(response).to.have.status(201);
           expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
+          expect(response.body.token).to.exist;
+
+          jwt2 = response.body.token;
+
+          return chakram.wait();
+        });
+    });
+
+    it('should deny to change email and password at the same time', function () {
+      return chakram.put(`${BASE_URL}/users/me`, { email: 'new-email@email.www', newPassword: '87654321' }, { headers: { 'Authorization': `Bearer ${jwt2}` } })
+        .then(function (response) {
+          expect(response).to.have.status(400);
+          expect(response).to.have.json('message', 'You cannot change your email address and password in the same request.');
+
+          return chakram.wait();
+        });
+    });
+
+    it('should deny to change email without current passsword', function () {
+      return chakram.put(`${BASE_URL}/users/me`, { email: 'new-email@email.www' }, { headers: { 'Authorization': `Bearer ${jwt2}` } })
+        .then(function (response) {
+          expect(response).to.have.status(400);
+          expect(response).to.have.json('message', 'To change your password or email address, please supply your current password.');
+
+          return chakram.wait();
+        });
+    });
+
+    it('should deny to change email with wrong current passsword', function () {
+      return chakram.put(`${BASE_URL}/users/me`, { email: 'new-email@email.www', currentPassword: 'wrongpassword' }, { headers: { 'Authorization': `Bearer ${jwt2}` } })
+        .then(function (response) {
+          expect(response).to.have.status(400);
+          expect(response).to.have.json('message', 'Current password not correct.');
+
+          return chakram.wait();
+        });
+    });
+
+    it('should allow to change email with correct current passsword', function () {
+      return chakram.put(`${BASE_URL}/users/me`, { email: 'new-email@email.www', currentPassword: '12345678' }, { headers: { 'Authorization': `Bearer ${jwt2}` } })
+        .then(function (response) {
+          expect(response).to.have.status(200);
+          expect(response).to.have.json('message', 'User successfully saved. E-Mail changed. Please confirm your new address. Until confirmation, sign in using your old address');
+
+          return chakram.get(`${BASE_URL}/users/me`, { headers: { 'Authorization': `Bearer ${jwt2}` } });
+        })
+        .then(function (response) {
+          expect(response).to.have.status(200);
+          expect(response).to.have.json('data', function (data) {
+            expect(data.me.email).to.equal('tester2@test.test');
+          });
+
+          return chakram.wait();
+        });
+    });
+
+    it('should allow to change name', function () {
+      return chakram.put(`${BASE_URL}/users/me`, { name: 'new Name' }, { headers: { 'Authorization': `Bearer ${jwt2}` } })
+        .then(function (response) {
+          expect(response).to.have.status(200);
+          expect(response).to.have.json('message', 'User successfully saved.');
+
+          return chakram.get(`${BASE_URL}/users/me`, { headers: { 'Authorization': `Bearer ${jwt2}` } });
+        })
+        .then(function (response) {
+          expect(response).to.have.status(200);
+          expect(response).to.have.json('data', function (data) {
+            expect(data.me.name).to.equal('new Name');
+          });
+
+          return chakram.wait();
+        });
+    });
+
+    it('should deny to change password with too short new password', function () {
+      return chakram.put(`${BASE_URL}/users/me`, { newPassword: 'short', currentPassword: '12345678' }, { headers: { 'Authorization': `Bearer ${jwt2}` } })
+        .then(function (response) {
+          expect(response).to.have.status(400);
+          expect(response).to.have.json('message', 'New password should have at least 8 characters');
+
+          return chakram.wait();
+        });
+    });
+
+    it('should allow to change password with correct current passsword', function () {
+      return chakram.put(`${BASE_URL}/users/me`, { newPassword: '12345678910', currentPassword: '12345678' }, { headers: { 'Authorization': `Bearer ${jwt2}` } })
+        .then(function (response) {
+          expect(response).to.have.status(200);
+          expect(response).to.have.json('message', 'User successfully saved. Password changed. Please log in with your new password');
+
+          // try to log in with old token
+          return chakram.get(`${BASE_URL}/users/me`, { headers: { 'Authorization': `Bearer ${jwt2}` } });
+        })
+        .then(function (response) {
+          expect(response).to.have.status(401);
+
+          // try to sign in with new password
+          return chakram.post(`${BASE_URL}/users/sign-in`, { email: 'tester2@test.test', password: '12345678910' });
+        })
+        .then(function (response) {
+          expect(response).to.have.status(200);
+          expect(response).to.have.json('data', function (data) {
+            expect(data.user.email).to.equal('tester2@test.test');
+          });
           expect(response.body.token).to.exist;
 
           jwt2 = response.body.token;
@@ -129,6 +255,19 @@ describe('openSenseMap API', function () {
           return chakram.wait();
         });
     });
+
+    it('should allow users to request their details', function () {
+      return chakram.get(`${BASE_URL}/users/me`, { headers: { 'Authorization': `Bearer ${jwt}` } })
+        .then(function (response) {
+          expect(response).to.have.status(200);
+          expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
+          expect(response).to.have.schema(getUserSchema);
+          expect(response).to.comprise.of.json({ code: 'Ok', data: { me: { email: 'tester@test.test' } } });
+
+          return chakram.wait();
+        });
+    });
+
   });
 
   describe('/boxes', function () {
@@ -213,19 +352,46 @@ describe('openSenseMap API', function () {
         });
     });
 
-    it('should let users retrieve their box with all fields', function () {
-      return chakram.get(`${BASE_URL}/users/${boxId}?returnBox=t`, { headers: { 'Authorization': `Bearer ${jwt}` } })
+    it('should allow to register a third box via POST', function () {
+      return chakram.post(`${BASE_URL}/users/register`, { name: 'mrtest2', email: 'tester3@test.test', password: '12345678' })
         .then(function (response) {
+          expect(response).to.have.status(201);
+          expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
+          expect(response.body.token).to.exist;
+
+          const token = response.body.token;
+
+          return chakram.post(`${BASE_URL}/boxes`, valid_sensebox(), { headers: { 'Authorization': `Bearer ${token}` } });
+        })
+        .then(function (response) {
+          expect(response).to.have.status(201);
+          expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
+
+          boxCount = boxCount + 1;
+          //boxIds.push(response.body.data._id);
+
+          return chakram.get(`${BASE_URL}/boxes/${response.body.data._id}`);
+        })
+        .then(function (response) {
+          boxes[response.body._id] = response.body;
           expect(response).to.have.status(200);
-          expect(response).to.have.schema(senseBoxSchemaAllFields);
-          expect(response).to.comprise.of.json({ mqtt: { enabled: false } });
+          expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
+          expect(response).to.have.schema(senseBoxSchema);
+
+          expect(response.body).to.not.have.keys('mqtt');
+
+          return chakram.wait();
         });
     });
 
-    it('should deny access to boxes of other users', function () {
-      return chakram.get(`${BASE_URL}/users/${boxIds[1]}?returnBox=t`, { headers: { 'Authorization': `Bearer ${jwt}` } })
+    it('should let users retrieve their box with all fields', function () {
+      return chakram.get(`${BASE_URL}/users/me/boxes`, { headers: { 'Authorization': `Bearer ${jwt}` } })
         .then(function (response) {
-          expect(response).to.have.status(401);
+          expect(response).to.have.status(200);
+          expect(response).to.have.schema(getUserBoxesSchema);
+          expect(response).to.comprise.of.json({ data: { boxes: [ { mqtt: { enabled: false } } ] } });
+
+          return chakram.wait();
         });
     });
 
@@ -234,6 +400,8 @@ describe('openSenseMap API', function () {
         .then(function (response) {
           expect(response).to.have.status(200);
           expect(response.body).not.to.be.empty;
+
+          return chakram.wait();
         });
     });
 
@@ -681,17 +849,17 @@ describe('openSenseMap API', function () {
     });
 
     it('should allow to enable mqtt via PUT', function () {
-      const update_payload = { mqtt: { enabled: true, url: 'mqtt://', topic: 'mytopic', messageFormat: 'json' } };
+      const update_payload = { mqtt: { enabled: true, url: 'mqtt://', topic: 'mytopic', messageFormat: 'json', decodeOptions: '{}', connectionOptions: '{}' } };
 
       return chakram.put(`${BASE_URL}/boxes/${boxIds[1]}`, update_payload, { headers: { 'Authorization': `Bearer ${jwt2}` } })
         .then(function (response) {
           expect(response).to.have.status(200);
 
-          return chakram.get(`${BASE_URL}/users/${boxIds[1]}?returnBox=t`, { headers: { 'Authorization': `Bearer ${jwt2}` } });
+          return chakram.get(`${BASE_URL}/users/me/boxes`, { headers: { 'Authorization': `Bearer ${jwt2}` } });
         })
         .then(function (response) {
-          expect(response).to.have.schema(senseBoxSchemaAllFields);
-          expect(response).to.comprise.of.json({ mqtt: { enabled: true } });
+          expect(response).to.have.schema(getUserBoxesSchema);
+          expect(response).to.comprise.of.json({ data: { boxes: [ { mqtt: { enabled: true } } ] } });
 
           return chakram.wait();
         });
