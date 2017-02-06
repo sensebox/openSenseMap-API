@@ -4,6 +4,7 @@ module.exports = function (bbox) {
   if (bbox) {
     randomGeojsonOptions.bbox = bbox;
   }
+
   return {
     'name': 'senseBox',
     'model': 'homeEthernet',

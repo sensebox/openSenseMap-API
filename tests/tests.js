@@ -75,6 +75,110 @@ describe('openSenseMap API', function () {
         });
     });
 
+    it('should deny to change email and password at the same time', function () {
+      return chakram.put(`${BASE_URL}/users/me`, { email: 'new-email@email.www', newPassword: '87654321' }, { headers: { 'Authorization': `Bearer ${jwt2}` } })
+        .then(function (response) {
+          expect(response).to.have.status(400);
+          expect(response).to.have.json('message', 'You cannot change your email address and password in the same request.');
+
+          return chakram.wait();
+        });
+    });
+
+    it('should deny to change email without current passsword', function () {
+      return chakram.put(`${BASE_URL}/users/me`, { email: 'new-email@email.www' }, { headers: { 'Authorization': `Bearer ${jwt2}` } })
+        .then(function (response) {
+          expect(response).to.have.status(400);
+          expect(response).to.have.json('message', 'To change your password or email address, please supply your current password.');
+
+          return chakram.wait();
+        });
+    });
+
+    it('should deny to change email with wrong current passsword', function () {
+      return chakram.put(`${BASE_URL}/users/me`, { email: 'new-email@email.www', currentPassword: 'wrongpassword' }, { headers: { 'Authorization': `Bearer ${jwt2}` } })
+        .then(function (response) {
+          expect(response).to.have.status(400);
+          expect(response).to.have.json('message', 'Current password not correct.');
+
+          return chakram.wait();
+        });
+    });
+
+    it('should allow to change email with correct current passsword', function () {
+      return chakram.put(`${BASE_URL}/users/me`, { email: 'new-email@email.www', currentPassword: '12345678' }, { headers: { 'Authorization': `Bearer ${jwt2}` } })
+        .then(function (response) {
+          expect(response).to.have.status(200);
+          expect(response).to.have.json('message', 'User successfully saved. E-Mail changed. Please confirm your new address. Until confirmation, sign in using your old address');
+
+          return chakram.get(`${BASE_URL}/users/me`, { headers: { 'Authorization': `Bearer ${jwt2}` } });
+        })
+        .then(function (response) {
+          expect(response).to.have.status(200);
+          expect(response).to.have.json('data', function (data) {
+            expect(data.me.email).to.equal('tester2@test.test');
+          });
+
+          return chakram.wait();
+        });
+    });
+
+    it('should allow to change name', function () {
+      return chakram.put(`${BASE_URL}/users/me`, { name: 'new Name' }, { headers: { 'Authorization': `Bearer ${jwt2}` } })
+        .then(function (response) {
+          expect(response).to.have.status(200);
+          expect(response).to.have.json('message', 'User successfully saved.');
+
+          return chakram.get(`${BASE_URL}/users/me`, { headers: { 'Authorization': `Bearer ${jwt2}` } });
+        })
+        .then(function (response) {
+          expect(response).to.have.status(200);
+          expect(response).to.have.json('data', function (data) {
+            expect(data.me.name).to.equal('new Name');
+          });
+
+          return chakram.wait();
+        });
+    });
+
+    it('should deny to change password with too short new password', function () {
+      return chakram.put(`${BASE_URL}/users/me`, { newPassword: 'short', currentPassword: '12345678' }, { headers: { 'Authorization': `Bearer ${jwt2}` } })
+        .then(function (response) {
+          expect(response).to.have.status(400);
+          expect(response).to.have.json('message', 'New password should have at least 8 characters');
+
+          return chakram.wait();
+        });
+    });
+
+    it('should allow to change password with correct current passsword', function () {
+      return chakram.put(`${BASE_URL}/users/me`, { newPassword: '12345678910', currentPassword: '12345678' }, { headers: { 'Authorization': `Bearer ${jwt2}` } })
+        .then(function (response) {
+          expect(response).to.have.status(200);
+          expect(response).to.have.json('message', 'User successfully saved. Password changed. Please log in with your new password');
+
+          // try to log in with old token
+          return chakram.get(`${BASE_URL}/users/me`, { headers: { 'Authorization': `Bearer ${jwt2}` } });
+        })
+        .then(function (response) {
+          expect(response).to.have.status(401);
+
+          // try to sign in with new password
+          return chakram.post(`${BASE_URL}/users/sign-in`, { email: 'tester2@test.test', password: '12345678910' });
+        })
+        .then(function (response) {
+          expect(response).to.have.status(200);
+          expect(response).to.have.json('data', function (data) {
+            expect(data.user.email).to.equal('tester2@test.test');
+          });
+          expect(response.body.token).to.exist;
+
+          jwt2 = response.body.token;
+
+          return chakram.wait();
+        });
+    });
+
     it('should deny to sign in with wrong password', function () {
       return chakram.post(`${BASE_URL}/users/sign-in`, { email: 'tester@test.test', password: 'wrong password' })
         .then(function (response) {
