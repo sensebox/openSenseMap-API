@@ -1311,11 +1311,34 @@ define({ "api": [
     "type": "post",
     "url": "/boxes/:boxId/data",
     "title": "Post multiple new measurements",
-    "description": "<p>Post multiple new measurements in multiple formats to a box. Allows the use of csv, json array and json object notation.</p> <p><strong>CSV:</strong><br/> For data in csv format, first use <code>content-type: text/csv</code> as header, then submit multiple values as lines in <code>sensorId,value,[createdAt]</code> form. Timestamp is optional. Do not submit a header.</p> <p><strong>JSON Array:</strong><br/> You can submit your data as array. Your measurements should be objects with the keys <code>sensor</code>, <code>value</code> and optionally <code>createdAt</code>. Specify the header <code>content-type: application/json</code>.</p> <p><strong>JSON Object:</strong><br/> The third form is to encode your measurements in an object. Here, the keys of the object are the sensorIds, the values of the object are either just the <code>value</code> of your measurement or an array of the form <code>[value, createdAt]</code></p> <p>For all encodings, the maximum count of values in one request is 2500.</p>",
+    "description": "<p>Post multiple new measurements in multiple formats to a box. Allows the use of csv, json array and json object notation.</p> <p><strong>CSV:</strong><br/> For data in csv format, first use <code>content-type: text/csv</code> as header, then submit multiple values as lines in <code>sensorId,value,[createdAt]</code> form. Timestamp is optional. Do not submit a header.</p> <p><strong>JSON Array:</strong><br/> You can submit your data as array. Your measurements should be objects with the keys <code>sensor</code>, <code>value</code> and optionally <code>createdAt</code>. Specify the header <code>content-type: application/json</code>.</p> <p><strong>JSON Object:</strong><br/> The third form is to encode your measurements in an object. Here, the keys of the object are the sensorIds, the values of the object are either just the <code>value</code> of your measurement or an array of the form <code>[value, createdAt]</code></p> <p><strong>Luftdaten Format</strong><br/> Decoding of luftdaten.info json format. Activate by specifying <code>luftdaten=true</code> in the query string. The API now tries to convert the objects in the <code>sensordatavalues</code> key to the openSenseMap JSON Array format. Sensors are matched by the key <code>value_type</code> against the <code>title</code> of the sensors of this box. <code>SDS_P1</code> matches sensors with title <code>PM10</code>, <code>SDS_P2</code> matches sensors with title <code>PM2.5</code>. You can find all matchings in the source code of the openSenseMap-API (<code>lib/decoding/luftdatenHandler.js</code>)</p> <p>For all encodings, the maximum count of values in one request is 2500.</p>",
     "version": "0.1.0",
     "group": "Measurements",
     "name": "postNewMeasurements",
     "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "Boolean",
+            "allowedValues": [
+              "true",
+              "false"
+            ],
+            "optional": true,
+            "field": "luftdaten",
+            "defaultValue": "false",
+            "description": "<p>signals the api to treat the incoming data as luftdaten.info formatted json.</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": false,
+            "field": ":senseBoxId",
+            "description": "<p>the ID of the senseBox you are referring to.</p>"
+          }
+        ]
+      },
       "examples": [
         {
           "title": "JSON-Object:",
@@ -1331,19 +1354,13 @@ define({ "api": [
           "title": "CSV:",
           "content": "sensorID,value\nanotherSensorId,value,ISO8601-timestamp\nsensorIDtheThird,value\n...",
           "type": "text/csv"
+        },
+        {
+          "title": "luftdaten=true:",
+          "content": "{\n  \"sensordatavalues\": [\n    {\n      \"value_type\": \"SDS_P1\",\n      \"value\": \"5.38\"\n    },\n    {\n      \"value_type\": \"SDS_P2\",\n      \"value\": \"4.98\"\n    }\n  ]\n}",
+          "type": "application/json"
         }
-      ],
-      "fields": {
-        "Parameter": [
-          {
-            "group": "Parameter",
-            "type": "String",
-            "optional": false,
-            "field": ":senseBoxId",
-            "description": "<p>the ID of the senseBox you are referring to.</p>"
-          }
-        ]
-      }
+      ]
     },
     "filename": "./lib/controllers/boxesController.js",
     "groupTitle": "Measurements"
