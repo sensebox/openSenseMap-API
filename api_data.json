@@ -1320,15 +1320,10 @@
         "Parameter": [
           {
             "group": "Parameter",
-            "type": "Boolean",
-            "allowedValues": [
-              "true",
-              "false"
-            ],
+            "type": "String",
             "optional": true,
             "field": "luftdaten",
-            "defaultValue": "false",
-            "description": "<p>signals the api to treat the incoming data as luftdaten.info formatted json.</p>"
+            "description": "<p>Specify whatever you want (like <code>luftdaten=1</code>. Signals the api to treat the incoming data as luftdaten.info formatted json.</p>"
           },
           {
             "group": "Parameter",
@@ -1356,7 +1351,7 @@
           "type": "text/csv"
         },
         {
-          "title": "luftdaten=true:",
+          "title": "Luftdaten Format:",
           "content": "{\n  \"sensordatavalues\": [\n    {\n      \"value_type\": \"SDS_P1\",\n      \"value\": \"5.38\"\n    },\n    {\n      \"value_type\": \"SDS_P2\",\n      \"value\": \"4.98\"\n    }\n  ]\n}",
           "type": "application/json"
         }
