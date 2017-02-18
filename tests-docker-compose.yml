@@ -147,6 +147,9 @@ services:
     ports:
       - "8025:8025"
 
+  mosquitto:
+    image: eclipse-mosquitto:1.4.10
+
   db:
     build:
       context: ./osem-mongo

@@ -65,7 +65,6 @@ module.exports = {
             'title',
             'unit',
             'sensorType',
-            'icon',
             '_id'
           ]
         }
@@ -111,7 +110,6 @@ module.exports = {
       'name',
       'boxType',
       'exposure',
-      'model',
       'sensors',
       'loc'
     ]

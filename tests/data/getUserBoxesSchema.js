@@ -89,7 +89,6 @@ module.exports = {
                     'title',
                     'unit',
                     'sensorType',
-                    'icon',
                     '_id'
                   ]
                 }
@@ -120,11 +119,6 @@ module.exports = {
                   }
                 },
                 'required': [
-                  'url',
-                  'topic',
-                  'decodeOptions',
-                  'connectionOptions',
-                  'messageFormat',
                   'enabled'
                 ]
               }
@@ -133,7 +127,6 @@ module.exports = {
               'boxType',
               'createdAt',
               'exposure',
-              'model',
               'name',
               'updatedAt',
               'loc',

@@ -46,9 +46,5 @@ module.exports = {
         ]
       }
     }
-  ],
-  'user': {
-    'name': 'Klimastation senseBox Adapter',
-    'email': 'info@sensebox.de'
-  }
+  ]
 };

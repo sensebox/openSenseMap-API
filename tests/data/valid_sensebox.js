@@ -3,6 +3,8 @@ module.exports = function (bbox) {
   const randomGeojsonOptions = { featureTypes: ['Point'] };
   if (bbox) {
     randomGeojsonOptions.bbox = bbox;
+  } else {
+    randomGeojsonOptions.bbox = [-179, -89, 179, 89];
   }
 
   return {

@@ -15,7 +15,10 @@ const BASE_URL = 'http://localhost:8000',
   csv_example_data = require('./data/csv_example_data'),
   json_submit_data = require('./data/json_submit_data'),
   getUserBoxesSchema = require('./data/getUserBoxesSchema'),
-  getUserSchema = require('./data/getUserSchema');
+  getUserSchema = require('./data/getUserSchema'),
+  luftdaten_example_data = require('./data/luftdaten_example_data'),
+  publishMqttMessage = require('./helpers/mqtt'),
+  custom_valid_sensebox = require('./data/custom_valid_sensebox');
 
 describe('openSenseMap API', function () {
   let jwt, jwt2;
@@ -502,6 +505,61 @@ describe('openSenseMap API', function () {
         });
     });
 
+    let custombox_id;
+
+    it('should allow to register a custom senseBox', function () {
+      return chakram.post(`${BASE_URL}/boxes`, custom_valid_sensebox, { headers: { 'Authorization': `Bearer ${jwt2}` } })
+        .then(function (response) {
+          expect(response).to.have.status(201);
+          expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
+
+          boxCount = boxCount + 1;
+          boxIds.push(response.body.data._id);
+          custombox_id = response.body.data._id;
+
+          return chakram.get(`${BASE_URL}/boxes/${response.body.data._id}`);
+        })
+        .then(function (response) {
+          boxes[response.body._id] = response.body;
+          expect(response).to.have.status(200);
+          expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
+          expect(response).to.have.schema(senseBoxSchema);
+
+          expect(response.body).to.not.have.keys('mqtt');
+
+          return chakram.wait();
+        });
+    });
+
+
+    it('should allow to create new sensors via PUT', function () {
+      return chakram.put(`${BASE_URL}/boxes/${custombox_id}`, { 'sensors': [{ 'title': 'PM10', 'unit': 'µg/m³', 'sensorType': 'SDS 011', 'edited': 'true', 'new': 'true' }, { 'title': 'PM2.5', 'unit': 'µg/m³', 'sensorType': 'SDS 011', 'edited': 'true', 'new': 'true' }] }, { headers: { 'Authorization': `Bearer ${jwt2}` } })
+        .then(function (response) {
+          expect(response).to.have.status(200);
+
+          return chakram.get(`${BASE_URL}/boxes/${custombox_id}`);
+        })
+        .then(function (response) {
+          expect(response).to.have.json('sensors', function (sensors) {
+            let hasPM25 = false,
+              hasPM10 = false;
+
+            for (const sensor of sensors) {
+              if (hasPM10 && hasPM25) {
+                break;
+              }
+              hasPM10 = hasPM10 || sensor.title === 'PM10';
+              hasPM25 = hasPM25 || sensor.title === 'PM2.5';
+            }
+
+            expect(hasPM10).to.be.true;
+            expect(hasPM25).to.be.true;
+          });
+
+          return chakram.wait();
+        });
+    });
+
     it('should accept multiple measurements with timestamps as csv via POST', function () {
       let submitTime;
 
@@ -764,7 +822,8 @@ describe('openSenseMap API', function () {
     });
 
     it('should allow to delete a single sensor via PUT of another box', function () {
-      const pressuresensor_id = boxes[boxIds[1]].sensors[boxes[boxIds[1]].sensors.findIndex(s => s.title === 'Luftdruck')]._id;
+      const pressuresensor_index = boxes[boxIds[1]].sensors.findIndex(s => s.title === 'Luftdruck');
+      const pressuresensor_id = boxes[boxIds[1]].sensors[pressuresensor_index]._id;
       const delete_payload = { sensors: [{ deleted: true, _id: pressuresensor_id }] };
 
       return chakram.put(`${BASE_URL}/boxes/${boxIds[1]}`, delete_payload, { headers: { 'Authorization': `Bearer ${jwt2}` } })
@@ -775,6 +834,7 @@ describe('openSenseMap API', function () {
         })
         .then(function (response) {
           expect(response.body.sensors.length).to.be.equal(4);
+          boxes[boxIds[1]].sensors.splice(pressuresensor_index, 1);
 
           return chakram.wait();
         });
@@ -849,7 +909,7 @@ describe('openSenseMap API', function () {
     });
 
     it('should allow to enable mqtt via PUT', function () {
-      const update_payload = { mqtt: { enabled: true, url: 'mqtt://', topic: 'mytopic', messageFormat: 'json', decodeOptions: '{}', connectionOptions: '{}' } };
+      const update_payload = { mqtt: { enabled: true, url: 'mqtt://mosquitto', topic: 'mytopic', messageFormat: 'json', decodeOptions: '{}', connectionOptions: '{}' } };
 
       return chakram.put(`${BASE_URL}/boxes/${boxIds[1]}`, update_payload, { headers: { 'Authorization': `Bearer ${jwt2}` } })
         .then(function (response) {
@@ -860,6 +920,36 @@ describe('openSenseMap API', function () {
         .then(function (response) {
           expect(response).to.have.schema(getUserBoxesSchema);
           expect(response).to.comprise.of.json({ data: { boxes: [ { mqtt: { enabled: true } } ] } });
+
+          return chakram.wait();
+        });
+    });
+
+    it('should accept measurements through mqtt', function () {
+      const submitTime = moment.utc();
+
+      const payload = JSON.stringify(json_submit_data.json_arr(boxes[boxIds[1]].sensors));
+
+      return publishMqttMessage('mqtt://mosquitto', 'mytopic', payload)
+        .then(function () {
+          return new Promise(function (resolve) {
+            setTimeout(resolve, 500);
+          })
+          .then(function () {
+            return chakram.get(`${BASE_URL}/boxes/${boxIds[1]}`);
+          });
+        })
+        .then(function (response) {
+          expect(response).to.have.status(200);
+          expect(response).to.have.json('sensors', function (sensors) {
+            sensors.forEach(function (sensor) {
+              expect(sensor.lastMeasurement).not.to.be.null;
+              expect(sensor.lastMeasurement.createdAt).to.exist;
+              const createdAt = moment.utc(sensor.lastMeasurement.createdAt);
+              expect(submitTime.diff(createdAt, 'minutes')).to.be.below(5);
+            });
+          });
+          countMeasurements = countMeasurements + boxObj.sensors.length;
 
           return chakram.wait();
         });
@@ -886,6 +976,33 @@ describe('openSenseMap API', function () {
             sensors.forEach(function (sensor) {
               if (sensor._id === tempsensor_id) {
                 expect(sensor.lastMeasurement).not.to.exist;
+              }
+            });
+          });
+
+          return chakram.wait();
+        });
+    });
+
+    it('should accept measurements from luftdaten.info devices', function () {
+      let submitTime;
+
+      return chakram.post(`${BASE_URL}/boxes/${custombox_id}/data?luftdaten=true`, luftdaten_example_data)
+        .then(function (response) {
+          submitTime = moment.utc(response.response.headers.date, 'ddd, DD MMM YYYY HH:mm:ss GMT');
+          expect(response).to.have.status(201);
+
+          return chakram.get(`${BASE_URL}/boxes/${custombox_id}`);
+        })
+        .then(function (response) {
+          expect(response).to.have.json('sensors', function (sensors) {
+            sensors.forEach(function (sensor) {
+              if (['PM10', 'PM2.5'].includes(sensor.title)) {
+                expect(sensor.lastMeasurement).not.to.be.null;
+                expect(sensor.lastMeasurement.createdAt).to.exist;
+                const createdAt = moment.utc(sensor.lastMeasurement.createdAt);
+                expect(submitTime.diff(createdAt, 'seconds')).to.be.below(10);
+                countMeasurements = countMeasurements + 1;
               }
             });
           });
