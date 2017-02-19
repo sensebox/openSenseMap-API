@@ -46,6 +46,7 @@
     "test": "node node_modules/.bin/mocha tests/tests.js && sleep 2 && node node_modules/.bin/mocha tests/mail_tests.js",
     "pretest": "node tests/waitForHttp"
   },
+  "files": ["config/index.js"],
   "repository": {
     "type": "git",
     "url": "https://github.com/sensebox/openSenseMap-API.git"
