@@ -325,7 +325,7 @@ describe('openSenseMap API', function () {
           expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
           expect(response).to.have.schema(senseBoxSchema);
 
-          expect(response.body).to.not.have.keys('mqtt');
+          expect(response.body).to.not.have.keys('integrations');
 
           return chakram.wait();
         });
@@ -349,7 +349,7 @@ describe('openSenseMap API', function () {
           expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
           expect(response).to.have.schema(senseBoxSchema);
 
-          expect(response.body).to.not.have.keys('mqtt');
+          expect(response.body).to.not.have.keys('integrations');
 
           return chakram.wait();
         });
@@ -381,7 +381,7 @@ describe('openSenseMap API', function () {
           expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
           expect(response).to.have.schema(senseBoxSchema);
 
-          expect(response.body).to.not.have.keys('mqtt');
+          expect(response.body).to.not.have.keys('integrations');
 
           return chakram.wait();
         });
@@ -392,7 +392,7 @@ describe('openSenseMap API', function () {
         .then(function (response) {
           expect(response).to.have.status(200);
           expect(response).to.have.schema(getUserBoxesSchema);
-          expect(response).to.comprise.of.json({ data: { boxes: [ { mqtt: { enabled: false } } ] } });
+          expect(response).to.comprise.of.json('data.boxes.0.integrations.mqtt', { enabled: false });
 
           return chakram.wait();
         });
@@ -525,7 +525,7 @@ describe('openSenseMap API', function () {
           expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
           expect(response).to.have.schema(senseBoxSchema);
 
-          expect(response.body).to.not.have.keys('mqtt');
+          expect(response.body).to.not.have.keys('integrations');
 
           return chakram.wait();
         });
@@ -919,7 +919,8 @@ describe('openSenseMap API', function () {
         })
         .then(function (response) {
           expect(response).to.have.schema(getUserBoxesSchema);
-          expect(response).to.comprise.of.json({ data: { boxes: [ { mqtt: { enabled: true } } ] } });
+          // for some reason the second created box is returned first..?
+          expect(response).to.comprise.of.json('data.boxes.0.integrations.mqtt', { enabled: true });
 
           return chakram.wait();
         });
