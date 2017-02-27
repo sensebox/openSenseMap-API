@@ -96,30 +96,49 @@ module.exports = {
               '_id': {
                 'type': 'string'
               },
-              'mqtt': {
+              'integrations': {
                 'type': 'object',
                 'properties': {
-                  'url': {
-                    'type': 'string'
+                  'mqtt': {
+                    'type': 'object',
+                    'properties': {
+                      'url': {
+                        'type': 'string'
+                      },
+                      'topic': {
+                        'type': 'string'
+                      },
+                      'decodeOptions': {
+                        'type': 'string'
+                      },
+                      'connectionOptions': {
+                        'type': 'string'
+                      },
+                      'messageFormat': {
+                        'type': 'string'
+                      },
+                      'enabled': {
+                        'type': 'boolean'
+                      }
+                    },
+                    'required': [
+                      'enabled'
+                    ]
                   },
-                  'topic': {
-                    'type': 'string'
-                  },
-                  'decodeOptions': {
-                    'type': 'string'
-                  },
-                  'connectionOptions': {
-                    'type': 'string'
-                  },
-                  'messageFormat': {
-                    'type': 'string'
-                  },
-                  'enabled': {
-                    'type': 'boolean'
+                  'ttn': {
+                    'type': 'object',
+                    'properties': {
+                      'dev_id': {
+                        'type': 'string'
+                      },
+                      'app_id': {
+                        'type': 'string'
+                      }
+                    },
                   }
                 },
                 'required': [
-                  'enabled'
+                  'mqtt'
                 ]
               }
             },
@@ -132,7 +151,7 @@ module.exports = {
               'loc',
               'sensors',
               '_id',
-              'mqtt'
+              'integrations'
             ]
           }
         }
