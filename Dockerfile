@@ -4,11 +4,9 @@ FROM node:6
 RUN mkdir -p /usr/src/app
 WORKDIR /usr/src/app
 
-RUN npm install -g yarn
-
 COPY package.json /usr/src/app/
 COPY yarn.lock /usr/src/app/
-RUN yarn install
+RUN yarn install --pure-lockfile
 COPY . /usr/src/app
 
 # for git 2.1.4
