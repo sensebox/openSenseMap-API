@@ -79,7 +79,7 @@ routes(server);
 
 const unknownMethodHandler = function unknownMethodHandler (req, res) {
   if (req.method.toLowerCase() === 'options') {
-    const allowHeaders = ['Accept', 'X-ApiKey', 'Accept-Version', 'Content-Type', 'Api-Version', 'Origin', 'X-Requested-With']; // added Origin & X-Requested-With
+    const allowHeaders = ['Accept', 'Accept-Version', 'Content-Type', 'Api-Version', 'Origin', 'X-Requested-With', 'Authorization']; // added Origin & X-Requested-With
 
     if (res.methods.indexOf('OPTIONS') === -1) {
       res.methods.push('OPTIONS');
