@@ -65,6 +65,67 @@ describe('openSenseMap API', function () {
         });
     });
 
+    it('should deny to register an user with missing name parameter', function () {
+      return chakram.post(`${BASE_URL}/users/register`, { password: 'longenough', email: 'address@email.com' })
+        .then(function (response) {
+          expect(response).to.have.status(400);
+          expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
+
+          return chakram.wait();
+        });
+    });
+
+    it('should deny to register an user with invalid email address', function () {
+      return chakram.post(`${BASE_URL}/users/register`, { name: 'tester mc testmann', password: 'longenough', email: 'invalid' })
+        .then(function (response) {
+          expect(response).to.have.status(422);
+          expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
+
+          return chakram.wait();
+        });
+    });
+
+    it('should deny to register a too short username', function () {
+      return chakram.post(`${BASE_URL}/users/register`, { name: 't', password: 'longenough', email: 'address@email.com' })
+        .then(function (response) {
+          expect(response).to.have.status(422);
+          expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
+
+          return chakram.wait();
+        });
+    });
+
+    it('should deny to register an user with username not starting with a letter or number', function () {
+      return chakram.post(`${BASE_URL}/users/register`, { name: ' username', password: 'longenough', email: 'address@email.com' })
+        .then(function (response) {
+          expect(response).to.have.status(422);
+          expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
+
+          return chakram.wait();
+        });
+    });
+
+    it('should deny to register an user with username with invalid characters', function () {
+      return chakram.post(`${BASE_URL}/users/register`, { name: 'user () name', password: 'longenough', email: 'address@email.com' })
+        .then(function (response) {
+          expect(response).to.have.status(422);
+          expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
+
+          return chakram.wait();
+        });
+    });
+
+
+    it('should deny to register a too long username', function () {
+      return chakram.post(`${BASE_URL}/users/register`, { name: 'Really Long User Name which is definetely too long to be accepted', password: 'longenough', email: 'address@email.com' })
+        .then(function (response) {
+          expect(response).to.have.status(422);
+          expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
+
+          return chakram.wait();
+        });
+    });
+
     it('should allow to register a second user via POST', function () {
       return chakram.post(`${BASE_URL}/users/register`, { name: 'mrtest', email: 'tester2@test.test', password: '12345678' })
         .then(function (response) {
@@ -144,6 +205,16 @@ describe('openSenseMap API', function () {
         });
     });
 
+    it('should deny to change name to existing name', function () {
+      return chakram.put(`${BASE_URL}/users/me`, { name: 'this is just a nickname', currentPassword: '12345678' }, { headers: { 'Authorization': `Bearer ${jwt2}` } })
+        .then(function (response) {
+          expect(response).to.have.status(400);
+          expect(response).to.have.json('message', 'Duplicate user detected');
+
+          return chakram.wait();
+        });
+    });
+
     it('should deny to change password with too short new password', function () {
       return chakram.put(`${BASE_URL}/users/me`, { newPassword: 'short', currentPassword: '12345678' }, { headers: { 'Authorization': `Bearer ${jwt2}` } })
         .then(function (response) {
@@ -154,6 +225,23 @@ describe('openSenseMap API', function () {
         });
     });
 
+    it('should deny to change email to invalid email', function () {
+      return chakram.put(`${BASE_URL}/users/me`, { email: 'invalid email', currentPassword: '12345678' }, { headers: { 'Authorization': `Bearer ${jwt2}` } })
+        .then(function (response) {
+          expect(response).to.have.status(422);
+
+          return chakram.wait();
+        });
+    });
+
+    it('should deny to change name to invalid name', function () {
+      return chakram.put(`${BASE_URL}/users/me`, { name: ' invalid name', currentPassword: '12345678' }, { headers: { 'Authorization': `Bearer ${jwt2}` } })
+        .then(function (response) {
+          expect(response).to.have.status(422);
+
+          return chakram.wait();
+        });
+    });
     it('should allow to change password with correct current passsword', function () {
       return chakram.put(`${BASE_URL}/users/me`, { newPassword: '12345678910', currentPassword: '12345678' }, { headers: { 'Authorization': `Bearer ${jwt2}` } })
         .then(function (response) {
