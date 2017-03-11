@@ -68,7 +68,8 @@ const server = restify.createServer({
 // Also allow POST measurements through unsecured
 // /boxes/:boxId/data and /boxes/:boxId/:sensorId for arduinos
 // and set utf-8 charset
-server.pre(requestUtils.checkUnsecuredAccess);
+// and set context for honeybadger
+server.pre(requestUtils.preRequest);
 
 server.use(restify.CORS({ 'origins': ['*'] }));
 server.use(restify.fullResponse());
