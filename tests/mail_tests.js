@@ -56,6 +56,12 @@ describe('mails', function () {
         expect(response).to.have.status(200);
         expect(response).to.have.json({ code: 'Ok', message: 'E-Mail successfully confirmed. Thank you' });
 
+        return chakram.post(`${BASE_URL}/users/sign-in`, valid_user);
+      })
+      .then(function (response) {
+        expect(response).to.have.status(200);
+        expect(response).to.have.json('data.user.emailIsConfirmed', true);
+
         return chakram.wait();
       });
   });
@@ -124,7 +130,7 @@ describe('mails', function () {
     });
     expect(token).to.exist;
 
-    return chakram.post(`${BASE_URL}/users/password-reset`, { token, email: valid_user.email, password: 'newlongenoughpassword' })
+    return chakram.post(`${BASE_URL}/users/password-reset`, { token, password: 'newlongenoughpassword' })
       .then(function (response) {
         expect(response).to.have.status(200);
         expect(response).to.have.json({ code: 'Ok', message: 'Password successfully changed. You can now login with your new password' });
@@ -155,7 +161,7 @@ describe('mails', function () {
     });
     expect(token).to.exist;
 
-    return chakram.post(`${BASE_URL}/users/password-reset`, { token, email: valid_user.email, password: 'newlongenoughpasswordNOT' })
+    return chakram.post(`${BASE_URL}/users/password-reset`, { token, password: 'newlongenoughpasswordNOT' })
       .then(function (response) {
         expect(response).to.have.status(403);
         expect(response).to.have.json({ code: 'ForbiddenError',
