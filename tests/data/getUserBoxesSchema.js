@@ -133,6 +133,9 @@ module.exports = {
                       },
                       'app_id': {
                         'type': 'string'
+                      },
+                      'profile': {
+                        'type': 'string'
                       }
                     },
                   }

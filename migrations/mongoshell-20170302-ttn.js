@@ -9,3 +9,10 @@ db.boxes.updateMany({}, {
 db.boxes.updateMany({ 'integrations.mqtt': { $exists: false }}, {
   $set: { 'integrations.mqtt': { enabled: false }}
 });
+
+// migrate to simplified TTN schema
+db.boxes.updateMany({}, {
+  $unset: { 'integrations.ttn.messageFormat': '' },
+  $rename: { 'integrations.ttn.decodeOptions.profile': 'integrations.ttn.profile' },
+  $rename: { 'integrations.ttn.decodeOptions.byteMask': 'integrations.ttn.decodeOptions' }
+});
