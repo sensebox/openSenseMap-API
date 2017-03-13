@@ -1010,9 +1010,14 @@ describe('openSenseMap API', function () {
     });
 
     it('should allow to configure TTN via PUT', function () {
-      const update_payload = { ttn: { app_id: 'myapp', dev_id: 'mydevice', messageFormat: 'bytes', decodeOptions: {
-        profile: 'custom', byteMask: [2, 2, 1, 1]
-      } } };
+      const update_payload = {
+        ttn: {
+          app_id: 'myapp',
+          dev_id: 'mydevice',
+          profile: 'debug',
+          decodeOptions: [2, 2, 1, 1]
+        }
+      };
 
       return chakram.put(`${BASE_URL}/boxes/${boxIds[1]}`, update_payload, { headers: { 'Authorization': `Bearer ${jwt2}` } })
         .then(function (response) {
@@ -1023,12 +1028,19 @@ describe('openSenseMap API', function () {
     });
 
     it('should reject invalid TTN configuration', function () {
-      const update_payload = { ttn: { messageFormat: 'bytes', decodeOptions: { profile: 'custom', byteMask: null } } };
+      const update_payload = {
+        ttn: {
+          app_id: 'myapp',
+          dev_id: 'mydevice',
+          profile: 'lora-serialization',
+          decodeOptions: null
+        }
+      };
 
       return chakram.put(`${BASE_URL}/boxes/${boxIds[1]}`, update_payload, { headers: { 'Authorization': `Bearer ${jwt2}` } })
         .then(function (response) {
           expect(response).to.have.status(422);
-          expect(response.body.message).to.equal('validation failed');
+          expect(response.body.message).to.equal('validation failed: this profile requires an array \'decodeOptions\'');
 
           return chakram.wait();
         });
