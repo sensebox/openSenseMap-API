@@ -54,7 +54,7 @@ void postFloatValue (float measurement, int digits, String sensorId) {
   //Mit OSeM Server verbinden und POST Operation durchführen
   Serial.println("-------------------------------------");
   Serial.print("Connectingto OSeM Server...");
-  if (client.connect(server, 8000)) {
+  if (client.connect(server, 80)) {
     Serial.println("connected!");
     Serial.println("-------------------------------------");
     //HTTP Header aufbauen
