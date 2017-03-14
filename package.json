@@ -18,7 +18,7 @@
     "jsonpath": "^0.2.11",
     "millify": "^2.0.1",
     "moment": "^2.17.1",
-    "mongoose": "^4.7.5",
+    "mongoose": "^4.9.0",
     "mongoose-timestamp": "^0.6",
     "mqtt": "^2.4.0",
     "request": "^2.80.0",
