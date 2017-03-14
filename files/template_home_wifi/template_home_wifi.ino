@@ -149,7 +149,7 @@ void submitValues() {
     sleep(1000);
   }
   // if there's a successful connection:
-  if (client.connect(server, 8000)) {
+  if (client.connect(server, 80)) {
 
     Serial.println("connecting...");
     // send the HTTP POST request:

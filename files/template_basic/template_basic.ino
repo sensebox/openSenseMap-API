@@ -170,7 +170,7 @@ void postObservation(String measurement, String sensorId, String boxId)
   //post observation to: /boxes/boxId/sensorId
   // if you get a connection, report back via serial:
   wdt_reset();
-  if (client.connect(server, 8000))
+  if (client.connect(server, 80))
   {
     Serial.print("connected...");
     Serial.println();
