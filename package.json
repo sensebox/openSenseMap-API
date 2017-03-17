@@ -12,6 +12,7 @@
     "@turf/hex-grid": "^3.11.7",
     "@turf/square-grid": "^3.10.5",
     "@turf/triangle-grid": "^3.10.5",
+    "apicache": "^0.8.4",
     "bunyan": "^1.8.8",
     "csv-stringify": "^1.0.4",
     "honeybadger": "^1.2.1",
