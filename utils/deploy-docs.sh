@@ -8,7 +8,7 @@ IFS=$'\n\t'
 cd $TRAVIS_BUILD_DIR
 
 # install apidocs
-npm install -g apidoc@0.16.1
+npm install -g apidoc@0.17.5
 
 # deploy!
 
