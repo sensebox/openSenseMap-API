@@ -32,6 +32,8 @@ const config = {
   origin: 'localhost:8000', // usually the base url of the api. for example api.opensensemap.org
   salt_factor: (process.env.ENV === 'prod' ? 13 : 1), // use at least 10, max 31 (because the lib only allows this much. maybe switch later)
 
+  refresh_token_secret: 'I ALSO WANT TO BE CHANGED',
+  refresh_token_algorithm: 'sha256',
 
   password_min_length: 8
 };

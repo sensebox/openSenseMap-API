@@ -21,7 +21,7 @@ const BASE_URL = 'http://localhost:8000',
   custom_valid_sensebox = require('./data/custom_valid_sensebox');
 
 describe('openSenseMap API', function () {
-  let jwt, jwt2;
+  let jwt, jwt2, refreshToken;
 
   describe('/users', function () {
     it('should allow to register an user via POST', function () {
@@ -285,8 +285,7 @@ describe('openSenseMap API', function () {
           expect(response).to.have.status(200);
           expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
           expect(response.body.token).to.exist;
-
-          jwt = response.body.token;
+          expect(response.body.refreshToken).to.exist;
 
           return chakram.wait();
         });
@@ -298,8 +297,10 @@ describe('openSenseMap API', function () {
           expect(response).to.have.status(200);
           expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
           expect(response.body.token).to.exist;
+          expect(response.body.refreshToken).to.exist;
 
           jwt = response.body.token;
+          refreshToken = response.body.refreshToken;
 
           return chakram.wait();
         });
@@ -310,6 +311,15 @@ describe('openSenseMap API', function () {
         .then(function (response) {
           expect(response).to.have.status(200);
           expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
+
+          return chakram.wait();
+        });
+    });
+
+    it('should deny to use the refreshToken after signing out', function () {
+      return chakram.post(`${BASE_URL}/users/refresh-auth`, { 'token': refreshToken })
+        .then(function (response) {
+          expect(response).to.have.status(403);
 
           return chakram.wait();
         });
@@ -326,8 +336,61 @@ describe('openSenseMap API', function () {
           expect(response).to.have.status(200);
           expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
           expect(response.body.token).to.exist;
+          expect(response.body.refreshToken).to.exist;
 
           jwt = response.body.token;
+          refreshToken = response.body.refreshToken;
+
+          return chakram.wait();
+        });
+    });
+
+    it('should allow to refresh jwt using the refresh token', function () {
+      return chakram.post(`${BASE_URL}/users/refresh-auth`, { 'token': refreshToken })
+        .then(function (response) {
+          expect(response).to.have.status(200);
+          expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
+          expect(response.body.token).to.exist;
+          expect(response.body.refreshToken).to.exist;
+
+          const jwt = response.body.token;
+
+          return chakram.get(`${BASE_URL}/users/me`, { headers: { 'Authorization': `Bearer ${jwt}` } });
+        })
+        .then(function (response) {
+          expect(response).to.have.status(200);
+          expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
+          expect(response).to.have.schema(getUserSchema);
+          expect(response).to.comprise.of.json({ code: 'Ok', data: { me: { email: 'tester@test.test' } } });
+
+          return chakram.wait();
+        });
+    });
+
+    it('should deny to use an refresh token twice', function () {
+      return chakram.post(`${BASE_URL}/users/refresh-auth`, { 'token': refreshToken })
+        .then(function (response) {
+          expect(response).to.have.status(403);
+
+          return chakram.wait();
+        });
+    });
+
+    it('should deny to use an old jwt after using a refresh token', function () {
+      return chakram.post(`${BASE_URL}/boxes`, valid_sensebox(), { headers: { 'Authorization': `Bearer ${jwt}` } })
+        .then(function (response) {
+          expect(response).to.have.status(401);
+
+          return chakram.post(`${BASE_URL}/users/sign-in`, valid_user);
+        })
+        .then(function (response) {
+          expect(response).to.have.status(200);
+          expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
+          expect(response.body.token).to.exist;
+          expect(response.body.refreshToken).to.exist;
+
+          jwt = response.body.token;
+          refreshToken = response.body.refreshToken;
 
           return chakram.wait();
         });
