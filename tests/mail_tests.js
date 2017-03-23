@@ -46,7 +46,7 @@ describe('mails', function () {
     links.each(function (_, link) {
       const href = $(link).attr('href');
       if (href.includes('token=')) {
-        token = href.split('=')[1];
+        token = href.split('=')[2];
       }
     });
     expect(token).to.exist;
@@ -184,7 +184,17 @@ describe('mails', function () {
     expect(mail.MIME.Parts).to.not.be.undefined;
     expect(mail.MIME.Parts[1].Body).to.not.be.undefined;
     const ino = mimelib.decodeBase64(mail.MIME.Parts[1].Body);
-    const boxId = mail.MIME.Parts[0].Body.substr(mail.MIME.Parts[0].Body.indexOf('Your senseBox ID is: ') + 21, 24);
+    const mailbody = $.load(mimelib.decodeQuotedPrintable(mail.MIME.Parts[0].Body));
+    let boxId;
+    const links = mailbody('a');
+    links.each(function (_, link) {
+      const href = $(link).attr('href');
+      if (href.includes('explore')) {
+        boxId = href.split('/').pop();
+      }
+    });
+
+    expect(boxId).to.exist;
 
     // sign in to get jwt
     return chakram.post(`${BASE_URL}/users/sign-in`, { email: 'tester3@test.test', password: '12345678' })
