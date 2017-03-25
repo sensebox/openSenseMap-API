@@ -43,7 +43,7 @@
   },
   "scripts": {
     "start": "node app.js",
-    "test": "node node_modules/.bin/mocha tests/tests.js && sleep 2 && node node_modules/.bin/mocha tests/mail_tests.js",
+    "test": "node node_modules/.bin/mocha tests/tests.js",
     "pretest": "node tests/waitForHttp"
   },
   "repository": {

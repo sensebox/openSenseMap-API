@@ -1185,33 +1185,9 @@ describe('openSenseMap API', function () {
           return chakram.wait();
         });
     });
-
-    it('should accept measurements from luftdaten.info devices', function () {
-      let submitTime;
-
-      return chakram.post(`${BASE_URL}/boxes/${custombox_id}/data?luftdaten=true`, luftdaten_example_data)
-        .then(function (response) {
-          submitTime = moment.utc(response.response.headers.date, 'ddd, DD MMM YYYY HH:mm:ss GMT');
-          expect(response).to.have.status(201);
-
-          return chakram.get(`${BASE_URL}/boxes/${custombox_id}`);
-        })
-        .then(function (response) {
-          expect(response).to.have.json('sensors', function (sensors) {
-            sensors.forEach(function (sensor) {
-              if (['PM10', 'PM2.5'].includes(sensor.title)) {
-                expect(sensor.lastMeasurement).not.to.be.null;
-                expect(sensor.lastMeasurement.createdAt).to.exist;
-                const createdAt = moment.utc(sensor.lastMeasurement.createdAt);
-                expect(submitTime.diff(createdAt, 'seconds')).to.be.below(10);
-                countMeasurements = countMeasurements + 1;
-              }
-            });
-          });
-
-          return chakram.wait();
-        });
-    });
   });
 
 });
+
+require('./luftdaten_tests');
+require('./mail_tests');
