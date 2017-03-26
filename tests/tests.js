@@ -49,6 +49,16 @@ describe('openSenseMap API', function () {
     const boxIds = [];
     let boxCount = 0;
 
+    it('should return /stats correctly', function () {
+      return chakram.get(`${BASE_URL}/stats`)
+        .then(function (response) {
+          const [boxes, measurements] = response.body;
+          expect(boxes).to.equal(boxCount);
+          expect(measurements).to.equal(countMeasurements);
+
+          return chakram.wait();
+        });
+    });
 
     it('should allow to create a senseBox via POST', function () {
       return chakram.post(`${BASE_URL}/boxes`, valid_sensebox())
@@ -77,6 +87,17 @@ describe('openSenseMap API', function () {
         });
     });
 
+    it('should return /stats correctly', function () {
+      return chakram.get(`${BASE_URL}/stats`)
+        .then(function (response) {
+          const [boxes, measurements] = response.body;
+          expect(boxes).to.equal(boxCount);
+          expect(measurements).to.equal(countMeasurements);
+
+          return chakram.wait();
+        });
+    });
+
     it('should allow to create a second senseBox via POST', function () {
       let apikey_2;
 
@@ -100,6 +121,17 @@ describe('openSenseMap API', function () {
           expect(response).to.have.schema(senseBoxSchema);
 
           expect(response.body).to.not.have.keys('mqtt');
+
+          return chakram.wait();
+        });
+    });
+
+    it('should return /stats correctly', function () {
+      return chakram.get(`${BASE_URL}/stats`)
+        .then(function (response) {
+          const [boxes, measurements] = response.body;
+          expect(boxes).to.equal(boxCount);
+          expect(measurements).to.equal(countMeasurements);
 
           return chakram.wait();
         });
@@ -329,7 +361,7 @@ describe('openSenseMap API', function () {
     });
 
     it('should return /stats correctly', function () {
-      return chakram.get(`${BASE_URL}/stats`)
+      return chakram.get(`${BASE_URL}/stats`, { headers: { 'x-apicache-bypass': true } })
         .then(function (response) {
           const [boxes, measurements] = response.body;
           expect(boxes).to.equal(boxCount);
