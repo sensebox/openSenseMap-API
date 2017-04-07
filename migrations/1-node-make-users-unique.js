@@ -6,28 +6,16 @@ const models = require('../lib/models'),
   mongoose = require('mongoose');
 
 const { User, Box } = models;
+const nameValidRegex = /^[\u00C0-\u1FFF\u2C00-\uD7FF\w-\.][\u00C0-\u1FFF\u2C00-\uD7FF\w\s-\.]+[\u00C0-\u1FFF\u2C00-\uD7FF\w\.]$/;
 
 module.exports = function () {
   console.log('starting "make-users-unique" migration');
 
-  console.log('removing unique index on apikey');
-
-  return User.collection.dropIndex('apikey_1')
-    .then(function () {
-      console.log('removing apikey from users');
-
-      return User.collection.update({},
-        { $unset: { apikey: true } },
-        { multi: true, safe: true }
-      );
-    })
-    .then(function () {
-      return Box.find({})
-        .exec()
-        .then(function (boxes) {
-          return boxes.map(b => b._id.toString());
-        });
-    })
+  return Box.find({})
+      .exec()
+      .then(function (boxes) {
+        return boxes.map(b => b._id.toString());
+      })
     .then(function (boxes) {
       return User
         .find({})
@@ -74,8 +62,7 @@ module.exports = function () {
               }
             }
           }
-          console.log(`${users_to_remove.length} will be removed`);
-
+          console.log(`${users_to_remove.length} users will be removed`);
 
           const promises = [];
           // set the boxes to the users
@@ -91,17 +78,16 @@ module.exports = function () {
                 return mongoose.Types.ObjectId(id);
               });
 
-              let lang = user.language;
-              if (typeof lang === 'undefined') {
-                lang = 'de_DE';
+              if (!nameValidRegex.test(user.name)) {
+                console.log('oh weia');
+                user.set('name', user.name.replace(/"/g, ''));
               }
 
-              user.set('name', `${user.firstname} ${user.lastname}`);
               user.set('boxes', oid_boxes);
               user.set('password', uuid());
-              user.set('language', lang);
+              user.set('resetPasswordToken', uuid());
               user.set('resetPasswordExpires', moment.utc()
-                .add(2, 'months')
+                .add(6, 'months')
                 .toDate());
 
               promises.push(user.save());
@@ -113,19 +99,17 @@ module.exports = function () {
 
           return Promise.all(promises)
             .then(function () {
-              return User.collection.update({},
-                { $unset: { firstname: true, lastname: true } },
-                { multi: true, safe: true }
-              );
+              console.log('done');
+
             })
             .then(function () {
-              console.log('done');
+              User.collection.createIndex({ email: 1 }, { unique: true });
 
               return User.find({}).populate('boxes')
                 .exec();
             })
             .then(function (users) {
-              JSON.stringify(users.map(u => u.toJSON()));
+              console.log(JSON.stringify(users.map(u => u.toJSON()), null, 2));
               for (const user of users) {
                 user.mail('newUserManagement', user.boxes);
               }

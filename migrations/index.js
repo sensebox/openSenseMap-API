@@ -3,7 +3,7 @@
 const utils = require('../lib/utils'),
   mongoose = require('mongoose');
 
-const makeUsersUnique = require('./0-make-users-unique');
+const makeUsersUnique = require('./1-node-make-users-unique');
 
 utils.connectWithRetry(function () {
   makeUsersUnique()
