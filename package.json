@@ -2,7 +2,7 @@
   "name": "openSenseMapAPI",
   "version": "0.0.1",
   "description": "API for opensensemap.org",
-  "main": "app.js",
+  "main": "index.js",
   "dependencies": {
     "@turf/area": "^3.13.0",
     "@turf/bbox": "^3.13.0",
