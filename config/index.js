@@ -29,8 +29,8 @@ const config = {
   // TODO: add config key to osem-compose
   jwt_secret: 'OH GOD THIS IS SO INSECURE PLS CHANGE ME', // should be at least 32 characters
   jwt_algorithm: 'HS256',
-  jwt_validity_sec: 3600, // 1 hour
-  refresh_validity_sec: 604800, // 1 week
+  jwt_validity_ms: 3600000, // 1 hour
+  refresh_validity_ms: 604800000, // 1 week
   origin: 'localhost:8000', // usually the base url of the api. for example api.opensensemap.org
   salt_factor: (process.env.ENV === 'prod' ? 13 : 1), // use at least 10, max 31 (because the lib only allows this much. maybe switch later)
 
