@@ -1207,6 +1207,35 @@ describe('openSenseMap API', function () {
           return chakram.wait();
         });
     });
+
+    it('should allow to delete all data for a single sensor through specifying from-date and to-date', function () {
+      const sensor_id = boxes[boxIds[1]].sensors[boxes[boxIds[1]].sensors.findIndex(s => s.title === 'rel. Luftfeuchte')]._id;
+      const payload = { 'from-date': moment.utc().subtract(1, 'year').toISOString(), 'to-date': moment.utc().toISOString() };
+
+      return chakram.delete(`${BASE_URL}/boxes/${boxIds[1]}/${sensor_id}/measurements`, payload, { headers: { 'content-type': 'application/json', 'Authorization': `Bearer ${jwt2}` } })
+        .then(function (response) {
+          expect(response).to.have.status(200);
+
+          return chakram.get(`${BASE_URL}/boxes/${boxIds[1]}/data/${sensor_id}`);
+        })
+        .then(function (response) {
+          expect(Array.isArray(response.body)).to.be.true;
+          expect(response.body.length).to.equal(0);
+
+          return chakram.get(`${BASE_URL}/boxes/${boxIds[1]}`);
+        })
+        .then(function (response) {
+          expect(response).to.have.json('sensors', function (sensors) {
+            sensors.forEach(function (sensor) {
+              if (sensor._id === sensor_id) {
+                expect(sensor.lastMeasurement).not.to.exist;
+              }
+            });
+          });
+
+          return chakram.wait();
+        });
+    });
   });
 
 });
