@@ -3,7 +3,7 @@ services:
   osem-api:
     build:
       context: .
-      dockerfile: ./tests/Dockerfile
+      dockerfile: ./Dockerfile
     volumes:
       - ./app.js:/usr/src/app/app.js
       - ./lib:/usr/src/app/lib

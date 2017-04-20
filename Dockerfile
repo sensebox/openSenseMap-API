@@ -1,4 +1,6 @@
-FROM node:6
+FROM node:6-alpine
+
+RUN apk --no-cache --virtual .build add python make g++ git
 
 # taken from node:6-onbuild
 RUN mkdir -p /usr/src/app
@@ -11,5 +13,7 @@ COPY . /usr/src/app
 
 # for git 2.1.4
 RUN echo -n $(git rev-parse --abbrev-ref HEAD) $(TZ=UTC git log --date=local --pretty=format:"%ct %h" -n 1) > revision; rm -rf .git
+
+RUN apk del .build
 
 CMD [ "npm", "start" ]
