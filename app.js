@@ -8,6 +8,7 @@
 const restify = require('restify'),
   Stream = require('stream'),
   utils = require('./lib/utils'),
+  db = require('./lib/db'),
   requestUtils = require('./lib/requestUtils'),
   Box = require('./lib/models').Box,
   routes = require('./lib/routes'),
@@ -100,13 +101,11 @@ const unknownMethodHandler = function unknownMethodHandler (req, res) {
 
 server.on('MethodNotAllowed', unknownMethodHandler);
 
-utils.connectWithRetry(function () {
-  server.listen(config.port, function () {
-    console.log('%s listening at %s', server.name, server.url);
-    utils.postToSlack(`openSenseMap API started. Revision: ${utils.softwareRevision}`);
-    Box.connectMQTTBoxes();
-  });
-});
+db.connect().then(server.listen(config.port, function () {
+  console.log('%s listening at %s', server.name, server.url);
+  utils.postToSlack(`openSenseMap API started. Revision: ${utils.softwareRevision}`);
+  Box.connectMQTTBoxes();
+}));
 
 server.on('uncaughtException', function (req, res, route, err) {
   Honeybadger.notify(err);

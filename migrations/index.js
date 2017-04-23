@@ -1,17 +1,14 @@
 'use strict';
 
-const utils = require('../lib/utils'),
-  mongoose = require('mongoose');
+const { connect, mongoose } = require('../lib/db');
 
 const makeUsersUnique = require('./1-node-make-users-unique');
 
-utils.connectWithRetry(function () {
-  makeUsersUnique()
-    .then(function () {
-      mongoose.disconnect();
-    })
-    .catch(function (err) {
-      console.error(err);
-      mongoose.disconnect();
-    });
-});
+connect().then(makeUsersUnique()
+  .then(function () {
+    mongoose.disconnect();
+  })
+  .catch(function (err) {
+    console.error(err);
+    mongoose.disconnect();
+  }));

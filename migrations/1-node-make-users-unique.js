@@ -3,7 +3,7 @@
 const models = require('../lib/models'),
   uuid = require('uuid'),
   moment = require('moment'),
-  mongoose = require('mongoose');
+  { mongoose } = require('../lib/db');
 
 const { User, Box } = models;
 const nameValidRegex = /^[\u00C0-\u1FFF\u2C00-\uD7FF\w-\.][\u00C0-\u1FFF\u2C00-\uD7FF\w\s-\.]+[\u00C0-\u1FFF\u2C00-\uD7FF\w\.]$/;
@@ -109,7 +109,7 @@ module.exports = function () {
                 .exec();
             })
             .then(function (users) {
-              console.log(JSON.stringify(users.map(u => u.toJSON()), null, 2));
+              //console.log(JSON.stringify(users.map(u => u.toJSON()), null, 2));
               for (const user of users) {
                 user.mail('newUserManagement', user.boxes);
               }

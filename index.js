@@ -2,10 +2,12 @@
 
 const models = require('./lib/models'),
   utils = require('./lib/utils'),
-  decoding = require('./lib/decoding');
+  decoding = require('./lib/decoding'),
+  db = require('./lib/db');
 
 module.exports = {
   models,
   utils,
-  decoding
+  decoding,
+  db
 };
