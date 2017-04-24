@@ -101,11 +101,18 @@ const unknownMethodHandler = function unknownMethodHandler (req, res) {
 
 server.on('MethodNotAllowed', unknownMethodHandler);
 
-db.connect().then(server.listen(config.port, function () {
-  console.log('%s listening at %s', server.name, server.url);
-  utils.postToSlack(`openSenseMap API started. Revision: ${utils.softwareRevision}`);
-  Box.connectMQTTBoxes();
-}));
+db.connect().then(function () {
+  server.listen(config.port, function () {
+    console.log('%s listening at %s', server.name, server.url);
+    utils.postToSlack(`openSenseMap API started. Revision: ${utils.softwareRevision}`);
+    Box.connectMQTTBoxes();
+  });
+})
+.catch(function (err) {
+  console.log(`${new Date().toISOString()}: Couldn't connect to MongoDB. Error: ${err}
+  Exiting...`);
+  process.exit(1);
+});
 
 server.on('uncaughtException', function (req, res, route, err) {
   Honeybadger.notify(err);
