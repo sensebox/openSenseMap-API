@@ -103,7 +103,7 @@ server.on('MethodNotAllowed', unknownMethodHandler);
 
 db.connect().then(function () {
   server.listen(config.port, function () {
-    console.log('%s listening at %s', server.name, server.url);
+    console.log(`${new Date().toISOString()}: ${server.name} listening at ${server.url}`);
     utils.postToSlack(`openSenseMap API started. Revision: ${utils.softwareRevision}`);
     Box.connectMQTTBoxes();
   });
