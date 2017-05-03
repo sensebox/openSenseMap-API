@@ -112,6 +112,7 @@ module.exports = function () {
               //console.log(JSON.stringify(users.map(u => u.toJSON()), null, 2));
               for (const user of users) {
                 user.mail('newUserManagement', user.boxes);
+                console.log(`sent mail to ${user.name} <${user.email}>`);
               }
             });
 
