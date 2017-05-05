@@ -1187,6 +1187,18 @@ describe('openSenseMap API', function () {
         });
     });
 
+    it('should allow to filter boxes by grouptag', function () {
+      return chakram.get(`${BASE_URL}/boxes?grouptag=newgroup`)
+        .then(function (response) {
+          expect(response).to.have.status(200);
+          expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
+          expect(Array.isArray(response.body)).to.be.true;
+          expect(response.body.length).to.be.equal(1);
+
+          return chakram.wait();
+        });
+    });
+
     it('should accept measurements through mqtt', function () {
       const submitTime = moment.utc();
 
