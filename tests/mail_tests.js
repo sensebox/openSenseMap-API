@@ -31,6 +31,7 @@ describe('mails', function () {
         expect(response).to.have.json('items', function (items) {
           expect(items).to.exist;
           expect(Array.isArray(items)).to.be.true;
+          expect(items.length).not.to.be.equal(0);
           mails = items;
         });
 

@@ -722,6 +722,21 @@ describe('openSenseMap API', function () {
       return chakram.put(`${BASE_URL}/boxes/${custombox_id}`, { 'sensors': [{ 'title': 'PM10', 'unit': 'µg/m³', 'sensorType': 'SDS 011', 'edited': 'true', 'new': 'true' }, { 'title': 'PM2.5', 'unit': 'µg/m³', 'sensorType': 'SDS 011', 'edited': 'true', 'new': 'true' }] }, { headers: { 'Authorization': `Bearer ${jwt2}` } })
         .then(function (response) {
           expect(response).to.have.status(200);
+          expect(response).to.have.json('data.sensors', function (sensors) {
+            let hasPM25 = false,
+              hasPM10 = false;
+
+            for (const sensor of sensors) {
+              if (hasPM10 && hasPM25) {
+                break;
+              }
+              hasPM10 = hasPM10 || sensor.title === 'PM10';
+              hasPM25 = hasPM25 || sensor.title === 'PM2.5';
+            }
+
+            expect(hasPM10).to.be.true;
+            expect(hasPM25).to.be.true;
+          });
 
           return chakram.get(`${BASE_URL}/boxes/${custombox_id}`);
         })
@@ -997,6 +1012,7 @@ describe('openSenseMap API', function () {
       return chakram.put(`${BASE_URL}/boxes/${boxId}`, delete_payload, { headers: { 'Authorization': `Bearer ${jwt}` } })
         .then(function (response) {
           expect(response).to.have.status(200);
+          expect(response.body.data.sensors.length).to.be.equal(4);
 
           return chakram.get(`${BASE_URL}/boxes/${boxId}`);
         })
@@ -1015,6 +1031,7 @@ describe('openSenseMap API', function () {
       return chakram.put(`${BASE_URL}/boxes/${boxIds[1]}`, delete_payload, { headers: { 'Authorization': `Bearer ${jwt2}` } })
         .then(function (response) {
           expect(response).to.have.status(200);
+          expect(response.body.data.sensors.length).to.be.equal(4);
 
           return chakram.get(`${BASE_URL}/boxes/${boxIds[1]}`);
         })
@@ -1137,6 +1154,7 @@ describe('openSenseMap API', function () {
       return chakram.put(`${BASE_URL}/boxes/${boxIds[1]}`, update_payload, { headers: { 'Authorization': `Bearer ${jwt2}` } })
         .then(function (response) {
           expect(response).to.have.status(200);
+          expect(response).to.comprise.of.json('data.integrations.mqtt', { enabled: true });
 
           return chakram.get(`${BASE_URL}/users/me/boxes`, { headers: { 'Authorization': `Bearer ${jwt2}` } });
         })
@@ -1144,6 +1162,26 @@ describe('openSenseMap API', function () {
           expect(response).to.have.schema(getUserBoxesSchema);
           // for some reason the second created box is returned first..?
           expect(response).to.comprise.of.json('data.boxes.0.integrations.mqtt', { enabled: true });
+
+          return chakram.wait();
+        });
+    });
+
+    it('should allow to update the box via PUT', function () {
+      const update_payload = { name: 'neuername', exposure: 'indoor', grouptag: 'newgroup', description: 'total neue beschreibung', loc: { lat: 54.2, lng: 21.1 }, image: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVQYV2NgYAAAAAMAAWgmWQ0AAAAASUVORK5CYII=' };
+
+      return chakram.put(`${BASE_URL}/boxes/${boxIds[1]}`, update_payload, { headers: { 'Authorization': `Bearer ${jwt2}` } })
+        .then(function (response) {
+          expect(response).to.have.status(200);
+          expect(response).to.comprise.of.json('data.name', update_payload.name);
+          expect(response).to.comprise.of.json('data.exposure', update_payload.exposure);
+          expect(response).to.comprise.of.json('data.grouptag', update_payload.grouptag);
+          expect(response).to.comprise.of.json('data.description', update_payload.description);
+          expect(response).to.comprise.of.json('data.loc', [ { type: 'Feature', geometry: { type: 'Point', coordinates: [ update_payload.loc.lng, update_payload.loc.lat ] } }]);
+
+          expect(response).to.comprise.of.json('data.image', function (image) {
+            return expect(moment().diff(moment(parseInt(image.split('?')[1], 10)))).to.be.below(50);
+          });
 
           return chakram.wait();
         });
