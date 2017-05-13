@@ -15,9 +15,6 @@ module.exports = {
           'items': {
             'type': 'object',
             'properties': {
-              'boxType': {
-                'type': 'string'
-              },
               'createdAt': {
                 'type': 'string'
               },
@@ -32,6 +29,22 @@ module.exports = {
               },
               'updatedAt': {
                 'type': 'string'
+              },
+              'currentLocation': {
+                'type': 'object',
+                'properties': {
+                  'coordinates': {
+                    'type': 'array',
+                    'items': { 'type': 'number' }
+                  },
+                  'timestamp': { 'type': 'string' },
+                  'type': { 'type': 'string' }
+                },
+                'required': [
+                  'coordinates',
+                  'timestamp',
+                  'type'
+                ]
               },
               'loc': {
                 'type': 'array',
@@ -148,11 +161,11 @@ module.exports = {
               }
             },
             'required': [
-              'boxType',
               'createdAt',
               'exposure',
               'name',
               'updatedAt',
+              'currentLocation',
               'loc',
               'sensors',
               '_id',
