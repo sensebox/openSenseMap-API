@@ -21,7 +21,7 @@
     "jsonwebtoken": "^7.3.0",
     "millify": "^2.0.1",
     "moment": "^2.18.1",
-    "mongoose": "^4.9.5",
+    "mongoose": "^4.9.10",
     "mongoose-timestamp": "^0.6",
     "mqtt": "^2.6.2",
     "passport": "^0.3.2",
