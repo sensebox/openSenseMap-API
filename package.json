@@ -24,6 +24,7 @@
     "mongoose": "^4.10.2",
     "mongoose-timestamp": "^0.6",
     "mqtt": "^2.7.2",
+    "opbeat": "^4.14.0",
     "passport": "^0.3.2",
     "passport-jwt": "^2.2.1",
     "passport-local": "^1.0.0",

@@ -16,6 +16,8 @@ const restify = require('restify'),
 
 const { config, Honeybadger } = utils;
 
+require('opbeat').start({ active: config.isProdEnv() });
+
 // Logging
 const consoleStream = new Stream();
 consoleStream.writable = true;
