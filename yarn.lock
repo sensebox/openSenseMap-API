@@ -434,7 +434,19 @@ dashdash@^1.12.0:
   dependencies:
     assert-plus "^1.0.0"
 
-debug@2.2.0, debug@^2.2.0, debug@~2.2.0:
+debug@2.6.0, debug@^2.2.0:
+  version "2.6.0"
+  resolved "https://registry.yarnpkg.com/debug/-/debug-2.6.0.tgz#bc596bcabe7617f11d9fa15361eded5608b8499b"
+  dependencies:
+    ms "0.7.2"
+
+debug@2.6.8:
+  version "2.6.8"
+  resolved "https://registry.yarnpkg.com/debug/-/debug-2.6.8.tgz#e731531ca2ede27d188222427da17821d68ff4fc"
+  dependencies:
+    ms "2.0.0"
+
+debug@~2.2.0:
   version "2.2.0"
   resolved "https://registry.yarnpkg.com/debug/-/debug-2.2.0.tgz#f87057e995b1a1f6ae6a4960664137bc56f039da"
   dependencies:
@@ -464,9 +476,9 @@ delegates@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/delegates/-/delegates-1.0.0.tgz#84c6e159b81904fdca59a0ef44cd870d31250f9a"
 
-diff@1.4.0:
-  version "1.4.0"
-  resolved "https://registry.yarnpkg.com/diff/-/diff-1.4.0.tgz#7f28d2eb9ee7b15a97efd89ce63dcfdaa3ccbabf"
+diff@3.2.0:
+  version "3.2.0"
+  resolved "https://registry.yarnpkg.com/diff/-/diff-3.2.0.tgz#c9ce393a4b7cbd0b058a725c93df299027868ff9"
 
 dom-serializer@0, dom-serializer@~0.1.0:
   version "0.1.0"
@@ -723,9 +735,9 @@ glob-stream@^6.1.0:
     to-absolute-glob "^2.0.0"
     unique-stream "^2.0.2"
 
-glob@7.0.5, glob@^7.0.5:
-  version "7.0.5"
-  resolved "https://registry.yarnpkg.com/glob/-/glob-7.0.5.tgz#b4202a69099bbb4d292a7c1b95b6682b67ebdc95"
+glob@7.1.1, glob@^7.0.5, glob@^7.1.1:
+  version "7.1.1"
+  resolved "https://registry.yarnpkg.com/glob/-/glob-7.1.1.tgz#805211df04faaf1c63a3600306cdf5ade50b2ec8"
   dependencies:
     fs.realpath "^1.0.0"
     inflight "^1.0.4"
@@ -741,17 +753,6 @@ glob@^6.0.1:
     inflight "^1.0.4"
     inherits "2"
     minimatch "2 || 3"
-    once "^1.3.0"
-    path-is-absolute "^1.0.0"
-
-glob@^7.1.1:
-  version "7.1.1"
-  resolved "https://registry.yarnpkg.com/glob/-/glob-7.1.1.tgz#805211df04faaf1c63a3600306cdf5ade50b2ec8"
-  dependencies:
-    fs.realpath "^1.0.0"
-    inflight "^1.0.4"
-    inherits "2"
-    minimatch "^3.0.2"
     once "^1.3.0"
     path-is-absolute "^1.0.0"
 
@@ -1063,14 +1064,14 @@ jsonpointer@^4.0.0:
   version "4.0.0"
   resolved "https://registry.yarnpkg.com/jsonpointer/-/jsonpointer-4.0.0.tgz#6661e161d2fc445f19f98430231343722e1fcbd5"
 
-jsonwebtoken@^7.0.0, jsonwebtoken@^7.3.0:
-  version "7.3.0"
-  resolved "https://registry.yarnpkg.com/jsonwebtoken/-/jsonwebtoken-7.3.0.tgz#85118d6a70e3fccdf14389f4e7a1c3f9c8a9fbba"
+jsonwebtoken@^7.0.0, jsonwebtoken@^7.4.1:
+  version "7.4.1"
+  resolved "https://registry.yarnpkg.com/jsonwebtoken/-/jsonwebtoken-7.4.1.tgz#7ca324f5215f8be039cd35a6c45bb8cb74a448fb"
   dependencies:
     joi "^6.10.1"
     jws "^3.1.4"
     lodash.once "^4.0.0"
-    ms "^0.7.1"
+    ms "^2.0.0"
     xtend "^4.0.1"
 
 jsprim@^1.2.2:
@@ -1286,16 +1287,16 @@ mkdirp@0.5.1, "mkdirp@>=0.5 0", mkdirp@^0.5.1, mkdirp@~0.5.1:
   dependencies:
     minimist "0.0.8"
 
-mocha@^3.2.0:
-  version "3.2.0"
-  resolved "https://registry.yarnpkg.com/mocha/-/mocha-3.2.0.tgz#7dc4f45e5088075171a68896814e6ae9eb7a85e3"
+mocha@^3.4.2:
+  version "3.4.2"
+  resolved "https://registry.yarnpkg.com/mocha/-/mocha-3.4.2.tgz#d0ef4d332126dbf18d0d640c9b382dd48be97594"
   dependencies:
     browser-stdout "1.3.0"
     commander "2.9.0"
-    debug "2.2.0"
-    diff "1.4.0"
+    debug "2.6.0"
+    diff "3.2.0"
     escape-string-regexp "1.0.5"
-    glob "7.0.5"
+    glob "7.1.1"
     growl "1.9.2"
     json3 "3.3.2"
     lodash.create "3.1.1"
@@ -1327,9 +1328,9 @@ mongoose-timestamp@^0.6:
   dependencies:
     defaults "^1.0.3"
 
-mongoose@^4.9.10:
-  version "4.9.10"
-  resolved "https://registry.yarnpkg.com/mongoose/-/mongoose-4.9.10.tgz#3e35963e1ab72b275a998582baeb26e8f202d2e3"
+mongoose@^4.10.2:
+  version "4.10.2"
+  resolved "https://registry.yarnpkg.com/mongoose/-/mongoose-4.10.2.tgz#c7473ebada5f985cdac8e4182d40776b1aaf5352"
   dependencies:
     async "2.1.4"
     bson "~1.0.4"
@@ -1338,8 +1339,8 @@ mongoose@^4.9.10:
     mongodb "2.2.26"
     mpath "0.2.1"
     mpromise "0.5.5"
-    mquery "2.3.0"
-    ms "0.7.2"
+    mquery "2.3.1"
+    ms "2.0.0"
     muri "1.2.1"
     regexp-clone "0.0.1"
     sliced "1.0.1"
@@ -1361,9 +1362,9 @@ mqtt-packet@^5.2.1:
     process-nextick-args "^1.0.7"
     safe-buffer "^5.0.1"
 
-mqtt@^2.6.2:
-  version "2.6.2"
-  resolved "https://registry.yarnpkg.com/mqtt/-/mqtt-2.6.2.tgz#9dc5fc853dd4a049c859e24c6754b42f18ce8774"
+mqtt@^2.7.2:
+  version "2.7.2"
+  resolved "https://registry.yarnpkg.com/mqtt/-/mqtt-2.7.2.tgz#5a1d41dbd3d3d0c74527ee1f34fab813224ba734"
   dependencies:
     commist "^1.0.0"
     concat-stream "^1.6.0"
@@ -1379,22 +1380,26 @@ mqtt@^2.6.2:
     websocket-stream "^4.0.0"
     xtend "^4.0.1"
 
-mquery@2.3.0:
-  version "2.3.0"
-  resolved "https://registry.yarnpkg.com/mquery/-/mquery-2.3.0.tgz#3d1717ad8958d0c99e42ea2461a109f3e5f3e458"
+mquery@2.3.1:
+  version "2.3.1"
+  resolved "https://registry.yarnpkg.com/mquery/-/mquery-2.3.1.tgz#9ab36749714800ff0bb53a681ce4bc4d5f07c87b"
   dependencies:
     bluebird "2.10.2"
-    debug "2.2.0"
+    debug "2.6.8"
     regexp-clone "0.0.1"
     sliced "0.0.5"
 
-ms@0.7.1, ms@^0.7.1:
+ms@0.7.1:
   version "0.7.1"
   resolved "https://registry.yarnpkg.com/ms/-/ms-0.7.1.tgz#9cd13c03adbff25b65effde7ce864ee952017098"
 
 ms@0.7.2:
   version "0.7.2"
   resolved "https://registry.yarnpkg.com/ms/-/ms-0.7.2.tgz#ae25cf2512b3885a1d95d7f037868d8431124765"
+
+ms@2.0.0, ms@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/ms/-/ms-2.0.0.tgz#5608aeadfc00be6c2901df5f9861788de0d597c8"
 
 muri@1.2.1:
   version "1.2.1"
@@ -1684,12 +1689,13 @@ request-promise-core@1.1.1:
   dependencies:
     lodash "^4.13.1"
 
-request-promise-native@^1.0.3:
-  version "1.0.3"
-  resolved "https://registry.yarnpkg.com/request-promise-native/-/request-promise-native-1.0.3.tgz#9cb2b2f69f137e4acf35116a08a441cbfd0c0134"
+request-promise-native@^1.0.4:
+  version "1.0.4"
+  resolved "https://registry.yarnpkg.com/request-promise-native/-/request-promise-native-1.0.4.tgz#86988ec8eee408e45579fce83bfd05b3adf9a155"
   dependencies:
     request-promise-core "1.1.1"
-    stealthy-require "^1.0.0"
+    stealthy-require "^1.1.0"
+    tough-cookie ">=2.3.0"
 
 request@2.x.x, request@^2.79.0, request@^2.81.0:
   version "2.81.0"
@@ -1903,9 +1909,9 @@ static-eval@0.2.3:
   dependencies:
     escodegen "~0.0.24"
 
-stealthy-require@^1.0.0:
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/stealthy-require/-/stealthy-require-1.0.0.tgz#1a8ed8fc19a8b56268f76f5a1a3e3832b0c26200"
+stealthy-require@^1.1.0:
+  version "1.1.1"
+  resolved "https://registry.yarnpkg.com/stealthy-require/-/stealthy-require-1.1.1.tgz#35b09875b4ff49f26a777e509b3090a3226bf24b"
 
 stream-shift@^1.0.0:
   version "1.0.0"
@@ -2031,7 +2037,7 @@ topo@1.x.x:
   dependencies:
     hoek "2.x.x"
 
-tough-cookie@~2.3.0:
+tough-cookie@>=2.3.0, tough-cookie@~2.3.0:
   version "2.3.1"
   resolved "https://registry.yarnpkg.com/tough-cookie/-/tough-cookie-2.3.1.tgz#99c77dfbb7d804249e8a299d4cb0fd81fef083fd"
 
