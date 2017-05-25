@@ -8,67 +8,65 @@
   dependencies:
     wgs84 "0.0.0"
 
-"@turf/area@^4.1.0":
-  version "4.1.0"
-  resolved "https://registry.yarnpkg.com/@turf/area/-/area-4.1.0.tgz#326746494a59e2b8e4d495287f6b8fcd8726118c"
+"@turf/area@^4.3.0":
+  version "4.3.0"
+  resolved "https://registry.yarnpkg.com/@turf/area/-/area-4.3.0.tgz#7f6b1bb9a45c2c553ead7c507d1ccb98c4907e4f"
   dependencies:
     "@mapbox/geojson-area" "^0.2.2"
-    "@turf/meta" "^4.1.0"
+    "@turf/meta" "^4.3.0"
 
-"@turf/bbox@^4.1.0":
-  version "4.1.0"
-  resolved "https://registry.yarnpkg.com/@turf/bbox/-/bbox-4.1.0.tgz#62598dddbae21bda4cef74867cb8ae3b5f83be53"
+"@turf/bbox@^4.3.0":
+  version "4.3.0"
+  resolved "https://registry.yarnpkg.com/@turf/bbox/-/bbox-4.3.0.tgz#644c4b745172d21aae70d1584b2a7866f1040865"
   dependencies:
-    "@turf/meta" "^4.1.0"
+    "@turf/meta" "^4.3.0"
 
-"@turf/centroid@^4.1.0":
-  version "4.1.0"
-  resolved "https://registry.yarnpkg.com/@turf/centroid/-/centroid-4.1.0.tgz#e5c0a539748e35456d837f87b10515cf785bcfe6"
+"@turf/centroid@^4.3.0":
+  version "4.3.0"
+  resolved "https://registry.yarnpkg.com/@turf/centroid/-/centroid-4.3.0.tgz#086f6f562b934f3a4ccfb9d453c872357462d739"
   dependencies:
-    "@turf/helpers" "^4.1.0"
-    "@turf/meta" "^4.1.0"
+    "@turf/helpers" "^4.3.0"
+    "@turf/meta" "^4.3.0"
 
-"@turf/distance@^4.1.0":
-  version "4.1.0"
-  resolved "https://registry.yarnpkg.com/@turf/distance/-/distance-4.1.0.tgz#0050cbe85579e54c53eea2de48d7d8cb455592bc"
+"@turf/distance@^4.3.0":
+  version "4.3.0"
+  resolved "https://registry.yarnpkg.com/@turf/distance/-/distance-4.3.0.tgz#b533ba75936fea897ee1987824714b803df9061c"
   dependencies:
-    "@turf/helpers" "^4.1.0"
-    "@turf/invariant" "^4.1.0"
-    load-json-file "^2.0.0"
-    write-json-file "^2.0.0"
+    "@turf/helpers" "^4.3.0"
+    "@turf/invariant" "^4.3.0"
 
-"@turf/helpers@^4.1.0":
-  version "4.1.0"
-  resolved "https://registry.yarnpkg.com/@turf/helpers/-/helpers-4.1.0.tgz#013a9c53db6a9386e47c7ab445d93ca2035c4b81"
+"@turf/helpers@^4.3.0":
+  version "4.3.0"
+  resolved "https://registry.yarnpkg.com/@turf/helpers/-/helpers-4.3.0.tgz#7b2f733aa0eb3ea1f07d467ac02ede00cc6cde0d"
 
-"@turf/hex-grid@^4.1.0":
-  version "4.1.0"
-  resolved "https://registry.yarnpkg.com/@turf/hex-grid/-/hex-grid-4.1.0.tgz#b6358d106b7383c2309789bce53380ac49a80532"
+"@turf/hex-grid@^4.3.0":
+  version "4.3.0"
+  resolved "https://registry.yarnpkg.com/@turf/hex-grid/-/hex-grid-4.3.0.tgz#6ab6c09875ae2577d83baf76e12f2bd27aab9ff4"
   dependencies:
-    "@turf/distance" "^4.1.0"
-    "@turf/helpers" "^4.1.0"
+    "@turf/distance" "^4.3.0"
+    "@turf/helpers" "^4.3.0"
 
-"@turf/invariant@^4.1.0":
-  version "4.1.0"
-  resolved "https://registry.yarnpkg.com/@turf/invariant/-/invariant-4.1.0.tgz#00f0710d3411b01cc71a966d21bcd048d6a86612"
+"@turf/invariant@^4.3.0":
+  version "4.3.0"
+  resolved "https://registry.yarnpkg.com/@turf/invariant/-/invariant-4.3.0.tgz#5bd1ce6ae51b1229dc0dc7d09d973fabae49af89"
 
-"@turf/meta@^4.1.0":
-  version "4.1.0"
-  resolved "https://registry.yarnpkg.com/@turf/meta/-/meta-4.1.0.tgz#7b0715832ff483d28d2669051f1e00c6cefcbf75"
+"@turf/meta@^4.3.0":
+  version "4.3.0"
+  resolved "https://registry.yarnpkg.com/@turf/meta/-/meta-4.3.0.tgz#eb11dd2c2511524258123767fe0f5c3bd963e8d7"
 
-"@turf/square-grid@^4.1.0":
-  version "4.1.0"
-  resolved "https://registry.yarnpkg.com/@turf/square-grid/-/square-grid-4.1.0.tgz#0ec4ee76c610fe5e91016a5d9b2a3c1a987d8cd6"
+"@turf/square-grid@^4.3.0":
+  version "4.3.0"
+  resolved "https://registry.yarnpkg.com/@turf/square-grid/-/square-grid-4.3.0.tgz#c67f0a537f3c4fd336f1f9df61bc416db7514082"
   dependencies:
-    "@turf/distance" "^4.1.0"
-    "@turf/helpers" "^4.1.0"
+    "@turf/distance" "^4.3.0"
+    "@turf/helpers" "^4.3.0"
 
-"@turf/triangle-grid@^4.1.0":
-  version "4.1.0"
-  resolved "https://registry.yarnpkg.com/@turf/triangle-grid/-/triangle-grid-4.1.0.tgz#80762c871f4b9e1fe77d61ef91bb18de96e943bd"
+"@turf/triangle-grid@^4.3.0":
+  version "4.3.0"
+  resolved "https://registry.yarnpkg.com/@turf/triangle-grid/-/triangle-grid-4.3.0.tgz#63062ffe1fb411e1d1e57ffd11fe2f66f760f6e8"
   dependencies:
-    "@turf/distance" "^4.1.0"
-    "@turf/helpers" "^4.1.0"
+    "@turf/distance" "^4.3.0"
+    "@turf/helpers" "^4.3.0"
 
 JSONSelect@0.4.0:
   version "0.4.0"
@@ -590,12 +588,6 @@ error-callsites@^1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/error-callsites/-/error-callsites-1.0.1.tgz#4286169adf8fc12482f556111724c5aed873a692"
 
-error-ex@^1.2.0:
-  version "1.3.1"
-  resolved "https://registry.yarnpkg.com/error-ex/-/error-ex-1.3.1.tgz#f855a86ce61adc4e8621c3cda21e7a7612c3a8dc"
-  dependencies:
-    is-arrayish "^0.2.1"
-
 es6-promise@3.2.1:
   version "3.2.1"
   resolved "https://registry.yarnpkg.com/es6-promise/-/es6-promise-3.2.1.tgz#ec56233868032909207170c39448e24449dd1fc4"
@@ -782,7 +774,7 @@ glob@^6.0.1:
     once "^1.3.0"
     path-is-absolute "^1.0.0"
 
-graceful-fs@^4.1.11, graceful-fs@^4.1.2:
+graceful-fs@^4.1.2:
   version "4.1.11"
   resolved "https://registry.yarnpkg.com/graceful-fs/-/graceful-fs-4.1.11.tgz#0e8bdfe4d1ddb8854d64e04ea7c00e2a026e5658"
 
@@ -913,10 +905,6 @@ iconv-lite@~0.4.13:
   version "0.4.15"
   resolved "https://registry.yarnpkg.com/iconv-lite/-/iconv-lite-0.4.15.tgz#fe265a218ac6a57cfe854927e9d04c19825eddeb"
 
-imurmurhash@^0.1.4:
-  version "0.1.4"
-  resolved "https://registry.yarnpkg.com/imurmurhash/-/imurmurhash-0.1.4.tgz#9218b9b2b928a238b13dc4fb6b6d576f231453ea"
-
 in-publish@^2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/in-publish/-/in-publish-2.0.0.tgz#e20ff5e3a2afc2690320b6dc552682a9c7fadf51"
@@ -942,10 +930,6 @@ is-absolute@^0.2.5:
   dependencies:
     is-relative "^0.2.1"
     is-windows "^0.2.0"
-
-is-arrayish@^0.2.1:
-  version "0.2.1"
-  resolved "https://registry.yarnpkg.com/is-arrayish/-/is-arrayish-0.2.1.tgz#77c99840527aa8ecb1a8ba697b80645a7a926a9d"
 
 is-extendable@^0.1.0:
   version "0.1.1"
@@ -1002,10 +986,6 @@ is-negated-glob@^1.0.0:
 is-nil@^1.0.0:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/is-nil/-/is-nil-1.0.1.tgz#2daba29e0b585063875e7b539d071f5b15937969"
-
-is-plain-obj@^1.0.0:
-  version "1.1.0"
-  resolved "https://registry.yarnpkg.com/is-plain-obj/-/is-plain-obj-1.1.0.tgz#71a50c8429dfca773c92a390a4a03b39fcd51d3e"
 
 is-property@^1.0.0:
   version "1.0.2"
@@ -1176,15 +1156,6 @@ lex-parser@0.1.x, lex-parser@~0.1.3:
   version "0.1.4"
   resolved "https://registry.yarnpkg.com/lex-parser/-/lex-parser-0.1.4.tgz#64c4f025f17fd53bfb45763faeb16f015a747550"
 
-load-json-file@^2.0.0:
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/load-json-file/-/load-json-file-2.0.0.tgz#7947e42149af80d696cbf797bcaabcfe1fe29ca8"
-  dependencies:
-    graceful-fs "^4.1.2"
-    parse-json "^2.2.0"
-    pify "^2.0.0"
-    strip-bom "^3.0.0"
-
 load-source-map@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/load-source-map/-/load-source-map-1.0.0.tgz#318f49905ce8a709dfb7cc3f16f3efe3bcf1dd05"
@@ -1350,7 +1321,7 @@ minimist@^1.1.0, minimist@^1.2.0:
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/minimist/-/minimist-1.2.0.tgz#a35008b20f41383eec1fb914f4cd5df79a264284"
 
-mkdirp@0.5.1, "mkdirp@>=0.5 0", mkdirp@^0.5.1, mkdirp@~0.5.1:
+mkdirp@0.5.1, "mkdirp@>=0.5 0", mkdirp@~0.5.1:
   version "0.5.1"
   resolved "https://registry.yarnpkg.com/mkdirp/-/mkdirp-0.5.1.tgz#30057438eac6cf7f8c4767f38648d6697d75c903"
   dependencies:
@@ -1556,11 +1527,7 @@ oauth-sign@~0.8.1:
   version "0.8.2"
   resolved "https://registry.yarnpkg.com/oauth-sign/-/oauth-sign-0.8.2.tgz#46a6ab7f0aead8deae9ec0565780b7d4efeb9d43"
 
-object-assign@^4.1.0:
-  version "4.1.0"
-  resolved "https://registry.yarnpkg.com/object-assign/-/object-assign-4.1.0.tgz#7a3b3d0e98063d43f4c03f2e8ae6cd51a86883a0"
-
-object-assign@^4.1.1:
+object-assign@^4.1.0, object-assign@^4.1.1:
   version "4.1.1"
   resolved "https://registry.yarnpkg.com/object-assign/-/object-assign-4.1.1.tgz#2109adc7965887cfc05cbbd442cac8bfbb360863"
 
@@ -1625,12 +1592,6 @@ ordered-read-streams@^1.0.0:
     is-stream "^1.0.1"
     readable-stream "^2.0.1"
 
-parse-json@^2.2.0:
-  version "2.2.0"
-  resolved "https://registry.yarnpkg.com/parse-json/-/parse-json-2.2.0.tgz#f480f40434ef80741f8469099f8dea18f55a4dc9"
-  dependencies:
-    error-ex "^1.2.0"
-
 passport-jwt@^2.2.1:
   version "2.2.1"
   resolved "https://registry.yarnpkg.com/passport-jwt/-/passport-jwt-2.2.1.tgz#0e004c94071319d673d9d9bcfd1574a868011527"
@@ -1674,10 +1635,6 @@ pause@0.0.1:
 performance-now@^0.2.0:
   version "0.2.0"
   resolved "https://registry.yarnpkg.com/performance-now/-/performance-now-0.2.0.tgz#33ef30c5c77d4ea21c5a53869d91b56d8f2555e5"
-
-pify@^2.0.0:
-  version "2.3.0"
-  resolved "https://registry.yarnpkg.com/pify/-/pify-2.3.0.tgz#ed141a6ac043a849ea588498e7dca8b15330e90c"
 
 pinkie-promise@^2.0.0:
   version "2.0.1"
@@ -1969,9 +1926,9 @@ signal-exit@^3.0.0:
   version "3.0.2"
   resolved "https://registry.yarnpkg.com/signal-exit/-/signal-exit-3.0.2.tgz#b5fdc08f1287ea1178628e415e25132b73646c6d"
 
-simple-statistics@^3.0.0:
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/simple-statistics/-/simple-statistics-3.0.0.tgz#54b66d2655b2a21125600dc0d02be764a3a73a3d"
+simple-statistics@^4.1.0:
+  version "4.1.0"
+  resolved "https://registry.yarnpkg.com/simple-statistics/-/simple-statistics-4.1.0.tgz#9a9d4af9727a949f42085124eda8aae252ea93f4"
 
 sliced@0.0.5:
   version "0.0.5"
@@ -1981,21 +1938,11 @@ sliced@1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/sliced/-/sliced-1.0.1.tgz#0b3a662b5d04c3177b1926bea82b03f837a2ef41"
 
-slide@^1.1.5:
-  version "1.1.6"
-  resolved "https://registry.yarnpkg.com/slide/-/slide-1.1.6.tgz#56eb027d65b4d2dce6cb2e2d32c4d4afc9e1d707"
-
 sntp@1.x.x:
   version "1.0.9"
   resolved "https://registry.yarnpkg.com/sntp/-/sntp-1.0.9.tgz#6541184cc90aeea6c6e7b35e2659082443c66198"
   dependencies:
     hoek "2.x.x"
-
-sort-keys@^1.1.1:
-  version "1.1.2"
-  resolved "https://registry.yarnpkg.com/sort-keys/-/sort-keys-1.1.2.tgz#441b6d4d346798f1b4e49e8920adfba0e543f9ad"
-  dependencies:
-    is-plain-obj "^1.0.0"
 
 "source-map@>= 0.1.2", source-map@^0.5.6:
   version "0.5.6"
@@ -2116,10 +2063,6 @@ strip-ansi@^3.0.0, strip-ansi@^3.0.1:
   resolved "https://registry.yarnpkg.com/strip-ansi/-/strip-ansi-3.0.1.tgz#6a385fb8853d952d5ff05d0e8aaf94278dc63dcf"
   dependencies:
     ansi-regex "^2.0.0"
-
-strip-bom@^3.0.0:
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/strip-bom/-/strip-bom-3.0.0.tgz#2334c18e9c759f7bdd56fdef7e9ae3d588e68ed3"
 
 strip-json-comments@~1.0.4:
   version "1.0.4"
@@ -2341,24 +2284,6 @@ wide-align@^1.1.0:
 wrappy@1:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/wrappy/-/wrappy-1.0.2.tgz#b5243d8f3ec1aa35f1364605bc0d1036e30ab69f"
-
-write-file-atomic@^1.1.2:
-  version "1.3.3"
-  resolved "https://registry.yarnpkg.com/write-file-atomic/-/write-file-atomic-1.3.3.tgz#831dd22d491bdc135180bb996a0eb3f8bf587791"
-  dependencies:
-    graceful-fs "^4.1.11"
-    imurmurhash "^0.1.4"
-    slide "^1.1.5"
-
-write-json-file@^2.0.0:
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/write-json-file/-/write-json-file-2.0.0.tgz#0eaec981fcf9288dbc2806cbd26e06ab9bdca4ed"
-  dependencies:
-    graceful-fs "^4.1.2"
-    mkdirp "^0.5.1"
-    pify "^2.0.0"
-    sort-keys "^1.1.1"
-    write-file-atomic "^1.1.2"
 
 ws@^2.2.3:
   version "2.3.1"
