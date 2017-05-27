@@ -49,7 +49,7 @@ module.exports = {
               'type': 'object',
               'properties': {
                 'value': {
-                  'type': 'string'
+                  'type': 'number'
                 },
                 'createdAt': {
                   'type': 'string'

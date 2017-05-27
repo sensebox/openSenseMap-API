@@ -615,7 +615,7 @@ describe('openSenseMap API', function () {
                 expect(sensor.lastMeasurement.createdAt).to.exist;
                 const createdAt = moment.utc(sensor.lastMeasurement.createdAt);
                 expect(createdAt.diff(submitTime)).to.be.below(1000);
-                expect(sensor.lastMeasurement.value).to.be.equal('312.1');
+                expect(sensor.lastMeasurement.value).to.be.equal(312.1);
               }
             });
           });
@@ -643,7 +643,7 @@ describe('openSenseMap API', function () {
                 expect(sensor.lastMeasurement.createdAt).to.exist;
                 const createdAt = moment.utc(sensor.lastMeasurement.createdAt);
                 expect(createdAt.diff(submitTime)).to.be.equal(0);
-                expect(sensor.lastMeasurement.value).to.be.equal('123.4');
+                expect(sensor.lastMeasurement.value).to.be.equal(123.4);
               }
             });
           });
