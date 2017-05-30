@@ -217,6 +217,44 @@ describe('mails', function () {
       });
   });
 
+  it('should have sent senseBox:home Feinstaub Addon registration mail with the sketch as attachment', function () {
+    const mail = findMail(mails, 'feinstaubuser@email', 'Your senseBox registration');
+    expect(mail).to.exist;
+    expect(mail.MIME.Parts).to.not.be.undefined;
+    expect(mail.MIME.Parts[1].Body).to.not.be.undefined;
+    const ino = mimelib.decodeBase64(mail.MIME.Parts[1].Body);
+    const mailbody = $.load(mimelib.decodeQuotedPrintable(mail.MIME.Parts[0].Body));
+    let boxId;
+    const links = mailbody('a');
+    links.each(function (_, link) {
+      const href = $(link).attr('href');
+      if (href.includes('explore')) {
+        boxId = href.split('/').pop();
+      }
+    });
+
+    expect(boxId).to.exist;
+
+    // sign in to get jwt
+    return chakram.post(`${BASE_URL}/users/sign-in`, { email: 'feinstaubuser@email', password: '99987654321' })
+      .then(function (response) {
+        expect(response).to.have.status(200);
+        expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
+        expect(response.body.token).to.exist;
+
+        const jwt = response.body.token;
+
+        return chakram.get(`${BASE_URL}/boxes/${boxId}/script`, { headers: { 'Authorization': `Bearer ${jwt}` } });
+      })
+      .then(function (response) {
+        expect(response).to.have.status(200);
+        expect(response.body).not.to.be.empty;
+        expect(response.body).to.equal(ino);
+
+        return chakram.wait();
+      });
+  });
+
   it('should allow to confirm a changed email address', function () {
     let token;
     const mail = findMailAndParseBody(mails, 'new-email@email.www', 'openSenseMap E-Mail address confirmation');
