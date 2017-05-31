@@ -99,7 +99,7 @@ int printCsvToStream(Print &stream) {
       len = len + printHexToStream(sensors[i].ID, 12, stream);
       len = len + stream.print(",");
       //do not print digits for illuminance und uv-intensity
-      if (i < 3) len = len + stream.println(values[i]);
+      if (i < 3 || i > 4) len = len + stream.println(values[i],1);
       else len = len + stream.println(values[i],0);
     }
   }
