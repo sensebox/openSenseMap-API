@@ -314,4 +314,52 @@ describe('mails', function () {
         return chakram.wait();
       });
   });
+
+  it('should have sent the new sketch after adding the feinstaub addon as attachment', function () {
+    const mail = findMail(mails, 'feinstaubuser_put_addon@email', 'Your new Sketch');
+    expect(mail).to.exist;
+    expect(mail.MIME.Parts).to.not.be.undefined;
+    expect(mail.MIME.Parts[1].Body).to.not.be.undefined;
+    const ino = mimelib.decodeBase64(mail.MIME.Parts[1].Body);
+    const mailbody = $.load(mimelib.decodeQuotedPrintable(mail.MIME.Parts[0].Body));
+    let boxId;
+    const paragraphs = mailbody('p');
+    paragraphs.each(function (_, p) {
+      const text = $(p).text();
+      if (text.includes('Your senseBox ID is:')) {
+        boxId = text.slice(-24);
+      }
+    });
+
+    expect(boxId).to.exist;
+
+    const liTexts = [];
+    mailbody('li').each(function (_, li) {
+      liTexts.push($(li).text().slice(0, 15));
+    });
+    console.log(liTexts);
+
+    expect(liTexts).to.include.members(['PM2.5 (SDS 011)', 'PM10 (SDS 011):']);
+
+    // sign in to get jwt
+    return chakram.post(`${BASE_URL}/users/sign-in`, { email: 'feinstaubuser_put_addon@email', password: '99987654321' })
+      .then(function (response) {
+        expect(response).to.have.status(200);
+        expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
+        expect(response.body.token).to.exist;
+
+        const jwt = response.body.token;
+
+        return chakram.get(`${BASE_URL}/boxes/${boxId}/script`, { headers: { 'Authorization': `Bearer ${jwt}` } });
+      })
+      .then(function (response) {
+        expect(response).to.have.status(200);
+        expect(response.body).not.to.be.empty;
+        expect(response.body).to.equal(ino);
+
+        return chakram.wait();
+      });
+  });
+
+
 });
