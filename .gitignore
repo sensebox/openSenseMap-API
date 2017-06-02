@@ -14,8 +14,6 @@ dump
 
 npm-debug.log
 node_modules
-files/
-!files/template.ino
 
 config/index.js
 

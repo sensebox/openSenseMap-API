@@ -1,19 +1,49 @@
 /*
   senseBox Home - Citizen Sensingplatform
-  Version: 2.4
-  Date: 2016-Mar-06
+  WiFi Version: 1.3
+  Date: 2017-05-31
   Homepage: https://www.sensebox.de https://www.opensensemap.org
   Author: Institute for Geoinformatics, University of Muenster
-  Note: Sketch for senseBox:home
+  Note: Sketch for senseBox:home WiFi with dust particle upgrade
   Email: support@sensebox.de
+  Code is in the public domain.
 */
 
-#include <Wire.h>
-#include "HDC100X.h"
+#include <avr/wdt.h>
 #include "BMP280.h"
-#include <Makerblog_TSL45315.h>
+#include <Wire.h>
+#include <HDC100X.h>
 #include <SPI.h>
-#include <Ethernet.h>
+#include <WiFi101.h>
+#include <Makerblog_TSL45315.h>
+#include <SDS011-select-serial.h>
+
+//Custom WiFi Parameters
+const char ssid[] = "";       //  your network SSID (name)
+const char pass[] = "";       // your network password
+
+bool debug = 0;
+
+//Network settings
+@-- tmpl postDomain // const char *server = "";
+uint8_t status = WL_IDLE_STATUS;
+WiFiClient client;
+SDS011 my_sds(Serial);
+
+//Sensor Instances
+Makerblog_TSL45315 TSL = Makerblog_TSL45315(TSL45315_TIME_M4);
+HDC100X HDC(0x43);
+BMP280 BMP;
+
+//measurement variables
+#define UV_ADDR 0x38
+#define IT_1   0x1
+double tempBaro, pressure;
+char result;
+float pm10,pm25;
+int error;
+
+const unsigned int postingInterval = 60000;
 
 typedef struct sensor {
   const uint8_t ID[12];
@@ -24,84 +54,9 @@ uint8_t sensorsIndex = 0;
 @-- tmpl ctSensors
 
 @-- tmpl IDs
-
 uint8_t contentLength = 0;
+
 float values[NUM_SENSORS];
-
-//Configure static IP setup (only needed if DHCP is disabled)
-IPAddress myIp(192, 168, 0, 42);
-IPAddress myDns(8, 8, 8, 8);
-IPAddress myGateway(192, 168, 0, 177);
-IPAddress mySubnet(255, 255, 255, 0);
-
-//Ethernet configuration
-byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
-@-- tmpl postDomain // const char *server = "";
-EthernetClient client;
-
-//Load sensors
-Makerblog_TSL45315 TSL = Makerblog_TSL45315(TSL45315_TIME_M4);
-HDC100X HDC(0x43);
-BMP280 BMP;
-
-//measurement variables
-float temperature = 0;
-double tempBaro, pressure;
-int count = 1;
-char result;
-#define UV_ADDR 0x38
-#define IT_1   0x1
-
-const unsigned int postingInterval = 60000;
-
-void setup() {
-  sleep(2000);
-  Serial.begin(9600);
-  Serial.println("senseBox Home software version 2.4");
-  Serial.println();
-  sleep(1000);
-  Serial.print("Initializing DHCP connection...");
-  if (Ethernet.begin(mac) == 0) {
-    Serial.println("failed! Trying static IP setup.");
-    Ethernet.begin(mac, myIp, myDns, myGateway, mySubnet);
-    //@TODO: Add reference to support site for network settings
-  }
-  else {
-    Serial.println("done!");
-  }
-  sleep(1000);
-  Serial.print("Initializing sensors...");
-  Wire.begin();
-  Wire.beginTransmission(UV_ADDR);
-  Wire.write((IT_1 << 2) | 0x02);
-  Wire.endTransmission();
-  sleep(500);
-  HDC.begin(HDC100X_TEMP_HUMI, HDC100X_14BIT, HDC100X_14BIT, DISABLE);
-  TSL.begin();
-  BMP.begin();
-  BMP.setOversampling(4);
-  Serial.println("done!");
-  temperature = HDC.getTemp();
-  Serial.println("Starting loop.\n");
-}
-
-void loop() {
-  addValue(HDC.getTemp());
-  sleep(200);
-  addValue(HDC.getHumi());
-  result = BMP.startMeasurment();
-  if (result != 0) {
-    sleep(result);
-    result = BMP.getTemperatureAndPressure(tempBaro, pressure);
-  }
-  addValue(pressure);
-  addValue(TSL.readLux());
-  addValue(getUV());
-
-  submitValues();
-
-  sleep(postingInterval);
-}
 
 void addValue(const float &value) {
   values[sensorsIndex] = value;
@@ -187,7 +142,10 @@ void waitForResponse()
   }
   while (repeat);
 
-  Serial.print("Server Response: "); Serial.print(response);
+  if (debug) {
+    Serial.print("Server Response: ");
+    Serial.print(response);
+  }
 
   client.flush();
   client.stop();
@@ -196,7 +154,7 @@ void waitForResponse()
 void submitValues() {
   // close any connection before send a new request.
   // This will free the socket on the WiFi shield
-  Serial.println("__________________________\n");
+  if (debug) Serial.println("__________________________\n");
   if (client.connected()) {
     client.stop();
     sleep(1000);
@@ -204,19 +162,17 @@ void submitValues() {
   // if there's a successful connection:
   if (client.connect(server, 80)) {
 
-    Serial.println("connecting...");
+    if (debug) Serial.println("connecting...");
     // send the HTTP POST request:
 
     client.print(F("POST /boxes/"));
     printHexToStream(SENSEBOX_ID, 12, client);
     client.println(F("/data HTTP/1.1"));
 
-    // !!!!! DO NOT REMOVE !!!!!
     // !!!!! NICHT LÖSCHEN !!!!!
     // print once to Serial to get the content-length
     int contentLen = printCsvToStream(Serial);
     // !!!!! DO NOT REMOVE !!!!!
-    // !!!!! NICHT LÖSCHEN !!!!!
 
     // Send the required header parameters
     client.print(F("Host: "));
@@ -226,7 +182,7 @@ void submitValues() {
     client.println();
     printCsvToStream(client);
     client.println();
-    Serial.println("done!");
+    if (debug) Serial.println("done!");
 
     waitForResponse();
 
@@ -236,8 +192,78 @@ void submitValues() {
   }
   else {
     // if you couldn't make a connection:
-    Serial.println("connection failed. Restarting System.");
+    if (debug) Serial.println("connection failed. Restarting System.");
     sleep(5000);
     asm volatile (" jmp 0");
   }
+}
+
+void setup() {
+  //Initialize serial and wait for port to open:
+  Serial.begin(9600);
+  //Enable Wifi Shield
+  pinMode(4, INPUT);
+  digitalWrite(4, HIGH);
+  sleep(2000);
+  //Check WiFi Shield status
+  if (WiFi.status() == WL_NO_SHIELD) {
+    if (debug) Serial.println("WiFi shield not present");
+    // don't continue:
+    while (true);
+  }
+  // attempt to connect to Wifi network:
+  while ( status != WL_CONNECTED) {
+    if (debug) Serial.print("Attempting to connect to SSID: ");
+    if (debug) Serial.println(ssid);
+    // Connect to WPA/WPA2 network. Change this line if using open or WEP network
+    status = WiFi.begin(ssid, pass);
+    // wait 60 seconds for connection:
+    if (debug) {
+      Serial.println();
+      Serial.print("Waiting 10 seconds for connection...");
+    }
+    sleep(10000);
+    if (debug) Serial.println("done.");
+  }
+  if (debug) Serial.print("Initializing sensors...");
+  Wire.begin();
+  Wire.beginTransmission(UV_ADDR);
+  Wire.write((IT_1 << 2) | 0x02);
+  Wire.endTransmission();
+  sleep(500);
+  HDC.begin(HDC100X_TEMP_HUMI, HDC100X_14BIT, HDC100X_14BIT, DISABLE);
+  TSL.begin();
+  BMP.begin();
+  BMP.setOversampling(4);
+  if (debug) {
+    Serial.println("done!");
+    Serial.println("Starting loop in 30 seconds.");
+  }
+  HDC.getTemp();
+  sleep(30000);
+}
+
+void loop() {
+  addValue(HDC.getTemp());
+  sleep(200);
+  addValue(HDC.getHumi());
+  result = BMP.startMeasurment();
+  if (result != 0) {
+    sleep(result);
+    result = BMP.getTemperatureAndPressure(tempBaro, pressure);
+  }else pressure = 0;
+  addValue(pressure);
+  addValue(TSL.readLux());
+  addValue(getUV());
+  error = my_sds.read(&pm25,&pm10);
+  if (error) {
+    pm25 = 0;
+    pm10 = 0;
+  }
+  addValue(pm25);
+  addValue(pm10);
+
+  submitValues();
+
+  sleep(postingInterval);
 }

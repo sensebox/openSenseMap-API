@@ -1,11 +1,12 @@
 /*
   senseBox Home - Citizen Sensingplatform
-  Version: 2.4
-  Date: 2016-Mar-06
+  Version: 2.5
+  Date: 2016-May-24
   Homepage: https://www.sensebox.de https://www.opensensemap.org
   Author: Institute for Geoinformatics, University of Muenster
-  Note: Sketch for senseBox:home
+  Note: Sketch for senseBox:home with dust particle upgrade
   Email: support@sensebox.de
+  Code is in the public domain.
 */
 
 #include <Wire.h>
@@ -14,6 +15,9 @@
 #include <Makerblog_TSL45315.h>
 #include <SPI.h>
 #include <Ethernet.h>
+#include <SDS011-select-serial.h>
+
+bool debug = 0;
 
 typedef struct sensor {
   const uint8_t ID[12];
@@ -43,6 +47,7 @@ EthernetClient client;
 Makerblog_TSL45315 TSL = Makerblog_TSL45315(TSL45315_TIME_M4);
 HDC100X HDC(0x43);
 BMP280 BMP;
+SDS011 my_sds(Serial);
 
 //measurement variables
 float temperature = 0;
@@ -51,26 +56,26 @@ int count = 1;
 char result;
 #define UV_ADDR 0x38
 #define IT_1   0x1
+float pm10,pm25;
+int error;
 
 const unsigned int postingInterval = 60000;
 
 void setup() {
   sleep(2000);
   Serial.begin(9600);
-  Serial.println("senseBox Home software version 2.4");
-  Serial.println();
   sleep(1000);
-  Serial.print("Initializing DHCP connection...");
+  if(debug) Serial.print("Initializing DHCP connection...");
   if (Ethernet.begin(mac) == 0) {
-    Serial.println("failed! Trying static IP setup.");
+    if(debug) Serial.println("failed! Trying static IP setup.");
     Ethernet.begin(mac, myIp, myDns, myGateway, mySubnet);
     //@TODO: Add reference to support site for network settings
   }
   else {
-    Serial.println("done!");
+    if(debug) Serial.println("done!");
   }
   sleep(1000);
-  Serial.print("Initializing sensors...");
+  if(debug) Serial.print("Initializing sensors...");
   Wire.begin();
   Wire.beginTransmission(UV_ADDR);
   Wire.write((IT_1 << 2) | 0x02);
@@ -80,9 +85,10 @@ void setup() {
   TSL.begin();
   BMP.begin();
   BMP.setOversampling(4);
-  Serial.println("done!");
+  if(debug) Serial.println("done!");
   temperature = HDC.getTemp();
-  Serial.println("Starting loop.\n");
+  if(debug) Serial.println("Starting loop in 30 seconds.\n");
+  sleep(30000); //heat-up time for dust particle sensor
 }
 
 void loop() {
@@ -94,9 +100,17 @@ void loop() {
     sleep(result);
     result = BMP.getTemperatureAndPressure(tempBaro, pressure);
   }
+  else pressure = 0;
   addValue(pressure);
   addValue(TSL.readLux());
   addValue(getUV());
+  error = my_sds.read(&pm25,&pm10);
+  if (error) {
+    pm25 = 0;
+    pm10 = 0;
+  }
+  addValue(pm10);
+  addValue(pm25);
 
   submitValues();
 
@@ -187,7 +201,7 @@ void waitForResponse()
   }
   while (repeat);
 
-  Serial.print("Server Response: "); Serial.print(response);
+  if(debug) {Serial.print("Server Response: "); Serial.print(response);}
 
   client.flush();
   client.stop();
@@ -196,7 +210,7 @@ void waitForResponse()
 void submitValues() {
   // close any connection before send a new request.
   // This will free the socket on the WiFi shield
-  Serial.println("__________________________\n");
+  if(debug) Serial.println("__________________________\n");
   if (client.connected()) {
     client.stop();
     sleep(1000);
@@ -204,19 +218,17 @@ void submitValues() {
   // if there's a successful connection:
   if (client.connect(server, 80)) {
 
-    Serial.println("connecting...");
+    if(debug) Serial.println("connecting...");
     // send the HTTP POST request:
 
     client.print(F("POST /boxes/"));
     printHexToStream(SENSEBOX_ID, 12, client);
     client.println(F("/data HTTP/1.1"));
 
-    // !!!!! DO NOT REMOVE !!!!!
     // !!!!! NICHT LÖSCHEN !!!!!
     // print once to Serial to get the content-length
     int contentLen = printCsvToStream(Serial);
     // !!!!! DO NOT REMOVE !!!!!
-    // !!!!! NICHT LÖSCHEN !!!!!
 
     // Send the required header parameters
     client.print(F("Host: "));
@@ -226,7 +238,7 @@ void submitValues() {
     client.println();
     printCsvToStream(client);
     client.println();
-    Serial.println("done!");
+    if(debug) Serial.println("done!");
 
     waitForResponse();
 
@@ -236,7 +248,7 @@ void submitValues() {
   }
   else {
     // if you couldn't make a connection:
-    Serial.println("connection failed. Restarting System.");
+    if(debug)Serial.println("connection failed. Restarting System.");
     sleep(5000);
     asm volatile (" jmp 0");
   }

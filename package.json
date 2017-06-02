@@ -36,7 +36,7 @@
   "scripts": {
     "start": "node app.js",
     "test": "node node_modules/.bin/mocha tests/tests.js",
-    "pretest": "node tests/waitForDb"
+    "pretest": "node tests/waitForHttp"
   },
   "repository": {
     "type": "git",
