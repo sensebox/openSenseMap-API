@@ -1290,5 +1290,7 @@ describe('openSenseMap API', function () {
 
 });
 
+require('./feinstaubaddon_tests');
+
 require('./luftdaten_tests');
 require('./mail_tests');

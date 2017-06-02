@@ -1,6 +1,5 @@
 const randomGeojson = require('randomgeojson');
-module.exports = function (opts = { model: 'homeEthernet' }) {
-  const { bbox, model } = opts;
+module.exports = function ({ bbox, model, sensors } = {}) {
   const randomGeojsonOptions = { featureTypes: ['Point'] };
   if (bbox) {
     randomGeojsonOptions.bbox = bbox;
@@ -8,7 +7,12 @@ module.exports = function (opts = { model: 'homeEthernet' }) {
     randomGeojsonOptions.bbox = [-179, -89, 179, 89];
   }
 
-  return {
+
+  if (!sensors && !model) {
+    model = 'homeEthernet';
+  }
+
+  const box = {
     'name': 'senseBox',
     'model': model,
     'boxType': 'fixed',
@@ -25,4 +29,10 @@ module.exports = function (opts = { model: 'homeEthernet' }) {
       'connectionOptions': ''
     }
   };
+
+  if (sensors) {
+    box.sensors = sensors;
+  }
+
+  return box;
 };
