@@ -10,7 +10,7 @@ script: ./utils/deploy-docs.sh
 env:
   global:
     - GITHUB_REPO: "sensebox/openSenseMap-API"
-    - secure: "C8a0UNmemknEtnybR7DpDladB8DtJJ4EM0gi1HlusBOGoDjE7Xf07JEeQZJSOma/hM3LlaU1gQiwbSkhiwCUD1qb7fxjBvc4KGR6zkCoXG8Zr3Y/o9Y4y03Fld+ZgUXn8HSsEbxjRPfPHGFyk2MX6TCddAeqzHL+BxmObehF1FU="
+    - secure: "CZsR5GyWLgOpGDo3Yw622/oOjXJdJ8yJ3NEzQbyILqqfLCVnge9ee0/VIrevJB4rvI5Fhn0/pil3s8dGS9r6Ljg4PCao94By7M/o0gT6kkvMLFyTpwpJnPij0IYntO0kZVPMq8NYTM9VkfNawhnKginyTX1HJUsSmov6Oaz/ZlY="
 
 branches:
   only:
