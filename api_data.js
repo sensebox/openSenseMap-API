@@ -482,29 +482,8 @@ define({ "api": [
             "group": "RequestBody",
             "type": "String",
             "optional": false,
-            "field": "description",
-            "description": "<p>the updated description of this senseBox.</p>"
-          },
-          {
-            "group": "RequestBody",
-            "type": "String",
-            "optional": false,
-            "field": "image",
-            "description": "<p>the updated image of this senseBox encoded as base64 data uri.</p>"
-          },
-          {
-            "group": "RequestBody",
-            "type": "String",
-            "optional": false,
             "field": "name",
             "description": "<p>the name of this senseBox.</p>"
-          },
-          {
-            "group": "RequestBody",
-            "type": "String",
-            "optional": false,
-            "field": "grouptag",
-            "description": "<p>the grouptag of this senseBox.</p>"
           },
           {
             "group": "RequestBody",
@@ -520,23 +499,9 @@ define({ "api": [
           {
             "group": "RequestBody",
             "type": "String",
-            "allowedValues": [
-              "\"fixed\""
-            ],
             "optional": false,
-            "field": "boxType",
-            "description": "<p>the type of the senseBox. Currently only 'fixed' is supported.</p>"
-          },
-          {
-            "group": "RequestBody",
-            "type": "String",
-            "allowedValues": [
-              "\"homeEthernet\"",
-              "\"homeWifi\""
-            ],
-            "optional": false,
-            "field": "model",
-            "description": "<p>specify the model if you want to use a predefined senseBox model.</p>"
+            "field": "grouptag",
+            "description": "<p>the grouptag of this senseBox.</p>"
           },
           {
             "group": "RequestBody",
@@ -550,7 +515,28 @@ define({ "api": [
             "type": "Location",
             "optional": false,
             "field": "loc",
-            "description": "<p>the location of this senseBox. Must be a GeoJSON Point Feature. (RFC7946)</p>"
+            "description": "<p>the location of this senseBox. Specify as object containing the properties <code>lat</code> and <code>lng</code></p>"
+          },
+          {
+            "group": "RequestBody",
+            "type": "String",
+            "optional": false,
+            "field": "description",
+            "description": "<p>the updated description of this senseBox.</p>"
+          },
+          {
+            "group": "RequestBody",
+            "type": "String",
+            "optional": false,
+            "field": "image",
+            "description": "<p>the updated image of this senseBox encoded as base64 data uri.</p>"
+          },
+          {
+            "group": "RequestBody",
+            "type": "Object",
+            "optional": false,
+            "field": "addons",
+            "description": "<p>allows to add addons to the box. Submit as Object with key <code>add</code> and the desired addon as value like <code>{&quot;add&quot;:&quot;feinstaub&quot;}</code></p>"
           }
         ],
         "A single sensor for the nested Sensor parameter": [
