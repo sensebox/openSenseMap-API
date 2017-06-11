@@ -260,8 +260,8 @@ void loop() {
     pm25 = 0;
     pm10 = 0;
   }
-  addValue(pm25);
   addValue(pm10);
+  addValue(pm25);
 
   submitValues();
 
