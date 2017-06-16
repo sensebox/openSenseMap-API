@@ -149,6 +149,7 @@ describe('openSenseMap API luftdaten.info devices', function () {
         { title: 'rel. Luftfeuchte draußen', sensorType: 'DHT22', unit: '%' },
         { title: 'Kellertemperatur', sensorType: 'BMP180', unit: '°C' },
         { title: 'Luftdruck Keller', sensorType: 'BMP180', unit: 'Pa' },
+        { title: 'Wifi Signal', sensorType: 'Wifi', unit: 'dBm' }
       ]
     });
 
@@ -309,19 +310,23 @@ describe('openSenseMap API luftdaten.info devices', function () {
         return chakram.get(`${BASE_URL}/boxes/${boxidtouse}`);
       })
       .then(function (response) {
+        console.log(response.body.sensors);
         expect(response).to.have.json('sensors', function (sensors) {
           sensors.forEach(function (sensor) {
             if (sensor.title === 'Temperatur' && sensor.sensorType === 'DHT22') {
               expect(sensor.lastMeasurement.value).to.equal('24.30');
             }
-            if (sensor.title === 'Temperatur' && sensor.sensorType === 'BMP180') {
+            if (sensor.title === 'Kellertemperatur' && sensor.sensorType === 'BMP180') {
               expect(sensor.lastMeasurement.value).to.equal('26.00');
             }
             if (sensor.title === 'rel. Luftfeuchte' && sensor.sensorType === 'DHT22') {
               expect(sensor.lastMeasurement.value).to.equal('63.00');
             }
-            if (sensor.title === 'Luftdruck' && sensor.sensorType === 'BMP180') {
+            if (sensor.title === 'Luftdruck Keller' && sensor.sensorType === 'BMP180') {
               expect(sensor.lastMeasurement.value).to.equal('100590');
+            }
+            if (sensor.title === 'Wifi Signal' && sensor.sensorType === 'Wifi') {
+              expect(sensor.lastMeasurement.value).to.equal('-64');
             }
 
             expect(sensor.lastMeasurement).not.to.be.null;
