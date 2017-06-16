@@ -10,6 +10,7 @@ const isProdEnv = function isProdEnv () {
 const config = {
   targetFolder: './usersketches/',
   imageFolder: './userimages/',
+  logFolder: './logs/',
   dbhost: 'localhost',
   dbport: 27017,
   dbuser: 'senseboxapiuser',

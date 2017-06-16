@@ -337,7 +337,6 @@ describe('mails', function () {
     mailbody('li').each(function (_, li) {
       liTexts.push($(li).text().slice(0, 15));
     });
-    console.log(liTexts);
 
     expect(liTexts).to.include.members(['PM2.5 (SDS 011)', 'PM10 (SDS 011):']);
 

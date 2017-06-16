@@ -6,59 +6,22 @@
 'use strict';
 
 const restify = require('restify'),
-  Stream = require('stream'),
   utils = require('./lib/utils'),
   db = require('./lib/db'),
   requestUtils = require('./lib/requestUtils'),
   Box = require('./lib/models').Box,
   routes = require('./lib/routes'),
-  passport = require('passport');
+  passport = require('passport'),
+  log = require('./lib/log');
 
 const { config, Honeybadger } = utils;
 
 require('opbeat').start({ active: config.isProdEnv() });
 
-// Logging
-const consoleStream = new Stream();
-consoleStream.writable = true;
-consoleStream.write = function (obj) {
-  if (obj.req) {
-    console.log(obj.time, obj.req.remoteAddress, obj.req.method, obj.req.url);
-  } else if (obj.msg) {
-    console.log(obj.time, obj.msg);
-  } else {
-    //console.log(obj.time, obj);
-  }
-};
-
-const Logger = require('bunyan'),
-  reqlog = new Logger.createLogger({
-    name: 'OSeM-API',
-    streams: [
-      { level: 'debug', type: 'raw', stream: consoleStream }
-    ],
-    serializers: {
-      err: Logger.stdSerializers.err,
-      req: Logger.stdSerializers.req,
-      res: Logger.stdSerializers.res
-    }
-  }),
-  log = new Logger.createLogger({
-    name: 'OSeM-API',
-    streams: [
-      { level: 'debug', type: 'raw', stream: consoleStream }
-    ],
-    serializers: {
-      err: Logger.stdSerializers.err,
-      req: Logger.stdSerializers.req,
-      res: Logger.stdSerializers.res
-    }
-  });
-
 const server = restify.createServer({
   name: `opensensemap-api (${utils.softwareRevision})`,
   version: '0.0.1',
-  log: reqlog
+  log: log
 });
 
 // We're using caddy as proxy. It supplies a 'X-Forwarded-Proto' header
@@ -105,21 +68,20 @@ server.on('MethodNotAllowed', unknownMethodHandler);
 
 db.connect().then(function () {
   server.listen(config.port, function () {
-    console.log(`${new Date().toISOString()}: ${server.name} listening at ${server.url}`);
+    log.info(`${server.name} listening at ${server.url}`);
     utils.postToSlack(`openSenseMap API started. Revision: ${utils.softwareRevision}`);
     Box.connectMQTTBoxes();
   });
 })
-.catch(function (err) {
-  console.log(`${new Date().toISOString()}: Couldn't connect to MongoDB. Error: ${err}
-  Exiting...`);
-  process.exit(1);
-});
+  .catch(function (err) {
+    log.fatal(err, `Couldn't connect to MongoDB.
+    Exiting...`);
+    process.exit(1);
+  });
 
 server.on('uncaughtException', function (req, res, route, err) {
   Honeybadger.notify(err);
   log.error('Uncaught error', err);
-  console.log(err.stack);
 
   // check if headers were sent..
   if (res._headerSent === true) {

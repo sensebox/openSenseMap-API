@@ -55,7 +55,7 @@ module.exports = {
     'space-infix-ops': [
       'error'
     ],
-    'no-console': 'off',
+    'no-console': 'error',
     'no-spaced-func': [
       'error'
     ],
