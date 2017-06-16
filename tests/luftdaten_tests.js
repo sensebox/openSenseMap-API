@@ -310,7 +310,6 @@ describe('openSenseMap API luftdaten.info devices', function () {
         return chakram.get(`${BASE_URL}/boxes/${boxidtouse}`);
       })
       .then(function (response) {
-        console.log(response.body.sensors);
         expect(response).to.have.json('sensors', function (sensors) {
           sensors.forEach(function (sensor) {
             if (sensor.title === 'Temperatur' && sensor.sensorType === 'DHT22') {
