@@ -58,17 +58,6 @@ const config = {
   isProdEnv
 };
 
-// set composite config keys
-if (config.api_url === '') {
-  config.api_url = `${config.api_protocol}://${config.api_base_domain}`;
-}
-if (config.mailer_origin === '') {
-  config.mailer_origin = `${config.api_protocol}://${config.api_base_domain}`;
-}
-if (config.jwt_issuer === '') {
-  config.jwt_issuer = `${config.api_protocol}://${config.api_base_domain}`;
-}
-
 let env_has_dbconnectionstring = false;
 for (const envKey in process.env) {
   if (envKey.indexOf('OSEM_') === 0) {
@@ -86,6 +75,17 @@ for (const envKey in process.env) {
 
 if (env_has_dbconnectionstring === false) {
   config.dbconnectionstring = `mongodb://${config.dbuser}:${config.dbuserpass}@${config.dbhost}:${config.dbport}/${config.dbdb}?authSource=${config.dbauthsource}`;
+}
+
+// set composite config keys
+if (config.api_url === '') {
+  config.api_url = `${config.api_protocol}://${config.api_base_domain}`;
+}
+if (config.mailer_origin === '') {
+  config.mailer_origin = `${config.api_protocol}://${config.api_base_domain}`;
+}
+if (config.jwt_issuer === '') {
+  config.jwt_issuer = `${config.api_protocol}://${config.api_base_domain}`;
 }
 
 // freeze config
