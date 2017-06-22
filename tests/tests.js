@@ -21,7 +21,7 @@ const BASE_URL = 'http://localhost:8000',
   custom_valid_sensebox = require('./data/custom_valid_sensebox');
 
 describe('openSenseMap API', function () {
-  let jwt, jwt2, refreshToken;
+  let jwt, jwt2, refreshToken, refreshToken2;
 
   describe('/users', function () {
     it('should allow to register an user via POST', function () {
@@ -134,6 +134,7 @@ describe('openSenseMap API', function () {
           expect(response.body.token).to.exist;
 
           jwt2 = response.body.token;
+          refreshToken2 = response.body.refreshToken;
 
           return chakram.wait();
         });
@@ -265,6 +266,15 @@ describe('openSenseMap API', function () {
           expect(response.body.token).to.exist;
 
           jwt2 = response.body.token;
+
+          return chakram.wait();
+        });
+    });
+
+    it('should deny to request a fresh jwt using refresh token after changing the password', function () {
+      return chakram.post(`${BASE_URL}/users/refresh-auth`, { 'token': refreshToken2 })
+        .then(function (response) {
+          expect(response).to.have.status(403);
 
           return chakram.wait();
         });
@@ -1209,9 +1219,9 @@ describe('openSenseMap API', function () {
           return new Promise(function (resolve) {
             setTimeout(resolve, 500);
           })
-          .then(function () {
-            return chakram.get(`${BASE_URL}/boxes/${boxIds[1]}`);
-          });
+            .then(function () {
+              return chakram.get(`${BASE_URL}/boxes/${boxIds[1]}`);
+            });
         })
         .then(function (response) {
           expect(response).to.have.status(200);
