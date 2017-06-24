@@ -1209,6 +1209,19 @@ describe('openSenseMap API', function () {
         });
     });
 
+    it('should allow to unset the grouptag and description of the box via PUT', function () {
+      const update_payload = { grouptag: '', description: '' };
+
+      return chakram.put(`${BASE_URL}/boxes/${boxIds[1]}`, update_payload, { headers: { 'Authorization': `Bearer ${jwt2}` } })
+        .then(function (response) {
+          expect(response).to.have.status(200);
+          expect(response.body.data.grouptag).to.be.undefined;
+          expect(response.body.data.description).to.be.undefined;
+
+          return chakram.wait();
+        });
+    });
+
     it('should accept measurements through mqtt', function () {
       const submitTime = moment.utc();
 
