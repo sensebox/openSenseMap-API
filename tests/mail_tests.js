@@ -367,7 +367,6 @@ describe('mails', function () {
     let hasLink = false;
     links.each(function (_, link) {
       const href = $(link).attr('href');
-      console.log(href);
       if (href.includes('luftdaten_feinstaub.html')) {
         hasLink = true;
       }
