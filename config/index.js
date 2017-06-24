@@ -36,7 +36,7 @@ const config = {
   mailer_cert: '',
   mailer_key: '',
   mailer_ca: '',
-  mailer_origin: '', // generated if not set from api_protocol and api_base_domain
+  mailer_origin: '', // set to the address where your frontend runs. for example: https://opensensemap.org
 
   slack_url: '', // for slack integration
 
@@ -80,9 +80,6 @@ if (env_has_dbconnectionstring === false) {
 // set composite config keys
 if (config.api_url === '') {
   config.api_url = `${config.api_protocol}://${config.api_base_domain}`;
-}
-if (config.mailer_origin === '') {
-  config.mailer_origin = `${config.api_protocol}://${config.api_base_domain}`;
 }
 if (config.jwt_issuer === '') {
   config.jwt_issuer = `${config.api_protocol}://${config.api_base_domain}`;
