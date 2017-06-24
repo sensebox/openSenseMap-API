@@ -12,9 +12,9 @@ const BASE_URL = 'http://localhost:8000',
   valid_user = require('./data/valid_user');
 
 const findMail = function findMail (mails, address, subject) {
-  return mails[mails.findIndex(function (item) {
+  return mails.reverse().find(function (item) {
     return (item.Raw.To[0] === address && item.Content.Headers.Subject.includes(subject));
-  })];
+  });
 };
 
 const findMailAndParseBody = function findMailAndParseBody (mails, address, subject) {
@@ -360,5 +360,19 @@ describe('mails', function () {
       });
   });
 
+  it('should have sent special luftdaten info welcome mail', function () {
+    const mail = findMailAndParseBody(mails, 'luftdaten@email', 'Your registration on openSenseMap');
+    expect(mail).to.exist;
+    const links = mail('a');
+    let hasLink = false;
+    links.each(function (_, link) {
+      const href = $(link).attr('href');
+      console.log(href);
+      if (href.includes('luftdaten_feinstaub.html')) {
+        hasLink = true;
+      }
+    });
+    expect(hasLink).to.be.true;
+  });
 
 });
