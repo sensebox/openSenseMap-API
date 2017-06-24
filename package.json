@@ -39,7 +39,7 @@
   "devDependencies": {
     "chakram": "^1.5.0",
     "cheerio": "^1.0.0-rc.1",
-    "eslint": "^4.0.0",
+    "eslint": "^4.1.0",
     "mimelib": "^0.3.1",
     "mocha": "^3.4.2",
     "randomgeojson": "^1.0.0"
