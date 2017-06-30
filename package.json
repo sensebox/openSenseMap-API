@@ -21,7 +21,7 @@
     "jsonwebtoken": "^7.4.1",
     "millify": "^2.0.1",
     "moment": "^2.18.1",
-    "mongoose": "^4.10.8",
+    "mongoose": "^4.11.0",
     "mongoose-timestamp": "^0.6",
     "mqtt": "^2.9.0",
     "opbeat": "^4.14.0",
@@ -30,7 +30,7 @@
     "passport-local": "^1.0.0",
     "request": "^2.81.0",
     "request-promise-native": "^1.0.4",
-    "restify": "^4.3.0",
+    "restify": "^4.3.1",
     "simple-statistics": "^4.1.0",
     "stream-transform": "^0.1.2",
     "stringify-stream": "^1.0.5",
@@ -39,7 +39,7 @@
   "devDependencies": {
     "chakram": "^1.5.0",
     "cheerio": "^1.0.0-rc.1",
-    "eslint": "^4.1.0",
+    "eslint": "^4.1.1",
     "mimelib": "^0.3.1",
     "mocha": "^3.4.2",
     "randomgeojson": "^1.0.0"
