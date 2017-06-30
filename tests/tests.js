@@ -1359,3 +1359,5 @@ require('./feinstaubaddon_tests');
 
 require('./luftdaten_tests');
 require('./mail_tests');
+
+require('./delete_user_tests');
