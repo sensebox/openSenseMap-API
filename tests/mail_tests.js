@@ -379,4 +379,26 @@ describe('mails', function () {
     expect(mail).to.exist;
   });
 
+  it('should allow to confirm a email address after requesting a resend of a confirmation token', function () {
+    let token;
+    const mail = findMailAndParseBody(mails, 'tester4@test.test', 'E-Mail address confirmation');
+    expect(mail).to.not.be.undefined;
+    const links = mail('a');
+    links.each(function (_, link) {
+      const href = $(link).attr('href');
+      if (href.includes('token=')) {
+        token = href.split('=')[1].split('&')[0];
+      }
+    });
+    expect(token).to.exist;
+
+    return chakram.post(`${BASE_URL}/users/confirm-email`, { token, email: 'tester4@test.test' })
+      .then(function (response) {
+        expect(response).to.have.status(200);
+        expect(response).to.have.json({ code: 'Ok', message: 'E-Mail successfully confirmed. Thank you' });
+
+        return chakram.wait();
+      });
+  });
+
 });

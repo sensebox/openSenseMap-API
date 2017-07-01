@@ -445,6 +445,28 @@ describe('openSenseMap API', function () {
         });
     });
 
+    it('should allow users request a resend of the email confirmation', function () {
+      let jwt3;
+
+      return chakram.post(`${BASE_URL}/users/register`, { name: 'mrtest', email: 'tester4@test.test', password: '12345678' })
+        .then(function (response) {
+          expect(response).to.have.status(201);
+          expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
+          expect(response.body.token).to.exist;
+
+          jwt3 = response.body.token;
+
+          return chakram.post(`${BASE_URL}/users/me/resend-email-confirmation`, {}, { headers: { 'Authorization': `Bearer ${jwt3}` } });
+        })
+        .then(function (response) {
+          expect(response).to.have.status(200);
+          expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
+          expect(response).to.comprise.of.json({ code: 'Ok', message: 'Email confirmation has been sent to tester4@test.test' });
+
+          return chakram.wait();
+        });
+    });
+
   });
 
   describe('/boxes', function () {
