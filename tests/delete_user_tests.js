@@ -5,7 +5,8 @@
 const chakram = require('chakram'),
   expect = chakram.expect;
 
-const BASE_URL = 'http://localhost:8000';
+const BASE_URL = 'http://localhost:8000',
+  valid_user = { email: 'luftdaten@email', password: '87654321' };
 
 describe('openSenseMap API Delete User tests', function () {
   let jwt, num_boxes_before, num_measurements_before;
@@ -23,7 +24,7 @@ describe('openSenseMap API Delete User tests', function () {
   });
 
   it('should deny to delete user without password parameter', function () {
-    return chakram.post(`${BASE_URL}/users/sign-in`, { email: 'tester2@test.test', password: '12345678910' })
+    return chakram.post(`${BASE_URL}/users/sign-in`, valid_user)
       .then(function (response) {
         expect(response).to.have.status(200);
         expect(response.body.token).to.be.not.empty;
@@ -48,7 +49,7 @@ describe('openSenseMap API Delete User tests', function () {
   });
 
   it('should deny to delete user with wrong password parameter', function () {
-    return chakram.delete(`${BASE_URL}/users/me`, { password: 'wrong_password123' }, { headers: { 'Authorization': `Bearer ${jwt}` } })
+    return chakram.delete(`${BASE_URL}/users/me`, { password: `${valid_user.password}hallo` }, { headers: { 'Authorization': `Bearer ${jwt}` } })
       .then(function (response) {
         expect(response).to.have.status(400);
 
@@ -57,23 +58,23 @@ describe('openSenseMap API Delete User tests', function () {
   });
 
   it('should allow to delete user with correct password parameter', function () {
-    return chakram.delete(`${BASE_URL}/users/me`, { password: '12345678910' }, { headers: { 'Authorization': `Bearer ${jwt}` } })
+    return chakram.delete(`${BASE_URL}/users/me`, { password: valid_user.password }, { headers: { 'Authorization': `Bearer ${jwt}` } })
       .then(function (response) {
         expect(response).to.have.status(200);
 
-        return chakram.post(`${BASE_URL}/users/sign-in`, { email: 'tester2@test.test', password: '12345678910' });
+        return chakram.post(`${BASE_URL}/users/sign-in`, valid_user);
       })
       .then(function (response) {
         expect(response).to.have.status(401);
 
-        return chakram.get(`${BASE_URL}/stats`);
+        return chakram.get(`${BASE_URL}/stats`, { headers: { 'x-apicache-bypass': true } });
       })
       .then(function (response) {
         expect(response).status(200);
         const [ boxes, measurements ] = response.body;
 
-        expect(boxes).to.be.less.than(num_boxes_before);
-        expect(measurements).to.be.less.than(num_measurements_before);
+        expect(boxes).to.be.below(num_boxes_before);
+        expect(measurements).to.be.below(num_measurements_before);
 
         return chakram.wait();
       });

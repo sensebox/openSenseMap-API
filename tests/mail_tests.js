@@ -374,4 +374,9 @@ describe('mails', function () {
     expect(hasLink).to.be.true;
   });
 
+  it('should have sent a mail upon deletion of an user', function () {
+    const mail = findMailAndParseBody(mails, 'luftdaten@email', 'Your openSenseMap account has been deleted');
+    expect(mail).to.exist;
+  });
+
 });

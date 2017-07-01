@@ -164,7 +164,7 @@ describe('openSenseMap API', function () {
       return chakram.put(`${BASE_URL}/users/me`, { email: 'new-email@email.www', currentPassword: 'wrongpassword' }, { headers: { 'Authorization': `Bearer ${jwt2}` } })
         .then(function (response) {
           expect(response).to.have.status(400);
-          expect(response).to.have.json('message', 'Current password not correct.');
+          expect(response).to.have.json('message', 'Password not correct.');
 
           return chakram.wait();
         });
@@ -1361,6 +1361,7 @@ describe('openSenseMap API', function () {
 require('./feinstaubaddon_tests');
 
 require('./luftdaten_tests');
-require('./mail_tests');
 
 require('./delete_user_tests');
+
+require('./mail_tests');
