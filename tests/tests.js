@@ -509,6 +509,7 @@ describe('openSenseMap API', function () {
           expect(response).to.have.status(200);
           expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
           expect(response).to.have.schema(senseBoxSchema);
+          expect(response).to.have.json('weblink', 'https://api.opensensemap.org');
 
           expect(response.body).to.not.have.keys('integrations');
 
@@ -1178,7 +1179,7 @@ describe('openSenseMap API', function () {
     });
 
     it('should allow to update the box via PUT', function () {
-      const update_payload = { name: 'neuername', exposure: 'indoor', grouptag: 'newgroup', description: 'total neue beschreibung', loc: { lat: 54.2, lng: 21.1 }, image: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVQYV2NgYAAAAAMAAWgmWQ0AAAAASUVORK5CYII=' };
+      const update_payload = { name: 'neuername', exposure: 'indoor', grouptag: 'newgroup', description: 'total neue beschreibung', loc: { lat: 54.2, lng: 21.1 }, weblink: 'http://www.google.de', image: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVQYV2NgYAAAAAMAAWgmWQ0AAAAASUVORK5CYII=' };
 
       return chakram.put(`${BASE_URL}/boxes/${boxIds[1]}`, update_payload, { headers: { 'Authorization': `Bearer ${jwt2}` } })
         .then(function (response) {
@@ -1187,6 +1188,7 @@ describe('openSenseMap API', function () {
           expect(response).to.comprise.of.json('data.exposure', update_payload.exposure);
           expect(response).to.comprise.of.json('data.grouptag', update_payload.grouptag);
           expect(response).to.comprise.of.json('data.description', update_payload.description);
+          expect(response).to.comprise.of.json('data.weblink', update_payload.weblink);
           expect(response).to.comprise.of.json('data.loc', [ { type: 'Feature', geometry: { type: 'Point', coordinates: [ update_payload.loc.lng, update_payload.loc.lat ] } }]);
 
           expect(response).to.comprise.of.json('data.image', function (image) {
@@ -1209,14 +1211,15 @@ describe('openSenseMap API', function () {
         });
     });
 
-    it('should allow to unset the grouptag and description of the box via PUT', function () {
-      const update_payload = { grouptag: '', description: '' };
+    it('should allow to unset the grouptag, description and weblink of the box via PUT', function () {
+      const update_payload = { grouptag: '', description: '', weblink: '' };
 
       return chakram.put(`${BASE_URL}/boxes/${boxIds[1]}`, update_payload, { headers: { 'Authorization': `Bearer ${jwt2}` } })
         .then(function (response) {
           expect(response).to.have.status(200);
           expect(response.body.data.grouptag).to.be.undefined;
           expect(response.body.data.description).to.be.undefined;
+          expect(response.body.data.weblink).to.be.undefined;
 
           return chakram.wait();
         });

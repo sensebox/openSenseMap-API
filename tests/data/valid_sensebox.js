@@ -17,6 +17,7 @@ module.exports = function ({ bbox, model, sensors } = {}) {
     'model': model,
     'boxType': 'fixed',
     'exposure': 'indoor',
+    'weblink': 'https://api.opensensemap.org',
     'loc': [
       randomGeojson.generateGeoJSON(randomGeojsonOptions).features[0]
     ],
