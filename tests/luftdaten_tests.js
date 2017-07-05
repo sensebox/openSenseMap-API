@@ -6,7 +6,7 @@ const chakram = require('chakram'),
   expect = chakram.expect,
   moment = require('moment');
 
-const BASE_URL = 'http://localhost:8000',
+const BASE_URL = process.env.OSEM_TEST_BASE_URL,
   valid_sensebox = require('./data/valid_sensebox'),
   luftdaten_example_data = require('./data/luftdaten_example_data');
 

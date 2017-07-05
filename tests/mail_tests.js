@@ -8,7 +8,7 @@ const chakram = require('chakram'),
   $ = require('cheerio'),
   mimelib = require('mimelib');
 
-const BASE_URL = 'http://localhost:8000',
+const BASE_URL = process.env.OSEM_TEST_BASE_URL,
   valid_user = require('./data/valid_user');
 
 const findMail = function findMail (mails, address, subject) {

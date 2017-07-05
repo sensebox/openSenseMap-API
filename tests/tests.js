@@ -6,7 +6,9 @@ const chakram = require('chakram'),
   expect = chakram.expect,
   moment = require('moment');
 
-const BASE_URL = 'http://localhost:8000',
+process.env.OSEM_TEST_BASE_URL = 'http://localhost:8000';
+
+const BASE_URL = process.env.OSEM_TEST_BASE_URL,
   valid_sensebox = require('./data/valid_sensebox'),
   valid_user = require('./data/valid_user'),
   senseBoxSchema = require('./data/senseBoxSchema'),
@@ -19,6 +21,16 @@ const BASE_URL = 'http://localhost:8000',
   luftdaten_example_data = require('./data/luftdaten_example_data'),
   publishMqttMessage = require('./helpers/mqtt'),
   custom_valid_sensebox = require('./data/custom_valid_sensebox');
+
+const path = require('path').join(__dirname, 'routes');
+
+require('fs')
+  .readdirSync(path)
+  .forEach(function (file) {
+    /* eslint-disable global-require */
+    require(`${path}/${file}`);
+    /* eslint-enable global-require */
+  });
 
 describe('openSenseMap API', function () {
   let jwt, jwt2, refreshToken, refreshToken2;

@@ -5,7 +5,7 @@
 const chakram = require('chakram'),
   expect = chakram.expect;
 
-const BASE_URL = 'http://localhost:8000',
+const BASE_URL = process.env.OSEM_TEST_BASE_URL,
   valid_user = { email: 'luftdaten@email', password: '87654321' };
 
 describe('openSenseMap API Delete User tests', function () {
