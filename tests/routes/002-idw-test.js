@@ -9,10 +9,11 @@ const chakram = require('chakram'),
   { collectionOf } = require('@turf/invariant');
 
 const BASE_URL = `${process.env.OSEM_TEST_BASE_URL}/statistics/idw`,
-  baseTimestamp = moment.utc('2017-01-01T12:00:00Z');
+  baseTimestamp = moment.utc('2017-01-01T12:00:00Z'),
+  hasDataParameters = `exposure=indoor&phenomenon=Temperatur&from-date=${baseTimestamp.clone().toISOString()}&to-date=${baseTimestamp.clone().add(12, 'minute').toISOString()}`;
 
 describe('openSenseMap API Routes: /statistics/idw', function () {
-  let firstRequest, requestNoData, requestWithData;
+  let firstRequest, requestNoData;
 
   before('add test data', function () {
     firstRequest = chakram.post(`${process.env.OSEM_TEST_BASE_URL}/users/register`, { name: 'idwtestuser', email: 'idwtestuser@test.test', password: '12345678' })
@@ -35,13 +36,13 @@ describe('openSenseMap API Routes: /statistics/idw', function () {
 
         for (const [ i, box ] of boxes.entries()) {
           box.measurements = [];
-          for (let j = 0, len = 10; j < len; j++) {
+          for (let j = 0, len = 15; j < len; j++) {
             box.measurements.push({
               sensor: box.sensorid,
               value: i + j,
               createdAt: baseTimestamp
                 .clone()
-                .add(1, 'minute')
+                .add(j, 'minute')
                 .toISOString()
             });
           }
@@ -61,7 +62,6 @@ describe('openSenseMap API Routes: /statistics/idw', function () {
       .then(function () {
 
         requestNoData = chakram.get(`${BASE_URL}?exposure=outdoor&bbox=7.6,51.8,7.8,52.0&phenomenon=Luftdruck`);
-        requestWithData = chakram.get(`${BASE_URL}?exposure=indoor&bbox=7.6,51.8,7.8,52.0&phenomenon=Temperatur&from-date=${baseTimestamp.clone().toISOString()}&to-date=${baseTimestamp.clone().add(12, 'minute').toISOString()}`);
 
         return chakram.get(`${process.env.OSEM_TEST_BASE_URL}/stats`, { headers: { 'x-apicache-bypass': true } });
       });
@@ -84,7 +84,7 @@ describe('openSenseMap API Routes: /statistics/idw', function () {
         expect(response).status(200);
         const [ boxes, measurements ] = response.body;
         expect(boxes).equal(6);
-        expect(measurements).equal(60);
+        expect(measurements).equal(90);
 
 
         return chakram.get(BASE_URL);
@@ -112,13 +112,92 @@ describe('openSenseMap API Routes: /statistics/idw', function () {
   });
 
   it('should return a geojson featurecollection', function () {
-    return requestWithData
+    return chakram.get(`${BASE_URL}?bbox=7.6,51.8,7.8,52.0&${hasDataParameters}&numTimeSteps=1`)
       .then(function (response) {
         expect(response).status(200);
         expect(response).schema({ 'properties': { 'code': { 'type': 'string' }, 'data': { 'properties': { 'breaks': { 'items': { 'type': 'number' }, 'type': 'array' }, 'featureCollection': { 'properties': { 'features': { 'items': { 'properties': { 'geometry': { 'properties': { 'coordinates': { 'items': { 'items': { 'items': { 'type': 'number' }, 'type': 'array' }, 'type': 'array' }, 'type': 'array' }, 'type': { 'type': 'string' } }, 'required': ['type', 'coordinates'], 'type': 'object' }, 'properties': { 'properties': { 'idwValues': { 'items': { 'type': 'number' }, 'type': 'array' } }, 'required': ['idwValues'], 'type': 'object' }, 'type': { 'type': 'string' } }, 'required': ['geometry', 'type', 'properties'], 'type': 'object' }, 'type': 'array' }, 'type': { 'type': 'string' } }, 'required': ['type', 'features'], 'type': 'object' }, 'timesteps': { 'items': { 'type': 'string' }, 'type': 'array' } }, 'required': ['timesteps', 'breaks', 'featureCollection'], 'type': 'object' } }, 'required': ['code', 'data'], 'type': 'object' });
         expect(collectionOf(response.body.data.featureCollection, 'Polygon', 'test')).to.be.undefined;
-        expect(response).json('data.breaks', [0, 2.8, 5.6, 8.399999999999999, 11.2, 14]);
-        expect(response).json('data.timesteps', ['2017-01-01T12:01:00.000Z']);
+        expect(response).json('data.breaks', [1, 4, 7, 10, 13, 16]);
+        expect(response).json('data.timesteps', ['2017-01-01T12:06:00.000Z']);
+        // hex polygons have 7 coordinates
+        expect(response).json('data.featureCollection', function (fc) {
+          return expect(fc.features.every(f => f.geometry.coordinates[0].length === 7)).to.be.true;
+        });
+
+        return chakram.wait();
+      });
+  });
+
+  it('should return requested number of timesteps', function () {
+    return chakram.get(`${BASE_URL}?bbox=7.6,51.8,7.8,52.0&${hasDataParameters}&numTimeSteps=9`)
+      .then(function (response) {
+        expect(response).status(200);
+        expect(response).schema({ 'properties': { 'code': { 'type': 'string' }, 'data': { 'properties': { 'breaks': { 'items': { 'type': 'number' }, 'type': 'array' }, 'featureCollection': { 'properties': { 'features': { 'items': { 'properties': { 'geometry': { 'properties': { 'coordinates': { 'items': { 'items': { 'items': { 'type': 'number' }, 'type': 'array' }, 'type': 'array' }, 'type': 'array' }, 'type': { 'type': 'string' } }, 'required': ['type', 'coordinates'], 'type': 'object' }, 'properties': { 'properties': { 'idwValues': { 'items': { 'type': 'number' }, 'type': 'array' } }, 'required': ['idwValues'], 'type': 'object' }, 'type': { 'type': 'string' } }, 'required': ['geometry', 'type', 'properties'], 'type': 'object' }, 'type': 'array' }, 'type': { 'type': 'string' } }, 'required': ['type', 'features'], 'type': 'object' }, 'timesteps': { 'items': { 'type': 'string' }, 'type': 'array' } }, 'required': ['timesteps', 'breaks', 'featureCollection'], 'type': 'object' } }, 'required': ['code', 'data'], 'type': 'object' });
+        expect(collectionOf(response.body.data.featureCollection, 'Polygon', 'test')).to.be.undefined;
+        expect(response).json('data.timesteps', [ '2017-01-01T12:00:40.000Z',
+          '2017-01-01T12:02:00.000Z',
+          '2017-01-01T12:03:20.000Z',
+          '2017-01-01T12:04:40.000Z',
+          '2017-01-01T12:06:00.000Z',
+          '2017-01-01T12:07:20.000Z',
+          '2017-01-01T12:08:40.000Z',
+          '2017-01-01T12:10:00.000Z',
+          '2017-01-01T12:11:20.000Z' ]);
+        expect(response).json('data.featureCollection', function (fc) {
+          return expect(fc.features.every(f => f.properties.idwValues.length === 9)).to.be.true;
+        });
+
+        return chakram.wait();
+      });
+  });
+
+  it('should return requested number of classes', function () {
+    return chakram.get(`${BASE_URL}?bbox=7.6,51.8,7.8,52.0&${hasDataParameters}&numClasses=7`)
+      .then(function (response) {
+        expect(response).status(200);
+        expect(response).schema({ 'properties': { 'code': { 'type': 'string' }, 'data': { 'properties': { 'breaks': { 'items': { 'type': 'number' }, 'type': 'array' }, 'featureCollection': { 'properties': { 'features': { 'items': { 'properties': { 'geometry': { 'properties': { 'coordinates': { 'items': { 'items': { 'items': { 'type': 'number' }, 'type': 'array' }, 'type': 'array' }, 'type': 'array' }, 'type': { 'type': 'string' } }, 'required': ['type', 'coordinates'], 'type': 'object' }, 'properties': { 'properties': { 'idwValues': { 'items': { 'type': 'number' }, 'type': 'array' } }, 'required': ['idwValues'], 'type': 'object' }, 'type': { 'type': 'string' } }, 'required': ['geometry', 'type', 'properties'], 'type': 'object' }, 'type': 'array' }, 'type': { 'type': 'string' } }, 'required': ['type', 'features'], 'type': 'object' }, 'timesteps': { 'items': { 'type': 'string' }, 'type': 'array' } }, 'required': ['timesteps', 'breaks', 'featureCollection'], 'type': 'object' } }, 'required': ['code', 'data'], 'type': 'object' });
+        expect(collectionOf(response.body.data.featureCollection, 'Polygon', 'test')).to.be.undefined;
+        expect(response.body.data.breaks).lengthOf(7);
+
+        return chakram.wait();
+      });
+  });
+
+  it('should return square polyons when requested', function () {
+    return chakram.get(`${BASE_URL}?bbox=7.6,51.8,7.8,52.0&${hasDataParameters}&gridType=square`)
+      .then(function (response) {
+        expect(response).status(200);
+        expect(response).schema({ 'properties': { 'code': { 'type': 'string' }, 'data': { 'properties': { 'breaks': { 'items': { 'type': 'number' }, 'type': 'array' }, 'featureCollection': { 'properties': { 'features': { 'items': { 'properties': { 'geometry': { 'properties': { 'coordinates': { 'items': { 'items': { 'items': { 'type': 'number' }, 'type': 'array' }, 'type': 'array' }, 'type': 'array' }, 'type': { 'type': 'string' } }, 'required': ['type', 'coordinates'], 'type': 'object' }, 'properties': { 'properties': { 'idwValues': { 'items': { 'type': 'number' }, 'type': 'array' } }, 'required': ['idwValues'], 'type': 'object' }, 'type': { 'type': 'string' } }, 'required': ['geometry', 'type', 'properties'], 'type': 'object' }, 'type': 'array' }, 'type': { 'type': 'string' } }, 'required': ['type', 'features'], 'type': 'object' }, 'timesteps': { 'items': { 'type': 'string' }, 'type': 'array' } }, 'required': ['timesteps', 'breaks', 'featureCollection'], 'type': 'object' } }, 'required': ['code', 'data'], 'type': 'object' });
+        expect(collectionOf(response.body.data.featureCollection, 'Polygon', 'test')).to.be.undefined;
+        // square polygons have 5 coordinates
+        expect(response).json('data.featureCollection', function (fc) {
+          return expect(fc.features.every(f => f.geometry.coordinates[0].length === 5)).to.be.true;
+        });
+
+        return chakram.wait();
+      });
+  });
+
+  it('should return triangle polyons when requested', function () {
+    return chakram.get(`${BASE_URL}?bbox=7.6,51.8,7.8,52.0&${hasDataParameters}&gridType=triangle`)
+      .then(function (response) {
+        expect(response).status(200);
+        expect(response).schema({ 'properties': { 'code': { 'type': 'string' }, 'data': { 'properties': { 'breaks': { 'items': { 'type': 'number' }, 'type': 'array' }, 'featureCollection': { 'properties': { 'features': { 'items': { 'properties': { 'geometry': { 'properties': { 'coordinates': { 'items': { 'items': { 'items': { 'type': 'number' }, 'type': 'array' }, 'type': 'array' }, 'type': 'array' }, 'type': { 'type': 'string' } }, 'required': ['type', 'coordinates'], 'type': 'object' }, 'properties': { 'properties': { 'idwValues': { 'items': { 'type': 'number' }, 'type': 'array' } }, 'required': ['idwValues'], 'type': 'object' }, 'type': { 'type': 'string' } }, 'required': ['geometry', 'type', 'properties'], 'type': 'object' }, 'type': 'array' }, 'type': { 'type': 'string' } }, 'required': ['type', 'features'], 'type': 'object' }, 'timesteps': { 'items': { 'type': 'string' }, 'type': 'array' } }, 'required': ['timesteps', 'breaks', 'featureCollection'], 'type': 'object' } }, 'required': ['code', 'data'], 'type': 'object' });
+        expect(collectionOf(response.body.data.featureCollection, 'Polygon', 'test')).to.be.undefined;
+        // triangle polygons have 4 coordinates
+        expect(response).json('data.featureCollection', function (fc) {
+          return expect(fc.features.every(f => f.geometry.coordinates[0].length === 4)).to.be.true;
+        });
+
+        return chakram.wait();
+      });
+  });
+
+  it('should return an error if the cellWidth is too small', function () {
+    return chakram.get(`${BASE_URL}?bbox=7.6,51.8,7.8,52.0&${hasDataParameters}&cellWidth=0.001`)
+      .then(function (response) {
+        expect(response).status(422);
+        expect(response).json('message', 'planned computation too expensive ((area in square kilometers / cellWidth) > 2500)');
 
         return chakram.wait();
       });
