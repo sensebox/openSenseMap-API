@@ -16,6 +16,7 @@ const BASE_URL = process.env.OSEM_TEST_BASE_URL,
   findAllSchema = require('./data/findAllSchema'),
   csv_example_data = require('./data/csv_example_data'),
   json_submit_data = require('./data/json_submit_data'),
+  byte_submit_data = require('./data/byte_submit_data'),
   getUserBoxesSchema = require('./data/getUserBoxesSchema'),
   getUserSchema = require('./data/getUserSchema'),
   luftdaten_example_data = require('./data/luftdaten_example_data'),
@@ -902,6 +903,58 @@ describe('openSenseMap API', function () {
         });
     });
 
+    it('should accept multiple measurements as bytes via POST', function () {
+      let submitTime;
+
+      return chakram.post(`${BASE_URL}/boxes/${boxId}/data`, byte_submit_data(boxObj.sensors), { json: false, headers: { 'content-type': 'application/sbx-bytes' } })
+        .then(function (response) {
+          submitTime = moment.utc(response.response.headers.date, 'ddd, DD MMM YYYY HH:mm:ss GMT');
+          expect(response).to.have.status(201);
+          expect(response.body).to.equal('"Measurements saved in box"');
+
+          return chakram.get(`${BASE_URL}/boxes/${boxId}`);
+        })
+        .then(function (response) {
+          expect(response).to.have.json('sensors', function (sensors) {
+            sensors.forEach(function (sensor) {
+              expect(sensor.lastMeasurement).not.to.be.null;
+              expect(sensor.lastMeasurement.createdAt).to.exist;
+              const createdAt = moment.utc(sensor.lastMeasurement.createdAt);
+              expect(submitTime.diff(createdAt, 'minutes')).to.be.below(4);
+            });
+          });
+          countMeasurements = countMeasurements + boxObj.sensors.length;
+
+          return chakram.wait();
+        });
+    });
+
+    it('should accept multiple measurements as bytes with timestamp via POST', function () {
+      let submitTime;
+
+      return chakram.post(`${BASE_URL}/boxes/${boxId}/data`, byte_submit_data(boxObj.sensors, true), { json: false, headers: { 'content-type': 'application/sbx-bytes-ts' } })
+        .then(function (response) {
+          submitTime = moment.utc(response.response.headers.date, 'ddd, DD MMM YYYY HH:mm:ss GMT');
+          expect(response).to.have.status(201);
+          expect(response.body).to.equal('"Measurements saved in box"');
+
+          return chakram.get(`${BASE_URL}/boxes/${boxId}`);
+        })
+        .then(function (response) {
+          expect(response).to.have.json('sensors', function (sensors) {
+            sensors.forEach(function (sensor) {
+              expect(sensor.lastMeasurement).not.to.be.null;
+              expect(sensor.lastMeasurement.createdAt).to.exist;
+              const createdAt = moment.utc(sensor.lastMeasurement.createdAt);
+              expect(submitTime.diff(createdAt, 'minutes')).to.be.below(5);
+            });
+          });
+          countMeasurements = countMeasurements + boxObj.sensors.length;
+
+          return chakram.wait();
+        });
+    });
+
     it('should return /stats correctly', function () {
       return chakram.get(`${BASE_URL}/stats`, { headers: { 'x-apicache-bypass': true } })
         .then(function (response) {
@@ -998,6 +1051,7 @@ describe('openSenseMap API', function () {
 
       return chakram.get(`${BASE_URL}/boxes?date=${ten_days_ago.toISOString()}`)
         .then(function (response) {
+          console.log(response.body);
           expect(response).to.have.status(200);
           expect(Array.isArray(response.body)).to.be.true;
           expect(response.body.length).to.be.equal(1);
