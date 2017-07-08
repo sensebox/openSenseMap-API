@@ -1051,7 +1051,6 @@ describe('openSenseMap API', function () {
 
       return chakram.get(`${BASE_URL}/boxes?date=${ten_days_ago.toISOString()}`)
         .then(function (response) {
-          console.log(response.body);
           expect(response).to.have.status(200);
           expect(Array.isArray(response.body)).to.be.true;
           expect(response.body.length).to.be.equal(1);
