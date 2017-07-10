@@ -42,7 +42,7 @@ describe('openSenseMap API Delete User tests', function () {
   it('should deny to delete user with empty password parameter', function () {
     return chakram.delete(`${BASE_URL}/users/me`, { password: '' }, { headers: { 'Authorization': `Bearer ${jwt}` } })
       .then(function (response) {
-        expect(response).to.have.status(400);
+        expect(response).to.have.status(422);
 
         return chakram.wait();
       });
