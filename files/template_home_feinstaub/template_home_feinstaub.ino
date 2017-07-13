@@ -132,7 +132,7 @@ uint16_t getUV() {
   sleep(1);
   if (Wire.available()) lsb = Wire.read();
   uvValue = (msb << 8) | lsb;
-  return uvValue * 5;
+  return uvValue * 5.625;
 }
 
 int printHexToStream(const uint8_t *data, uint8_t length, Print &stream) // prints 8-bit data in hex
