@@ -1,21 +1,30 @@
 'use strict';
 
-const models = require('../lib/models'),
+const models = require('../../lib/models'),
   uuid = require('uuid'),
   moment = require('moment'),
-  { mongoose } = require('../lib/db');
+  { mongoose, connect } = require('../../lib/db');
 
 const { User, Box } = models;
-const nameValidRegex = /^[\u00C0-\u1FFF\u2C00-\uD7FF\w-\.][\u00C0-\u1FFF\u2C00-\uD7FF\w\s-\.]+[\u00C0-\u1FFF\u2C00-\uD7FF\w\.]$/;
+const nameValidRegex = /^[\u00C0-\u1FFF\u2C00-\uD7FF\w-.][\u00C0-\u1FFF\u2C00-\uD7FF\w\s-.]+[\u00C0-\u1FFF\u2C00-\uD7FF\w.]$/;
 
-module.exports = function () {
+const migrate = function migrate () {
+  const schemaVersion = mongoose.connection.db.collection('schemaVersion');
+
   console.log('starting "make-users-unique" migration');
 
-  return Box.find({})
-      .exec()
-      .then(function (boxes) {
-        return boxes.map(b => b._id.toString());
-      })
+  return schemaVersion.find({})
+    .next()
+    .then(function (latestVersion) {
+      if (latestVersion.schemaVersion !== 2) {
+        throw new Error('Unexpected schema version... Exiting!');
+      }
+
+      return Box.find({}).exec();
+    })
+    .then(function (boxes) {
+      return boxes.map(b => b._id.toString());
+    })
     .then(function (boxes) {
       return User
         .find({})
@@ -70,17 +79,29 @@ module.exports = function () {
             if (user._id.toString() in users_boxids) {
 
               const oid_boxes = users_boxids[user._id.toString()]
-              .filter(function (b) {
-                return b !== null || typeof b !== 'undefined';
-              })
-              .filter(n => n)
-              .map(function (id) {
-                return mongoose.Types.ObjectId(id);
-              });
+                .filter(function (b) {
+                  return b !== null || typeof b !== 'undefined';
+                })
+                .filter(n => n)
+                .map(function (id) {
+                  return mongoose.Types.ObjectId(id);
+                });
 
               if (!nameValidRegex.test(user.name)) {
-                console.log('oh weia');
-                user.set('name', user.name.replace(/"/g, ''));
+                console.log('oh weia', user.name);
+
+                if (user.name.length < 4) {
+                  let newName = user.name;
+                  while (newName.length < 4) {
+                    newName = `${newName}_`;
+                  }
+                  user.set('name', newName);
+                }
+
+                if (user.name.includes('"')) {
+                  user.set('name', user.name.replace(/"/g, ''));
+                }
+
               }
 
               user.set('boxes', oid_boxes);
@@ -99,21 +120,19 @@ module.exports = function () {
 
           return Promise.all(promises)
             .then(function () {
-              console.log('done');
-
-            })
-            .then(function () {
               User.collection.createIndex({ email: 1 }, { unique: true });
+              User.collection.createIndex({ name: 1 }, { unique: true });
 
               return User.find({}).populate('boxes')
                 .exec();
             })
             .then(function (users) {
-              //console.log(JSON.stringify(users.map(u => u.toJSON()), null, 2));
-              for (const user of users) {
-                user.mail('newUserManagement', user.boxes);
-                console.log(`sent mail to ${user.name} <${user.email}>`);
-              }
+              return Promise.all(users.map(user => user.mail('newUserManagement', user.boxes)));
+            })
+            .then(function () {
+              console.log('done');
+
+              return schemaVersion.update({}, { '$inc': { schemaVersion: 1 } });
             });
 
         });
@@ -124,3 +143,18 @@ module.exports = function () {
     });
 
 };
+
+connect()
+  .then(function () {
+    migrate()
+      .then(function () {
+        mongoose.disconnect();
+      })
+      .catch(function (err) {
+        console.error(err);
+        mongoose.disconnect();
+      });
+  })
+  .catch(function (err) {
+    console.error(err);
+  });
