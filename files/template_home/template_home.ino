@@ -1,7 +1,7 @@
 /*
   senseBox Home - Citizen Sensingplatform
   Version: 2.4
-  Date: 2016-Mar-06
+  Date: 2017-Mar-06
   Homepage: https://www.sensebox.de https://www.opensensemap.org
   Author: Institute for Geoinformatics, University of Muenster
   Note: Sketch for senseBox:home

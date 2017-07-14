@@ -6,6 +6,7 @@ lib-cov
 *.out
 *.pid
 *.gz
+.vscode
 
 pids
 logs
@@ -22,3 +23,4 @@ userimages
 mongo-data
 .env
 doc/
+revision

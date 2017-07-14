@@ -7,52 +7,42 @@ This is the back-end for [openSenseMap](http://opensensemap.org).
 openSenseMap is part of the [senseBox](http//sensebox.de) project.
 To get more information about openSenseBox and senseBox visit the before mentioned links or have a look at this [video](https://www.youtube.com/watch?v=uTOWYa42_rI).
 
-The API has been built as part of my bachelor thesis at the ifgi (Institute for Geoinformatics, WWU Münster).
+Originally, this API has been built as part the bachelor thesis of @mpfeil at the ifgi (Institute for Geoinformatics, WWU Münster).
 
 ### Technologies
 
 * [node.js]
 * [MongoDB]
 
-### Install dependencies (Ubuntu)
+### Development
 
-It is assumed that you have installed node.js (developed using 0.10.26).
-
-Install MongoDB according to [the manual](http://docs.mongodb.org/manual/installation/) and create the database "OSeM-api".
-
-The database schema will be created automatically upon data insertion and looks like this:
+#### Node.js
+It is assumed that you have installed node.js Version 6 LTS. Install dependencies with [yarn](https://yarnpkg.com/)
 ```
-Database "OSeM-api"
-  - Collections
-    - boxes
-    - measurements
-    - users
+yarn install
 ```
 
-### Run for Development & Production
+There are several config keys in `config/index.js`. These can also be configured through environment keys. Just prefix your environment keys with `OSEM_` to be read by the api.
 
-Open the configuration file ```config/index.js``` and change settings accordingly.
+#### Database
+The API needs a running MongoDB instance with a `OSeM-api` database and credentials.
 
-|Variable name             | Explanation|
-|--------------------------|---------------|
-|```exports.targetFolder```|The folder where a generated Arduino sketch for each box will be saved upon registration|
-|```exports.imageFolder``` |The folder where banner images for boxes are stored, should be in your htdocs (make sure read and write permissions are correct)|
-|```exports.dbuser```      |MongoDB database user, leave empty if not configured|
-|```exports.dbuserpass```  |MongoDB database password, leave empty if not configured|
-
-After that, run the following command to install dependencies:
-
-```npm install```
-
-Then start the API process, press CTRL+C to stop:
-
+The best way to run the database for development is to use the supplied `docker-compose.yml` and run
 ```
-node app.js
+docker-compose up -d db
 ```
 
-**or with Docker**
-- install docker and docker-compose
-- run `docker-compose up`
+### `require()` openSenseMap-API for other projects
+
+You can require several parts of the API in other projects.
+
+Install it as dependency
+```
+# for specific branch/commit/tag append #<branch/commit/tag>
+yarn add git://github.com/sensebox/openSenseMap-API.git
+```
+
+This allows you to use parts like models and decoding in your own project. See `index.js`.
 
 ### Create the JSDoc pages
 
@@ -61,14 +51,22 @@ To create the documentation you need [apidocjs](http://apidocjs.com/) and run:
 apidoc -e node_modules/
 ```
 
-To push a new Version to gh-pages run:
+### Running Tests
+You can run the tests in containers using docker and docker-compose.
 ```
-git subtree push --prefix doc/ origin gh-pages
+# Only run this once or every time you change dependencies in package.json
+docker-compose -p osemapitest -f tests-docker-compose.yml build osem-api
+
+./run-tests.sh
 ```
+
+### Running in Production
+
+Look at the [OSeM-compose](https://github.com/sensebox/osem-compose) repository. It contains a deployment with docker compose.
 
 ### License
 
-[MIT](license.md) - Matthias Pfeil 2015
+[MIT](license.md) - Matthias Pfeil 2015 - 2017
 
 [node.js]:http://nodejs.org/
 [MongoDB]:http://www.mongodb.com/

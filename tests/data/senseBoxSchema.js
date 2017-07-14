@@ -99,7 +99,6 @@ module.exports = {
     'name',
     'boxType',
     'exposure',
-    'model',
     'sensors',
     'loc'
   ]

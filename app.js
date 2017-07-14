@@ -6,60 +6,22 @@
 'use strict';
 
 const restify = require('restify'),
-  mongoose = require('mongoose'),
-  fs = require('fs'),
-  Stream = require('stream'),
-  util = require('util'),
   utils = require('./lib/utils'),
+  db = require('./lib/db'),
   requestUtils = require('./lib/requestUtils'),
   Box = require('./lib/models').Box,
-  routes = require('./lib/routes');
+  routes = require('./lib/routes'),
+  passport = require('passport'),
+  log = require('./lib/log');
 
 const { config, Honeybadger } = utils;
 
-mongoose.Promise = global.Promise;
-
-// Logging
-const consoleStream = new Stream();
-consoleStream.writable = true;
-consoleStream.write = function (obj) {
-  if (obj.req) {
-    console.log(obj.time, obj.req.remoteAddress, obj.req.method, obj.req.url);
-  } else if (obj.msg) {
-    console.log(obj.time, obj.msg);
-  } else {
-    //console.log(obj.time, obj);
-  }
-};
-
-const Logger = require('bunyan'),
-  reqlog = new Logger.createLogger({
-    name: 'OSeM-API',
-    streams: [
-      { level: 'debug', type: 'raw', stream: consoleStream }
-    ],
-    serializers: {
-      err: Logger.stdSerializers.err,
-      req: Logger.stdSerializers.req,
-      res: Logger.stdSerializers.res
-    }
-  }),
-  log = new Logger.createLogger({
-    name: 'OSeM-API',
-    streams: [
-      { level: 'debug', type: 'raw', stream: consoleStream }
-    ],
-    serializers: {
-      err: Logger.stdSerializers.err,
-      req: Logger.stdSerializers.req,
-      res: Logger.stdSerializers.res
-    }
-  });
+require('opbeat').start({ active: config.isProdEnv() });
 
 const server = restify.createServer({
-  name: 'opensensemap-api',
+  name: `opensensemap-api (${utils.softwareRevision})`,
   version: '0.0.1',
-  log: reqlog
+  log: log
 });
 
 // We're using caddy as proxy. It supplies a 'X-Forwarded-Proto' header
@@ -78,12 +40,14 @@ server.use(restify.jsonBodyParser());
 server.use(requestUtils.setHoneybadgerContext);
 server.pre(restify.pre.sanitizePath());
 
+server.use(passport.initialize());
+
 // attach Routes
 routes(server);
 
 const unknownMethodHandler = function unknownMethodHandler (req, res) {
   if (req.method.toLowerCase() === 'options') {
-    const allowHeaders = ['Accept', 'X-ApiKey', 'Accept-Version', 'Content-Type', 'Api-Version', 'Origin', 'X-Requested-With']; // added Origin & X-Requested-With
+    const allowHeaders = ['Accept', 'Accept-Version', 'Content-Type', 'Api-Version', 'Origin', 'X-Requested-With', 'Authorization']; // added Origin & X-Requested-With
 
     if (res.methods.indexOf('OPTIONS') === -1) {
       res.methods.push('OPTIONS');
@@ -102,22 +66,22 @@ const unknownMethodHandler = function unknownMethodHandler (req, res) {
 
 server.on('MethodNotAllowed', unknownMethodHandler);
 
-const stats = fs.statSync('./app.js');
-const mtime = new Date(util.inspect(stats.mtime));
-
-utils.connectWithRetry(function () {
+db.connect().then(function () {
   server.listen(config.port, function () {
-    console.log('server file modified:', mtime);
-    console.log('%s listening at %s', server.name, server.url);
-    utils.postToSlack(`openSenseMap API started. Server file modified: ${mtime}`);
+    log.info(`${server.name} listening at ${server.url}`);
+    utils.postToSlack(`openSenseMap API started. Revision: ${utils.softwareRevision}`);
     Box.connectMQTTBoxes();
   });
-});
+})
+  .catch(function (err) {
+    log.fatal(err, `Couldn't connect to MongoDB.
+    Exiting...`);
+    process.exit(1);
+  });
 
 server.on('uncaughtException', function (req, res, route, err) {
   Honeybadger.notify(err);
   log.error('Uncaught error', err);
-  console.log(err.stack);
 
   // check if headers were sent..
   if (res._headerSent === true) {

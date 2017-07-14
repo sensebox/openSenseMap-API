@@ -1,4 +1,3 @@
-const apiKey = require('./randomApiKey')();
 module.exports = {
   'name': 'Wetterstation der AG Klimatologie Uni Münster',
   'boxType': 'fixed',
@@ -36,7 +35,6 @@ module.exports = {
   ],
   'tag': '',
   'exposure': 'outdoor',
-  'orderID': apiKey,
   'loc': [
     {
       'type': 'feature',
@@ -48,10 +46,5 @@ module.exports = {
         ]
       }
     }
-  ],
-  'user': {
-    'firstname': 'Klimastation',
-    'lastname': 'senseBox Adapter',
-    'email': 'info@sensebox.de'
-  }
+  ]
 };

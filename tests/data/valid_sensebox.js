@@ -1,24 +1,31 @@
-const apiKey = require('./randomApiKey'),
-  randomGeojson = require('randomgeojson');
-module.exports = function (bbox) {
+const randomGeojson = require('randomgeojson');
+module.exports = function ({ bbox, model, sensors, lonlat } = {}) {
   const randomGeojsonOptions = { featureTypes: ['Point'] };
-  if (bbox) {
+  let loc;
+  if (lonlat) {
+    loc = [{ 'type': 'Feature', 'properties': {}, 'geometry': { 'type': 'Point', 'coordinates': lonlat } }];
+  } else if (bbox) {
     randomGeojsonOptions.bbox = bbox;
+  } else {
+    randomGeojsonOptions.bbox = [-179, -89, 179, 89];
   }
-  return {
+
+  if (!loc) {
+    loc = [ randomGeojson.generateGeoJSON(randomGeojsonOptions).features[0] ];
+  }
+
+
+  if (!sensors && !model) {
+    model = 'homeEthernet';
+  }
+
+  const box = {
     'name': 'senseBox',
-    'model': 'homeEthernet',
+    'model': model,
     'boxType': 'fixed',
     'exposure': 'indoor',
-    'orderID': apiKey(),
-    'loc': [
-      randomGeojson.generateGeoJSON(randomGeojsonOptions).features[0]
-    ],
-    'user': {
-      'firstname': 'TestBox',
-      'lastname': 'TestBoxNachname',
-      'email': 'testmail@testmail.mail'
-    },
+    'weblink': 'https://api.opensensemap.org',
+    'loc': loc,
     'mqtt': {
       'enabled': false,
       'url': '',
@@ -28,4 +35,10 @@ module.exports = function (bbox) {
       'connectionOptions': ''
     }
   };
+
+  if (sensors) {
+    box.sensors = sensors;
+  }
+
+  return box;
 };

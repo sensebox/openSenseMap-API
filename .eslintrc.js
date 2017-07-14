@@ -55,7 +55,7 @@ module.exports = {
     'space-infix-ops': [
       'error'
     ],
-    'no-console': 'off',
+    'no-console': 'error',
     'no-spaced-func': [
       'error'
     ],
@@ -155,6 +155,7 @@ module.exports = {
     'template-curly-spacing': [
       'error',
       'never'
-    ]
+    ],
+    'no-warning-comments': 'error'
   }
 };
