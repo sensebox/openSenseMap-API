@@ -5,9 +5,14 @@ usersketches
 osem-mongo
 docker-compose.yml
 Dockerfile
-.env
+.env*
 .eslintrc.js
 .travis.yml
-/doc
-/utils
+doc
+utils
 revision
+.dockerignore
+.npmignore
+.gitignore
+.vscode
+*.md
