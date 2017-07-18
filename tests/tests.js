@@ -256,8 +256,37 @@ describe('openSenseMap API', function () {
           return chakram.wait();
         });
     });
-    it('should allow to change password with correct current passsword', function () {
-      return chakram.put(`${BASE_URL}/users/me`, { newPassword: '12345678910', currentPassword: '12345678' }, { headers: { 'Authorization': `Bearer ${jwt2}` } })
+
+    it('should allow to change to a password with leading and trailing spaces', function () {
+      return chakram.put(`${BASE_URL}/users/me`, { newPassword: ' leading and trailing spaces ', currentPassword: '12345678' }, { headers: { 'Authorization': `Bearer ${jwt2}` } })
+        .then(function (response) {
+          expect(response).to.have.status(200);
+          expect(response).to.have.json('message', 'User successfully saved. Password changed. Please log in with your new password');
+
+          // try to log in with old token
+          return chakram.get(`${BASE_URL}/users/me`, { headers: { 'Authorization': `Bearer ${jwt2}` } });
+        })
+        .then(function (response) {
+          expect(response).to.have.status(401);
+
+          // try to sign in with new password
+          return chakram.post(`${BASE_URL}/users/sign-in`, { email: 'tester2@test.test', password: ' leading and trailing spaces ' });
+        })
+        .then(function (response) {
+          expect(response).to.have.status(200);
+          expect(response).to.have.json('data', function (data) {
+            expect(data.user.email).to.equal('tester2@test.test');
+          });
+          expect(response.body.token).to.exist;
+
+          jwt2 = response.body.token;
+
+          return chakram.wait();
+        });
+    });
+
+    it('should allow to change password with correct current password', function () {
+      return chakram.put(`${BASE_URL}/users/me`, { newPassword: '12345678910', currentPassword: ' leading and trailing spaces ' }, { headers: { 'Authorization': `Bearer ${jwt2}` } })
         .then(function (response) {
           expect(response).to.have.status(200);
           expect(response).to.have.json('message', 'User successfully saved. Password changed. Please log in with your new password');
