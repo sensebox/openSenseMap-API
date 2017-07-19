@@ -471,7 +471,7 @@ describe('openSenseMap API', function () {
     it('should deny password change with empty token parameter', function () {
       return chakram.post(`${BASE_URL}/users/password-reset`, { password: 'ignored_anyway', token: '   ', email: 'tester@test.test' })
         .then(function (response) {
-          expect(response).to.have.status(400);
+          expect(response).to.have.status(422);
         });
     });
 
