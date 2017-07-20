@@ -77,7 +77,7 @@ services:
       - db
 
   mailer:
-    image: sensebox/sensebox-mailer
+    image: sensebox/sensebox-mailer:${SENSEBOX_MAILER_TAG}
     environment:
       SENSEBOX_MAILER_SERVER_CERT: |-
         -----BEGIN CERTIFICATE-----
@@ -144,7 +144,7 @@ services:
     depends_on:
       - mailhog
   mailhog:
-    image: mailhog/mailhog
+    image: mailhog/mailhog:v1.0.0
     ports:
       - "8025:8025"
 

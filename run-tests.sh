@@ -7,6 +7,9 @@ IFS=$'\n\t'
 dont_clean_up=${dont_clean_up:-}
 dont_recreate=${dont_recreate:-}
 
+mailer_tag=$(git rev-parse --abbrev-ref HEAD)
+export SENSEBOX_MAILER_TAG="$mailer_tag"
+
 function cleanup {
   if [[ -z "$dont_clean_up" ]]; then
     echo 'cleanup!'
