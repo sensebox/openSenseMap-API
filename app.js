@@ -16,8 +16,6 @@ const restify = require('restify'),
 
 const { config, Honeybadger } = utils;
 
-require('opbeat').start({ active: config.isProdEnv() });
-
 const server = restify.createServer({
   name: `opensensemap-api (${utils.softwareRevision})`,
   version: '0.0.1',
