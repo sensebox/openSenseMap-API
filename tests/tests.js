@@ -775,6 +775,32 @@ describe('openSenseMap API', function () {
         });
     });
 
+    it('should deny to register a senseBox without model or sensors', function () {
+      const box = { 'name': 'Wetterstation der AG Klimatologie Uni Münster', 'boxType': 'fixed', 'exposure': 'outdoor', 'loc': [{ 'type': 'feature', 'geometry': { 'type': 'Point', 'coordinates': [7.595878, 51.969263] } }] };
+
+      return chakram.post(`${BASE_URL}/boxes`, box, { headers: { 'Authorization': `Bearer ${jwt2}` } })
+        .then(function (response) {
+          expect(response).to.have.status(422);
+          expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
+          expect(response).json({ code: 'UnprocessableEntityError', message: 'Parameter sensors is required if model is invalid or missing.' });
+
+          return chakram.wait();
+        });
+    });
+
+    it('should reject to register a senseBox with both model and sensors', function () {
+      const box = { 'name': 'Wetterstation der AG Klimatologie Uni Münster', 'boxType': 'fixed', 'exposure': 'outdoor', 'loc': [{ 'type': 'feature', 'geometry': { 'type': 'Point', 'coordinates': [7.595878, 51.969263] } }], model: 'homeWifi', sensors: [{ title: 'Temp', unit: 'C', }] };
+
+      return chakram.post(`${BASE_URL}/boxes`, box, { headers: { 'Authorization': `Bearer ${jwt2}` } })
+        .then(function (response) {
+          console.log(response.body);
+          expect(response).to.have.status(422);
+          expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
+          expect(response).json({ code: 'UnprocessableEntityError', message: 'Parameters model and sensors cannot be specified at the same time.' });
+
+          return chakram.wait();
+        });
+    });
     let custombox_id;
 
     it('should allow to register a custom senseBox', function () {

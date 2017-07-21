@@ -33,7 +33,6 @@ module.exports = {
       'sensorType': 'Gill WindSonic Anemometer RS232'
     }
   ],
-  'tag': '',
   'exposure': 'outdoor',
   'loc': [
     {
