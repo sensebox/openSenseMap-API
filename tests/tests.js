@@ -782,7 +782,7 @@ describe('openSenseMap API', function () {
         .then(function (response) {
           expect(response).to.have.status(422);
           expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
-          expect(response).json({ code: 'UnprocessableEntityError', message: 'Parameter sensors is required if model is invalid or missing.' });
+          expect(response).json({ code: 'UnprocessableEntityError', message: 'sensors are required if model is invalid or missing.' });
 
           return chakram.wait();
         });
@@ -793,7 +793,6 @@ describe('openSenseMap API', function () {
 
       return chakram.post(`${BASE_URL}/boxes`, box, { headers: { 'Authorization': `Bearer ${jwt2}` } })
         .then(function (response) {
-          console.log(response.body);
           expect(response).to.have.status(422);
           expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
           expect(response).json({ code: 'UnprocessableEntityError', message: 'Parameters model and sensors cannot be specified at the same time.' });
@@ -1343,7 +1342,7 @@ describe('openSenseMap API', function () {
           expect(response).to.comprise.of.json('data.loc', [ { type: 'Feature', geometry: { type: 'Point', coordinates: [ update_payload.loc.lng, update_payload.loc.lat ] } }]);
 
           expect(response).to.comprise.of.json('data.image', function (image) {
-            return expect(moment().diff(moment(parseInt(image.split('?')[1], 10)))).to.be.below(50);
+            return expect(moment().diff(moment(parseInt(image.split('_')[1].slice(0, -4), 36) * 1000))).to.be.below(50);
           });
 
           return chakram.wait();
