@@ -4,6 +4,7 @@
   "description": "API for opensensemap.org",
   "main": "index.js",
   "dependencies": {
+    "@sensebox/sketch-templater": "^1.0.2",
     "@turf/area": "^4.4.0",
     "@turf/bbox": "^4.4.0",
     "@turf/centroid": "^4.4.0",

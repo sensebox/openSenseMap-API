@@ -8,7 +8,6 @@ services:
       - ./app.js:/usr/src/app/app.js
       - ./lib:/usr/src/app/lib
       - ./config/index.js:/usr/src/app/config/index.js
-      - ./usersketches:/usr/src/app/usersketches
       - ./userimages:/usr/src/app/userimages
     env_file: .env
     depends_on:

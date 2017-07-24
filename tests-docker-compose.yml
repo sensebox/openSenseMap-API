@@ -13,7 +13,6 @@ services:
     env_file: .env
     environment:
       OSEM_dbhost: db
-      OSEM_targetFolder: ./usersketches
       OSEM_imageFolder: ./userimages
       OSEM_mailer_url: https://mailer:3924/
       OSEM_mailer_origin: http://osem-api:8000

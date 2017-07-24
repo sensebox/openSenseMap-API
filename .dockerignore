@@ -1,7 +1,6 @@
 node_modules
 mongo-data
 userimages
-usersketches
 osem-mongo
 docker-compose.yml
 Dockerfile

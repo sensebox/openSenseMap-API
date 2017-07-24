@@ -15,10 +15,7 @@ dump
 
 npm-debug.log
 node_modules
-files/
-!files/template.ino
 
-usersketches
 userimages
 mongo-data
 .env
