@@ -358,6 +358,27 @@ describe('openSenseMap API', function () {
         });
     });
 
+    it('should allow to sign in an user with email (different case) and password', function () {
+      return chakram.post(`${BASE_URL}/users/sign-in`, { email: 'TESTER@TEST.TEST', password: 'some secure password' })
+        .then(function (response) {
+          expect(response).to.have.status(200);
+          expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
+          expect(response.body.token).to.exist;
+          expect(response.body.refreshToken).to.exist;
+
+          return chakram.wait();
+        });
+    });
+
+    it('should deny to sign in with name in different case', function () {
+      return chakram.post(`${BASE_URL}/users/sign-in`, { email: 'This Is Just A Nickname', password: 'some secure password' })
+        .then(function (response) {
+          expect(response).to.have.status(401);
+
+          return chakram.wait();
+        });
+    });
+
     it('should allow to sign out with jwt', function () {
       return chakram.post(`${BASE_URL}/users/sign-out`, {}, { headers: { 'Authorization': `Bearer ${jwt}` } })
         .then(function (response) {

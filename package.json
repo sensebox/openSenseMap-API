@@ -18,6 +18,7 @@
     "bunyan": "^1.8.10",
     "csv-stringify": "^1.0.4",
     "honeybadger": "^1.2.1",
+    "isemail": "^3.0.0",
     "jsonpath": "^0.2.11",
     "jsonwebtoken": "^7.4.1",
     "millify": "^2.0.1",
