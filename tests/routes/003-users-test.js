@@ -509,4 +509,15 @@ describe('openSenseMap API Routes: /users', function () {
         return chakram.wait();
       });
   });
+
+  it('should deny to register with multiline username', function () {
+    return chakram.post(`${BASE_URL}/users/register`, { name: `multi
+    line name`, email: 'tester5@test.test', password: '12345678' })
+      .then(function (response) {
+        expect(response).to.have.status(422);
+        expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
+
+        return chakram.wait();
+      });
+  });
 });
