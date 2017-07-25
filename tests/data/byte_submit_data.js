@@ -11,7 +11,13 @@ module.exports = function (sensors, withTimestamps) {
     buffer.write(sensor._id, i * len, 12, 'hex');
     buffer.writeFloatLE(i, (i * len) + 12);
     if (withTimestamps) {
-      buffer.writeUInt32LE(moment.utc().subtract(i, 'minute').unix(), (i * len) + 12 + 4);
+      buffer
+        .writeUInt32LE(
+          moment
+            .utc()
+            .subtract(i, 'minute')
+            .unix(), (i * len) + 12 + 4
+        );
     }
   }
 

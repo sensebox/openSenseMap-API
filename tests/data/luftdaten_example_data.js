@@ -1,3 +1,5 @@
+'use strict';
+
 module.exports = {
   'software_version': 'NRZ-2016-058',
   'sensordatavalues': [

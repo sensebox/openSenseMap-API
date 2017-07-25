@@ -12,7 +12,8 @@ const no_timestamps = function (sensors) {
 
 const with_timestamps = function (sensors) {
   const str = sensors.map(function (sensor, index) {
-    return `${sensor._id},${index},${moment.utc().subtract(index, 'minutes').toISOString()}`;
+    return `${sensor._id},${index},${moment.utc().subtract(index, 'minutes')
+      .toISOString()}`;
   }).join('\n');
 
   return str;
@@ -20,7 +21,8 @@ const with_timestamps = function (sensors) {
 
 const with_timestamps_future = function (sensors) {
   const str = sensors.map(function (sensor, index) {
-    return `${sensor._id},${index},${moment.utc().add(index, 'minutes').toISOString()}`;
+    return `${sensor._id},${index},${moment.utc().add(index, 'minutes')
+      .toISOString()}`;
   }).join('\n');
 
   return str;
@@ -28,7 +30,8 @@ const with_timestamps_future = function (sensors) {
 
 const with_too_many = function (sensors) {
   const str = sensors.map(function (sensor, index) {
-    return `${sensor._id},${index},${moment.utc().add(index, 'minutes').toISOString()}`;
+    return `${sensor._id},${index},${moment.utc().add(index, 'minutes')
+      .toISOString()}`;
   }).join('\n');
 
   return str;

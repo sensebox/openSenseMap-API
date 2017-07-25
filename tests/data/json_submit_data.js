@@ -1,7 +1,5 @@
 'use strict';
 
-const moment = require('moment');
-
 const json_obj = function (sensors) {
   const obj = {};
   sensors.forEach(function (sensor, index) {
