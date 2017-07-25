@@ -879,7 +879,7 @@ describe('openSenseMap API', function () {
           expect(response).to.comprise.of.json('data.loc', [ { type: 'Feature', geometry: { type: 'Point', coordinates: [ update_payload.loc.lng, update_payload.loc.lat ] } }]);
 
           expect(response).to.comprise.of.json('data.image', function (image) {
-            return expect(moment().diff(moment(parseInt(image.split('_')[1].slice(0, -4), 36) * 1000))).to.be.below(50);
+            return expect(moment().diff(moment(parseInt(image.split('_')[1].slice(0, -4), 36) * 1000))).to.be.below(1000);
           });
 
           return chakram.wait();
