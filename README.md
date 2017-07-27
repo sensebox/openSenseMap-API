@@ -2,10 +2,10 @@ openSenseMap-API
 ================
 
 [![Join the chat at https://gitter.im/sensebox/openSenseMap-API](https://badges.gitter.im/sensebox/openSenseMap-API.svg)](https://gitter.im/sensebox/openSenseMap-API?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-This is the back-end for [openSenseMap](http://opensensemap.org).
+This is the back-end for [openSenseMap](https://opensensemap.org).
 
-openSenseMap is part of the [senseBox](http//sensebox.de) project.
-To get more information about openSenseBox and senseBox visit the before mentioned links or have a look at this [video](https://www.youtube.com/watch?v=uTOWYa42_rI).
+openSenseMap is part of the [senseBox](https://sensebox.de) project.
+To get more information about openSenseMap and senseBox visit the before mentioned links or have a look at this [video](https://www.youtube.com/watch?v=uTOWYa42_rI).
 
 Originally, this API has been built as part the bachelor thesis of @mpfeil at the ifgi (Institute for Geoinformatics, WWU Münster).
 
