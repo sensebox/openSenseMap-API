@@ -8,9 +8,9 @@
   dependencies:
     wgs84 "0.0.0"
 
-"@sensebox/sketch-templater@^1.0.2":
-  version "1.0.2"
-  resolved "https://registry.yarnpkg.com/@sensebox/sketch-templater/-/sketch-templater-1.0.2.tgz#fce6398f39623429a8fd3b915eb3cf8760bab96d"
+"@sensebox/sketch-templater@^1.0.3":
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/@sensebox/sketch-templater/-/sketch-templater-1.0.3.tgz#5e2efb91d1705cd82af6bec9b95ed488cafeb7ef"
   dependencies:
     dedent "^0.7.0"
 
