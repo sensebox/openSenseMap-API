@@ -1,3 +1,5 @@
+'use strict';
+
 module.exports = {
   'name': 'Wetterstation der AG Klimatologie Uni Münster',
   'boxType': 'fixed',

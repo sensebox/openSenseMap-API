@@ -1,3 +1,5 @@
+'use strict';
+
 const randomGeojson = require('randomgeojson');
 module.exports = function ({ bbox, model, sensors, lonlat } = {}) {
   const randomGeojsonOptions = { featureTypes: ['Point'] };
@@ -13,7 +15,6 @@ module.exports = function ({ bbox, model, sensors, lonlat } = {}) {
   if (!loc) {
     loc = [ randomGeojson.generateGeoJSON(randomGeojsonOptions).features[0] ];
   }
-
 
   if (!sensors && !model) {
     model = 'homeEthernet';

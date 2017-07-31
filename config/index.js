@@ -8,7 +8,6 @@ const isProdEnv = function isProdEnv () {
 // environment variables starting with `OSEM_` will override the values here.
 // Example: `OSEM_targetfolder` will override the setting for `targetFolder`
 const config = {
-  targetFolder: './usersketches/', // absolute location of generated arduino sketch ino files
   imageFolder: './userimages/', // absolute location of user images
   logFolder: './logs/', // absolute location of error log files
 

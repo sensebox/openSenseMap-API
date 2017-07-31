@@ -1,6 +1,6 @@
 'use strict';
 
-/* global describe it */
+/* global describe it before */
 
 const chakram = require('chakram'),
   expect = chakram.expect,
@@ -12,14 +12,11 @@ const BASE_URL = process.env.OSEM_TEST_BASE_URL,
   valid_sensebox = require('./data/valid_sensebox'),
   valid_user = require('./data/valid_user'),
   senseBoxSchema = require('./data/senseBoxSchema'),
-  senseBoxSchemaAllFields = require('./data/senseBoxSchemaAllFieldsUsers'),
   findAllSchema = require('./data/findAllSchema'),
   csv_example_data = require('./data/csv_example_data'),
   json_submit_data = require('./data/json_submit_data'),
   byte_submit_data = require('./data/byte_submit_data'),
   getUserBoxesSchema = require('./data/getUserBoxesSchema'),
-  getUserSchema = require('./data/getUserSchema'),
-  luftdaten_example_data = require('./data/luftdaten_example_data'),
   publishMqttMessage = require('./helpers/mqtt'),
   custom_valid_sensebox = require('./data/custom_valid_sensebox');
 
@@ -34,490 +31,26 @@ require('fs')
   });
 
 describe('openSenseMap API', function () {
-  let jwt, jwt2, refreshToken, refreshToken2;
-
-  describe('/users', function () {
-    it('should allow to register an user via POST', function () {
-      return chakram.post(`${BASE_URL}/users/register`, valid_user)
-        .then(function (response) {
-          expect(response).to.have.status(201);
-          expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
-          expect(response.body.token).to.exist;
-
-          return chakram.wait();
-        });
-    });
-
-    it('should deny to register an user with the same email', function () {
-      return chakram.post(`${BASE_URL}/users/register`, valid_user)
-        .then(function (response) {
-          expect(response).to.have.status(400);
-          expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
-
-          return chakram.wait();
-        });
-    });
-
-    it('should deny to register an user with too short password', function () {
-      return chakram.post(`${BASE_URL}/users/register`, { name: 'tester', password: 'short', email: 'address@email.com' })
-        .then(function (response) {
-          expect(response).to.have.status(422);
-          expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
-
-          return chakram.wait();
-        });
-    });
-
-    it('should deny to register an user with no name', function () {
-      return chakram.post(`${BASE_URL}/users/register`, { name: '', password: 'longenough', email: 'address@email.com' })
-        .then(function (response) {
-          expect(response).to.have.status(422);
-          expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
-
-          return chakram.wait();
-        });
-    });
-
-    it('should deny to register an user with missing name parameter', function () {
-      return chakram.post(`${BASE_URL}/users/register`, { password: 'longenough', email: 'address@email.com' })
-        .then(function (response) {
-          expect(response).to.have.status(400);
-          expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
-
-          return chakram.wait();
-        });
-    });
-
-    it('should deny to register an user with invalid email address', function () {
-      return chakram.post(`${BASE_URL}/users/register`, { name: 'tester mc testmann', password: 'longenough', email: 'invalid' })
-        .then(function (response) {
-          expect(response).to.have.status(422);
-          expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
-
-          return chakram.wait();
-        });
-    });
-
-    it('should deny to register a too short username', function () {
-      return chakram.post(`${BASE_URL}/users/register`, { name: 't', password: 'longenough', email: 'address@email.com' })
-        .then(function (response) {
-          expect(response).to.have.status(422);
-          expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
-
-          return chakram.wait();
-        });
-    });
-
-    it('should deny to register an user with username not starting with a letter or number', function () {
-      return chakram.post(`${BASE_URL}/users/register`, { name: ' username', password: 'longenough', email: 'address@email.com' })
-        .then(function (response) {
-          expect(response).to.have.status(422);
-          expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
-
-          return chakram.wait();
-        });
-    });
-
-    it('should deny to register an user with username with invalid characters', function () {
-      return chakram.post(`${BASE_URL}/users/register`, { name: 'user () name', password: 'longenough', email: 'address@email.com' })
-        .then(function (response) {
-          expect(response).to.have.status(422);
-          expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
-
-          return chakram.wait();
-        });
-    });
-
-
-    it('should deny to register a too long username', function () {
-      return chakram.post(`${BASE_URL}/users/register`, { name: 'Really Long User Name which is definetely too long to be accepted', password: 'longenough', email: 'address@email.com' })
-        .then(function (response) {
-          expect(response).to.have.status(422);
-          expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
-
-          return chakram.wait();
-        });
-    });
-
-    it('should allow to register a second user via POST', function () {
-      return chakram.post(`${BASE_URL}/users/register`, { name: 'mrtest', email: 'tester2@test.test', password: '12345678' })
-        .then(function (response) {
-          expect(response).to.have.status(201);
-          expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
-          expect(response.body.token).to.exist;
-
-          jwt2 = response.body.token;
-          refreshToken2 = response.body.refreshToken;
-
-          return chakram.wait();
-        });
-    });
-
-    it('should deny to change email and password at the same time', function () {
-      return chakram.put(`${BASE_URL}/users/me`, { email: 'new-email@email.www', newPassword: '87654321' }, { headers: { 'Authorization': `Bearer ${jwt2}` } })
-        .then(function (response) {
-          expect(response).to.have.status(400);
-          expect(response).to.have.json('message', 'You cannot change your email address and password in the same request.');
-
-          return chakram.wait();
-        });
-    });
-
-    it('should deny to change email without current passsword', function () {
-      return chakram.put(`${BASE_URL}/users/me`, { email: 'new-email@email.www' }, { headers: { 'Authorization': `Bearer ${jwt2}` } })
-        .then(function (response) {
-          expect(response).to.have.status(400);
-          expect(response).to.have.json('message', 'To change your password or email address, please supply your current password.');
-
-          return chakram.wait();
-        });
-    });
-
-    it('should deny to change email with wrong current passsword', function () {
-      return chakram.put(`${BASE_URL}/users/me`, { email: 'new-email@email.www', currentPassword: 'wrongpassword' }, { headers: { 'Authorization': `Bearer ${jwt2}` } })
-        .then(function (response) {
-          expect(response).to.have.status(400);
-          expect(response).to.have.json('message', 'Password not correct.');
-
-          return chakram.wait();
-        });
-    });
-
-    it('should allow to change email with correct current passsword', function () {
-      return chakram.put(`${BASE_URL}/users/me`, { email: 'new-email@email.www', currentPassword: '12345678' }, { headers: { 'Authorization': `Bearer ${jwt2}` } })
-        .then(function (response) {
-          expect(response).to.have.status(200);
-          expect(response).to.have.json('message', 'User successfully saved. E-Mail changed. Please confirm your new address. Until confirmation, sign in using your old address');
-
-          return chakram.get(`${BASE_URL}/users/me`, { headers: { 'Authorization': `Bearer ${jwt2}` } });
-        })
-        .then(function (response) {
-          expect(response).to.have.status(200);
-          expect(response).to.have.json('data', function (data) {
-            expect(data.me.email).to.equal('tester2@test.test');
-          });
-
-          return chakram.wait();
-        });
-    });
-
-    it('should allow to change name', function () {
-      return chakram.put(`${BASE_URL}/users/me`, { name: 'new Name' }, { headers: { 'Authorization': `Bearer ${jwt2}` } })
-        .then(function (response) {
-          expect(response).to.have.status(200);
-          expect(response).to.have.json('message', 'User successfully saved.');
-
-          return chakram.get(`${BASE_URL}/users/me`, { headers: { 'Authorization': `Bearer ${jwt2}` } });
-        })
-        .then(function (response) {
-          expect(response).to.have.status(200);
-          expect(response).to.have.json('data', function (data) {
-            expect(data.me.name).to.equal('new Name');
-          });
-
-          return chakram.wait();
-        });
-    });
-
-    it('should deny to change name to existing name', function () {
-      return chakram.put(`${BASE_URL}/users/me`, { name: 'this is just a nickname', currentPassword: '12345678' }, { headers: { 'Authorization': `Bearer ${jwt2}` } })
-        .then(function (response) {
-          expect(response).to.have.status(400);
-          expect(response).to.have.json('message', 'Duplicate user detected');
-
-          return chakram.wait();
-        });
-    });
-
-    it('should deny to change password with too short new password', function () {
-      return chakram.put(`${BASE_URL}/users/me`, { newPassword: 'short', currentPassword: '12345678' }, { headers: { 'Authorization': `Bearer ${jwt2}` } })
-        .then(function (response) {
-          expect(response).to.have.status(400);
-          expect(response).to.have.json('message', 'New password should have at least 8 characters');
-
-          return chakram.wait();
-        });
-    });
-
-    it('should deny to change email to invalid email', function () {
-      return chakram.put(`${BASE_URL}/users/me`, { email: 'invalid email', currentPassword: '12345678' }, { headers: { 'Authorization': `Bearer ${jwt2}` } })
-        .then(function (response) {
-          expect(response).to.have.status(422);
-
-          return chakram.wait();
-        });
-    });
-
-    it('should deny to change name to invalid name', function () {
-      return chakram.put(`${BASE_URL}/users/me`, { name: ' invalid name', currentPassword: '12345678' }, { headers: { 'Authorization': `Bearer ${jwt2}` } })
-        .then(function (response) {
-          expect(response).to.have.status(422);
-
-          return chakram.wait();
-        });
-    });
-
-    it('should allow to change to a password with leading and trailing spaces', function () {
-      return chakram.put(`${BASE_URL}/users/me`, { newPassword: ' leading and trailing spaces ', currentPassword: '12345678' }, { headers: { 'Authorization': `Bearer ${jwt2}` } })
-        .then(function (response) {
-          expect(response).to.have.status(200);
-          expect(response).to.have.json('message', 'User successfully saved. Password changed. Please log in with your new password');
-
-          // try to log in with old token
-          return chakram.get(`${BASE_URL}/users/me`, { headers: { 'Authorization': `Bearer ${jwt2}` } });
-        })
-        .then(function (response) {
-          expect(response).to.have.status(401);
-
-          // try to sign in with new password
-          return chakram.post(`${BASE_URL}/users/sign-in`, { email: 'tester2@test.test', password: ' leading and trailing spaces ' });
-        })
-        .then(function (response) {
-          expect(response).to.have.status(200);
-          expect(response).to.have.json('data', function (data) {
-            expect(data.user.email).to.equal('tester2@test.test');
-          });
-          expect(response.body.token).to.exist;
-
-          jwt2 = response.body.token;
-
-          return chakram.wait();
-        });
-    });
-
-    it('should allow to change password with correct current password', function () {
-      return chakram.put(`${BASE_URL}/users/me`, { newPassword: '12345678910', currentPassword: ' leading and trailing spaces ' }, { headers: { 'Authorization': `Bearer ${jwt2}` } })
-        .then(function (response) {
-          expect(response).to.have.status(200);
-          expect(response).to.have.json('message', 'User successfully saved. Password changed. Please log in with your new password');
-
-          // try to log in with old token
-          return chakram.get(`${BASE_URL}/users/me`, { headers: { 'Authorization': `Bearer ${jwt2}` } });
-        })
-        .then(function (response) {
-          expect(response).to.have.status(401);
-
-          // try to sign in with new password
-          return chakram.post(`${BASE_URL}/users/sign-in`, { email: 'tester2@test.test', password: '12345678910' });
-        })
-        .then(function (response) {
-          expect(response).to.have.status(200);
-          expect(response).to.have.json('data', function (data) {
-            expect(data.user.email).to.equal('tester2@test.test');
-          });
-          expect(response.body.token).to.exist;
-
-          jwt2 = response.body.token;
-
-          return chakram.wait();
-        });
-    });
-
-    it('should deny to request a fresh jwt using refresh token after changing the password', function () {
-      return chakram.post(`${BASE_URL}/users/refresh-auth`, { 'token': refreshToken2 })
-        .then(function (response) {
-          expect(response).to.have.status(403);
-
-          return chakram.wait();
-        });
-    });
-
-    it('should deny to sign in with wrong password', function () {
-      return chakram.post(`${BASE_URL}/users/sign-in`, { email: 'tester@test.test', password: 'wrong password' })
-        .then(function (response) {
-          expect(response).to.have.status(401);
-
-          return chakram.wait();
-        });
-    });
-
-    it('should allow to sign in an user with email and password', function () {
-      return chakram.post(`${BASE_URL}/users/sign-in`, valid_user)
-        .then(function (response) {
-          expect(response).to.have.status(200);
-          expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
-          expect(response.body.token).to.exist;
-          expect(response.body.refreshToken).to.exist;
-
-          return chakram.wait();
-        });
-    });
-
-    it('should allow to sign in an user with name and password', function () {
-      return chakram.post(`${BASE_URL}/users/sign-in`, { email: 'this is just a nickname', password: 'some secure password' })
-        .then(function (response) {
-          expect(response).to.have.status(200);
-          expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
-          expect(response.body.token).to.exist;
-          expect(response.body.refreshToken).to.exist;
-
-          jwt = response.body.token;
-          refreshToken = response.body.refreshToken;
-
-          return chakram.wait();
-        });
-    });
-
-    it('should allow to sign out with jwt', function () {
-      return chakram.post(`${BASE_URL}/users/sign-out`, {}, { headers: { 'Authorization': `Bearer ${jwt}` } })
-        .then(function (response) {
-          expect(response).to.have.status(200);
-          expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
-
-          return chakram.wait();
-        });
-    });
-
-    it('should deny to use the refreshToken after signing out', function () {
-      return chakram.post(`${BASE_URL}/users/refresh-auth`, { 'token': refreshToken })
-        .then(function (response) {
-          expect(response).to.have.status(403);
-
-          return chakram.wait();
-        });
-    });
-
-    it('should deny to use revoked jwt', function () {
-      return chakram.post(`${BASE_URL}/boxes`, valid_sensebox(), { headers: { 'Authorization': `Bearer ${jwt}` } })
-        .then(function (response) {
-          expect(response).to.have.status(401);
-
-          return chakram.post(`${BASE_URL}/users/sign-in`, valid_user);
-        })
-        .then(function (response) {
-          expect(response).to.have.status(200);
-          expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
-          expect(response.body.token).to.exist;
-          expect(response.body.refreshToken).to.exist;
-
-          jwt = response.body.token;
-          refreshToken = response.body.refreshToken;
-
-          return chakram.wait();
-        });
-    });
-
-    it('should allow to refresh jwt using the refresh token', function () {
-      return chakram.post(`${BASE_URL}/users/refresh-auth`, { 'token': refreshToken })
-        .then(function (response) {
-          expect(response).to.have.status(200);
-          expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
-          expect(response.body.token).to.exist;
-          expect(response.body.refreshToken).to.exist;
-
-          const jwt = response.body.token;
-
-          return chakram.get(`${BASE_URL}/users/me`, { headers: { 'Authorization': `Bearer ${jwt}` } });
-        })
-        .then(function (response) {
-          expect(response).to.have.status(200);
-          expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
-          expect(response).to.have.schema(getUserSchema);
-          expect(response).to.comprise.of.json({ code: 'Ok', data: { me: { email: 'tester@test.test' } } });
-
-          return chakram.wait();
-        });
-    });
-
-    it('should deny to use an refresh token twice', function () {
-      return chakram.post(`${BASE_URL}/users/refresh-auth`, { 'token': refreshToken })
-        .then(function (response) {
-          expect(response).to.have.status(403);
-
-          return chakram.wait();
-        });
-    });
-
-    it('should deny to use an old jwt after using a refresh token', function () {
-      return chakram.post(`${BASE_URL}/boxes`, valid_sensebox(), { headers: { 'Authorization': `Bearer ${jwt}` } })
-        .then(function (response) {
-          expect(response).to.have.status(401);
-
-          return chakram.post(`${BASE_URL}/users/sign-in`, valid_user);
-        })
-        .then(function (response) {
-          expect(response).to.have.status(200);
-          expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
-          expect(response.body.token).to.exist;
-          expect(response.body.refreshToken).to.exist;
-
-          jwt = response.body.token;
-          refreshToken = response.body.refreshToken;
-
-          return chakram.wait();
-        });
-    });
-
-    it('should allow to request a password reset token', function () {
-      return chakram.post(`${BASE_URL}/users/request-password-reset`, valid_user)
-        .then(function (response) {
-          expect(response).to.have.status(200);
-
-          return chakram.wait();
-        });
-    });
-
-    it('should deny password request with wrong token', function () {
-      return chakram.post(`${BASE_URL}/users/password-reset`, { password: 'ignored_anyway', token: 'invalid_password-reset_token', email: 'tester@test.test' })
-        .then(function (response) {
-          expect(response).to.have.status(403);
-          expect(response).to.have.json({ code: 'ForbiddenError',
-            message: 'Password reset for this user not possible' });
-
-          return chakram.wait();
-        });
-    });
-
-    it('should deny password change with empty token parameter', function () {
-      return chakram.post(`${BASE_URL}/users/password-reset`, { password: 'ignored_anyway', token: '   ', email: 'tester@test.test' })
-        .then(function (response) {
-          expect(response).to.have.status(422);
-        });
-    });
-
-    it('should deny email confirmation with wrong token', function () {
-      return chakram.post(`${BASE_URL}/users/confirm-email`, { token: 'invalid_password-reset_token', email: 'tester@test.test' })
-        .then(function (response) {
-          expect(response).to.have.status(403);
-
-          return chakram.wait();
-        });
-    });
-
-    it('should allow users to request their details', function () {
-      return chakram.get(`${BASE_URL}/users/me`, { headers: { 'Authorization': `Bearer ${jwt}` } })
-        .then(function (response) {
-          expect(response).to.have.status(200);
-          expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
-          expect(response).to.have.schema(getUserSchema);
-          expect(response).to.comprise.of.json({ code: 'Ok', data: { me: { email: 'tester@test.test' } } });
-
-          return chakram.wait();
-        });
-    });
-
-    it('should allow users request a resend of the email confirmation', function () {
-      let jwt3;
-
-      return chakram.post(`${BASE_URL}/users/register`, { name: 'mrtest', email: 'tester4@test.test', password: '12345678' })
-        .then(function (response) {
-          expect(response).to.have.status(201);
-          expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
-          expect(response.body.token).to.exist;
-
-          jwt3 = response.body.token;
-
-          return chakram.post(`${BASE_URL}/users/me/resend-email-confirmation`, {}, { headers: { 'Authorization': `Bearer ${jwt3}` } });
-        })
-        .then(function (response) {
-          expect(response).to.have.status(200);
-          expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
-          expect(response).to.comprise.of.json({ code: 'Ok', message: 'Email confirmation has been sent to tester4@test.test' });
-
-          return chakram.wait();
-        });
-    });
-
+  let jwt, jwt2;
+
+  before(function () {
+    return Promise.all([
+      chakram.post(`${BASE_URL}/users/sign-in`, valid_user),
+      chakram.post(`${BASE_URL}/users/sign-in`, { email: 'tester2@test.test', password: '12345678910' })
+    ])
+      .then(function ([response1, response2]) {
+        expect(response1).to.have.status(200);
+        expect(response1).to.have.header('content-type', 'application/json; charset=utf-8');
+        expect(response1.body.token).to.exist;
+        expect(response2).to.have.status(200);
+        expect(response2).to.have.header('content-type', 'application/json; charset=utf-8');
+        expect(response2.body.token).to.exist;
+
+        jwt = response1.body.token;
+        jwt2 = response2.body.token;
+
+        return chakram.wait();
+      });
   });
 
   describe('/boxes', function () {
@@ -782,7 +315,7 @@ describe('openSenseMap API', function () {
         .then(function (response) {
           expect(response).to.have.status(422);
           expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
-          expect(response).json({ code: 'UnprocessableEntityError', message: 'Parameter sensors is required if model is invalid or missing.' });
+          expect(response).json({ code: 'UnprocessableEntityError', message: 'sensors are required if model is invalid or missing.' });
 
           return chakram.wait();
         });
@@ -793,7 +326,6 @@ describe('openSenseMap API', function () {
 
       return chakram.post(`${BASE_URL}/boxes`, box, { headers: { 'Authorization': `Bearer ${jwt2}` } })
         .then(function (response) {
-          console.log(response.body);
           expect(response).to.have.status(422);
           expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
           expect(response).json({ code: 'UnprocessableEntityError', message: 'Parameters model and sensors cannot be specified at the same time.' });
@@ -1146,7 +678,8 @@ describe('openSenseMap API', function () {
     it('should return the correct count and correct schema of boxes for /boxes GET with two date parameters', function () {
       const now = moment.utc();
 
-      return chakram.get(`${BASE_URL}/boxes?date=${now.clone().subtract(1, 'minute').toISOString()},${now.toISOString()}`)
+      return chakram.get(`${BASE_URL}/boxes?date=${now.clone().subtract(1, 'minute')
+        .toISOString()},${now.toISOString()}`)
         .then(function (response) {
           expect(response).to.have.status(200);
           expect(Array.isArray(response.body)).to.be.true;
@@ -1154,7 +687,9 @@ describe('openSenseMap API', function () {
           expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
           expect(response).to.have.schema(findAllSchema);
 
-          return chakram.get(`${BASE_URL}/boxes?date=${now.clone().subtract(10, 'days').subtract(10, 'minutes').toISOString()},${now.toISOString()}`);
+          return chakram.get(`${BASE_URL}/boxes?date=${now.clone().subtract(10, 'days')
+            .subtract(10, 'minutes')
+            .toISOString()},${now.toISOString()}`);
         })
         .then(function (response) {
           expect(response).to.have.status(200);
@@ -1238,7 +773,8 @@ describe('openSenseMap API', function () {
     it('should return the correct count and correct schema of boxes for /boxes GET with two date parameters after deleted sensor', function () {
       const now = moment.utc();
 
-      return chakram.get(`${BASE_URL}/boxes?date=${now.clone().subtract(5, 'minutes').toISOString()},${now.toISOString()}&phenomenon=Temperatur`)
+      return chakram.get(`${BASE_URL}/boxes?date=${now.clone().subtract(5, 'minutes')
+        .toISOString()},${now.toISOString()}&phenomenon=Temperatur`)
         .then(function (response) {
           expect(response).to.have.status(200);
           expect(Array.isArray(response.body)).to.be.true;
@@ -1343,7 +879,7 @@ describe('openSenseMap API', function () {
           expect(response).to.comprise.of.json('data.loc', [ { type: 'Feature', geometry: { type: 'Point', coordinates: [ update_payload.loc.lng, update_payload.loc.lat ] } }]);
 
           expect(response).to.comprise.of.json('data.image', function (image) {
-            return expect(moment().diff(moment(parseInt(image.split('?')[1], 10)))).to.be.below(50);
+            return expect(moment().diff(moment(parseInt(image.split('_')[1].slice(0, -4), 36) * 1000))).to.be.below(1000);
           });
 
           return chakram.wait();
@@ -1479,7 +1015,8 @@ describe('openSenseMap API', function () {
 
     it('should allow to delete all data for a single sensor through specifying from-date and to-date', function () {
       const sensor_id = boxes[boxIds[1]].sensors[boxes[boxIds[1]].sensors.findIndex(s => s.title === 'rel. Luftfeuchte')]._id;
-      const payload = { 'from-date': moment.utc().subtract(1, 'year').toISOString(), 'to-date': moment.utc().toISOString() };
+      const payload = { 'from-date': moment.utc().subtract(1, 'year')
+        .toISOString(), 'to-date': moment.utc().toISOString() };
 
       return chakram.delete(`${BASE_URL}/boxes/${boxIds[1]}/${sensor_id}/measurements`, payload, { headers: { 'content-type': 'application/json', 'Authorization': `Bearer ${jwt2}` } })
         .then(function (response) {

@@ -10,7 +10,8 @@ const chakram = require('chakram'),
 
 const BASE_URL = `${process.env.OSEM_TEST_BASE_URL}/statistics/idw`,
   baseTimestamp = moment.utc('2017-01-01T12:00:00Z'),
-  hasDataParameters = `exposure=indoor&phenomenon=Temperatur&from-date=${baseTimestamp.clone().toISOString()}&to-date=${baseTimestamp.clone().add(12, 'minute').toISOString()}`;
+  hasDataParameters = `exposure=indoor&phenomenon=Temperatur&from-date=${baseTimestamp.clone().toISOString()}&to-date=${baseTimestamp.clone().add(12, 'minute')
+    .toISOString()}`;
 
 describe('openSenseMap API Routes: /statistics/idw', function () {
   let firstRequest, requestNoData;
