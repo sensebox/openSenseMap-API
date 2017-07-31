@@ -12,7 +12,7 @@ if (collections.indexOf("schemaVersion") === -1) {
 
 var latestVersion = db.schemaVersion.find({}).sort({ schemaVersion: -1 }).limit(1).next();
 
-if (latestVersion.schemaVersion !== 3) {
+if (latestVersion.schemaVersion !== 4) {
   print("Migration already applied... Exiting!");
   quit();
 }
