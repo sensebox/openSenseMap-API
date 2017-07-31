@@ -22,6 +22,9 @@ const BASE_URL = process.env.OSEM_TEST_BASE_URL,
 
 const path = require('path').join(__dirname, 'routes');
 
+// must run at the start, b/c tests assume an empty database
+require('./location_tests');
+
 require('fs')
   .readdirSync(path)
   .forEach(function (file) {
@@ -282,7 +285,6 @@ describe('openSenseMap API', function () {
         });
     });
 
-
     it('should accept multiple measurements as csv via POST', function () {
       let submitTime;
 
@@ -309,7 +311,7 @@ describe('openSenseMap API', function () {
     });
 
     it('should deny to register a senseBox without model or sensors', function () {
-      const box = { 'name': 'Wetterstation der AG Klimatologie Uni Münster', 'boxType': 'fixed', 'exposure': 'outdoor', 'loc': [{ 'type': 'feature', 'geometry': { 'type': 'Point', 'coordinates': [7.595878, 51.969263] } }] };
+      const box = { 'name': 'Wetterstation der AG Klimatologie Uni Münster', 'exposure': 'outdoor', 'location': [7.595878, 51.969263] };
 
       return chakram.post(`${BASE_URL}/boxes`, box, { headers: { 'Authorization': `Bearer ${jwt2}` } })
         .then(function (response) {
@@ -322,7 +324,7 @@ describe('openSenseMap API', function () {
     });
 
     it('should reject to register a senseBox with both model and sensors', function () {
-      const box = { 'name': 'Wetterstation der AG Klimatologie Uni Münster', 'boxType': 'fixed', 'exposure': 'outdoor', 'loc': [{ 'type': 'feature', 'geometry': { 'type': 'Point', 'coordinates': [7.595878, 51.969263] } }], model: 'homeWifi', sensors: [{ title: 'Temp', unit: 'C', }] };
+      const box = { 'name': 'Wetterstation der AG Klimatologie Uni Münster', 'exposure': 'outdoor', 'location': [7.595878, 51.969263], model: 'homeWifi', sensors: [{ title: 'Temp', unit: 'C', }] };
 
       return chakram.post(`${BASE_URL}/boxes`, box, { headers: { 'Authorization': `Bearer ${jwt2}` } })
         .then(function (response) {
@@ -866,7 +868,7 @@ describe('openSenseMap API', function () {
     });
 
     it('should allow to update the box via PUT', function () {
-      const update_payload = { name: 'neuername', exposure: 'indoor', grouptag: 'newgroup', description: 'total neue beschreibung', loc: { lat: 54.2, lng: 21.1 }, weblink: 'http://www.google.de', image: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVQYV2NgYAAAAAMAAWgmWQ0AAAAASUVORK5CYII=' };
+      const update_payload = { name: 'neuername', exposure: 'indoor', grouptag: 'newgroup', description: 'total neue beschreibung', location: { lat: 54.2, lng: 21.1 }, weblink: 'http://www.google.de', image: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVQYV2NgYAAAAAMAAWgmWQ0AAAAASUVORK5CYII=' };
 
       return chakram.put(`${BASE_URL}/boxes/${boxIds[1]}`, update_payload, { headers: { 'Authorization': `Bearer ${jwt2}` } })
         .then(function (response) {
@@ -875,9 +877,23 @@ describe('openSenseMap API', function () {
           expect(response).to.comprise.of.json('data.exposure', update_payload.exposure);
           expect(response).to.comprise.of.json('data.grouptag', update_payload.grouptag);
           expect(response).to.comprise.of.json('data.description', update_payload.description);
-          expect(response).to.comprise.of.json('data.weblink', update_payload.weblink);
-          expect(response).to.comprise.of.json('data.loc', [ { type: 'Feature', geometry: { type: 'Point', coordinates: [ update_payload.loc.lng, update_payload.loc.lat ] } }]);
+          expect(response).to.comprise.of.json('data.currentLocation', { type: 'Point',
+            coordinates: [update_payload.location.lng, update_payload.location.lat]
+          });
 
+          // loc field with old schema (backwards compat):
+          expect(response).to.comprise.of.json('data.loc', [{
+            type: 'Feature',
+            geometry: {
+              type: 'Point',
+              coordinates: [
+                update_payload.location.lng,
+                update_payload.location.lat
+              ]
+            }
+          }]);
+
+          // image should contain timestamp. request duration should be less than 1s.
           expect(response).to.comprise.of.json('data.image', function (image) {
             return expect(moment().diff(moment(parseInt(image.split('_')[1].slice(0, -4), 36) * 1000))).to.be.below(1000);
           });

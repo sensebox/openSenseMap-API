@@ -2,7 +2,6 @@
 
 module.exports = {
   'name': 'Wetterstation der AG Klimatologie Uni Münster',
-  'boxType': 'fixed',
   'sensors': [
     {
       'title': 'Temperatur',
@@ -36,16 +35,5 @@ module.exports = {
     }
   ],
   'exposure': 'outdoor',
-  'loc': [
-    {
-      'type': 'feature',
-      'geometry': {
-        'type': 'Point',
-        'coordinates': [
-          7.595878,
-          51.969263
-        ]
-      }
-    }
-  ]
+  'location': [7.595878, 51.969263, 99.1239]
 };
