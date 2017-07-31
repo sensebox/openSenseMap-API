@@ -1,23 +1,25 @@
 'use strict';
 
-/* global describe it */
+/* global describe it before after */
 
 const chakram = require('chakram'),
   expect = chakram.expect,
   parseCSV = require('csv-parse/lib/sync'),
   moment = require('moment');
 
-function logResponseIfError (r) {
+const logResponseIfError = function logResponseIfError (r) {
   if (r.response.statusCode >= 400) {
+    /* eslint-disable no-console */
     console.error(r.body);
+    /* eslint-enable no-console */
   }
 
   return r;
-}
+};
 
-function minimalSensebox(location = [123, 12, 34], exposure = 'mobile') {
+const minimalSensebox = function minimalSensebox (location = [123, 12, 34], exposure = 'mobile') {
   return { exposure, location, name: 'senseBox', model: 'homeEthernet', };
-}
+};
 
 describe('openSenseMap API locations tests', function () {
   let authHeader, box, submitTimeLoc1;
@@ -37,11 +39,15 @@ describe('openSenseMap API locations tests', function () {
   after('delete user', function (done) {
     chakram.delete(`${process.env.OSEM_TEST_BASE_URL}/users/me`, { password: '12345678' }, authHeader)
       .then(logResponseIfError)
-      .then(response => done())
+    /* eslint-disable no-unused-vars */
+      .then(response => done());
+    /* eslint-enable no-unused-vars */
   });
 
   describe('location validation', function () {
+    /* eslint-disable global-require */
     const { transformAndValidateCoords: validate } = require('../lib/decoding/validators');
+    /* eslint-enable global-require */
 
     it('should transform latlng object to array', function () {
       const loc = { lng: -120.126, lat: 90, height: 120.123 };
@@ -101,7 +107,7 @@ describe('openSenseMap API locations tests', function () {
           expect(response.body.data.currentLocation).to.exist;
           expect(response.body.data.currentLocation.coordinates).to.deep.equal(loc);
           expect(response.body.data.currentLocation.timestamp).to.exist;
-          expect(moment().diff(response.body.data.currentLocation.timestamp)).to.be.below(100);
+          expect(moment().diff(response.body.data.currentLocation.timestamp)).to.be.below(150);
 
           box = response.body.data;
 
@@ -160,7 +166,7 @@ describe('openSenseMap API locations tests', function () {
     let BASE_URL = `${process.env.OSEM_TEST_BASE_URL}/boxes`;
 
     before(function () {
-      BASE_URL += `/${box._id}`; // need to append at test runtime, not at parsetime
+      BASE_URL = `${BASE_URL}/${box._id}`; // need to append at test runtime, not at parsetime
     });
 
     it('should allow updating a boxes location via array', function () {
@@ -210,7 +216,7 @@ describe('openSenseMap API locations tests', function () {
     let result;
 
     before('get box', function (done) {
-      BASE_URL += `/${box._id}`; // need to append at test runtime, not at parsetime
+      BASE_URL = `${BASE_URL}/${box._id}`; // need to append at test runtime, not at parsetime
 
       chakram.get(BASE_URL)
         .then(logResponseIfError)
@@ -218,7 +224,7 @@ describe('openSenseMap API locations tests', function () {
           expect(response).to.have.status(200);
           result = response.body;
           done();
-        })
+        });
     });
 
     it('should return the current location in box.currentLocation', function () {
@@ -407,7 +413,7 @@ describe('openSenseMap API locations tests', function () {
         .then(function (response) {
           expect(response).to.have.status(201);
 
-          return chakram.get(GET_MEASUREMENTS_URL)
+          return chakram.get(GET_MEASUREMENTS_URL);
         })
         .then(logResponseIfError)
         .then(function (response) {
@@ -435,7 +441,7 @@ describe('openSenseMap API locations tests', function () {
     let BASE_URL = `${process.env.OSEM_TEST_BASE_URL}/boxes`;
 
     before(function () {
-      BASE_URL += `/${box._id}/data`;
+      BASE_URL = `${BASE_URL}/${box._id}/data`;
     });
 
     describe('application/json', function () {
@@ -443,20 +449,20 @@ describe('openSenseMap API locations tests', function () {
       it('should accept location in measurement object with [value, time, loc]', function () {
         const measurements = {};
         measurements[box.sensors[1]._id] = [7, moment().subtract(2, 'ms'), [7, 7, 7]];
-        measurements[box.sensors[2]._id] = [8, moment(), {lat: 8, lng: 8, height: 8}];
+        measurements[box.sensors[2]._id] = [8, moment(), { lat: 8, lng: 8, height: 8 }];
 
         return chakram.post(BASE_URL, measurements, authHeader)
           .then(logResponseIfError)
           .then(function (response) {
             expect(response).to.have.status(201);
 
-            return chakram.get(`${process.env.OSEM_TEST_BASE_URL}/boxes/${box._id}`)
+            return chakram.get(`${process.env.OSEM_TEST_BASE_URL}/boxes/${box._id}`);
           })
           .then(logResponseIfError)
           .then(function (response) {
             expect(response).to.have.status(200);
             expect(response.body.currentLocation.coordinates)
-              .to.deep.equal([8,8,8]);
+              .to.deep.equal([8, 8, 8]);
 
             return chakram.wait();
           });
@@ -477,7 +483,7 @@ describe('openSenseMap API locations tests', function () {
           .then(function (response) {
             expect(response).to.have.status(201);
 
-            return chakram.get(`${process.env.OSEM_TEST_BASE_URL}/boxes/${box._id}`)
+            return chakram.get(`${process.env.OSEM_TEST_BASE_URL}/boxes/${box._id}`);
           })
           .then(logResponseIfError)
           .then(function (response) {
@@ -498,7 +504,7 @@ describe('openSenseMap API locations tests', function () {
             expect(response.body).to.be.an('array').with.length(5);
 
             for (const m of response.body) {
-              expect(m.location).to.deep.equal(Array(3).fill(parseInt(m.value)));
+              expect(m.location).to.deep.equal(Array(3).fill(parseInt(m.value, 10)));
             }
 
             return chakram.wait();
@@ -515,12 +521,12 @@ describe('openSenseMap API locations tests', function () {
 
   describe('GET /boxes/data', function () {
     let BASE_URL = `${process.env.OSEM_TEST_BASE_URL}/boxes/data`;
-    let CURRENT_LOC_DATA_URL = `${process.env.OSEM_TEST_BASE_URL}/boxes/data`
+    let CURRENT_LOC_DATA_URL = `${process.env.OSEM_TEST_BASE_URL}/boxes/data`;
 
     before(function () {
-      BASE_URL += `?phenomenon=${box.sensors[0].title}`;
+      BASE_URL = `${BASE_URL}?phenomenon=${box.sensors[0].title}`;
       // currentLocation === [10,10,10]
-      CURRENT_LOC_DATA_URL +=`?phenomenon=${box.sensors[3].title}&bbox=9.9,9.9,10.1,10.1`;
+      CURRENT_LOC_DATA_URL = `${CURRENT_LOC_DATA_URL}?phenomenon=${box.sensors[3].title}&bbox=9.9,9.9,10.1,10.1`;
     });
 
     it('should send lat lon columns by default', function () {
@@ -564,7 +570,7 @@ describe('openSenseMap API locations tests', function () {
           expect(response).to.have.status(200);
           const data = parseCSV(response.body, { columns: true });
 
-          for(const m of data) {
+          for (const m of data) {
             // filter measurements with inferred location
             if (m.value.indexOf('.') === -1) {
               expect(m.lon).to.equal(m.value);
@@ -615,7 +621,6 @@ describe('openSenseMap API locations tests', function () {
 
     it('should send per measurement coordinates for stationary boxes', function () {
       const updateBoxUrl = `${process.env.OSEM_TEST_BASE_URL}/boxes/${box._id}`;
-      let coords;
 
       return chakram.put(updateBoxUrl, { exposure: 'outdoor' }, authHeader)
         .then(logResponseIfError)
@@ -624,16 +629,15 @@ describe('openSenseMap API locations tests', function () {
           expect(response.body.data.exposure).to.not.equal('mobile');
 
           box = response.body.data;
-          coords = box.currentLocation.coordinates.map(c => c.toString());
 
-          return chakram.get(`${BASE_URL}&boxId=${box._id}&columns=value,lat,lon,height`)
+          return chakram.get(`${BASE_URL}&boxId=${box._id}&columns=value,lat,lon,height`);
         })
         .then(logResponseIfError)
         .then(function (response) {
           expect(response).to.have.status(200);
           const data = parseCSV(response.body, { columns: true });
 
-          for(const m of data) {
+          for (const m of data) {
             // filter measurements with inferred location
             if (m.value.indexOf('.') === -1) {
               expect(m.lon).to.equal(m.value);
@@ -683,8 +687,10 @@ describe('openSenseMap API locations tests', function () {
     });
 
     it('should provide box.currentLocation for legacy measurements without location field', function () {
+      /* eslint-disable global-require */
       const { connect, mongoose } = require('../lib/db');
       const Measurement = require('../lib/models/measurement').model;
+      /* eslint-enable global-require */
       mongoose.set('debug', false);
 
       // manually create a new measurent without location field
@@ -722,7 +728,7 @@ describe('openSenseMap API locations tests', function () {
     let BASE_URL = `${process.env.OSEM_TEST_BASE_URL}/boxes`;
 
     before(function () {
-      BASE_URL += `/${box._id}/data/${box.sensors[0]._id}`;
+      BASE_URL = `${BASE_URL}/${box._id}/data/${box.sensors[0]._id}`;
     });
 
     it('should provide coordinates under measurement.location', function () {
@@ -747,7 +753,7 @@ describe('openSenseMap API locations tests', function () {
     let BASE_URL = `${process.env.OSEM_TEST_BASE_URL}/boxes`;
 
     it('should return all locations of a box sorted by date', function () {
-      BASE_URL += `/${box._id}/locations`;
+      BASE_URL = `${BASE_URL}/${box._id}/locations`;
 
       return chakram.get(BASE_URL)
         .then(logResponseIfError)
@@ -772,7 +778,7 @@ describe('openSenseMap API locations tests', function () {
     });
 
     it('should return all locations of a box as GeoJSON LineString', function () {
-      BASE_URL += '?format=geojson';
+      BASE_URL = `${BASE_URL}?format=geojson`;
 
       return chakram.get(BASE_URL)
         .then(logResponseIfError)
@@ -797,7 +803,7 @@ describe('openSenseMap API locations tests', function () {
     let BASE_URL = `${process.env.OSEM_TEST_BASE_URL}/boxes`;
 
     before(function () {
-      BASE_URL += `/${box._id}/area`;
+      BASE_URL = `${BASE_URL}/${box._id}/area`;
     });
 
     it('should throw for boxes with less than 3 locations', function () {
@@ -805,7 +811,7 @@ describe('openSenseMap API locations tests', function () {
         .then(function (response) {
           expect(response).to.have.status(201);
 
-          return chakram.get(`${process.env.OSEM_TEST_BASE_URL}/boxes/${response.body.data._id}/area`)
+          return chakram.get(`${process.env.OSEM_TEST_BASE_URL}/boxes/${response.body.data._id}/area`);
         })
         .then(function (response) {
           expect(response).to.have.status(422);
