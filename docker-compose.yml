@@ -9,17 +9,23 @@ services:
       - ./lib:/usr/src/app/lib
       - ./config/index.js:/usr/src/app/config/index.js
       - ./userimages:/usr/src/app/userimages
-    env_file: .env
+    environment:
+      OSEM_dbhost: db
+      OSEM_dbuser: senseboxapiuser
+      OSEM_dbuserpass: userpass
+      OSEM_mailer_url: https://localhost:3924/
     depends_on:
       - db
 
   db:
-    build:
-      context: ./osem-mongo
+    image: sensebox/opensensemap-api-mongo
     ports:
       - "27017:27017"
     volumes:
       - ./mongo-data:/data/db
-    env_file: .env
-    #command: --auth
+    environment:
+      OSEM_dbhost: db
+      OSEM_dbuser: senseboxapiuser
+      OSEM_dbuserpass: userpass
+      OSEM_mailer_url: https://localhost:3924/
 

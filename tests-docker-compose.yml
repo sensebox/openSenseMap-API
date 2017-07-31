@@ -10,8 +10,9 @@ services:
       - ./config/index.js:/usr/src/app/config/index.js
       - ./package.json:/usr/src/app/package.json
       - ./tests:/usr/src/app/tests
-    env_file: .env
     environment:
+      OSEM_dbuser: senseboxapiuser
+      OSEM_dbuserpass: userpass
       OSEM_dbhost: db
       OSEM_imageFolder: ./userimages
       OSEM_mailer_url: https://mailer:3924/
@@ -151,7 +152,10 @@ services:
     image: eclipse-mosquitto:1.4.10
 
   db:
-    build:
-      context: ./osem-mongo
-    env_file: .env
+    image: sensebox/opensensemap-api-mongo
+    environment:
+      OSEM_dbhost: db
+      OSEM_dbuser: senseboxapiuser
+      OSEM_dbuserpass: userpass
+      OSEM_mailer_url: https://localhost:3924/
 
