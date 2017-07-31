@@ -17,6 +17,11 @@ if (latestVersion.schemaVersion !== 4) {
   quit();
 }
 
+// remove old index
+db.boxes.dropIndex("loc.geometry_2dsphere");
+
+// TODO add new indices
+
 var boxIter = db.boxes.find(),
   // stack all operations in bulks, and execute them at the end.
   boxesBulk = db.boxes.initializeUnorderedBulkOp();
