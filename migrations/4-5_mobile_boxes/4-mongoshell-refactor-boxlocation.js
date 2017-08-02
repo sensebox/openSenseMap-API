@@ -20,7 +20,9 @@ if (latestVersion.schemaVersion !== 4) {
 // remove old index
 db.boxes.dropIndex("loc.geometry_2dsphere");
 
-// TODO add new indices
+// https://github.com/sensebox/openSenseMap-API/pull/86#issuecomment-319389047
+db.boxes.createIndex({ 'currentLocation': '2dsphere' }, { background: true });
+db.boxes.createIndex({ 'locations.timestamp': 1 }, { background: true });
 
 var boxIter = db.boxes.find(),
   // stack all operations in bulks, and execute them at the end.
