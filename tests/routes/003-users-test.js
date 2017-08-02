@@ -151,8 +151,9 @@ describe('openSenseMap API Routes: /users', function () {
   it('should deny to change email with wrong current passsword', function () {
     return chakram.put(`${BASE_URL}/users/me`, { email: 'new-email@email.www', currentPassword: 'wrongpassword' }, { headers: { 'Authorization': `Bearer ${jwt}` } })
       .then(function (response) {
-        expect(response).to.have.status(400);
-        expect(response).to.have.json('message', 'Password not correct.');
+        expect(response).to.have.status(403);
+        expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
+        expect(response).to.have.json('message', 'Password incorrect');
 
         return chakram.wait();
       });

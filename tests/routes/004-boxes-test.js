@@ -324,6 +324,17 @@ describe('openSenseMap API Routes: /boxes', function () {
       });
   });
 
+  it('should deny to delete a senseBox with wrong password via DELETE', function () {
+    return chakram.delete(`${BASE_URL}/boxes/${boxId}`, { password: 'not correct password' }, { headers: { 'Authorization': `Bearer ${jwt}` } })
+      .then(function (response) {
+        expect(response).to.have.status(403);
+        expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
+        expect(response).to.have.json('message', 'Password incorrect');
+
+        return chakram.wait();
+      });
+  });
+
   it('should allow to delete a senseBox via DELETE', function () {
     return chakram.delete(`${BASE_URL}/boxes/${boxId}`, { password: valid_user.password }, { headers: { 'Authorization': `Bearer ${jwt}` } })
       .then(function (response) {

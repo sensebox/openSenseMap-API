@@ -51,7 +51,9 @@ describe('openSenseMap API Delete User tests', function () {
   it('should deny to delete user with wrong password parameter', function () {
     return chakram.delete(`${BASE_URL}/users/me`, { password: `${valid_user.password}hallo` }, { headers: { 'Authorization': `Bearer ${jwt}` } })
       .then(function (response) {
-        expect(response).to.have.status(400);
+        expect(response).to.have.status(403);
+        expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
+        expect(response).to.have.json('message', 'Password incorrect');
 
         return chakram.wait();
       });
