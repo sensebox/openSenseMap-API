@@ -134,4 +134,39 @@ describe('deleting sensor data', function () {
         return chakram.wait();
       });
   });
+
+  it('should allow to delete some data for a single sensor through specifying from-date and to-date', function () {
+    const sensor_id = boxes[1].sensors.find(s => s.title === 'Kurzwellige Strahlung')._id;
+    let from, to;
+
+    let measurementCountBefore;
+
+    return chakram.get(`${BASE_URL}/boxes/${boxIds[1]}/data/${sensor_id}?from-date=${moment.utc().subtract(30, 'days')
+      .toISOString()}&to-date=${moment.utc().toISOString()}`)
+      .then(function (response) {
+        expect(response).to.have.status(200);
+        expect(response.body.length).not.equal(0);
+        measurementCountBefore = response.body.length;
+
+        from = moment.utc(response.body[3].createdAt).add(1, 'second')
+          .toISOString();
+        to = moment.utc(response.body[1].createdAt).subtract(1, 'second')
+          .toISOString();
+
+        return chakram.delete(`${BASE_URL}/boxes/${boxIds[1]}/${sensor_id}/measurements`, { 'from-date': from, 'to-date': to }, { headers: { 'content-type': 'application/json', 'Authorization': `Bearer ${jwt}` } });
+      })
+      .then(function (response) {
+        expect(response).to.have.status(200);
+
+        return chakram.get(`${BASE_URL}/boxes/${boxIds[1]}/data/${sensor_id}?from-date=${moment.utc().subtract(30, 'days')
+          .toISOString()}&to-date=${moment.utc().toISOString()}`);
+      })
+      .then(function (response) {
+        expect(response).to.have.status(200);
+        expect(response.body.length).not.equal(0);
+        expect(response.body.length).below(measurementCountBefore);
+      });
+  });
+
+
 });
