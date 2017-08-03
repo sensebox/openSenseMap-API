@@ -62,7 +62,7 @@ describe('downloading data', function () {
       });
   });
 
-  it('should allow download data through /boxes/data/:sensorid as csv', function () {
+  it('should allow download data through /boxes/data/?phenomenon&boxid as csv', function () {
     return chakram.get(`${BASE_URL}/boxes/data/?boxid=${boxIds[0]}&phenomenon=Temperatur`)
       .then(function (response) {
         expect(response).to.have.status(200);
@@ -73,7 +73,7 @@ describe('downloading data', function () {
       });
   });
 
-  it('should allow download data via POST through /boxes/data/:sensorid as csv', function () {
+  it('should allow download data via POST through /boxes/data/?phenomenon&boxid as csv', function () {
     return chakram.post(`${BASE_URL}/boxes/data`, { boxid: boxIds[0], phenomenon: 'Temperatur' })
       .then(function (response) {
         expect(response).to.have.status(200);
@@ -81,6 +81,45 @@ describe('downloading data', function () {
         expect(response).to.have.header('content-type', 'text/csv');
 
         return chakram.wait();
+      });
+  });
+
+  it('should return the data for /boxes/:boxId/data/:sensorId in descending order', function () {
+    return chakram.get(`${BASE_URL}/boxes/${boxIds[0]}/data/${boxes[0].sensors[1]._id}?from-date=2016-01-01T00:00:00Z&to-date=2016-01-31T23:59:59Z`)
+      .then(function (response) {
+        expect(response).to.have.status(200);
+        expect(response.body).not.to.be.empty;
+        let isDescending = true;
+        for (let i = 1; i < response.body.length - 1; i++) {
+          if (new Date(response.body[i - 1].createdAt) - new Date(response.body[i].createdAt) < 0) {
+            isDescending = false;
+            break;
+          }
+        }
+
+        expect(isDescending).true;
+      });
+  });
+
+  it('should return the data for /boxes/:boxId/data/:sensorId in descending order', function () {
+    return chakram.get(`${BASE_URL}/boxes/data/?boxid=${boxIds[0]}&phenomenon=rel. Luftfeuchte&from-date=2016-01-01T00:00:00Z&to-date=2016-01-31T23:59:59Z`)
+      .then(function (response) {
+        // console.log(response.body);
+        expect(response).to.have.status(200);
+        expect(response.body).not.to.be.empty;
+        expect(response).to.have.header('content-type', 'text/csv');
+        let isDescending = true;
+        const lines = response.body.split('\n');
+        for (let i = 2; i < lines.length - 1; i++) {
+          const [ createdAt ] = lines[i - 1].split(',');
+          const [ createdAt2 ] = lines[i].split(',');
+          if (new Date(createdAt) - new Date(createdAt2) < 0) {
+            isDescending = false;
+            break;
+          }
+        }
+
+        expect(isDescending).true;
       });
   });
 
@@ -157,7 +196,7 @@ describe('downloading data', function () {
       });
   });
 
-  it('should return the correct count and correct schema of boxes for /boxes GET with date parameter after deleted sensor', function () {
+  it('should return the correct count and correct schema of boxes for /boxes GET with date parameter', function () {
     const now = moment.utc();
 
     return chakram.get(`${BASE_URL}/boxes?date=${now.toISOString()}&phenomenon=Temperatur`)
@@ -172,7 +211,7 @@ describe('downloading data', function () {
       });
   });
 
-  it('should return the correct count and correct schema of boxes for /boxes GET with date parameter after deleted sensor #2', function () {
+  it('should return the correct count and correct schema of boxes for /boxes GET with date parameter some time else', function () {
     const ten_days_ago = moment.utc().subtract(10, 'days');
 
     return chakram.get(`${BASE_URL}/boxes?date=${ten_days_ago.toISOString()}&phenomenon=Luftdruck`)
@@ -187,7 +226,7 @@ describe('downloading data', function () {
       });
   });
 
-  it('should return the correct count and correct schema of boxes for /boxes GET with two date parameters after deleted sensor', function () {
+  it('should return the correct count and correct schema of boxes for /boxes GET with two date parameters', function () {
     const now = moment.utc();
 
     return chakram.get(`${BASE_URL}/boxes?date=${now.clone().subtract(5, 'minutes')

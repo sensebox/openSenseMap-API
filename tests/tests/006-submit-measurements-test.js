@@ -331,6 +331,30 @@ describe('submitting measurements', function () {
       });
   });
 
+  it('should accept measurements in random order', function () {
+    const sensor_id = boxes[0].sensors[1]._id;
+    const payload = [
+      { sensor_id, value: 0.1, createdAt: '2016-01-01T04:03:02Z' },
+      { sensor_id, value: 0.6, createdAt: '2016-01-19T07:29:57Z' },
+      { sensor_id, value: 0.2, createdAt: '2016-01-06T01:00:22Z' },
+      { sensor_id, value: 0.5, createdAt: '2016-01-12T12:12:07Z' },
+      { sensor_id, value: 0.3, createdAt: '2016-01-02T01:00:22Z' },
+      { sensor_id, value: 0.4, createdAt: '2016-01-01T21:23:37Z' },
+      { sensor_id, value: 0.8, createdAt: '2016-01-03T00:01:03Z' },
+      { sensor_id, value: 0.7, createdAt: '2016-01-23T08:37:23Z' }
+    ];
+
+    return chakram.post(`${BASE_URL}/boxes/${boxIds[0]}/data`, payload)
+      .then(function (response) {
+        expect(response).to.have.status(201);
+        expect(response.body).to.equal('Measurements saved in box');
+
+        countMeasurements = countMeasurements + payload.length;
+      });
+
+
+  });
+
   it('should return /stats correctly', function () {
     return chakram.get(`${BASE_URL}/stats`, { headers: { 'x-apicache-bypass': true } })
       .then(function (response) {
