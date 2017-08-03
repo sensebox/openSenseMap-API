@@ -9,7 +9,7 @@ const chakram = require('chakram'),
   mimelib = require('mimelib');
 
 const BASE_URL = process.env.OSEM_TEST_BASE_URL,
-  valid_user = require('./data/valid_user');
+  valid_user = require('../data/valid_user');
 
 const findMail = function findMail (mails, address, subject) {
   return mails.reverse().find(function (item) {

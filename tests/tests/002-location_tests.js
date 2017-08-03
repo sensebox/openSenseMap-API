@@ -46,7 +46,7 @@ describe('openSenseMap API locations tests', function () {
 
   describe('location validation', function () {
     /* eslint-disable global-require */
-    const { transformAndValidateCoords: validate } = require('../lib/decoding/validators');
+    const { transformAndValidateCoords: validate } = require('../../lib/decoding/validators');
     /* eslint-enable global-require */
 
     it('should transform latlng object to array', function () {
@@ -687,17 +687,13 @@ describe('openSenseMap API locations tests', function () {
     });
 
     it('should provide box.currentLocation for legacy measurements without location field', function () {
-      /* eslint-disable no-console */
-      const originalConsoleLog = console.log;
       /* eslint-disable global-require */
-      const { connect, mongoose } = require('../lib/db');
-      const Measurement = require('../lib/models/measurement').model;
+      const { connect, mongoose } = require('../../lib/db');
+      const Measurement = require('../../lib/models/measurement').model;
       /* eslint-enable global-require */
       mongoose.set('debug', false);
 
       // manually create a new measurent without location field
-      console.log = function () {};
-
       return connect()
         .then(function () {
           return new Promise(function (resolve, reject) {
@@ -722,11 +718,8 @@ describe('openSenseMap API locations tests', function () {
           expect(data[0].lon).to.equal('10');
           expect(data[0].lat).to.equal('10');
 
-          console.log = originalConsoleLog;
-
           return chakram.wait();
         });
-      /* eslint-enable no-console */
     });
 
   });
