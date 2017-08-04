@@ -8,7 +8,7 @@
 const restify = require('restify'),
   utils = require('./lib/utils'),
   db = require('./lib/db'),
-  requestUtils = require('./lib/requestUtils'),
+  { preRequest } = require('./lib/helpers/apiUtils'),
   Box = require('./lib/models').Box,
   routes = require('./lib/routes'),
   passport = require('passport'),
