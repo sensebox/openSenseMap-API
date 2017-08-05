@@ -73,7 +73,7 @@ describe('openSenseMap API Routes: /stats', function () {
           expect(response).status(422);
           expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
 
-          expect(response).to.have.json('message', 'illegal value for parameter human. allowed values: true, false');
+          expect(response).to.have.json('message', 'Illegal value for parameter human. allowed values: true, false');
         }
 
         return chakram.wait();

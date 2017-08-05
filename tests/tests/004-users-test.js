@@ -458,7 +458,7 @@ describe('openSenseMap API Routes: /users', function () {
     return chakram.post(`${BASE_URL}/users/password-reset`, { password: 'ignored_anyway', token: 'invalid_password-reset_token', email: 'tester@test.test' })
       .then(function (response) {
         expect(response).to.have.status(403);
-        expect(response).to.have.json({ code: 'ForbiddenError',
+        expect(response).to.have.json({ code: 'Forbidden',
           message: 'Password reset for this user not possible' });
 
         return chakram.wait();

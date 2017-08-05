@@ -71,12 +71,10 @@
   "homepage": "https://github.com/sensebox/openSenseMap-API",
   "apidoc": {
     "name": "openSenseMap API documentation",
-    "version": "0.0.1",
     "description": "methods to manage senseBoxes and get/post measurements",
-    "title": "openSenseMap API docs title",
+    "title": "openSenseMap API documentation",
     "url": "https://api.opensensemap.org",
     "order": [
-      "validApiKey",
       "findBox",
       "findAllBoxes",
       "postNewBox",

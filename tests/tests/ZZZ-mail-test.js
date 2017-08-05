@@ -83,7 +83,7 @@ describe('mails', function () {
     return chakram.post(`${BASE_URL}/users/confirm-email`, { token, email: valid_user.email })
       .then(function (response) {
         expect(response).to.have.status(403);
-        expect(response).to.have.json({ code: 'ForbiddenError',
+        expect(response).to.have.json({ code: 'Forbidden',
           message: 'invalid email confirmation token' });
 
         return chakram.wait();
@@ -165,7 +165,7 @@ describe('mails', function () {
     return chakram.post(`${BASE_URL}/users/password-reset`, { token, password: 'newlongenoughpasswordNOT' })
       .then(function (response) {
         expect(response).to.have.status(403);
-        expect(response).to.have.json({ code: 'ForbiddenError',
+        expect(response).to.have.json({ code: 'Forbidden',
           message: 'Password reset for this user not possible' });
         valid_user.password = 'newlongenoughpasswordNOT';
 
