@@ -2133,6 +2133,12 @@ resolve-from@^2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/resolve-from/-/resolve-from-2.0.0.tgz#9480ab20e94ffa1d9e80a804c7ea147611966b57"
 
+restify-cors-middleware@^1.0.1:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/restify-cors-middleware/-/restify-cors-middleware-1.0.1.tgz#6388d0d52d286e22650133d151a89d48b22fa0ab"
+  dependencies:
+    assert-plus "^1.0.0"
+
 restify-errors@^4.2.3, restify-errors@^4.3.0:
   version "4.3.0"
   resolved "https://registry.yarnpkg.com/restify-errors/-/restify-errors-4.3.0.tgz#ec90f30934d7f3119135181dfc303e30be601abe"
