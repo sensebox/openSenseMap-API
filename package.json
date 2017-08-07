@@ -75,8 +75,8 @@
     "title": "openSenseMap API documentation",
     "url": "https://api.opensensemap.org",
     "order": [
-      "findBox",
-      "findAllBoxes",
+      "getBoxes",
+      "getBoxes",
       "postNewBox",
       "updateBox",
       "deleteBox",
