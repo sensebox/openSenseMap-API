@@ -141,7 +141,7 @@ describe('openSenseMap API locations tests', function () {
       return chakram.post(BASE_URL, boxReq, authHeader)
         .then(function (response) {
           expect(response).to.have.status(422);
-          expect(response.body.message).to.equal('invalid location: Error: missing latitude or longitude in location [52]');
+          expect(response.body.message).to.equal('Illegal value for parameter location. missing latitude or longitude in location [52]');
 
           return chakram.wait();
         });

@@ -140,7 +140,6 @@ describe('downloading data', function () {
   it('should return an error /boxes/:boxId/data/:sensorId for invalid bbox parameter (too few values)', function () {
     return chakram.get(`${BASE_URL}/boxes/data/?boxid=${boxIds[0]}&phenomenon=Temperatur&bbox=1,2,3`)
       .then(function (response) {
-        console.log(response.body);
         expect(response).to.have.status(422);
         expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
         expect(response).json({ code: 'UnprocessableEntity', message: 'Illegal value for parameter bbox. Invalid number of coordinates.' });
