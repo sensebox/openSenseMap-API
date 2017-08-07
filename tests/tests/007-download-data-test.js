@@ -98,13 +98,14 @@ describe('downloading data', function () {
         }
 
         expect(isDescending).true;
+
+        return chakram.wait();
       });
   });
 
   it('should return the data for /boxes/:boxId/data/:sensorId in descending order', function () {
     return chakram.get(`${BASE_URL}/boxes/data/?boxid=${boxIds[0]}&phenomenon=rel. Luftfeuchte&from-date=2016-01-01T00:00:00Z&to-date=2016-01-31T23:59:59Z`)
       .then(function (response) {
-        // console.log(response.body);
         expect(response).to.have.status(200);
         expect(response.body).not.to.be.empty;
         expect(response).to.have.header('content-type', 'text/csv');
@@ -120,6 +121,53 @@ describe('downloading data', function () {
         }
 
         expect(isDescending).true;
+
+        return chakram.wait();
+      });
+  });
+
+  it('should return an error /boxes/:boxId/data/:sensorId for invalid bbox parameter (too many values)', function () {
+    return chakram.get(`${BASE_URL}/boxes/data/?boxid=${boxIds[0]}&phenomenon=Temperatur&bbox=1,2,3,4,5`)
+      .then(function (response) {
+        expect(response).to.have.status(422);
+        expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
+        expect(response).json({ code: 'UnprocessableEntity', message: 'Illegal value for parameter bbox. Invalid number of coordinates.' });
+
+        return chakram.wait();
+      });
+  });
+
+  it('should return an error /boxes/:boxId/data/:sensorId for invalid bbox parameter (too few values)', function () {
+    return chakram.get(`${BASE_URL}/boxes/data/?boxid=${boxIds[0]}&phenomenon=Temperatur&bbox=1,2,3`)
+      .then(function (response) {
+        console.log(response.body);
+        expect(response).to.have.status(422);
+        expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
+        expect(response).json({ code: 'UnprocessableEntity', message: 'Illegal value for parameter bbox. Invalid number of coordinates.' });
+
+        return chakram.wait();
+      });
+  });
+
+  it('should return an error /boxes/:boxId/data/:sensorId for invalid bbox parameter (not floats)', function () {
+    return chakram.get(`${BASE_URL}/boxes/data/?boxid=${boxIds[0]}&phenomenon=Temperatur&bbox=1,2,east,4`)
+      .then(function (response) {
+        expect(response).to.have.status(422);
+        expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
+        expect(response).json({ code: 'UnprocessableEntity', message: 'Illegal value for parameter bbox. Supplied values can not be parsed as floats.' });
+
+        return chakram.wait();
+      });
+  });
+
+  it('should return an error /boxes/:boxId/data/:sensorId for invalid bbox parameter (out of bounds)', function () {
+    return chakram.get(`${BASE_URL}/boxes/data/?boxid=${boxIds[0]}&phenomenon=Temperatur&bbox=1,2,3,120`)
+      .then(function (response) {
+        expect(response).to.have.status(422);
+        expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
+        expect(response).json({ code: 'UnprocessableEntity', message: 'Illegal value for parameter bbox. Supplied coordinates are outside of (180, 90, -180, 90).' });
+
+        return chakram.wait();
       });
   });
 
