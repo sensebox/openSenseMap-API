@@ -748,6 +748,8 @@ describe('openSenseMap API locations tests', function () {
 
   describe('GET /boxes/:boxID/locations', function () {
     let BASE_URL = `${process.env.OSEM_TEST_BASE_URL}/boxes`;
+    const daysAgo3 = moment().subtract(3, 'days');
+    const daysAgo6 = daysAgo3.clone().subtract(3, 'days');
 
     it('should return all locations of a box sorted by date', function () {
       BASE_URL = `${BASE_URL}/${box._id}/locations`;
@@ -775,9 +777,7 @@ describe('openSenseMap API locations tests', function () {
     });
 
     it('should return all locations of a box as GeoJSON LineString', function () {
-      BASE_URL = `${BASE_URL}?format=geojson`;
-
-      return chakram.get(BASE_URL)
+      return chakram.get(`${BASE_URL}?format=geojson`)
         .then(logResponseIfError)
         .then(function (response) {
           expect(response).to.have.status(200);
@@ -791,6 +791,35 @@ describe('openSenseMap API locations tests', function () {
           });
 
           return chakram.wait();
+        });
+    });
+
+    it('should return locations of the last 48h by default', function () {
+      return chakram.post(`${process.env.OSEM_TEST_BASE_URL}/boxes/${box._id}/data`, [
+        { sensor_id: box.sensors[4]._id, value: 123, location: [-3, -3, -3], createdAt: daysAgo3 },
+        { sensor_id: box.sensors[4]._id, value: 321, location: [-4, -4, -4], createdAt: daysAgo6 },
+      ], authHeader)
+        .then(logResponseIfError)
+        .then(function (response) {
+          expect(response).to.have.status(201);
+
+          return chakram.get(BASE_URL);
+        })
+        .then(logResponseIfError)
+        .then(function (response) {
+          expect(response).to.have.status(200);
+          expect(response.body).to.have.length(12);
+
+          return chakram.wait();
+        });
+    });
+
+    it('should allow filtering locations by date params', function () {
+      return chakram.get(`${BASE_URL}?to-date=${daysAgo3.toISOString()}`)
+        .then(logResponseIfError)
+        .then(function (response) {
+          expect(response).to.have.status(200);
+          expect(response.body).to.have.length(1);
         });
     });
 
