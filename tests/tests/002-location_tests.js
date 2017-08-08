@@ -39,9 +39,7 @@ describe('openSenseMap API locations tests', function () {
   after('delete user', function (done) {
     chakram.delete(`${process.env.OSEM_TEST_BASE_URL}/users/me`, { password: '12345678' }, authHeader)
       .then(logResponseIfError)
-    /* eslint-disable no-unused-vars */
-      .then(response => done());
-    /* eslint-enable no-unused-vars */
+      .then(() => done());
   });
 
   describe('location validation', function () {
@@ -378,30 +376,29 @@ describe('openSenseMap API locations tests', function () {
         });
     });
 
-    it('should update location of measurements for retroactive measurements', function () {
-      // measurement2 should get location of measurement1, but not measurement3
+    it('should not update location of measurements for retroactive measurements', function () {
+      // measurement2 should get location of previous measurement ([4,4,4])
       const measurement3 = {
         value: 6,
         location: [6, 6, 6],
         createdAt: moment()
       };
       const measurement2 = {
-        value: 5.5,
+        value: 4.5,
         createdAt: measurement3.createdAt.clone().subtract(2, 'ms')
       };
-      // WARN: something fishy goin on, lands at beginning!!1
       const measurement1 = {
         value: 5,
         location: [5, 5, 5],
         createdAt: measurement2.createdAt.clone().subtract(2, 'ms')
       };
 
-      return chakram.post(POST_MEASUREMENT_URL, measurement2, authHeader)
+      return chakram.post(POST_MEASUREMENT_URL, measurement3, authHeader)
         .then(logResponseIfError)
         .then(function (response) {
           expect(response).to.have.status(201);
 
-          return chakram.post(POST_MEASUREMENT_URL, measurement3, authHeader);
+          return chakram.post(POST_MEASUREMENT_URL, measurement2, authHeader);
         })
         .then(logResponseIfError)
         .then(function (response) {
@@ -419,9 +416,9 @@ describe('openSenseMap API locations tests', function () {
         .then(function (response) {
           expect(response).to.have.status(200);
 
-          const m1 = response.body.find(m => m.value === '5.5');
+          const m1 = response.body.find(m => m.value === '4.5');
           expect(m1).to.be.not.undefined;
-          expect(m1.location).to.deep.equal(measurement1.location);
+          expect(m1.location).to.deep.equal([4, 4, 4]);
 
           const m2 = response.body.find(m => m.value === '5');
           expect(m2).to.be.not.undefined;
