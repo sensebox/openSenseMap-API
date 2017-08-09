@@ -512,6 +512,82 @@ describe('openSenseMap API locations tests', function () {
 
     describe('text/csv', function () {
 
+      // const csvHeader = Object.assign({ json: false, headers: { 'Content-Type': 'text/csv' } }, authHeader);
+      const csvHeader = { json: false, headers: { 'Content-Type': 'text/csv' } };
+
+      it('should accept 2D locations', function () {
+        const measurements = `${box.sensors[3]._id},11,${moment().toISOString()},11,11`;
+
+        return chakram.post(BASE_URL, measurements, csvHeader)
+          .then(logResponseIfError)
+          .then(function (response) {
+            expect(response).to.have.status(201);
+
+            return chakram.get(`${process.env.OSEM_TEST_BASE_URL}/boxes/${box._id}`);
+          })
+          .then(logResponseIfError)
+          .then(function (response) {
+            expect(response).to.have.status(200);
+            expect(response.body.currentLocation.coordinates)
+              .to.deep.equal([11, 11]);
+
+            return chakram.wait();
+          });
+      });
+
+      it('should accept 3D locations', function () {
+        const sensor = box.sensors[3]._id;
+        const measurements = [
+          [sensor, 12.6].join(','),
+          [sensor, 12.6, moment().toISOString()].join(','),
+          [sensor, 12.6, moment().subtract(2, 'ms').toISOString(), 12, 12, 12].join(','), // eslint-disable-line newline-per-chained-call
+        ].join('\n');
+
+        return chakram.post(BASE_URL, measurements, csvHeader)
+          .then(logResponseIfError)
+          .then(function (response) {
+            expect(response).to.have.status(201);
+
+            return chakram.get(`${process.env.OSEM_TEST_BASE_URL}/boxes/${box._id}`);
+          })
+          .then(logResponseIfError)
+          .then(function (response) {
+            expect(response).to.have.status(200);
+            expect(response.body.currentLocation.coordinates)
+              .to.deep.equal([12, 12, 12]);
+
+            return chakram.wait();
+          });
+      });
+
+      it('should reject measurements with location & w/out createdAt', function () {
+        const measurements = `${box.sensors[3]._id},13,13,13,13`; // id,value,lng,lat,height
+
+        return chakram.post(BASE_URL, measurements, csvHeader)
+          .then(function (response) {
+            expect(response).to.have.status(422);
+
+            return chakram.wait();
+          });
+      });
+
+      it('should set & infer locations correctly for measurements', function () {
+
+        return chakram.get(`${process.env.OSEM_TEST_BASE_URL}/boxes/${box._id}/data/${box.sensors[3]._id}`)
+          .then(logResponseIfError)
+          .then(function (response) {
+            expect(response).to.have.status(200);
+            expect(response.body).to.be.an('array').with.length(9);
+
+            for (const m of response.body) {
+              const numCoords = m.value === '11' ? 2 : 3;
+              expect(m.location).to.deep.equal(Array(numCoords).fill(parseInt(m.value, 10)));
+            }
+
+            return chakram.wait();
+          });
+      });
+
     });
 
   });
@@ -712,8 +788,8 @@ describe('openSenseMap API locations tests', function () {
           const data = parseCSV(response.body, { columns: true });
           expect(data).to.be.an('array').with.length(1);
           expect(data[0].value).to.equal('1234');
-          expect(data[0].lon).to.equal('10');
-          expect(data[0].lat).to.equal('10');
+          expect(data[0].lon).to.equal('12');
+          expect(data[0].lat).to.equal('12');
 
           return chakram.wait();
         });
@@ -758,7 +834,7 @@ describe('openSenseMap API locations tests', function () {
         .then(logResponseIfError)
         .then(function (response) {
           expect(response).to.have.status(200);
-          expect(response.body).to.have.length(12);
+          expect(response.body).to.have.length(14);
 
           let prev;
           for (let i = 0; i < response.body.length; i++) {
@@ -766,7 +842,11 @@ describe('openSenseMap API locations tests', function () {
             expect(loc).to.have.property('type');
             expect(loc).to.have.property('timestamp');
             // locations are inserted in order, starting at -1
-            expect(loc.coordinates).to.deep.equal([i, i, i].map(v => v - 1));
+            if (i === 12) {
+              expect(loc.coordinates).to.deep.equal([i, i].map(v => v - 1));
+            } else {
+              expect(loc.coordinates).to.deep.equal([i, i, i].map(v => v - 1));
+            }
 
             if (prev) {
               expect(moment(loc.timestamp).diff(prev.timestamp)).to.be.greaterThan(0);
@@ -783,11 +863,11 @@ describe('openSenseMap API locations tests', function () {
           expect(response).to.have.status(200);
           expect(response).to.have.json('type', 'Feature');
           expect(response).to.have.json('properties', function (properties) {
-            expect(properties.timestamps).to.be.an('array').with.length(12);
+            expect(properties.timestamps).to.be.an('array').with.length(14);
           });
           expect(response).to.have.json('geometry', function (geom) {
             expect(geom).to.have.property('type', 'LineString');
-            expect(geom.coordinates).to.be.an('array').with.length(12);
+            expect(geom.coordinates).to.be.an('array').with.length(14);
           });
 
           return chakram.wait();
@@ -808,7 +888,7 @@ describe('openSenseMap API locations tests', function () {
         .then(logResponseIfError)
         .then(function (response) {
           expect(response).to.have.status(200);
-          expect(response.body).to.have.length(12);
+          expect(response.body).to.have.length(14);
 
           return chakram.wait();
         });
