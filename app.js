@@ -25,6 +25,7 @@ const server = restify.createServer({
 
 const cors = corsMiddleware({
   preflightMaxAge: 600, // 10 minutes
+  allowHeaders: ['authorization'],
   origins: ['*']
 });
 
