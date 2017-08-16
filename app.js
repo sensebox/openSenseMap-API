@@ -6,11 +6,10 @@
 'use strict';
 
 const restify = require('restify'),
-  { fullResponse, queryParser, jsonBodyParser, pre: { sanitizePath } } = require('restify-plugins'),
-  corsMiddleware = require('restify-cors-middleware'),
+  { fullResponse, queryParser, jsonBodyParser, pre: { sanitizePath } } = restify.plugins,
   utils = require('./lib/utils'),
   db = require('./lib/db'),
-  { preRequest } = require('./lib/helpers/apiUtils'),
+  { preRequest, preCors } = require('./lib/helpers/apiUtils'),
   Box = require('./lib/models').Box,
   routes = require('./lib/routes'),
   passport = require('passport'),
@@ -23,12 +22,6 @@ const server = restify.createServer({
   log: log
 });
 
-const cors = corsMiddleware({
-  preflightMaxAge: 600, // 10 minutes
-  allowHeaders: ['authorization'],
-  origins: ['*']
-});
-
 // We're using caddy as proxy. It supplies a 'X-Forwarded-Proto' header
 // which contains the request scheme (http/https)
 // respond every GET request with a notice to use the https api.
@@ -36,13 +29,12 @@ const cors = corsMiddleware({
 // /boxes/:boxId/data and /boxes/:boxId/:sensorId for arduinos
 // and set utf-8 charset
 server.pre(preRequest);
-server.pre(cors.preflight);
+server.pre(preCors);
 server.pre(sanitizePath());
 
 server.use(fullResponse());
 server.use(queryParser());
 server.use(jsonBodyParser());
-server.use(cors.actual);
 
 server.use(passport.initialize());
 
