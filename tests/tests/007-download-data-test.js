@@ -9,7 +9,8 @@ const chakram = require('chakram'),
 process.env.OSEM_TEST_BASE_URL = 'http://localhost:8000';
 
 const BASE_URL = process.env.OSEM_TEST_BASE_URL,
-  findAllSchema = require('../data/findAllSchema');
+  findAllSchema = require('../data/findAllSchema'),
+  measurementsSchema = require('../data/measurementsSchema');
 
 describe('downloading data', function () {
   let jwt;
@@ -45,6 +46,10 @@ describe('downloading data', function () {
         expect(Array.isArray(response.body)).to.be.true;
         expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
         expect(response.body.length).to.be.above(4);
+        expect(response).to.have.schema(measurementsSchema);
+        expect(response.body.every(function (measurement) {
+          return expect(moment.utc(measurement.createdAt, moment.ISO_8601, true).isValid()).true;
+        })).true;
 
         return chakram.wait();
       });
@@ -88,6 +93,11 @@ describe('downloading data', function () {
     return chakram.get(`${BASE_URL}/boxes/${boxIds[0]}/data/${boxes[0].sensors[1]._id}?from-date=2016-01-01T00:00:00Z&to-date=2016-01-31T23:59:59Z`)
       .then(function (response) {
         expect(response).to.have.status(200);
+        expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
+        expect(response).to.have.schema(measurementsSchema);
+        expect(response.body.every(function (measurement) {
+          return expect(moment.utc(measurement.createdAt, moment.ISO_8601, true).isValid()).true;
+        })).true;
         expect(response.body).not.to.be.empty;
         let isDescending = true;
         for (let i = 1; i < response.body.length - 1; i++) {
