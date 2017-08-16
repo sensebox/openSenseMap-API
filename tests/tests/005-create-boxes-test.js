@@ -96,7 +96,6 @@ describe('openSenseMap API Routes: /boxes', function () {
         expect(response).to.have.status(200);
         expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
         expect(response).to.have.schema(senseBoxSchema);
-        expect(response).to.have.json('weblink', 'https://api.opensensemap.org');
 
         expect(response.body).to.not.have.keys('integrations');
 
@@ -267,7 +266,7 @@ describe('openSenseMap API Routes: /boxes', function () {
       .then(function (response) {
         expect(response).to.have.status(422);
         expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
-        expect(response).json({ code: 'UnprocessableEntityError', message: 'sensors are required if model is invalid or missing.' });
+        expect(response).json({ code: 'UnprocessableEntity', message: 'sensors are required if model is invalid or missing.' });
 
         return chakram.wait();
       });
@@ -280,7 +279,7 @@ describe('openSenseMap API Routes: /boxes', function () {
       .then(function (response) {
         expect(response).to.have.status(422);
         expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
-        expect(response).json({ code: 'UnprocessableEntityError', message: 'Parameters model and sensors cannot be specified at the same time.' });
+        expect(response).json({ code: 'UnprocessableEntity', message: 'Parameters model and sensors cannot be specified at the same time.' });
 
         return chakram.wait();
       });

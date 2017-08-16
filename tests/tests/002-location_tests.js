@@ -139,7 +139,7 @@ describe('openSenseMap API locations tests', function () {
       return chakram.post(BASE_URL, boxReq, authHeader)
         .then(function (response) {
           expect(response).to.have.status(422);
-          expect(response.body.message).to.equal('invalid location: Error: missing latitude or longitude in location [52]');
+          expect(response.body.message).to.equal('Illegal value for parameter location. missing latitude or longitude in location [52]');
 
           return chakram.wait();
         });
@@ -900,61 +900,6 @@ describe('openSenseMap API locations tests', function () {
         .then(function (response) {
           expect(response).to.have.status(200);
           expect(response.body).to.have.length(1);
-        });
-    });
-
-  });
-
-  describe('GET /boxes/:boxID/area', function () {
-    let BASE_URL = `${process.env.OSEM_TEST_BASE_URL}/boxes`;
-
-    before(function () {
-      BASE_URL = `${BASE_URL}/${box._id}/area`;
-    });
-
-    it('should throw for boxes with less than 3 locations', function () {
-      return chakram.post(`${process.env.OSEM_TEST_BASE_URL}/boxes`, minimalSensebox(), authHeader)
-        .then(function (response) {
-          expect(response).to.have.status(201);
-
-          return chakram.get(`${process.env.OSEM_TEST_BASE_URL}/boxes/${response.body.data._id}/area`);
-        })
-        .then(function (response) {
-          expect(response).to.have.status(422);
-
-          return chakram.wait();
-        });
-    });
-
-    it('should throw for boxes with locations on a straight line', function () {
-      return chakram.get(BASE_URL)
-        .then(function (response) {
-          expect(response).to.have.status(422);
-
-          return chakram.wait();
-        });
-    });
-
-    it('should return a GeoJSON polygon of the covered area', function () {
-      // we need to insert a new location first, because locations
-      // on a straight line do not span an area!
-      return chakram.put(`${process.env.OSEM_TEST_BASE_URL}/boxes/${box._id}`, { location: [123, 12] }, authHeader)
-        .then(logResponseIfError)
-        .then(function (response) {
-          expect(response).to.have.status(200);
-
-          return chakram.get(BASE_URL);
-        })
-        .then(logResponseIfError)
-        .then(function (response) {
-          expect(response).to.have.status(200);
-          expect(response).to.have.json('type', 'Feature');
-          expect(response).to.have.json('geometry', function (geom) {
-            expect(geom).to.have.property('type', 'Polygon');
-            expect(geom.coordinates).to.be.an('array');
-          });
-
-          return chakram.wait();
         });
     });
 
