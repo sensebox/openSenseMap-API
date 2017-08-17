@@ -168,5 +168,33 @@ describe('deleting sensor data', function () {
       });
   });
 
+  it('should deny to delete sensordata of boxes not owned by the user', function () {
+    let otherJwt, otherBoxId, otherSensorId;
+
+    return chakram.post(`${BASE_URL}/users/sign-in`, { name: 'mrtest2', email: 'tester3@test.test', password: '12345678' })
+      .then(function (response) {
+        expect(response).to.have.status(200);
+        expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
+
+        expect(response.body.token).to.exist;
+
+        otherJwt = response.body.token;
+
+        return chakram.get(`${BASE_URL}/users/me/boxes`, { headers: { 'Authorization': `Bearer ${otherJwt}` } });
+      })
+      .then(function (response) {
+        otherBoxId = response.body.data.boxes[0]._id;
+        otherSensorId = response.body.data.boxes[0].sensors[0]._id;
+
+        const payload = { 'from-date': moment.utc().subtract(1, 'year')
+          .toISOString(), 'to-date': moment.utc().toISOString() };
+
+        return chakram.delete(`${BASE_URL}/boxes/${otherBoxId}/${otherSensorId}/measurements`, payload, { headers: { 'content-type': 'application/json', 'Authorization': `Bearer ${jwt}` } });
+      })
+      .then(function (response) {
+        expect(response).to.have.status(403);
+        expect(response).to.have.json({ code: 'Forbidden', message: 'User does not own this senseBox' });
+      });
+  });
 
 });

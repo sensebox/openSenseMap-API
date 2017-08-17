@@ -448,6 +448,81 @@ describe('openSenseMap API Routes: /boxes', function () {
       });
   });
 
+  it('should deny to update a box of other users', function () {
+    let otherJwt, otherBoxId;
+
+    return chakram.post(`${BASE_URL}/users/sign-in`, { name: 'mrtest2', email: 'tester3@test.test', password: '12345678' })
+      .then(function (response) {
+        expect(response).to.have.status(200);
+        expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
+
+        expect(response.body.token).to.exist;
+
+        otherJwt = response.body.token;
+
+        return chakram.get(`${BASE_URL}/users/me/boxes`, { headers: { 'Authorization': `Bearer ${otherJwt}` } });
+      })
+      .then(function (response) {
+        otherBoxId = response.body.data.boxes[0]._id;
+
+        return chakram.put(`${BASE_URL}/boxes/${otherBoxId}`, { name: 'new name, other user' }, { headers: { 'Authorization': `Bearer ${jwt2}` } });
+      })
+      .then(function (response) {
+        expect(response).to.have.status(403);
+        expect(response).to.have.json({ code: 'Forbidden', message: 'User does not own this senseBox' });
+      });
+  });
+
+  it('should deny to delete a box of other users', function () {
+    let otherJwt, otherBoxId;
+
+    return chakram.post(`${BASE_URL}/users/sign-in`, { name: 'mrtest2', email: 'tester3@test.test', password: '12345678' })
+      .then(function (response) {
+        expect(response).to.have.status(200);
+        expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
+
+        expect(response.body.token).to.exist;
+
+        otherJwt = response.body.token;
+
+        return chakram.get(`${BASE_URL}/users/me/boxes`, { headers: { 'Authorization': `Bearer ${otherJwt}` } });
+      })
+      .then(function (response) {
+        otherBoxId = response.body.data.boxes[0]._id;
+
+        return chakram.delete(`${BASE_URL}/boxes/${otherBoxId}`, { password: '12345678' }, { headers: { 'Authorization': `Bearer ${jwt}` } });
+      })
+      .then(function (response) {
+        expect(response).to.have.status(403);
+        expect(response).to.have.json({ code: 'Forbidden', message: 'User does not own this senseBox' });
+      });
+  });
+
+  it('should deny to download sketch of a box of other user', function () {
+    let otherJwt, otherBoxId;
+
+    return chakram.post(`${BASE_URL}/users/sign-in`, { name: 'mrtest2', email: 'tester3@test.test', password: '12345678' })
+      .then(function (response) {
+        expect(response).to.have.status(200);
+        expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
+
+        expect(response.body.token).to.exist;
+
+        otherJwt = response.body.token;
+
+        return chakram.get(`${BASE_URL}/users/me/boxes`, { headers: { 'Authorization': `Bearer ${otherJwt}` } });
+      })
+      .then(function (response) {
+        otherBoxId = response.body.data.boxes[0]._id;
+
+        return chakram.get(`${BASE_URL}/boxes/${otherBoxId}/script`, { headers: { 'Authorization': `Bearer ${jwt}` } });
+      })
+      .then(function (response) {
+        expect(response).to.have.status(403);
+        expect(response).to.have.json({ code: 'Forbidden', message: 'User does not own this senseBox' });
+      });
+  });
+
   it('should allow to filter boxes by grouptag', function () {
     return chakram.get(`${BASE_URL}/boxes?grouptag=newgroup`)
       .then(function (response) {
