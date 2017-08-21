@@ -105,7 +105,7 @@ describe('openSenseMap API Routes: /statistics/idw', function () {
         expect(response).status(404);
         expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
         expect(response).json('code', 'NotFound');
-        expect(response).json('message', 'no senseBoxes found');
+        expect(response).json('message', 'No senseBoxes found');
 
         return chakram.wait();
       });

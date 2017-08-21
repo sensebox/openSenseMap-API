@@ -266,7 +266,7 @@ describe('openSenseMap API Routes: /boxes', function () {
       .then(function (response) {
         expect(response).to.have.status(422);
         expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
-        expect(response).json({ code: 'UnprocessableEntity', message: 'sensors are required if model is invalid or missing.' });
+        expect(response).json({ code: 'UnprocessableEntity', message: 'Validation failed: sensors are required if model is invalid or missing.' });
 
         return chakram.wait();
       });
@@ -388,7 +388,7 @@ describe('openSenseMap API Routes: /boxes', function () {
     return chakram.put(`${BASE_URL}/boxes/${boxIds[1]}`, update_payload, { headers: { 'Authorization': `Bearer ${jwt2}` } })
       .then(function (response) {
         expect(response).to.have.status(422);
-        expect(response.body.message).to.equal('validation failed: this profile requires an array \'decodeOptions\'');
+        expect(response.body.message).to.equal('Validation failed: this profile requires an array \'decodeOptions\'');
 
         return chakram.wait();
       });
