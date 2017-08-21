@@ -233,6 +233,29 @@ describe('openSenseMap API Routes: /users', function () {
       });
   });
 
+  it('should allow to register a new user with password leading and trailing spaces', function () {
+    return chakram.post(`${BASE_URL}/users/register`, { name: 'spaces_tester', password: ' leading and trailing spaces ', email: 'leading_spacesaddress@email.com' })
+      .then(function (response) {
+        expect(response).to.have.status(201);
+        expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
+        expect(response.body.token).to.exist;
+
+        return chakram.post(`${BASE_URL}/users/sign-in`, { email: 'leading_spacesaddress@email.com', password: ' leading and trailing spaces ' });
+      })
+      .then(function (response) {
+        expect(response).to.have.status(200);
+        expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
+        expect(response.body.token).to.exist;
+
+        return chakram.post(`${BASE_URL}/users/request-password-reset`, { email: 'leading_spacesaddress@email.com' });
+      })
+      .then(function (response) {
+        expect(response).to.have.status(200);
+
+        return chakram.wait();
+      });
+  });
+
   it('should allow to change to a password with leading and trailing spaces', function () {
     return chakram.put(`${BASE_URL}/users/me`, { newPassword: ' leading and trailing spaces ', currentPassword: '12345678' }, { headers: { 'Authorization': `Bearer ${jwt}` } })
       .then(function (response) {

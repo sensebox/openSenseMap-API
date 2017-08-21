@@ -42,7 +42,7 @@ describe('openSenseMap API Delete User tests', function () {
   it('should deny to delete user with empty password parameter', function () {
     return chakram.delete(`${BASE_URL}/users/me`, { password: '' }, { headers: { 'Authorization': `Bearer ${jwt}` } })
       .then(function (response) {
-        expect(response).to.have.status(422);
+        expect(response).to.have.status(403);
 
         return chakram.wait();
       });
@@ -82,4 +82,24 @@ describe('openSenseMap API Delete User tests', function () {
       });
   });
 
+  it('should allow to delete a user with password leading and trailing spaces', function () {
+    return chakram.post(`${BASE_URL}/users/register`, { name: 'spaces_tester2', password: ' leading and trailing spaces ', email: 'leading_spacesaddress2@email.com' })
+      .then(function (response) {
+        expect(response).to.have.status(201);
+        expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
+        expect(response.body.token).to.exist;
+
+        return chakram.delete(`${BASE_URL}/users/me`, { password: ' leading and trailing spaces ' }, { headers: { 'Authorization': `Bearer ${response.body.token}` } });
+      })
+      .then(function (response) {
+        expect(response).to.have.status(200);
+
+        return chakram.post(`${BASE_URL}/users/sign-in`, valid_user);
+      })
+      .then(function (response) {
+        expect(response).to.have.status(401);
+
+        return chakram.wait();
+      });
+  });
 });

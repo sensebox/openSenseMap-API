@@ -153,7 +153,14 @@ describe('openSenseMap API luftdaten.info devices', function () {
       ]
     });
 
-    return chakram.post(`${BASE_URL}/boxes`, box, { headers: { 'Authorization': `Bearer ${jwt}` } })
+    return chakram.post(`${BASE_URL}/users/register`, { name: 'custom_luftdaten info', password: 'trallalala', email: 'trallala@email.com' })
+      .then(function (response) {
+        expect(response).to.have.status(201);
+        expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
+        expect(response.body.token).to.exist;
+
+        return chakram.post(`${BASE_URL}/boxes`, box, { headers: { 'Authorization': `Bearer ${response.body.token}` } });
+      })
       .then(function (response) {
         expect(response).to.have.status(201);
         expect(response).to.have.header('content-type', 'application/json; charset=utf-8');

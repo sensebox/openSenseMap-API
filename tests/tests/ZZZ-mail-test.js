@@ -21,6 +21,18 @@ const findMailAndParseBody = function findMailAndParseBody (mails, address, subj
   return $.load(mimelib.decodeQuotedPrintable(findMail(mails, address, subject).Content.Body));
 };
 
+const findMails = function findMails (mails, address, subject) {
+  return mails.filter(function (item) {
+    return (item.Raw.To[0] === address && item.Content.Headers.Subject.includes(subject));
+  });
+};
+
+const findMailsAndParseBodys = function findMailsAndParseBodys (mails, address, subject) {
+  return findMails(mails, address, subject).map(function (mail) {
+    return $.load(mimelib.decodeQuotedPrintable(mail.Content.Body));
+  });
+};
+
 describe('mails', function () {
   let mails;
 
@@ -139,6 +151,36 @@ describe('mails', function () {
 
         // try to sign in with new password
         return chakram.post(`${BASE_URL}/users/sign-in`, valid_user);
+      })
+      .then(function (response) {
+        expect(response).to.have.status(200);
+        expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
+        expect(response.body.token).to.exist;
+
+        return chakram.wait();
+      });
+  });
+
+  it('should let users change their password with token to password with leading and trailing spaces', function () {
+    let token;
+    const mail = findMailAndParseBody(mails, 'leading_spacesaddress@email.com', 'Your password reset');
+    expect(mail).to.exist;
+    const links = mail('a');
+    links.each(function (_, link) {
+      const href = $(link).attr('href');
+      if (href.includes('token=')) {
+        token = href.split('=')[1];
+      }
+    });
+    expect(token).to.exist;
+
+    return chakram.post(`${BASE_URL}/users/password-reset`, { token, password: ' newlongenoughpassword ' })
+      .then(function (response) {
+        expect(response).to.have.status(200);
+        expect(response).to.have.json({ code: 'Ok', message: 'Password successfully changed. You can now login with your new password' });
+
+        // try to sign in with new password
+        return chakram.post(`${BASE_URL}/users/sign-in`, { email: 'leading_spacesaddress@email.com', password: ' newlongenoughpassword ' });
       })
       .then(function (response) {
         expect(response).to.have.status(200);
@@ -362,17 +404,22 @@ describe('mails', function () {
   });
 
   it('should have sent special luftdaten info welcome mail', function () {
-    const mail = findMailAndParseBody(mails, 'luftdaten@email', 'Your registration on openSenseMap');
-    expect(mail).to.exist;
-    const links = mail('a');
-    let hasLink = false;
-    links.each(function (_, link) {
-      const href = $(link).attr('href');
-      if (href.includes('luftdaten_feinstaub.html')) {
-        hasLink = true;
-      }
-    });
-    expect(hasLink).to.be.true;
+    const foundMails = findMailsAndParseBodys(mails, 'luftdaten@email', 'Your registration on openSenseMap');
+    expect(foundMails).not.to.be.empty;
+    expect(foundMails.every(function (mail) {
+      expect(mail).to.exist;
+      const links = mail('a');
+      let hasLink = false;
+      links.each(function (_, link) {
+        const href = $(link).attr('href');
+        if (href.includes('luftdaten_feinstaub.html')) {
+          hasLink = true;
+        }
+      });
+      expect(hasLink).to.be.true;
+
+      return hasLink;
+    })).true;
   });
 
   it('should have sent a mail upon deletion of an user', function () {
