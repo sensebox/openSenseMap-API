@@ -260,7 +260,7 @@ describe('openSenseMap API Routes: /users', function () {
     return chakram.put(`${BASE_URL}/users/me`, { newPassword: ' leading and trailing spaces ', currentPassword: '12345678' }, { headers: { 'Authorization': `Bearer ${jwt}` } })
       .then(function (response) {
         expect(response).to.have.status(200);
-        expect(response).to.have.json('message', 'User successfully saved. Password changed. Please log in with your new password');
+        expect(response).to.have.json('message', 'User successfully saved. Password changed. Please sign in with your new password');
 
         // try to log in with old token
         return chakram.get(`${BASE_URL}/users/me`, { headers: { 'Authorization': `Bearer ${jwt}` } });
@@ -288,7 +288,7 @@ describe('openSenseMap API Routes: /users', function () {
     return chakram.put(`${BASE_URL}/users/me`, { newPassword: '12345678910', currentPassword: ' leading and trailing spaces ' }, { headers: { 'Authorization': `Bearer ${jwt}` } })
       .then(function (response) {
         expect(response).to.have.status(200);
-        expect(response).to.have.json('message', 'User successfully saved. Password changed. Please log in with your new password');
+        expect(response).to.have.json('message', 'User successfully saved. Password changed. Please sign in with your new password');
 
         // try to log in with old token
         return chakram.get(`${BASE_URL}/users/me`, { headers: { 'Authorization': `Bearer ${jwt}` } });

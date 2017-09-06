@@ -5,7 +5,7 @@ node_js:
   - "6"
 
 install: true
-script: ./utils/deploy-docs.sh
+script: ./api/.scripts/deploy-docs.sh
 
 env:
   global:

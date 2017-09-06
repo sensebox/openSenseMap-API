@@ -1,22 +1,5 @@
 version: "2"
 services:
-  osem-api:
-    build: .
-    ports:
-      - 8000:8000
-    volumes:
-      - ./app.js:/usr/src/app/app.js
-      - ./lib:/usr/src/app/lib
-      - ./config/index.js:/usr/src/app/config/index.js
-      - ./userimages:/usr/src/app/userimages
-    environment:
-      OSEM_dbhost: db
-      OSEM_dbuser: senseboxapiuser
-      OSEM_dbuserpass: userpass
-      OSEM_mailer_url: https://localhost:3924/
-    depends_on:
-      - db
-
   db:
     image: sensebox/opensensemap-api-mongo
     ports:
@@ -27,5 +10,4 @@ services:
       OSEM_dbhost: db
       OSEM_dbuser: senseboxapiuser
       OSEM_dbuserpass: userpass
-      OSEM_mailer_url: https://localhost:3924/
 

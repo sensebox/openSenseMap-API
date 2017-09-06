@@ -8,18 +8,23 @@ RUN apk --no-cache --virtual .build add python make g++ git
 RUN mkdir -p /usr/src/app
 WORKDIR /usr/src/app
 
+# COPY in dev versions
+COPY models /usr/src/app/models
+COPY api /usr/src/app/api
+
 COPY package.json /usr/src/app/
 COPY yarn.lock /usr/src/app/
-RUN yarn install --pure-lockfile --production
+RUN yarn install --pure-lockfile --production=false
 # required because the prebuilt binaries are not compatible with musl
 # remove when https://github.com/kelektiv/node.bcrypt.js/issues/528 is resolved
 RUN npm rebuild bcrypt --build-from-source
-COPY .scripts /usr/src/app/
 
-COPY .git /usr/src/app/
+COPY .scripts /usr/src/app/.scripts
+
+COPY .git /usr/src/app/.git
 # for git 2.1.4
 RUN echo -n $(git rev-parse --abbrev-ref HEAD) $(TZ=UTC git log --date=local --pretty=format:"%ct %h" -n 1) > revision; rm -rf .git
 
 RUN apk del .build
 
-CMD [ "yarn", "start" ]
+CMD ["yarn", "start"]

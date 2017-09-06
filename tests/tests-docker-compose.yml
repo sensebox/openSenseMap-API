@@ -1,0 +1,160 @@
+version: "2"
+services:
+  osem-api:
+    build:
+      context: ..
+      dockerfile: ./tests/tests-Dockerfile
+    volumes:
+      - ./:/usr/src/app/tests
+      - ../api/app.js:/usr/src/app/node_modules/@sensebox/opensensemap-api/app.js
+      - ../api/src:/usr/src/app/node_modules/@sensebox/opensensemap-api/src
+      - ../models/index.js:/usr/src/app/node_modules/@sensebox/opensensemap-api-models/index.js
+      - ../models/src:/usr/src/app/node_modules/@sensebox/opensensemap-api-models/src
+    environment:
+      OSEM_dbuser: senseboxapiuser
+      OSEM_dbuserpass: userpass
+      OSEM_dbhost: db
+      OSEM_imageFolder: ./userimages
+      OSEM_mailer_url: https://mailer:3924/
+      OSEM_mailer_origin: http://osem-api:8000
+      OSEM_mailer_cert: |-
+        -----BEGIN CERTIFICATE-----
+        MIIDMDCCAhgCCQDVuxUPFKIywjANBgkqhkiG9w0BAQsFADCBijEaMBgGCSqGSIb3
+        DQEJARYLY2FAc2Vuc2Vib3gxCzAJBgNVBAYTAkRFMQwwCgYDVQQIDANOUlcxETAP
+        BgNVBAcMCE11ZW5zdGVyMREwDwYDVQQKDAhzZW5zZUJveDEXMBUGA1UECwwOc2Vu
+        c2VCb3hEZXZPcHMxEjAQBgNVBAMMCW1haWxlcl9jYTAeFw0xNzAyMDMxMzI0MTNa
+        Fw0yNzAyMDExMzI0MTNaMIGwMR4wHAYJKoZIhvcNAQkBFg9jbGllbnRAc2Vuc2Vi
+        b3gxCzAJBgNVBAYTAkRFMQwwCgYDVQQIDANOUlcxETAPBgNVBAcMCE11ZW5zdGVy
+        MREwDwYDVQQKDAhzZW5zZUJveDEXMBUGA1UECwwOc2Vuc2VCb3hEZXZPcHMxETAP
+        BgNVBAMMCG9zZW0tYXBpMSEwHwYDVR0RDBhETlMuMT1hcGksRE5TLjI9b3NlbS1h
+        cGkwgZswEAYHKoZIzj0CAQYFK4EEACMDgYYABAETV8jg42RGG2KcbQSUny19M45a
+        15eaE4scTvIa0QyEnhpOJlT9/5/b1RNZW00tGnaustYO/nl8D0VKMLA19aNoAgEM
+        SdRI9BWmtjhoY6e35Mqf9q0Ptq4LwS0yUPLHa1rCSK51I1tpHyWaRYJ60riXJp4k
+        H+3HmSreYSz6oatwP//LlDANBgkqhkiG9w0BAQsFAAOCAQEAitEETj+lCbPBOVa7
+        jpNKAHsVDBxi9OsirM+mQZQOxe4VnlphnenpZz91AIfEvtfgSK35QfXT6N2MjAW4
+        Xqqni03xlRdcHAUjiG09dzhm8+NZLOCh2BTgLGFB2P6Gh6TuL2xgLfA0B+4dqOsY
+        FI3j90rJI9D45iH/5uszlvIkSAhOCtwvxi10+ZRF6HJjw2ZzrAV4zzpWfs4vxYqS
+        6Xh3MxOfW2it+Q8QqbWT2xG+hBW6BJMEiBa0YUwy4hAibnJvo5iBMMwwWJ3hpYE2
+        uMvl9QW/9MmT3UeDAjR1fFv+encJKCENv8hHzEucR5vXMn/AnK6Je+ojiVS4jiHw
+        TI8NLA==
+        -----END CERTIFICATE-----
+      OSEM_mailer_key: |-
+        -----BEGIN EC PARAMETERS-----
+        BgUrgQQAIw==
+        -----END EC PARAMETERS-----
+        -----BEGIN EC PRIVATE KEY-----
+        MIHcAgEBBEIAMvM/vo7b9q9uE0XbJM54K0dLES5KWGI99P+qCj1r5QBAY+lBWixJ
+        zbFXEZsTdGrFNg9yLkGzeIezsgfnkUu0Hq+gBwYFK4EEACOhgYkDgYYABAETV8jg
+        42RGG2KcbQSUny19M45a15eaE4scTvIa0QyEnhpOJlT9/5/b1RNZW00tGnaustYO
+        /nl8D0VKMLA19aNoAgEMSdRI9BWmtjhoY6e35Mqf9q0Ptq4LwS0yUPLHa1rCSK51
+        I1tpHyWaRYJ60riXJp4kH+3HmSreYSz6oatwP//LlA==
+        -----END EC PRIVATE KEY-----
+      OSEM_mailer_ca: |-
+        -----BEGIN CERTIFICATE-----
+        MIID6TCCAtGgAwIBAgIJAJ/bi2rj2SqDMA0GCSqGSIb3DQEBCwUAMIGKMRowGAYJ
+        KoZIhvcNAQkBFgtjYUBzZW5zZWJveDELMAkGA1UEBhMCREUxDDAKBgNVBAgMA05S
+        VzERMA8GA1UEBwwITXVlbnN0ZXIxETAPBgNVBAoMCHNlbnNlQm94MRcwFQYDVQQL
+        DA5zZW5zZUJveERldk9wczESMBAGA1UEAwwJbWFpbGVyX2NhMB4XDTE3MDIwMzEz
+        MjMxOVoXDTI3MDIwMTEzMjMxOVowgYoxGjAYBgkqhkiG9w0BCQEWC2NhQHNlbnNl
+        Ym94MQswCQYDVQQGEwJERTEMMAoGA1UECAwDTlJXMREwDwYDVQQHDAhNdWVuc3Rl
+        cjERMA8GA1UECgwIc2Vuc2VCb3gxFzAVBgNVBAsMDnNlbnNlQm94RGV2T3BzMRIw
+        EAYDVQQDDAltYWlsZXJfY2EwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIB
+        AQCl3b7zMX+qyXz5Tq5hVfUMn07oBbyb1k1bHfKXE3RDZWzQ79Kd4Qw+9fHK+6h1
+        KTxkVtnCtX5AGDQCAa91uvZ7YEMkOPN1OSebvAbYYaB3HjfDPo1bGDR6z8YmNSuO
+        fuHSCIzPQQLdwZRAuDYyMTf0h1IOxYjhMHwe4+9VC40pIYeUk4WCGtoGmvVLuMsA
+        BOCmWHfm/kkDTy7FfyJMtwKUTfVZ3dA6XS7sZRI3Ng4TupoyvE7fWloWF6bzS4zC
+        IF1uZ20OTbtTMtmfSLkcbPfbJfWBG+FL7M6fAZUUitslpzaueY+3r0delKLLap5Z
+        rJ1Jm1PfYaqK0mfo8yOwWFuzAgMBAAGjUDBOMB0GA1UdDgQWBBSAygFCONVABQKw
+        Sa1LpAY6vxwSBjAfBgNVHSMEGDAWgBSAygFCONVABQKwSa1LpAY6vxwSBjAMBgNV
+        HRMEBTADAQH/MA0GCSqGSIb3DQEBCwUAA4IBAQAYAdlXv07VtkHtoCUnTMQevoCs
+        Bewkap7n1r8lPm+dwc/3eN6DrJdnbQO+3DCRkkx8V7lKyWBDi+XIc6TxOeCVtVAu
+        id3ZRN56crWN1n1WUdRpMTVo78dbLk/nWLpxkp4O8+xovaOZLaQleIMUfQWY1bQz
+        mWM4SIMVtkSw/iYrqbeCuPl71xQxArNsZxoy+gFwoodqA+ESsax+Mm5sfAOFhBTB
+        4+0QFAmFHWtCKwVci0ruqAsfRFgeJ3y2JRulJoXu2z1Ymfai7qRISQ9HD2f3IRjM
+        MVBXzkCL1PtjBQ9BjbjRnSoWZNhShbbRHIG5U20D9Nyni18hOwBGsyxe2x5m
+        -----END CERTIFICATE-----
+    depends_on:
+      - db
+
+  mailer:
+    image: sensebox/sensebox-mailer:${SENSEBOX_MAILER_TAG}
+    environment:
+      SENSEBOX_MAILER_SERVER_CERT: |-
+        -----BEGIN CERTIFICATE-----
+        MIIDODCCAiACCQDVuxUPFKIywTANBgkqhkiG9w0BAQsFADCBijEaMBgGCSqGSIb3
+        DQEJARYLY2FAc2Vuc2Vib3gxCzAJBgNVBAYTAkRFMQwwCgYDVQQIDANOUlcxETAP
+        BgNVBAcMCE11ZW5zdGVyMREwDwYDVQQKDAhzZW5zZUJveDEXMBUGA1UECwwOc2Vu
+        c2VCb3hEZXZPcHMxEjAQBgNVBAMMCW1haWxlcl9jYTAeFw0xNzAyMDMxMzI0MTJa
+        Fw0yNzAyMDExMzI0MTJaMIG4MR4wHAYJKoZIhvcNAQkBFg9zZXJ2ZXJAc2Vuc2Vi
+        b3gxCzAJBgNVBAYTAkRFMQwwCgYDVQQIDANOUlcxETAPBgNVBAcMCE11ZW5zdGVy
+        MREwDwYDVQQKDAhzZW5zZUJveDEXMBUGA1UECwwOc2Vuc2VCb3hEZXZPcHMxDzAN
+        BgNVBAMMBm1haWxlcjErMCkGA1UdEQwiRE5TLjE9bWFpbGVyLEROUy4yPXNlbnNl
+        Ym94LW1haWxlcjCBmzAQBgcqhkjOPQIBBgUrgQQAIwOBhgAEAGJ9WbIDdDAEju5n
+        kY5+QYMR3ExUMT9KUVPgekFxOTHdBTIvEluSxSqPMSwZ0CpWPDgRCqW2fE7tIFMp
+        JvBFzLabAc8WhiOyedv2i7vKUDUPeZpoThy+QokFfS7pNdAGpeRs2MaT2iyWayK6
+        SstMyInHDG8JGCq4a6Xpk/bhXM3UzHHaMA0GCSqGSIb3DQEBCwUAA4IBAQAAJM7A
+        aW16JGsZfLz1ddZqSXwHj/w5Tnei9g3X3EJ6sR0XMkx2MAla0OtMjNwp+OqJkS44
+        Rg7YT/o1dLjXn6VUaJK8ZqyyAKPFi/Gbr1A0m4JUx7AS9pDRV46UCa6BMiew+1MR
+        QOBS9qpoC4wMs/YjRk7od6H/0xXrHUGoJv57JcyQztFbMefmBOacTWK/pI7c61aW
+        6x8k5C2Yh9Tp60d/evbInZLSa9S5vTSg3BYhPr7Paea5pdKXlMWelPs7k2JPvCyV
+        wTVvtdtwhvyeyc8qMet+pqQJV8agiNkz9deIeWvgDWWqVNilzlhN59JYskmcy1rW
+        A0iBQJs/eeIGV/e4
+        -----END CERTIFICATE-----
+      SENSEBOX_MAILER_SERVER_KEY: |-
+        -----BEGIN EC PARAMETERS-----
+        BgUrgQQAIw==
+        -----END EC PARAMETERS-----
+        -----BEGIN EC PRIVATE KEY-----
+        MIHcAgEBBEIAzUYk7pxmj7S905awWP6YaEH3jYhzIk+Fw6OagLOkSV0FEWsUJFKJ
+        WzY/rrl7jSvFcmXXku7JhpWcDWkS+U5qdjegBwYFK4EEACOhgYkDgYYABABifVmy
+        A3QwBI7uZ5GOfkGDEdxMVDE/SlFT4HpBcTkx3QUyLxJbksUqjzEsGdAqVjw4EQql
+        tnxO7SBTKSbwRcy2mwHPFoYjsnnb9ou7ylA1D3maaE4cvkKJBX0u6TXQBqXkbNjG
+        k9oslmsiukrLTMiJxwxvCRgquGul6ZP24VzN1Mxx2g==
+        -----END EC PRIVATE KEY-----
+      SENSEBOX_MAILER_CA_CERT: |-
+        -----BEGIN CERTIFICATE-----
+        MIID6TCCAtGgAwIBAgIJAJ/bi2rj2SqDMA0GCSqGSIb3DQEBCwUAMIGKMRowGAYJ
+        KoZIhvcNAQkBFgtjYUBzZW5zZWJveDELMAkGA1UEBhMCREUxDDAKBgNVBAgMA05S
+        VzERMA8GA1UEBwwITXVlbnN0ZXIxETAPBgNVBAoMCHNlbnNlQm94MRcwFQYDVQQL
+        DA5zZW5zZUJveERldk9wczESMBAGA1UEAwwJbWFpbGVyX2NhMB4XDTE3MDIwMzEz
+        MjMxOVoXDTI3MDIwMTEzMjMxOVowgYoxGjAYBgkqhkiG9w0BCQEWC2NhQHNlbnNl
+        Ym94MQswCQYDVQQGEwJERTEMMAoGA1UECAwDTlJXMREwDwYDVQQHDAhNdWVuc3Rl
+        cjERMA8GA1UECgwIc2Vuc2VCb3gxFzAVBgNVBAsMDnNlbnNlQm94RGV2T3BzMRIw
+        EAYDVQQDDAltYWlsZXJfY2EwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIB
+        AQCl3b7zMX+qyXz5Tq5hVfUMn07oBbyb1k1bHfKXE3RDZWzQ79Kd4Qw+9fHK+6h1
+        KTxkVtnCtX5AGDQCAa91uvZ7YEMkOPN1OSebvAbYYaB3HjfDPo1bGDR6z8YmNSuO
+        fuHSCIzPQQLdwZRAuDYyMTf0h1IOxYjhMHwe4+9VC40pIYeUk4WCGtoGmvVLuMsA
+        BOCmWHfm/kkDTy7FfyJMtwKUTfVZ3dA6XS7sZRI3Ng4TupoyvE7fWloWF6bzS4zC
+        IF1uZ20OTbtTMtmfSLkcbPfbJfWBG+FL7M6fAZUUitslpzaueY+3r0delKLLap5Z
+        rJ1Jm1PfYaqK0mfo8yOwWFuzAgMBAAGjUDBOMB0GA1UdDgQWBBSAygFCONVABQKw
+        Sa1LpAY6vxwSBjAfBgNVHSMEGDAWgBSAygFCONVABQKwSa1LpAY6vxwSBjAMBgNV
+        HRMEBTADAQH/MA0GCSqGSIb3DQEBCwUAA4IBAQAYAdlXv07VtkHtoCUnTMQevoCs
+        Bewkap7n1r8lPm+dwc/3eN6DrJdnbQO+3DCRkkx8V7lKyWBDi+XIc6TxOeCVtVAu
+        id3ZRN56crWN1n1WUdRpMTVo78dbLk/nWLpxkp4O8+xovaOZLaQleIMUfQWY1bQz
+        mWM4SIMVtkSw/iYrqbeCuPl71xQxArNsZxoy+gFwoodqA+ESsax+Mm5sfAOFhBTB
+        4+0QFAmFHWtCKwVci0ruqAsfRFgeJ3y2JRulJoXu2z1Ymfai7qRISQ9HD2f3IRjM
+        MVBXzkCL1PtjBQ9BjbjRnSoWZNhShbbRHIG5U20D9Nyni18hOwBGsyxe2x5m
+        -----END CERTIFICATE-----
+      SENSEBOX_MAILER_SMTP_SERVER: mailhog
+      SENSEBOX_MAILER_SMTP_PORT: 1025
+      SENSEBOX_MAILER_SMTP_USER: ignored
+      SENSEBOX_MAILER_SMTP_PASSWORD: ignored
+      SENSEBOX_MAILER_FROM_DOMAIN: senseboxtest
+
+    depends_on:
+      - mailhog
+  mailhog:
+    image: mailhog/mailhog:v1.0.0
+    ports:
+      - "8025:8025"
+
+  #mosquitto:
+  #  image: eclipse-mosquitto:1.4.10
+
+  db:
+    image: sensebox/opensensemap-api-mongo
+    environment:
+      OSEM_dbuser: senseboxapiuser
+      OSEM_dbuserpass: userpass
+      OSEM_mailer_url: https://localhost:3924/
+
