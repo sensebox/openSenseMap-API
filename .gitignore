@@ -23,3 +23,5 @@ mongo-data
 .env
 doc/
 revision
+
+dev_run_migration.sh

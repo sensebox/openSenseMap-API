@@ -14,9 +14,8 @@ RUN yarn install --pure-lockfile --production
 # required because the prebuilt binaries are not compatible with musl
 # remove when https://github.com/kelektiv/node.bcrypt.js/issues/528 is resolved
 RUN npm rebuild bcrypt --build-from-source
-COPY .scripts /usr/src/app/
+COPY . /usr/src/app/
 
-COPY .git /usr/src/app/
 # for git 2.1.4
 RUN echo -n $(git rev-parse --abbrev-ref HEAD) $(TZ=UTC git log --date=local --pretty=format:"%ct %h" -n 1) > revision; rm -rf .git
 

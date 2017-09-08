@@ -6,8 +6,8 @@ services:
       dockerfile: ./tests/tests-Dockerfile
     volumes:
       - ./:/usr/src/app/tests
-      - ../api/app.js:/usr/src/app/node_modules/@sensebox/opensensemap-api/app.js
-      - ../api/src:/usr/src/app/node_modules/@sensebox/opensensemap-api/src
+      - ../app.js:/usr/src/app/app.js
+      - ../lib:/usr/src/app/lib
       - ../models/index.js:/usr/src/app/node_modules/@sensebox/opensensemap-api-models/index.js
       - ../models/src:/usr/src/app/node_modules/@sensebox/opensensemap-api-models/src
     environment:

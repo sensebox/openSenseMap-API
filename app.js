@@ -12,11 +12,11 @@
 
 const restify = require('restify'),
   { fullResponse, queryParser, jsonBodyParser, pre: { sanitizePath } } = restify.plugins,
-  config = require('./src/config'),
-  { preRequest, preCors, Honeybadger, softwareRevision, postToSlack } = require('./src/helpers/apiUtils'),
-  routes = require('./src/routes'),
+  config = require('./lib/config'),
+  { preRequest, preCors, Honeybadger, softwareRevision, postToSlack } = require('./lib/helpers/apiUtils'),
+  routes = require('./lib/routes'),
   passport = require('passport'),
-  log = require('./src/log'),
+  log = require('./lib/log'),
   { db } = require('@sensebox/opensensemap-api-models');
 
 const server = restify.createServer({

@@ -1,6 +1,6 @@
 # @sensebox/opensensemap-api-models
 
-### `require()` openSenseMap API models
+## `require()` openSenseMap API models
 
 Install it as dependency: `npm install --save @sensebox/opensensemap-api-models` or `yarn add @sensebox/opensensemap-api-models`
 
