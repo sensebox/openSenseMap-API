@@ -11,7 +11,7 @@
     "Norwin Roosen"
   ],
   "dependencies": {
-    "@sensebox/opensensemap-api-models": "file:./models",
+    "@sensebox/opensensemap-api-models": "^0.0.1",
     "@turf/area": "^4.6.0",
     "@turf/bbox": "^4.6.0",
     "@turf/centroid": "^4.6.1",
