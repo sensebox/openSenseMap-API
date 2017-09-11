@@ -21,7 +21,8 @@ Configuration values reside in the `lib/config.js` file. Configuration can also 
 ## Running Tests
 You can run the tests in containers using Docker and docker-compose.
 ```
-# Only run this once or every time you change dependencies in package.json
+# Run this the first time or every time you change dependencies in package.json
+yarn install
 ./run-tests.sh build
 
 ./run-tests.sh
