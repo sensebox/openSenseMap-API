@@ -28,12 +28,20 @@ You can run the tests in containers using Docker and docker-compose.
 ```
 
 ## Related projects
-- openSenseMap Frontend
-- sketch-templater
-- ttn-integration
-- models
-- mqtt
-- osem-compose
+
+### Services
+- [openSenseMap Frontend](https://github.com/sensebox/openSenseMap)
+- [ttn-osem-integration](https://github.com/sensebox/ttn-osem-integration)
+- [openSenseMap-MQTT-client](https://github.com/sensebox/openSenseMap-MQTT-client)
+- [sensebox-mailer](https://github.com/sensebox/sensebox-mailer)
+
+### Libraries
+- [sketch-templater](https://github.com/sensebox/node-sketch-templater)
+- [openSenseMap-API-models](https://github.com/sensebox/openSenseMap-API-models)
+
+### Deployment
+- [OSeM-compose](https://github.com/sensebox/OSeM-compose)
+- [openSenseMap-infrastructure](https://github.com/sensebox/openSenseMap-infrastructure)
 
 ## Technologies
 
