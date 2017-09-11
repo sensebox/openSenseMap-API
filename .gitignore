@@ -16,8 +16,6 @@ dump
 npm-debug.log
 node_modules
 
-config/index.js
-
 userimages
 mongo-data
 .env

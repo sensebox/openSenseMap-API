@@ -156,5 +156,4 @@ services:
     environment:
       OSEM_dbuser: senseboxapiuser
       OSEM_dbuserpass: userpass
-      OSEM_mailer_url: https://localhost:3924/
 
