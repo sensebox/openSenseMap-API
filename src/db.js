@@ -1,7 +1,7 @@
 'use strict';
 
-/* eslint-disable no-console */
-const config = require('./config');
+const config = require('./config'),
+  log = require('./log');
 
 // Bring Mongoose into the app
 const mongoose = require('mongoose');
@@ -26,7 +26,7 @@ const connect = function connect (connectionString) {
   }
 
   mongoose.connection.on('connecting', function () {
-    console.info('trying to connect to MongoDB...');
+    log.info('trying to connect to MongoDB...');
   });
 
   // Create the database connection
@@ -42,28 +42,28 @@ const connect = function connect (connectionString) {
 
       // If the connection throws an error
         mongoose.connection.on('error', function (err) {
-          console.error(err, 'Mongoose connection error');
+          log.error(err, 'Mongoose connection error');
           throw err;
         });
 
         // When the connection is disconnected
         mongoose.connection.on('disconnected', function () {
-          console.warn('Mongoose connection disconnected. Retrying with mongo AutoReconnect.');
+          log.warn('Mongoose connection disconnected. Retrying with mongo AutoReconnect.');
         });
 
         // When the connection is resconnected
         mongoose.connection.on('reconnected', function () {
-          console.info('Mongoose connection reconnected.');
+          log.info('Mongoose connection reconnected.');
         });
 
-        console.info('Successfully connected to MongoDB.');
+        log.info('Successfully connected to MongoDB.');
 
         return resolve();
       })
       .catch(function (err) {
       // only called if the initial mongoose.connect fails on first connect
         if (err.message.startsWith('failed to connect to server')) {
-          console.info(`Error ${err.message} - retrying manually in 1 second.`);
+          log.info(`Error ${err.message} - retrying manually in 1 second.`);
           mongoose.connection.removeAllListeners();
 
           return new Promise(function () {
@@ -77,7 +77,6 @@ const connect = function connect (connectionString) {
       });
   });
 };
-/* eslint-enable no-console */
 
 module.exports = {
   connect,

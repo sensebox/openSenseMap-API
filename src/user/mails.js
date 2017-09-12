@@ -1,6 +1,7 @@
 'use strict';
 
-const config = require('../config');
+const config = require('../config'),
+  log = require('../log');
 
 
 const noMailerConfiguredFunc = function () {
@@ -112,7 +113,7 @@ if (config.mailer_url && config.mailer_url.trim() !== '') {
       json: payload
     })
       .then((response) => {
-        // log.info(`successfully sent mails: ${JSON.stringify(response)}`);
+        log.info(`successfully sent mails: ${JSON.stringify(response)}`);
 
         return response;
       })

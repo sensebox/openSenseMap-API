@@ -8,6 +8,7 @@
     "@sensebox/sketch-templater": "^1.0.6",
     "@turf/helpers": "^4.6.0",
     "bcrypt": "^1.0.2",
+    "bunyan": "^1.8.12",
     "csv-stringify": "^1.0.4",
     "isemail": "^3.0.0",
     "jsonpath": "^0.2.12",

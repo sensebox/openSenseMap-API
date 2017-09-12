@@ -19,7 +19,8 @@ const { mongoose } = require('../db'),
   fs = require('fs'),
   { point } = require('@turf/helpers'),
   streamTransform = require('stream-transform'),
-  jsonstringify = require('stringify-stream');
+  jsonstringify = require('stringify-stream'),
+  log = require('../log');
 
 const templateSketcher = new Sketcher(api_measurements_post_domain);
 
@@ -99,7 +100,7 @@ const boxSchema = new Schema({
         try {
           fs.writeFileSync(`${imageFolder}${filename}`, data);
         } catch (err) {
-          // log.warn(err);
+          log.warn(err);
 
           return;
         }
