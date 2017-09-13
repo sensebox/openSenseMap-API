@@ -234,7 +234,7 @@ userSchema.methods.checkPassword = function checkPassword (plaintextPassword) {
 };
 
 userSchema.statics.initPasswordReset = function initPasswordReset ({ email }) {
-  return this.findOne({ email })
+  return this.findOne({ email: email.toLowerCase() })
     .exec()
     .then(function (user) {
       if (!user) {
