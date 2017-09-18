@@ -538,6 +538,9 @@ userSchema.statics.confirmEmail = function confirmEmail ({ token, email }) {
         throw new ModelError('invalid email confirmation token', { type: 'ForbiddenError' });
       }
 
+      // set email to email address from request
+      user.set('email', email);
+
       // mark user as confirmed
       user.set('emailConfirmationToken', undefined);
       user.set('emailIsConfirmed', true);
