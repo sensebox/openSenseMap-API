@@ -25,11 +25,16 @@
     "uuid": "^3.1.0"
   },
   "devDependencies": {
-    "eslint": "^4.6.1"
+    "chai": "^4.1.2",
+    "eslint": "^4.6.1",
+    "mocha": "^3.5.3",
+    "randomgeojson": "^1.0.0"
   },
   "scripts": {
-    "lint": "./node_modules/.bin/eslint --ignore-pattern node_modules --fix index.js \"src/**/*.js\"",
-    "version": "node .scripts/npm_version-update_changelog.js && git add CHANGELOG.md"
+    "lint": "./node_modules/.bin/eslint --ignore-pattern node_modules --fix index.js \"{test,src}/**/*.js\"",
+    "version": "node .scripts/npm_version-update_changelog.js && git add CHANGELOG.md",
+    "pretest": "node test/waitForDatabase",
+    "test": "./node_modules/.bin/mocha test/index.js"
   },
   "publishConfig": {
     "access": "public"
