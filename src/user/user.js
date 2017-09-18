@@ -338,7 +338,7 @@ userSchema.methods.addBox = function addBox (params) {
     .then(function (savedBox) {
       // request is valid
       // persist the saved box in the user
-      user.boxes.push(savedBox);
+      user.boxes.addToSet(savedBox._id);
 
       return user.save()
         .then(function () {
@@ -375,6 +375,9 @@ userSchema.methods.checkBoxOwner = function checkBoxOwner (boxId) {
 
 userSchema.methods.removeBox = function removeBox (boxId) {
   const user = this;
+
+  // checkBoxOwner throws ModelError
+  user.checkBoxOwner(boxId);
 
   return Box.findById(boxId)
     .exec()

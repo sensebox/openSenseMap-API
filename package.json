@@ -15,7 +15,7 @@
     "jsonwebtoken": "^7.4.3",
     "lodash.isequal": "^4.5.0",
     "moment": "^2.18.1",
-    "mongoose": "^4.11.10",
+    "mongoose": "^4.11.11",
     "mongoose-timestamp": "^0.6",
     "request": "^2.81.0",
     "request-promise-native": "^1.0.4",
