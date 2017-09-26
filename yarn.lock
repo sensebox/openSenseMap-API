@@ -2,9 +2,9 @@
 # yarn lockfile v1
 
 
-"@sensebox/sketch-templater@^1.0.6":
-  version "1.0.6"
-  resolved "https://registry.yarnpkg.com/@sensebox/sketch-templater/-/sketch-templater-1.0.6.tgz#8aa4a0cda28b5a8ed6ebcd4953a81d042a0c70be"
+"@sensebox/sketch-templater@^1.0.7":
+  version "1.0.7"
+  resolved "https://registry.yarnpkg.com/@sensebox/sketch-templater/-/sketch-templater-1.0.7.tgz#1887c1bbbbde1608d163138340e5a3407c621e24"
   dependencies:
     dedent "^0.7.0"
 
