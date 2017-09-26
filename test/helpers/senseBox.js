@@ -31,6 +31,10 @@ const senseBox = function senseBox ({
 } = {}) {
   location = loc(location);
 
+  if (sensors) {
+    model = undefined;
+  }
+
   return {
     name,
     location,

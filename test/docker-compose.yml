@@ -13,12 +13,14 @@ services:
       - ../yarn.lock/:/tests/yarn.lock
       - ./.yarn-cache:/yarn-cache
       - logs:/tests/logs
+      - userimages:/userimages
     environment:
       NODE_ENV: production
       ENV: prod
       OSEM_dbhost: db
       OSEM_dbuser: senseboxapiuser
       OSEM_dbuserpass: userpass
+      OSEM_imageFolder: /userimages
 
   db:
     image: sensebox/opensensemap-api-mongo
@@ -28,3 +30,4 @@ services:
 
 volumes:
   logs:
+  userimages:
