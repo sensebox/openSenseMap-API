@@ -240,6 +240,7 @@ boxSchema.statics.initNew = function ({
 };
 
 boxSchema.statics.findBoxById = function findBoxById (id, { lean = true, populate = true, includeSecrets = false, onlyLastMeasurements = false, onlyLocations = false, format, projection = {} } = {}) {
+  let fullBox = populate;
   if (populate) {
     Object.assign(projection, BOX_PROPS_FOR_POPULATION);
   }
@@ -250,11 +251,13 @@ boxSchema.statics.findBoxById = function findBoxById (id, { lean = true, populat
     projection = {
       sensors: 1
     };
+    fullBox = false;
   }
   if (onlyLocations) {
     projection = {
       locations: 1
     };
+    fullBox = false;
   }
 
   let findPromise = this.findById(id, projection);
@@ -283,8 +286,10 @@ boxSchema.statics.findBoxById = function findBoxById (id, { lean = true, populat
         return point(coordinates, box);
       }
 
-      // fill in box.loc manually, as toJSON & virtuals are not supported in lean queries.
-      box.loc = [{ geometry: box.currentLocation, type: 'Feature' }];
+      if (fullBox === true) {
+        // fill in box.loc manually, as toJSON & virtuals are not supported in lean queries.
+        box.loc = [{ geometry: box.currentLocation, type: 'Feature' }];
+      }
 
       return box;
     });

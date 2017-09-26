@@ -6,6 +6,7 @@
 - Fix case where addBox re-added existing box the the `boxes` array of an user
 - Check if user is owner of box before removing
 - Set email address to address from request when calling `confirmEmail` of user
+- Only add legacy `loc` field to box if needed
 
 ## v0.0.1
 - Initial Release after splitting api and models
