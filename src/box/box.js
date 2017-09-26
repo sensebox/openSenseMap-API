@@ -168,13 +168,14 @@ boxSchema.pre('save', function boxPreSave (next) {
   // if sensors have been changed
   if (this._sensorsChanged === true) {
     // find out if sensors are marked for deletion
-    this._deleteMeasurementsOf = [];
-    for (const sensor of this.sensors) {
-      if (sensor._deleteMe === true) {
-        this._deleteMeasurementsOf.push(sensor._id);
-        this.sensors.pull({ _id: sensor._id });
-      }
+    this._deleteTheseSensors = this.sensors.filter(s => s._deleteMe);
+    // remove sensor subdocuments from sensors array in box document
+    this.sensors.pull(...this._deleteTheseSensors);
+    // check if there is a sensor left after deletion..
+    if (this.sensors.length === 0) {
+      return next(new ModelError('Unable to delete sensor(s). A box needs at least one sensor.'), { type: 'UnprocessableEntityError' });
     }
+
   }
   next();
 });
@@ -183,9 +184,10 @@ boxSchema.post('save', function boxPostSave (savedBox) {
   // only run if sensors have changed..
   if (this._sensorsChanged === true) {
     // delete measurements of deleted sensors
-    if (savedBox._deleteMeasurementsOf && savedBox._deleteMeasurementsOf.length !== 0) {
-      Measurement.remove({ sensor_id: { $in: savedBox._deleteMeasurementsOf } }).exec();
+    if (savedBox._deleteTheseSensors && savedBox._deleteTheseSensors.length !== 0) {
+      Measurement.remove({ sensor_id: { $in: savedBox._deleteTheseSensors } }).exec();
     }
+    savedBox._deleteTheseSensors = undefined;
   }
 });
 
@@ -771,8 +773,23 @@ boxSchema.methods.addAddon = function addAddon (addon) {
   }
 };
 
-boxSchema.methods.addSensor = function addSensor ({ title, unit, sensorType, icon }) {
-  this.sensors.push(new Sensor({ title, unit, sensorType, icon }));
+boxSchema.methods.updateSensors = function updateSensors (sensors) {
+  const box = this;
+
+  for (const { _id, title, unit, sensorType, icon, deleted, edited, new: isNew } of sensors) {
+    const sensorIndex = box.sensors.findIndex(s => s._id.equals(_id));
+    if (sensorIndex !== -1 && deleted) {
+      // marks sensor as modified and adds _deleteMe = true property to sensor
+      // actual deletion happens during box preSave hook
+      box.sensors[sensorIndex].markForDeletion();
+    } else if (edited && isNew && sensorIndex === -1) {
+      box.sensors.push(new Sensor({ title, unit, sensorType, icon }));
+    } else if (sensorIndex !== -1 && edited && !deleted) {
+      box.sensors.set(sensorIndex, { _id, title, unit, sensorType, icon });
+    } else {
+      throw new ModelError(`Sensor with id ${_id} not found for ${(deleted === true ? 'deletion' : 'editing')}.`, { type: 'NotFoundError' });
+    }
+  }
 };
 
 boxSchema.methods.updateImage = function updateImage ({ type, data }) {
@@ -830,16 +847,7 @@ boxSchema.methods.updateBox = function updateBox (args) {
   }
 
   if (sensors) {
-    for (const { _id, title, unit, sensorType, icon, deleted, edited, new: isNew } of sensors) {
-      const sensorIndex = box.sensors.findIndex(s => s._id.equals(_id));
-      if (sensorIndex !== -1 && deleted) {
-        box.sensors[sensorIndex].markForDeletion();
-      } else if (edited && isNew && sensorIndex === -1) {
-        box.addSensor({ _id, title, unit, sensorType, icon });
-      } else if (sensorIndex !== -1 && edited && !deleted) {
-        box.sensors.set(sensorIndex, { _id, title, unit, sensorType, icon });
-      }
-    }
+    box.updateSensors(sensors);
   } else if (addonToAdd) {
     box.addAddon(addonToAdd);
   }

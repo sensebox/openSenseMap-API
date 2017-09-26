@@ -7,6 +7,7 @@
 - Check if user is owner of box before removing
 - Set email address to address from request when calling `confirmEmail` of user
 - Only add legacy `loc` field to box if needed
+- Validate that boxes need at least one sensor
 
 ## v0.0.1
 - Initial Release after splitting api and models
