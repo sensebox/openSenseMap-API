@@ -39,7 +39,16 @@ describe('deleting sensor data', function () {
     const tempsensor_id = boxes[1].sensors[boxes[1].sensors.findIndex(s => s.title === 'Temperatur')]._id;
     const payload = { 'deleteAllMeasurements': true };
 
-    return chakram.delete(`${BASE_URL}/boxes/${boxIds[1]}/${tempsensor_id}/measurements`, payload, { headers: { 'content-type': 'application/json', 'Authorization': `Bearer ${jwt}` } })
+    return chakram.get(`${BASE_URL}/boxes/${boxIds[1]}/sensors`)
+      .then(function (response) {
+        expect(response).to.have.json('sensors', function (sensors) {
+          sensors.forEach(function (sensor) {
+            expect(sensor.lastMeasurement).to.exist;
+          });
+        });
+
+        return chakram.delete(`${BASE_URL}/boxes/${boxIds[1]}/${tempsensor_id}/measurements`, payload, { headers: { 'content-type': 'application/json', 'Authorization': `Bearer ${jwt}` } });
+      })
       .then(function (response) {
         expect(response).to.have.status(200);
 
@@ -56,6 +65,8 @@ describe('deleting sensor data', function () {
           sensors.forEach(function (sensor) {
             if (sensor._id === tempsensor_id) {
               expect(sensor.lastMeasurement).not.to.exist;
+            } else {
+              expect(sensor.lastMeasurement).to.exist;
             }
           });
         });
