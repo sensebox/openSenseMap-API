@@ -527,9 +527,66 @@ describe('Box model', function () {
         });
     });
 
-    it('should allow to set ttn settings');
-    it('should allow to set mqtt settings');
-    it('should allow to add addon to box');
+    it('should allow to set ttn settings', function () {
+      const updatePayload = { ttn: { app_id: 'some_app_id', dev_id: 'some_dev_id', profile: 'sensebox/home' } };
+
+      return Box.initNew(senseBox())
+        .then(shouldBeABoxWithSecrets)
+        .then(function (box) {
+          return box.updateBox(updatePayload);
+        })
+        .then(function (box) {
+          return Box.findById(box._id);
+        })
+        .then(function ({ integrations: { ttn: { app_id, dev_id, profile } } }) {
+          expect(app_id).equal(updatePayload.ttn.app_id);
+          expect(dev_id).equal(updatePayload.ttn.dev_id);
+          expect(profile).equal(updatePayload.ttn.profile);
+        });
+    });
+
+    it('should allow to set mqtt settings', function () {
+      const updatePayload = { mqtt: { enabled: true, url: 'mqtt://somebroker', topic: 'some/topic', connectionOptions: '', decodeOptions: '', messageFormat: 'csv' } };
+
+      return Box.initNew(senseBox())
+        .then(shouldBeABoxWithSecrets)
+        .then(function (box) {
+          return box.updateBox(updatePayload);
+        })
+        .then(function (box) {
+          return Box.findById(box._id);
+        })
+        .then(function ({ integrations: { mqtt: { enabled, url, topic, decodeOptions, connectionOptions, messageFormat } } }) {
+          expect(enabled).equal(updatePayload.mqtt.enabled);
+          expect(url).equal(updatePayload.mqtt.url);
+          expect(topic).equal(updatePayload.mqtt.topic);
+          expect(decodeOptions).equal(updatePayload.mqtt.decodeOptions);
+          expect(connectionOptions).equal(updatePayload.mqtt.connectionOptions);
+          expect(messageFormat).equal(updatePayload.mqtt.messageFormat);
+        });
+    });
+
+    it('should allow to add feinstaub addon to box', function () {
+      const updatePayload = { addons: { add: 'feinstaub' } };
+
+      return Box.initNew(senseBox())
+        .then(shouldBeABoxWithSecrets)
+        .then(function (box) {
+          return box.updateBox(updatePayload);
+        })
+        .then(function (box) {
+          return Box.findById(box._id);
+        })
+        .then(function ({ model, sensors }) {
+          expect(sensors.some(function ({ unit, sensorType, title }) {
+            return unit === 'µg/m³' && sensorType === 'SDS 011' && title === 'PM10';
+          })).true;
+          expect(sensors.some(function ({ unit, sensorType, title }) {
+            return unit === 'µg/m³' && sensorType === 'SDS 011' && title === 'PM2.5';
+          })).true;
+          expect(model.includes('Feinstaub')).true;
+        });
+    });
   });
 
   describe('Box deletion', function () {
