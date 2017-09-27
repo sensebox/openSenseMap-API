@@ -170,7 +170,11 @@ boxSchema.pre('save', function boxPreSave (next) {
     // find out if sensors are marked for deletion
     this._deleteTheseSensors = this.sensors.filter(s => s._deleteMe);
     // remove sensor subdocuments from sensors array in box document
-    this.sensors.pull(...this._deleteTheseSensors);
+    if (this._deleteTheseSensors.length !== 0) {
+      this.sensors.pull(...this._deleteTheseSensors);
+    } else {
+      this._deleteTheseSensors = undefined;
+    }
     // check if there is a sensor left after deletion..
     if (this.sensors.length === 0) {
       return next(new ModelError('Unable to delete sensor(s). A box needs at least one sensor.'), { type: 'UnprocessableEntityError' });
@@ -297,37 +301,29 @@ boxSchema.statics.findBoxById = function findBoxById (id, { lean = true, populat
     });
 };
 
-const DELETE_MEASUREMENTS_CONTACT_ADMIN_MSG = 'If you feel your box may be in inconsistent state, please contact the administrator.';
-const DELETE_MEASUREMENTS_UNSUCCESSFUL_ERROR = 'Delete operation partially unsuccessful. This usually means some criteria you specified didn\'t yield measurements to delete or the sensor had no measurements. This can happen, if you send the same request twice.';
-
 boxSchema.methods.deleteMeasurementsOfSensor = function deleteMeasurementsOfSensor ({ sensorId, deleteAllMeasurements, timestamps, fromDate, toDate }) {
   const box = this;
 
-  const sensorIndex = box.sensors.findIndex(s => s._id.equals(sensorId));
-  if (sensorIndex === -1) {
-    throw new ModelError(`Sensor with id ${sensorId} not found.`, { type: 'NotFoundError' });
+  const sensor = box.sensors.find(s => s._id.equals(sensorId));
+  if (!sensor) {
+    throw new ModelError(`Sensor with id ${sensorId} not found or not part of this box.`, { type: 'NotFoundError' });
   }
 
-  const reallyDeleteAllMeasurements = (deleteAllMeasurements === 'true');
-  // check for instruction exclusivity
-  if (reallyDeleteAllMeasurements === true && (timestamps || (fromDate && toDate))) {
+  deleteAllMeasurements = (deleteAllMeasurements === 'true');
+
+  if (deleteAllMeasurements === true && (timestamps || (fromDate && toDate))) {
     return Promise.reject(new ModelError('Parameter deleteAllMeasurements can only be used by itself'));
-  } else if (reallyDeleteAllMeasurements === false && timestamps && fromDate && toDate) {
+  } else if (deleteAllMeasurements === false && timestamps && fromDate && toDate) {
     return Promise.reject(new ModelError('Please specify only timestamps or a range with from-date and to-date'));
-  } else if (reallyDeleteAllMeasurements === false && !timestamps && !fromDate && !toDate) {
-    return Promise.reject(new ModelError('DeleteAllMeasurements not true. deleting nothing'));
+  } else if (deleteAllMeasurements === false && !timestamps && !fromDate && !toDate) {
+    return Promise.reject(new ModelError('Parameter deleteAllMeasurements not true. deleting nothing'));
   }
 
-  let successMsg = 'all measurements',
-    mode = 'all';
   let createdAt;
-
   if (timestamps) {
     createdAt = {
       $in: timestamps.map(t => t.toDate())
     };
-    successMsg = `${timestamps.length} measurements`;
-    mode = 'timestamps';
   }
 
   if (fromDate && toDate) {
@@ -335,55 +331,22 @@ boxSchema.methods.deleteMeasurementsOfSensor = function deleteMeasurementsOfSens
       $gt: fromDate.toDate(),
       $lt: toDate.toDate()
     };
-    successMsg = `measurements between ${fromDate.format()} and ${toDate.format()}`;
-    mode = 'range';
   }
 
-  const query = {
-    sensor_id: sensorId
-  };
-
-  if (createdAt) {
-    query.createdAt = createdAt;
-  }
-
-  let deleteUnsuccessful = false;
-
-  // delete measurements
-  return Measurement.find(query)
-    .remove()
-    .exec()
-    .then(function (removeResult) {
-      if (removeResult && removeResult.result && removeResult.result.n === 0) {
-        throw new ModelError('No matching measurements for specified query', { type: 'NotFoundError' });
-      }
-      // check for not ok deletion, this is not a failure but should generate a warning for the user
-      if (removeResult.result.ok !== 1) {
-        deleteUnsuccessful = true;
-      }
-
-      let newLastMeasurementPromise = Promise.resolve();
-      if (mode !== 'all') {
-        newLastMeasurementPromise = Measurement.findLastMeasurementOfSensor(sensorId);
-      }
-
-      return newLastMeasurementPromise
-        .then(function (newLastMeasurement) {
-          box.set(`sensors.${sensorIndex}.lastMeasurement`, newLastMeasurement);
-
-          return box.save();
-        });
+  return sensor.deleteMeasurements(createdAt)
+    .then(function () {
+      return box.save();
     })
     .then(function () {
-      let responseMessage = `Successfully deleted ${successMsg} of sensor ${sensorId}`;
-
-      if (deleteUnsuccessful === true) {
-        responseMessage = `${DELETE_MEASUREMENTS_UNSUCCESSFUL_ERROR} ${DELETE_MEASUREMENTS_CONTACT_ADMIN_MSG}`;
+      let successMsg = 'all measurements';
+      if (timestamps) {
+        successMsg = `${timestamps.length} measurements`;
+      } else if (fromDate && toDate) {
+        successMsg = `measurements between ${fromDate.format()} and ${toDate.format()}`;
       }
 
-      return responseMessage;
+      return `Successfully deleted ${successMsg} of sensor ${sensorId}`;
     });
-
 };
 
 /**

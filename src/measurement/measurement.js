@@ -52,18 +52,6 @@ measurementSchema.set('toJSON', {
   }
 });
 
-measurementSchema.statics.findLastMeasurementOfSensor = function findLastMeasurementOfSensor (sensorId) {
-  return this.find({ sensor_id: sensorId })
-    .sort({ createdAt: -1 })
-    .limit(1)
-    .exec()
-    .then(function (lastMeasurement) {
-      if (lastMeasurement && Array.isArray(lastMeasurement) && lastMeasurement.length !== 0) {
-        return lastMeasurement[0];
-      }
-    });
-};
-
 measurementSchema.statics.decodeMeasurements = function decodeMeasurements (measurements, contentType = 'json', decodeOptions = {}) {
   return decodeHandlers[contentType].decodeMessage(measurements, decodeOptions)
     .catch(function (err) {

@@ -8,6 +8,8 @@
 - Set email address to address from request when calling `confirmEmail` of user
 - Only add legacy `loc` field to box if needed
 - Validate that boxes need at least one sensor
+- Move measurement deletion code from box to sensor
+- Move findLastMeasurement from measurement to sensor
 
 ## v0.0.1
 - Initial Release after splitting api and models
