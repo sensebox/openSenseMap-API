@@ -886,11 +886,9 @@ boxSchema.statics.findBoxesLastMeasurements = function findBoxesLastMeasurements
     }
   }
 
-  let stringifier;
+  let stringifier = jsonstringify({ open: '[', close: ']' });
   // format
-  if (format === 'json') {
-    stringifier = jsonstringify({ open: '[', close: ']' });
-  } else if (format === 'geojson') {
+  if (format === 'geojson') {
     stringifier = jsonstringify({ open: '{"type":"FeatureCollection","features":[', close: ']}' }, geoJsonStringifyReplacer);
   }
 

@@ -11,6 +11,7 @@
 - Move measurement deletion code from box to sensor
 - Move findLastMeasurement from measurement to sensor
 - Pin dependency mongoose to version 4.11.11
+- Use `json` as default for `format` parameter of `Box.findBoxesLastMeasurements`
 
 ## v0.0.1
 - Initial Release after splitting api and models
