@@ -9,7 +9,40 @@ const parseTimestamp = function parseTimestamp (timestamp) {
   }
 
   // is not moment or date, should be safe to call .toString here
-  return moment.utc(timestamp.toString(), moment.ISO_8601, true);
+  const [ dateParts, timeParts ] = timestamp
+    .toString()
+    .toUpperCase()
+    .split('T');
+
+  if (!timeParts) {
+    const invalidTimestamp = moment.invalid();
+    invalidTimestamp.__inputString = timestamp;
+
+    return invalidTimestamp;
+  }
+
+  const [ year, month, day ] = dateParts.split('-');
+  if (!month || !day) {
+    const invalidTimestamp = moment.invalid();
+    invalidTimestamp.__inputString = timestamp;
+
+    return invalidTimestamp;
+  }
+
+  /* eslint-disable prefer-const */
+  let [ hour, minute, lastTimePart ] = timeParts.split(':');
+  /* eslint-enable prefer-const */
+  if (!minute || !lastTimePart || !lastTimePart.endsWith('Z')) {
+    const invalidTimestamp = moment.invalid();
+    invalidTimestamp.__inputString = timestamp;
+
+    return invalidTimestamp;
+  }
+  lastTimePart = lastTimePart.slice(0, -1);
+
+  const [ second, millisecond = 0 ] = lastTimePart.split('.');
+
+  return moment.utc([year, month - 1, day, hour, minute, second, millisecond]);
 };
 
 const parseAndValidateTimestamp = function parseAndValidateTimestamp (timestamp) {
