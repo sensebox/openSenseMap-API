@@ -1,13 +1,11 @@
 define({
   "name": "openSenseMap API documentation",
-  "version": "0.0.1",
   "description": "methods to manage senseBoxes and get/post measurements",
-  "title": "openSenseMap API docs title",
+  "title": "openSenseMap API documentation",
   "url": "https://api.opensensemap.org",
   "order": [
-    "validApiKey",
-    "findBox",
-    "findAllBoxes",
+    "getBox",
+    "getBoxes",
     "postNewBox",
     "updateBox",
     "deleteBox",
@@ -17,12 +15,13 @@ define({
     "getData",
     "calculateIdw"
   ],
+  "version": "0.0.1",
   "sampleUrl": false,
   "defaultVersion": "0.0.0",
   "apidoc": "0.3.0",
   "generator": {
     "name": "apidoc",
-    "time": "2017-08-17T11:59:26.216Z",
+    "time": "2017-10-09T11:11:36.217Z",
     "url": "http://apidocjs.com",
     "version": "0.17.5"
   }

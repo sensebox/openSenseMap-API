@@ -2,11 +2,10 @@ define({ "api": [
   {
     "type": "delete",
     "url": "/boxes/:senseBoxId",
-    "title": "Marks a senseBox and its measurements for deletion",
+    "title": "Mark a senseBox and its measurements for deletion",
     "description": "<p>This will delete all the measurements of the senseBox. Please not that the deletion isn't happening immediately.</p>",
     "name": "deleteBox",
     "group": "Boxes",
-    "version": "0.1.0",
     "parameter": {
       "fields": {
         "Parameter": [
@@ -21,12 +20,13 @@ define({ "api": [
             "group": "Parameter",
             "type": "String",
             "optional": false,
-            "field": ":senseBoxId",
+            "field": "senseBoxId",
             "description": "<p>the ID of the senseBox you are referring to.</p>"
           }
         ]
       }
     },
+    "version": "0.0.0",
     "filename": "./lib/controllers/boxesController.js",
     "groupTitle": "Boxes",
     "header": {
@@ -36,11 +36,12 @@ define({ "api": [
             "group": "Header",
             "type": "String",
             "allowedValues": [
-              "application/json"
+              "\"application/json\"",
+              "\"application/json; charset=utf-8\""
             ],
             "optional": false,
             "field": "content-type",
-            "description": "<p>Should be <code>application/json</code> or <code>application/json; charset=utf-8</code></p>"
+            "description": ""
           },
           {
             "group": "Header",
@@ -89,21 +90,123 @@ define({ "api": [
   },
   {
     "type": "get",
-    "url": "/boxes?date=:date&phenomenon=:phenomenon&format=:format",
-    "title": "Get all senseBoxes",
-    "description": "<p>With the optional <code>date</code> and <code>phenomenon</code> parameters you can find senseBoxes that have submitted data around that time, +/- 4 hours, or specify two dates separated by a comma.</p>",
-    "name": "findAllBoxes",
+    "url": "/boxes/:senseBoxId?format=:format",
+    "title": "Get one senseBox",
+    "name": "getBox",
     "group": "Boxes",
-    "version": "0.1.0",
     "parameter": {
       "fields": {
         "Parameter": [
           {
             "group": "Parameter",
-            "type": "ISO8601Date",
+            "type": "String",
+            "allowedValues": [
+              "json",
+              "geojson"
+            ],
+            "optional": true,
+            "field": "format",
+            "defaultValue": "json",
+            "description": "<p>The format the sensor data is returned in. If <code>geojson</code>, a GeoJSON Point Feature is returned.</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": false,
+            "field": "senseBoxId",
+            "description": "<p>the ID of the senseBox you are referring to.</p>"
+          }
+        ]
+      }
+    },
+    "success": {
+      "examples": [
+        {
+          "title": "Example data on success:",
+          "content": "{\n  \"_id\": \"57000b8745fd40c8196ad04c\",\n  \"createdAt\": \"2016-06-02T11:22:51.817Z\",\n  \"exposure\": \"outdoor\",\n  \"grouptag\": \"\",\n  \"image\": \"57000b8745fd40c8196ad04c.png?1466435154159\",\n  \"currentLocation\": {\n    \"coordinates\": [\n      7.64568,\n      51.962372\n    ],\n    \"timestamp\": \"2016-06-02T11:22:51.817Z\",\n    \"type\": \"Point\"\n  },\n  \"name\": \"Oststr/Mauritzsteinpfad\",\n  \"sensors\": [\n    {\n      \"_id\": \"57000b8745fd40c8196ad04e\",\n      \"lastMeasurement\": {\n        \"value\": \"0\",\n        \"createdAt\": \"2016-11-11T21:22:01.675Z\"\n      },\n      \"sensorType\": \"VEML6070\",\n      \"title\": \"UV-Intensität\",\n      \"unit\": \"μW/cm²\"\n    },\n    {\n      \"_id\": \"57000b8745fd40c8196ad04f\",\n      \"lastMeasurement\": {\n        \"value\": \"0\",\n        \"createdAt\": \"2016-11-11T21:22:01.675Z\"\n      },\n      \"sensorType\": \"TSL45315\",\n      \"title\": \"Beleuchtungsstärke\",\n      \"unit\": \"lx\"\n    },\n    {\n      \"_id\": \"57000b8745fd40c8196ad050\",\n      \"lastMeasurement\": {\n        \"value\": \"1019.21\",\n        \"createdAt\": \"2016-11-11T21:22:01.675Z\"\n      },\n      \"sensorType\": \"BMP280\",\n      \"title\": \"Luftdruck\",\n      \"unit\": \"hPa\"\n    },\n    {\n      \"_id\": \"57000b8745fd40c8196ad051\",\n      \"lastMeasurement\": {\n        \"value\": \"99.38\",\n        \"createdAt\": \"2016-11-11T21:22:01.675Z\"\n      },\n      \"sensorType\": \"HDC1008\",\n      \"title\": \"rel. Luftfeuchte\",\n      \"unit\": \"%\"\n    },\n    {\n      \"_id\": \"57000b8745fd40c8196ad052\",\n      \"lastMeasurement\": {\n        \"value\": \"0.21\",\n        \"createdAt\": \"2016-11-11T21:22:01.675Z\"\n      },\n      \"sensorType\": \"HDC1008\",\n      \"title\": \"Temperatur\",\n      \"unit\": \"°C\"\n    },\n    {\n      \"_id\": \"576996be6c521810002479dd\",\n      \"sensorType\": \"WiFi\",\n      \"unit\": \"dBm\",\n      \"title\": \"Wifi-Stärke\",\n      \"lastMeasurement\": {\n        \"value\": \"-66\",\n        \"createdAt\": \"2016-11-11T21:22:01.675Z\"\n      }\n    },\n    {\n      \"_id\": \"579f9eae68b4a2120069edc8\",\n      \"sensorType\": \"VCC\",\n      \"unit\": \"V\",\n      \"title\": \"Eingangsspannung\",\n      \"lastMeasurement\": {\n        \"value\": \"2.73\",\n        \"createdAt\": \"2016-11-11T21:22:01.675Z\"\n      },\n      \"icon\": \"osem-shock\"\n    }\n  ],\n  \"updatedAt\": \"2016-11-11T21:22:01.686Z\"\n}",
+          "type": "json"
+        }
+      ]
+    },
+    "version": "0.0.0",
+    "filename": "./lib/controllers/boxesController.js",
+    "groupTitle": "Boxes"
+  },
+  {
+    "type": "get",
+    "url": "/boxes/:senseBoxId/locations",
+    "title": "Get locations of a senseBox",
+    "group": "Boxes",
+    "name": "getBoxLocations",
+    "description": "<p>Get all locations of the specified senseBox ordered by date as an array of GeoJSON Points. If <code>format=geojson</code>, a GeoJSON linestring will be returned, with <code>properties.timestamps</code> being an array with the timestamp for each coordinate.</p>",
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "String",
+            "allowedValues": [
+              "json",
+              "geojson"
+            ],
+            "optional": false,
+            "field": "format",
+            "defaultValue": "json",
+            "description": ""
+          },
+          {
+            "group": "Parameter",
+            "type": "RFC3339Date",
+            "optional": true,
+            "field": "from-date",
+            "description": "<p>Beginning date of location timestamps (default: 48 hours ago from now)</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "RFC3339Date",
+            "optional": true,
+            "field": "to-date",
+            "description": "<p>End date of location timstamps (default: now)</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": false,
+            "field": "senseBoxId",
+            "description": "<p>the ID of the senseBox you are referring to.</p>"
+          }
+        ]
+      }
+    },
+    "success": {
+      "examples": [
+        {
+          "title": "Example response for :format=json",
+          "content": "[\n  { \"coordinates\": [7.68123, 51.9123], \"type\": \"Point\", \"timestamp\": \"2017-07-27T12:00:00Z\"},\n  { \"coordinates\": [7.68223, 51.9433, 66.6], \"type\": \"Point\", \"timestamp\": \"2017-07-27T12:01:00Z\"},\n  { \"coordinates\": [7.68323, 51.9423], \"type\": \"Point\", \"timestamp\": \"2017-07-27T12:02:00Z\"}\n]",
+          "type": "application/json"
+        }
+      ]
+    },
+    "version": "0.0.0",
+    "filename": "./lib/controllers/boxesController.js",
+    "groupTitle": "Boxes"
+  },
+  {
+    "type": "get",
+    "url": "/boxes?date=:date&phenomenon=:phenomenon&format=:format",
+    "title": "Get all senseBoxes",
+    "description": "<p>With the optional <code>date</code> and <code>phenomenon</code> parameters you can find senseBoxes that have submitted data around that time, +/- 4 hours, or specify two dates separated by a comma.</p>",
+    "name": "getBoxes",
+    "group": "Boxes",
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "RFC3339Date",
             "optional": true,
             "field": "date",
-            "description": "<p>One or two ISO8601 timestamps at which boxes should provide measurements. Use in combination with <code>phenomenon</code>.</p>"
+            "description": "<p>One or two RFC 3339 timestamps at which boxes should provide measurements. Use in combination with <code>phenomenon</code>.</p>"
           },
           {
             "group": "Parameter",
@@ -116,24 +219,13 @@ define({ "api": [
             "group": "Parameter",
             "type": "String",
             "allowedValues": [
-              "\"json\"",
-              "\"geojson\""
+              "json",
+              "geojson"
             ],
             "optional": true,
             "field": "format",
             "defaultValue": "json",
             "description": "<p>the format the sensor data is returned in.</p>"
-          },
-          {
-            "group": "Parameter",
-            "type": "String",
-            "allowedValues": [
-              "\"indoor\"",
-              "\"outdoor\""
-            ],
-            "optional": true,
-            "field": "exposure",
-            "description": "<p>only return sensors of boxes with the specified exposure. Can be indoor or outdoor</p>"
           },
           {
             "group": "Parameter",
@@ -145,9 +237,33 @@ define({ "api": [
           {
             "group": "Parameter",
             "type": "String",
+            "allowedValues": [
+              "\"homeEthernet\"",
+              "\"homeWifi\"",
+              "\"homeEthernetFeinstaub\"",
+              "\"homeWifiFeinstaub\"",
+              "\"luftdaten_sds011\"",
+              "\"luftdaten_sds011_dht11\"",
+              "\"luftdaten_sds011_dht22\"",
+              "\"luftdaten_sds011_bmp180\"",
+              "\"luftdaten_sds011_bme280\""
+            ],
             "optional": true,
             "field": "model",
             "description": "<p>only return boxes with this model, allows to specify multiple separated with a comma</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "String",
+            "allowedValues": [
+              "\"indoor\"",
+              "\"outdoor\"",
+              "\"mobile\"",
+              "\"unknown\""
+            ],
+            "optional": true,
+            "field": "exposure",
+            "description": "<p>only include boxes with this exposure.</p>"
           }
         ]
       }
@@ -163,50 +279,7 @@ define({ "api": [
         "url": "https://api.opensensemap.org/boxes?date=2015-03-07T02:50Z,2015-04-07T02:50Z&phenomenon=Temperatur"
       }
     ],
-    "filename": "./lib/controllers/boxesController.js",
-    "groupTitle": "Boxes"
-  },
-  {
-    "type": "get",
-    "url": "/boxes/:boxId",
-    "title": "Get one senseBox",
-    "name": "findBox",
-    "version": "0.0.1",
-    "group": "Boxes",
-    "parameter": {
-      "fields": {
-        "Parameter": [
-          {
-            "group": "Parameter",
-            "type": "String",
-            "allowedValues": [
-              "\"json\"",
-              "\"geojson\""
-            ],
-            "optional": true,
-            "field": "format",
-            "defaultValue": "json",
-            "description": "<p>The format the sensor data is returned in. If &quot;geojson&quot;, a GeoJSON Point Feature is returned.</p>"
-          },
-          {
-            "group": "Parameter",
-            "type": "String",
-            "optional": false,
-            "field": ":senseBoxId",
-            "description": "<p>the ID of the senseBox you are referring to.</p>"
-          }
-        ]
-      }
-    },
-    "success": {
-      "examples": [
-        {
-          "title": "Example data on success:",
-          "content": "{\n  \"_id\": \"57000b8745fd40c8196ad04c\",\n  \"boxType\": \"fixed\",\n  \"createdAt\": \"2016-06-02T11:22:51.817Z\",\n  \"exposure\": \"outdoor\",\n  \"grouptag\": \"\",\n  \"image\": \"57000b8745fd40c8196ad04c.png?1466435154159\",\n  \"loc\": [\n    {\n      \"geometry\": {\n        \"coordinates\": [\n          7.64568,\n          51.962372\n        ],\n        \"type\": \"Point\"\n      },\n      \"type\": \"feature\"\n    }\n  ],\n  \"name\": \"Oststr/Mauritzsteinpfad\",\n  \"sensors\": [\n    {\n      \"_id\": \"57000b8745fd40c8196ad04e\",\n      \"lastMeasurement\": {\n        \"value\": \"0\",\n        \"createdAt\": \"2016-11-11T21:22:01.675Z\"\n      },\n      \"sensorType\": \"VEML6070\",\n      \"title\": \"UV-Intensität\",\n      \"unit\": \"μW/cm²\"\n    },\n    {\n      \"_id\": \"57000b8745fd40c8196ad04f\",\n      \"lastMeasurement\": {\n        \"value\": \"0\",\n        \"createdAt\": \"2016-11-11T21:22:01.675Z\"\n      },\n      \"sensorType\": \"TSL45315\",\n      \"title\": \"Beleuchtungsstärke\",\n      \"unit\": \"lx\"\n    },\n    {\n      \"_id\": \"57000b8745fd40c8196ad050\",\n      \"lastMeasurement\": {\n        \"value\": \"1019.21\",\n        \"createdAt\": \"2016-11-11T21:22:01.675Z\"\n      },\n      \"sensorType\": \"BMP280\",\n      \"title\": \"Luftdruck\",\n      \"unit\": \"hPa\"\n    },\n    {\n      \"_id\": \"57000b8745fd40c8196ad051\",\n      \"lastMeasurement\": {\n        \"value\": \"99.38\",\n        \"createdAt\": \"2016-11-11T21:22:01.675Z\"\n      },\n      \"sensorType\": \"HDC1008\",\n      \"title\": \"rel. Luftfeuchte\",\n      \"unit\": \"%\"\n    },\n    {\n      \"_id\": \"57000b8745fd40c8196ad052\",\n      \"lastMeasurement\": {\n        \"value\": \"0.21\",\n        \"createdAt\": \"2016-11-11T21:22:01.675Z\"\n      },\n      \"sensorType\": \"HDC1008\",\n      \"title\": \"Temperatur\",\n      \"unit\": \"°C\"\n    },\n    {\n      \"_id\": \"576996be6c521810002479dd\",\n      \"sensorType\": \"WiFi\",\n      \"unit\": \"dBm\",\n      \"title\": \"Wifi-Stärke\",\n      \"lastMeasurement\": {\n        \"value\": \"-66\",\n        \"createdAt\": \"2016-11-11T21:22:01.675Z\"\n      }\n    },\n    {\n      \"_id\": \"579f9eae68b4a2120069edc8\",\n      \"sensorType\": \"VCC\",\n      \"unit\": \"V\",\n      \"title\": \"Eingangsspannung\",\n      \"lastMeasurement\": {\n        \"value\": \"2.73\",\n        \"createdAt\": \"2016-11-11T21:22:01.675Z\"\n      },\n      \"icon\": \"osem-shock\"\n    }\n  ],\n  \"updatedAt\": \"2016-11-11T21:22:01.686Z\"\n}",
-          "type": "json"
-        }
-      ]
-    },
+    "version": "0.0.0",
     "filename": "./lib/controllers/boxesController.js",
     "groupTitle": "Boxes"
   },
@@ -214,9 +287,9 @@ define({ "api": [
     "type": "get",
     "url": "/boxes/:senseBoxId/script",
     "title": "Download the Arduino script for your senseBox",
-    "name": "getScript",
+    "name": "getSketch",
     "group": "Boxes",
-    "version": "0.1.0",
+    "version": "0.0.0",
     "filename": "./lib/controllers/boxesController.js",
     "groupTitle": "Boxes",
     "header": {
@@ -259,7 +332,7 @@ define({ "api": [
             "group": "Parameter",
             "type": "String",
             "optional": false,
-            "field": ":senseBoxId",
+            "field": "senseBoxId",
             "description": "<p>the ID of the senseBox you are referring to.</p>"
           }
         ]
@@ -270,15 +343,12 @@ define({ "api": [
     "type": "post",
     "url": "/boxes",
     "title": "Post new senseBox",
-    "description": "<p>Create a new senseBox. This method allows you to submit a new senseBox.</p> <p>If you specify <code>mqtt</code> parameters, the openSenseMap API will try to connect to the MQTT broker specified by you. The parameter <code>messageFormat</code> tells the API in which format you are sending measurements in.</p> <p>For <code>json</code>, the format is:</p> <pre><code>{   &quot;sensorId&quot;: &lt;value&gt;,   &quot;sensorId&quot;: [&lt;value&gt;,&lt;createdAt&gt;]   ... } </code></pre> <p>For <code>csv</code>, the format is:</p> <pre><code>sensorId,value sensorId,value,createdAt ... </code></pre>",
-    "version": "0.0.1",
     "group": "Boxes",
     "name": "postNewBox",
-    "filename": "./lib/controllers/boxesController.js",
-    "groupTitle": "Boxes",
+    "description": "<p>Create a new senseBox. This method allows you to submit a new senseBox.</p> <h3>MQTT Message formats</h3> <p>If you specify <code>mqtt</code> parameters, the openSenseMap API will try to connect to the MQTT broker specified by you. The parameter <code>messageFormat</code> tells the API in which format you are sending measurements in. The accepted formats are listed under <code>Measurements/Post mutliple new Measurements</code></p>",
     "parameter": {
       "fields": {
-        "JSON request body": [
+        "RequestBody": [
           {
             "group": "RequestBody",
             "type": "String",
@@ -289,7 +359,7 @@ define({ "api": [
           {
             "group": "RequestBody",
             "type": "String",
-            "optional": false,
+            "optional": true,
             "field": "grouptag",
             "description": "<p>the grouptag of this senseBox.</p>"
           },
@@ -298,7 +368,9 @@ define({ "api": [
             "type": "String",
             "allowedValues": [
               "\"indoor\"",
-              "\"outdoor\""
+              "\"outdoor\"",
+              "\"mobile\"",
+              "\"unknown\""
             ],
             "optional": false,
             "field": "exposure",
@@ -306,38 +378,72 @@ define({ "api": [
           },
           {
             "group": "RequestBody",
-            "type": "String",
-            "allowedValues": [
-              "\"fixed\""
-            ],
+            "type": "Location",
             "optional": false,
-            "field": "boxType",
-            "description": "<p>the type of the senseBox. Currently only 'fixed' is supported.</p>"
+            "field": "location",
+            "description": "<p>the coordinates of this senseBox.</p>"
           },
           {
             "group": "RequestBody",
             "type": "String",
             "allowedValues": [
               "\"homeEthernet\"",
-              "\"homeWifi\""
+              "\"homeWifi\"",
+              "\"homeEthernetFeinstaub\"",
+              "\"homeWifiFeinstaub\"",
+              "\"luftdaten_sds011\"",
+              "\"luftdaten_sds011_dht11\"",
+              "\"luftdaten_sds011_dht22\"",
+              "\"luftdaten_sds011_bmp180\"",
+              "\"luftdaten_sds011_bme280\""
             ],
-            "optional": false,
+            "optional": true,
             "field": "model",
-            "description": "<p>specify the model if you want to use a predefined senseBox model.</p>"
+            "description": "<p>specify the model if you want to use a predefined senseBox model, autocreating sensor definitions.</p>"
           },
           {
             "group": "RequestBody",
             "type": "Sensor[]",
-            "optional": false,
+            "optional": true,
             "field": "sensors",
-            "description": "<p>an array containing the sensors of this senseBox. Only use if model is unspecified</p>"
+            "description": "<p>an array containing the sensors of this senseBox. Only use if <code>model</code> is unspecified.</p>"
           },
           {
             "group": "RequestBody",
-            "type": "Location",
+            "type": "Object",
+            "optional": true,
+            "field": "mqtt",
+            "description": "<p>specify parameters of the MQTT integration for external measurement upload. Please see below for the accepted parameters</p>"
+          },
+          {
+            "group": "RequestBody",
+            "type": "Object",
+            "optional": true,
+            "field": "ttn",
+            "description": "<p>specify parameters for the TTN integration for measurement from TheThingsNetwork.org upload. Please see below for the accepted parameters</p>"
+          }
+        ],
+        "Formats accepted for the location field": [
+          {
+            "group": "LocationOption",
+            "type": "Number",
             "optional": false,
-            "field": "loc",
-            "description": "<p>the location of this senseBox. Must be a GeoJSON Point Feature. (RFC7946)</p>"
+            "field": "lat",
+            "description": "<p>Latitude between -90 and 90</p>"
+          },
+          {
+            "group": "LocationOption",
+            "type": "Number",
+            "optional": false,
+            "field": "lng",
+            "description": "<p>Longitude between -180 and 180</p>"
+          },
+          {
+            "group": "LocationOption",
+            "type": "Number",
+            "optional": true,
+            "field": "height",
+            "description": "<p>Height above ground in meters.</p>"
           }
         ],
         "A single sensor for the nested Sensor parameter": [
@@ -462,8 +568,23 @@ define({ "api": [
             "description": "<p>The TTN port to listen for messages. Optional, if not provided, all ports are used.</p>"
           }
         ]
-      }
+      },
+      "examples": [
+        {
+          "title": "Location Object:",
+          "content": "{ \"lat\": 51.972, \"lng\": 7.684, \"height\": 66.6 }",
+          "type": "application/json"
+        },
+        {
+          "title": "Location Array:",
+          "content": "[7.684, 51.972, 66.6]",
+          "type": "application/json"
+        }
+      ]
     },
+    "version": "0.0.0",
+    "filename": "./lib/controllers/boxesController.js",
+    "groupTitle": "Boxes",
     "header": {
       "fields": {
         "Header": [
@@ -471,11 +592,12 @@ define({ "api": [
             "group": "Header",
             "type": "String",
             "allowedValues": [
-              "application/json"
+              "\"application/json\"",
+              "\"application/json; charset=utf-8\""
             ],
             "optional": false,
             "field": "content-type",
-            "description": "<p>Should be <code>application/json</code> or <code>application/json; charset=utf-8</code></p>"
+            "description": ""
           },
           {
             "group": "Header",
@@ -525,68 +647,71 @@ define({ "api": [
   {
     "type": "put",
     "url": "/boxes/:senseBoxId",
-    "title": "Update a senseBox: Image and sensor names",
+    "title": "Update a senseBox",
     "description": "<p>Modify the specified senseBox.</p>",
     "parameter": {
       "fields": {
-        "JSON request body": [
+        "RequestBody": [
           {
             "group": "RequestBody",
             "type": "String",
-            "optional": false,
+            "optional": true,
             "field": "name",
             "description": "<p>the name of this senseBox.</p>"
           },
           {
             "group": "RequestBody",
             "type": "String",
-            "allowedValues": [
-              "\"indoor\"",
-              "\"outdoor\""
-            ],
-            "optional": false,
-            "field": "exposure",
-            "description": "<p>the exposure of this senseBox.</p>"
-          },
-          {
-            "group": "RequestBody",
-            "type": "String",
-            "optional": false,
+            "optional": true,
             "field": "grouptag",
             "description": "<p>the grouptag of this senseBox. Send '' (empty string) to delete this property.</p>"
           },
           {
             "group": "RequestBody",
+            "type": "Location",
+            "optional": true,
+            "field": "location",
+            "description": "<p>the new coordinates of this senseBox. Measurements will keep the reference to their correct location</p>"
+          },
+          {
+            "group": "RequestBody",
             "type": "Sensor[]",
-            "optional": false,
+            "optional": true,
             "field": "sensors",
             "description": "<p>an array containing the sensors of this senseBox. Only use if model is unspecified</p>"
           },
           {
             "group": "RequestBody",
-            "type": "Location",
-            "optional": false,
-            "field": "loc",
-            "description": "<p>the location of this senseBox. Specify as object containing the properties <code>lat</code> and <code>lng</code></p>"
+            "type": "MqttOption",
+            "optional": true,
+            "field": "mqtt",
+            "description": "<p>settings for the MQTT integration of this senseBox</p>"
+          },
+          {
+            "group": "RequestBody",
+            "type": "TTNOption",
+            "optional": true,
+            "field": "ttn",
+            "description": "<p>settings for the TTN integration of this senseBox</p>"
           },
           {
             "group": "RequestBody",
             "type": "String",
-            "optional": false,
+            "optional": true,
             "field": "description",
             "description": "<p>the updated description of this senseBox. Send '' (empty string) to delete this property.</p>"
           },
           {
             "group": "RequestBody",
             "type": "String",
-            "optional": false,
+            "optional": true,
             "field": "image",
             "description": "<p>the updated image of this senseBox encoded as base64 data uri.</p>"
           },
           {
             "group": "RequestBody",
             "type": "Object",
-            "optional": false,
+            "optional": true,
             "field": "addons",
             "description": "<p>allows to add addons to the box. Submit as Object with key <code>add</code> and the desired addon as value like <code>{&quot;add&quot;:&quot;feinstaub&quot;}</code></p>"
           }
@@ -619,6 +744,29 @@ define({ "api": [
             "optional": true,
             "field": "icon",
             "description": "<p>the visual representation for the openSenseMap of this sensor.</p>"
+          }
+        ],
+        "Formats accepted for the location field": [
+          {
+            "group": "LocationOption",
+            "type": "Number",
+            "optional": false,
+            "field": "lat",
+            "description": "<p>Latitude between -90 and 90</p>"
+          },
+          {
+            "group": "LocationOption",
+            "type": "Number",
+            "optional": false,
+            "field": "lng",
+            "description": "<p>Longitude between -180 and 180</p>"
+          },
+          {
+            "group": "LocationOption",
+            "type": "Number",
+            "optional": true,
+            "field": "height",
+            "description": "<p>Height above ground in meters.</p>"
           }
         ],
         "Settings for a senseBox connected through MQTT": [
@@ -718,7 +866,7 @@ define({ "api": [
             "group": "Parameter",
             "type": "String",
             "optional": false,
-            "field": ":senseBoxId",
+            "field": "senseBoxId",
             "description": "<p>the ID of the senseBox you are referring to.</p>"
           }
         ]
@@ -726,14 +874,24 @@ define({ "api": [
       "examples": [
         {
           "title": "Request-Example:",
-          "content": "{\n \"_id\": \"56e741ff933e450c0fe2f705\",\n \"name\": \"my senseBox\",\n \"description\": \"this is just a description\",\n \"weblink\": \"https://opensensemap.org/explore/561ce8acb3de1fe005d3d7bf\",\n \"grouptag\": \"senseBoxes99\",\n \"exposure\": \"indoor\",\n \"sensors\": [\n   {\n     \"_id\": \"56e741ff933e450c0fe2f707\",\n     \"title\": \"UV-Intensität\",\n     \"unit\": \"μW/cm²\",\n     \"sensorType\": \"VEML6070\",\n     \"icon\": \"osem-sprinkles\"\n   }\n ],\n \"loc\": {\n   \"lng\": 8.6956,\n   \"lat\": 50.0430\n },\n \"image\": \"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAIVBMVEUAAABKrkMGteh0wW5Ixu931vKy3bO46fj/7hr/+J36/vyFw5EiAAAAAXRSTlMAQObYZgAAAF5JREFUeAFdjdECgzAIA1kIUvP/HzyhdrPe210L2GLYzhjj7VvRefmpn1MKFbdHUOzA9qRQEhIw3xMzEVeJDqkOrC9IJqWE7hFDLZ0Q6+zh7odsoU/j9qeDPXDf/cEX1xsDKIqAkK8AAAAASUVORK5CYII=\",\n \"mqtt\": {\n   \"url\": \"some url\",\n   \"topic\": \"some topic\",\n   \"messageFormat\": \"json\",\n   \"decodeOptions\": \"{\\\"jsonPath\\\":\\\"$.bla\\\"}\"\n }\n \"ttn\": {\n   \"app_id\": \"my-app-id-from-ttn\",\n   \"dev_id\": \"my-dev-id-from-ttn\",\n   \"profile\": \"sensebox/home\",\n   \"decodeOptions\": \"{\\\"jsonPath\\\":\\\"$.bla\\\"}\"\n }\n}",
+          "content": "{\n \"_id\": \"56e741ff933e450c0fe2f705\",\n \"name\": \"my senseBox\",\n \"description\": \"this is just a description\",\n \"weblink\": \"https://opensensemap.org/explore/561ce8acb3de1fe005d3d7bf\",\n \"grouptag\": \"senseBoxes99\",\n \"exposure\": \"indoor\",\n \"sensors\": [\n   {\n     \"_id\": \"56e741ff933e450c0fe2f707\",\n     \"title\": \"UV-Intensität\",\n     \"unit\": \"μW/cm²\",\n     \"sensorType\": \"VEML6070\",\n     \"icon\": \"osem-sprinkles\"\n   }\n ],\n \"location\": {\n   \"lng\": 8.6956,\n   \"lat\": 50.0430\n },\n \"image\": \"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAIVBMVEUAAABKrkMGteh0wW5Ixu931vKy3bO46fj/7hr/+J36/vyFw5EiAAAAAXRSTlMAQObYZgAAAF5JREFUeAFdjdECgzAIA1kIUvP/HzyhdrPe210L2GLYzhjj7VvRefmpn1MKFbdHUOzA9qRQEhIw3xMzEVeJDqkOrC9IJqWE7hFDLZ0Q6+zh7odsoU/j9qeDPXDf/cEX1xsDKIqAkK8AAAAASUVORK5CYII=\",\n \"mqtt\": {\n   \"url\": \"some url\",\n   \"topic\": \"some topic\",\n   \"messageFormat\": \"json\",\n   \"decodeOptions\": \"{\\\"jsonPath\\\":\\\"$.bla\\\"}\"\n }\n \"ttn\": {\n   \"app_id\": \"my-app-id-from-ttn\",\n   \"dev_id\": \"my-dev-id-from-ttn\",\n   \"profile\": \"sensebox/home\",\n   \"decodeOptions\": \"{\\\"jsonPath\\\":\\\"$.bla\\\"}\"\n },\n \"addons\": { \"add\": \"feinstaub\" }\n}",
           "type": "json"
+        },
+        {
+          "title": "Location Object:",
+          "content": "{ \"lat\": 51.972, \"lng\": 7.684, \"height\": 66.6 }",
+          "type": "application/json"
+        },
+        {
+          "title": "Location Array:",
+          "content": "[7.684, 51.972, 66.6]",
+          "type": "application/json"
         }
       ]
     },
-    "version": "0.0.1",
     "group": "Boxes",
     "name": "updateBox",
+    "version": "0.0.0",
     "filename": "./lib/controllers/boxesController.js",
     "groupTitle": "Boxes",
     "header": {
@@ -750,11 +908,12 @@ define({ "api": [
             "group": "Header",
             "type": "String",
             "allowedValues": [
-              "application/json"
+              "\"application/json\"",
+              "\"application/json; charset=utf-8\""
             ],
             "optional": false,
             "field": "content-type",
-            "description": "<p>Should be <code>application/json</code> or <code>application/json; charset=utf-8</code></p>"
+            "description": ""
           }
         ]
       },
@@ -798,8 +957,7 @@ define({ "api": [
     "type": "get",
     "url": "/statistics/idw?bbox=7.6,51.2,7.8,51.4&phenomenon=Temperatur",
     "title": "Get a Inverse Distance Weighting Interpolation as FeatureCollection",
-    "description": "<p>Retrieve a JSON object containing</p> <ul> <li><code>breaks</code>: an array containing equal distance breaks. Use <code>numClasses</code> parameter to control how many breaks to return.</li> <li><code>featureCollection</code>: a GeoJSON FeatureCollection with a computed Inverse Distance Interpolation for a certain region of interest and phenomenon.</li> <li><code>timesteps</code>: an array of ISO8601 formatted timesteps. Use <code>numTimeSteps</code> parameter to control how many timesteps between <code>from-date</code> and <code>to-date</code> should be returned.</li> </ul> <p>The properties of each feature in the featureCollection is an object with ISO8601 timestamps which are the timeSteps. The number of the timesteps can be controlled using the <code>numTimeSteps</code> parameter. Values falling inside each timestep are first averaged. Please be aware that requests with (areaSquareKilometers / cellWidth) &gt; 2500 will be rejected.</p>",
-    "version": "0.0.1",
+    "description": "<p>Retrieve a JSON object containing</p> <ul> <li><code>breaks</code>: an array containing equal distance breaks. Use <code>numClasses</code> parameter to control how many breaks to return.</li> <li><code>featureCollection</code>: a GeoJSON FeatureCollection with a computed Inverse Distance Interpolation for a certain region of interest and phenomenon.</li> <li><code>timesteps</code>: an array of RFC 3339 formatted timesteps. Use <code>numTimeSteps</code> parameter to control how many timesteps between <code>from-date</code> and <code>to-date</code> should be returned.</li> </ul> <p>The properties of each feature in the featureCollection is an object with RFC 3339 timestamps which are the timeSteps. The number of the timesteps can be controlled using the <code>numTimeSteps</code> parameter. Values falling inside each timestep are first averaged. Please be aware that requests with (areaSquareKilometers / cellWidth) &gt; 2500 will be rejected.</p>",
     "group": "Interpolation",
     "name": "calculateIdw",
     "parameter": {
@@ -814,28 +972,17 @@ define({ "api": [
           },
           {
             "group": "Parameter",
-            "type": "ISO8601Date",
+            "type": "RFC3339Date",
             "optional": true,
             "field": "from-date",
             "description": "<p>Beginning date of measurement data (default: 2 days ago from now)</p>"
           },
           {
             "group": "Parameter",
-            "type": "ISO8601Date",
+            "type": "RFC3339Date",
             "optional": true,
             "field": "to-date",
             "description": "<p>End date of measurement data (default: now)</p>"
-          },
-          {
-            "group": "Parameter",
-            "type": "String",
-            "allowedValues": [
-              "indoor",
-              "outdoor"
-            ],
-            "optional": true,
-            "field": "exposure",
-            "description": "<p>only return sensors of boxes with the specified exposure. Can be indoor or outdoor. Default undecided.</p>"
           },
           {
             "group": "Parameter",
@@ -893,11 +1040,25 @@ define({ "api": [
             "type": "String",
             "optional": false,
             "field": "bbox",
-            "description": "<p>A bounding box containing 4 WGS84 coordinates separated by comata (,). Order is longitude, latitude and southwest, northeast.</p>"
+            "description": "<p>A bounding box containing 4 WGS84 coordinates separated by comata (,). Order is longitude, latitude and southwest, northeast. Minimal and maximal values are: -180, 180 for longitude and -90, 90 for latitude.</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "String",
+            "allowedValues": [
+              "\"indoor\"",
+              "\"outdoor\"",
+              "\"mobile\"",
+              "\"unknown\""
+            ],
+            "optional": true,
+            "field": "exposure",
+            "description": "<p>only include boxes with this exposure.</p>"
           }
         ]
       }
     },
+    "version": "0.0.0",
     "filename": "./lib/controllers/statisticsController.js",
     "groupTitle": "Interpolation"
   },
@@ -910,24 +1071,24 @@ define({ "api": [
     "group": "Measurements",
     "parameter": {
       "fields": {
-        "JSON request body": [
+        "RequestBody": [
           {
             "group": "RequestBody",
-            "type": "ISO8601Date",
+            "type": "RFC3339Date",
             "optional": true,
             "field": "from-date",
             "description": "<p>Beginning date of measurement data (no default)</p>"
           },
           {
             "group": "RequestBody",
-            "type": "ISO8601Date",
+            "type": "RFC3339Date",
             "optional": true,
             "field": "to-date",
             "description": "<p>End date of measurement data (no default)</p>"
           },
           {
             "group": "RequestBody",
-            "type": "ISO8601Date[]",
+            "type": "RFC3339Date[]",
             "optional": true,
             "field": "timestamps",
             "description": "<p>Allows to specify timestamps which should be deleted</p>"
@@ -950,14 +1111,14 @@ define({ "api": [
             "group": "Parameter",
             "type": "String",
             "optional": false,
-            "field": ":senseBoxId",
+            "field": "senseBoxId",
             "description": "<p>the ID of the senseBox you are referring to.</p>"
           },
           {
             "group": "Parameter",
             "type": "String",
             "optional": false,
-            "field": ":sensorId",
+            "field": "sensorId",
             "description": "<p>the ID of the sensor you are referring to.</p>"
           }
         ]
@@ -980,11 +1141,12 @@ define({ "api": [
             "group": "Header",
             "type": "String",
             "allowedValues": [
-              "application/json"
+              "\"application/json\"",
+              "\"application/json; charset=utf-8\""
             ],
             "optional": false,
             "field": "content-type",
-            "description": "<p>Should be <code>application/json</code> or <code>application/json; charset=utf-8</code></p>"
+            "description": ""
           }
         ]
       },
@@ -1029,7 +1191,6 @@ define({ "api": [
     "url": "/boxes/:senseBoxId/data/:sensorId?from-date=fromDate&to-date=toDate&download=true&format=json",
     "title": "Get the 10000 latest measurements for a sensor",
     "description": "<p>Get up to 10000 measurements from a sensor for a specific time frame, parameters <code>from-date</code> and <code>to-date</code> are optional. If not set, the last 48 hours are used. The maximum time frame is 1 month. If <code>download=true</code> <code>Content-disposition</code> headers will be set. Allows for JSON or CSV format.</p>",
-    "version": "0.0.1",
     "group": "Measurements",
     "name": "getData",
     "parameter": {
@@ -1037,14 +1198,14 @@ define({ "api": [
         "Parameter": [
           {
             "group": "Parameter",
-            "type": "ISO8601Date",
+            "type": "RFC3339Date",
             "optional": true,
             "field": "from-date",
             "description": "<p>Beginning date of measurement data (default: 48 hours ago from now)</p>"
           },
           {
             "group": "Parameter",
-            "type": "ISO8601Date",
+            "type": "RFC3339Date",
             "optional": true,
             "field": "to-date",
             "description": "<p>End date of measurement data (default: now)</p>"
@@ -1076,14 +1237,14 @@ define({ "api": [
             "group": "Parameter",
             "type": "String",
             "optional": false,
-            "field": ":senseBoxId",
+            "field": "senseBoxId",
             "description": "<p>the ID of the senseBox you are referring to.</p>"
           },
           {
             "group": "Parameter",
             "type": "String",
             "optional": false,
-            "field": ":sensorId",
+            "field": "sensorId",
             "description": "<p>the ID of the sensor you are referring to.</p>"
           },
           {
@@ -1123,15 +1284,15 @@ define({ "api": [
         ]
       }
     },
-    "filename": "./lib/controllers/boxesController.js",
+    "version": "0.0.0",
+    "filename": "./lib/controllers/measurementsController.js",
     "groupTitle": "Measurements"
   },
   {
     "type": "get,post",
-    "url": "/boxes/data?boxid=:senseBoxIds&from-date=:fromDate&to-date:toDate&phenomenon=:phenomenon",
+    "url": "/boxes/data?boxId=:senseBoxIds&from-date=:fromDate&to-date:toDate&phenomenon=:phenomenon",
     "title": "Get latest measurements for a phenomenon as CSV",
     "description": "<p>Download data of a given phenomenon from multiple selected senseBoxes as CSV</p>",
-    "version": "0.1.0",
     "group": "Measurements",
     "name": "getDataMulti",
     "parameter": {
@@ -1141,7 +1302,7 @@ define({ "api": [
             "group": "Parameter",
             "type": "String",
             "optional": false,
-            "field": "senseBoxIds",
+            "field": "boxId",
             "description": "<p>Comma separated list of senseBox IDs.</p>"
           },
           {
@@ -1153,14 +1314,14 @@ define({ "api": [
           },
           {
             "group": "Parameter",
-            "type": "ISO8601Date",
+            "type": "RFC3339Date",
             "optional": true,
             "field": "from-date",
             "description": "<p>Beginning date of measurement data (default: 2 days ago from now)</p>"
           },
           {
             "group": "Parameter",
-            "type": "ISO8601Date",
+            "type": "RFC3339Date",
             "optional": true,
             "field": "to-date",
             "description": "<p>End date of measurement data (default: now)</p>"
@@ -1168,21 +1329,24 @@ define({ "api": [
           {
             "group": "Parameter",
             "type": "String",
+            "allowedValues": [
+              "createdAt",
+              "value",
+              "lat",
+              "lon",
+              "height",
+              "boxId",
+              "boxName",
+              "exposure",
+              "sensorId",
+              "phenomenon",
+              "unit",
+              "sensorType"
+            ],
             "optional": true,
             "field": "columns",
             "defaultValue": "createdAt,value,lat,lon",
-            "description": "<p>(optional) Comma separated list of columns to export. If omitted, columns createdAt, value, lat, lon are returned. Possible allowed values are createdAt, value, lat, lon, unit, boxId, sensorId, phenomenon, sensorType, boxName, exposure. The columns in the csv are like the order supplied in this parameter</p>"
-          },
-          {
-            "group": "Parameter",
-            "type": "String",
-            "allowedValues": [
-              "\"indoor\"",
-              "\"outdoor\""
-            ],
-            "optional": true,
-            "field": "exposure",
-            "description": "<p>(optional) only return sensors of boxes with the specified exposure. Can be indoor or outdoor</p>"
+            "description": "<p>Comma separated list of columns to export.</p>"
           },
           {
             "group": "Parameter",
@@ -1201,12 +1365,26 @@ define({ "api": [
             "type": "String",
             "optional": false,
             "field": "bbox",
-            "description": "<p>A bounding box containing 4 WGS84 coordinates separated by comata (,). Order is longitude, latitude and southwest, northeast.</p>"
+            "description": "<p>A bounding box containing 4 WGS84 coordinates separated by comata (,). Order is longitude, latitude and southwest, northeast. Minimal and maximal values are: -180, 180 for longitude and -90, 90 for latitude.</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "String",
+            "allowedValues": [
+              "\"indoor\"",
+              "\"outdoor\"",
+              "\"mobile\"",
+              "\"unknown\""
+            ],
+            "optional": true,
+            "field": "exposure",
+            "description": "<p>only include boxes with this exposure.</p>"
           }
         ]
       }
     },
-    "filename": "./lib/controllers/boxesController.js",
+    "version": "0.0.0",
+    "filename": "./lib/controllers/measurementsController.js",
     "groupTitle": "Measurements"
   },
   {
@@ -1214,10 +1392,10 @@ define({ "api": [
     "url": "/boxes/:senseBoxId/sensors",
     "title": "Get latest measurements of a senseBox",
     "description": "<p>Get the latest measurements of all sensors of the specified senseBox.</p>",
-    "version": "0.0.1",
     "group": "Measurements",
-    "name": "getMeasurements",
-    "filename": "./lib/controllers/boxesController.js",
+    "name": "getLatestMeasurements",
+    "version": "0.0.0",
+    "filename": "./lib/controllers/measurementsController.js",
     "groupTitle": "Measurements",
     "parameter": {
       "fields": {
@@ -1226,7 +1404,7 @@ define({ "api": [
             "group": "Parameter",
             "type": "String",
             "optional": false,
-            "field": ":senseBoxId",
+            "field": "senseBoxId",
             "description": "<p>the ID of the senseBox you are referring to.</p>"
           }
         ]
@@ -1238,12 +1416,11 @@ define({ "api": [
     "url": "/boxes/:senseBoxId/:sensorId",
     "title": "Post new measurement",
     "description": "<p>Posts a new measurement to a specific sensor of a box.</p>",
-    "version": "0.0.1",
     "group": "Measurements",
     "name": "postNewMeasurement",
     "parameter": {
       "fields": {
-        "JSON request body": [
+        "RequestBody": [
           {
             "group": "RequestBody",
             "type": "String",
@@ -1253,10 +1430,17 @@ define({ "api": [
           },
           {
             "group": "RequestBody",
-            "type": "ISO8601Date",
+            "type": "RFC3339Date",
             "optional": true,
             "field": "createdAt",
-            "description": "<p>the timestamp of the measurement. Should be parseable by JavaScript.</p>"
+            "description": "<p>the timestamp of the measurement. Should conform to RFC 3339.</p>"
+          },
+          {
+            "group": "RequestBody",
+            "type": "Location",
+            "optional": true,
+            "field": "location",
+            "description": "<p>the WGS84-coordinates of the measurement.</p>"
           }
         ],
         "Parameter": [
@@ -1264,20 +1448,56 @@ define({ "api": [
             "group": "Parameter",
             "type": "String",
             "optional": false,
-            "field": ":senseBoxId",
+            "field": "senseBoxId",
             "description": "<p>the ID of the senseBox you are referring to.</p>"
           },
           {
             "group": "Parameter",
             "type": "String",
             "optional": false,
-            "field": ":sensorId",
+            "field": "sensorId",
             "description": "<p>the ID of the sensor you are referring to.</p>"
           }
+        ],
+        "Formats accepted for the location field": [
+          {
+            "group": "LocationOption",
+            "type": "Number",
+            "optional": false,
+            "field": "lat",
+            "description": "<p>Latitude between -90 and 90</p>"
+          },
+          {
+            "group": "LocationOption",
+            "type": "Number",
+            "optional": false,
+            "field": "lng",
+            "description": "<p>Longitude between -180 and 180</p>"
+          },
+          {
+            "group": "LocationOption",
+            "type": "Number",
+            "optional": true,
+            "field": "height",
+            "description": "<p>Height above ground in meters.</p>"
+          }
         ]
-      }
+      },
+      "examples": [
+        {
+          "title": "Location Object:",
+          "content": "{ \"lat\": 51.972, \"lng\": 7.684, \"height\": 66.6 }",
+          "type": "application/json"
+        },
+        {
+          "title": "Location Array:",
+          "content": "[7.684, 51.972, 66.6]",
+          "type": "application/json"
+        }
+      ]
     },
-    "filename": "./lib/controllers/boxesController.js",
+    "version": "0.0.0",
+    "filename": "./lib/controllers/measurementsController.js",
     "groupTitle": "Measurements",
     "header": {
       "fields": {
@@ -1286,11 +1506,12 @@ define({ "api": [
             "group": "Header",
             "type": "String",
             "allowedValues": [
-              "application/json"
+              "\"application/json\"",
+              "\"application/json; charset=utf-8\""
             ],
             "optional": false,
             "field": "content-type",
-            "description": "<p>Should be <code>application/json</code> or <code>application/json; charset=utf-8</code></p>"
+            "description": ""
           }
         ]
       }
@@ -1318,10 +1539,9 @@ define({ "api": [
   },
   {
     "type": "post",
-    "url": "/boxes/:boxId/data",
+    "url": "/boxes/:senseBoxId/data",
     "title": "Post multiple new measurements",
-    "description": "<p>Post multiple new measurements in multiple formats to a box. Allows the use of csv, json array and json object notation.</p> <p><strong>CSV:</strong><br/> For data in csv format, first use <code>content-type: text/csv</code> as header, then submit multiple values as lines in <code>sensorId,value,[createdAt]</code> form. Timestamp is optional. Do not submit a header.</p> <p><strong>JSON Array:</strong><br/> You can submit your data as array. Your measurements should be objects with the keys <code>sensor</code>, <code>value</code> and optionally <code>createdAt</code>. Specify the header <code>content-type: application/json</code>.</p> <p><strong>JSON Object:</strong><br/> The third form is to encode your measurements in an object. Here, the keys of the object are the sensorIds, the values of the object are either just the <code>value</code> of your measurement or an array of the form <code>[value, createdAt]</code></p> <p><strong>Luftdaten Format</strong><br/> Decoding of luftdaten.info json format. Activate by specifying <code>luftdaten=true</code> in the query string. The API now tries to convert the objects in the <code>sensordatavalues</code> key to the openSenseMap JSON Array format. Sensors are matched by the key <code>value_type</code> against the <code>title</code> of the sensors of this box. <code>SDS_P1</code> matches sensors with title <code>PM10</code>, <code>SDS_P2</code> matches sensors with title <code>PM2.5</code>. You can find all matchings in the source code of the openSenseMap-API (<code>lib/decoding/luftdatenHandler.js</code>)</p> <p><strong>senseBox Bytes Format</strong><br/> Submit measurements as raw bytes. Set the &quot;content-type&quot; header to <code>application/snsbx-bytes</code>. Send measurements as 12 byte sensor Id with most significant byte first followed by 4 byte float measurement in little endian (least significant byte first) notation. A valid measurement could look like this:<br />[ 0x59, 0x5f, 0x9a, 0x28, 0x2d, 0xcb, 0xee, 0x77, 0xac, 0x0e, 0x5d, 0xc4, 0x9a, 0x99, 0x89, 0x40 ] but encoded as raw bytes. Multiple measurements are just multiple tuples of id and value. The number of bytes should be a multiple of 16.</p> <p><strong>senseBox Bytes with Timestamp Format</strong><br/> Submit measurements with timestamp as raw bytes. Set the &quot;content-type&quot; header to <code>application/snsbx-bytes-ts</code>. Send measurements as 12 byte sensor Id with most significant byte first followed by 4 byte float measurement in little endian (least significant byte first) notation followed by a 4 byte uint32_t unix timestamp in little endian (least significant byte first) notation. A valid measurement could look like this:<br />[ 0x59, 0x5f, 0x9a, 0x28, 0x2d, 0xcb, 0xee, 0x77, 0xac, 0x0e, 0x5d, 0xc4, 0x9a, 0x99, 0x89, 0x40, 0x34, 0x0c, 0x60, 0x59 ] but encoded as raw bytes. Multiple measurements are just multiple tuples of id, value and timestamp. The number of bytes should be a multiple of 20.</p> <p>For all encodings, the maximum count of values in one request is 2500.</p>",
-    "version": "0.1.0",
+    "description": "<p>Post multiple new measurements in multiple formats to a box. Allows the use of csv, json array and json object notation.</p> <p><strong>CSV:</strong><br/> For data in csv format, first use <code>content-type: text/csv</code> as header, then submit multiple values as lines in <code>sensorId,value,[createdAt]</code> form. Timestamp is optional. Do not submit a header.</p> <p><strong>JSON Array:</strong><br/> You can submit your data as array. Your measurements should be objects with the keys <code>sensor</code>, <code>value</code> and optionally <code>createdAt</code> and <code>location</code>. Specify the header <code>content-type: application/json</code>.</p> <p><strong>JSON Object:</strong><br/> The third form is to encode your measurements in an object. Here, the keys of the object are the sensorIds, the values of the object are either just the <code>value</code> of your measurement or an array of the form <code>[value, createdAt, location]</code>, where the latter two values are optional.</p> <p><strong>Luftdaten Format</strong><br/> Decoding of luftdaten.info json format. Activate by specifying <code>luftdaten=true</code> in the query string. The API now tries to convert the objects in the <code>sensordatavalues</code> key to the openSenseMap JSON Array format. Sensors are matched by the key <code>value_type</code> against the <code>title</code> of the sensors of this box. <code>SDS_P1</code> matches sensors with title <code>PM10</code>, <code>SDS_P2</code> matches sensors with title <code>PM2.5</code>. You can find all matchings in the source code of the openSenseMap-API (<code>lib/decoding/luftdatenHandler.js</code>)</p> <p><strong>senseBox Bytes Format</strong><br/> Submit measurements as raw bytes. Set the &quot;content-type&quot; header to <code>application/snsbx-bytes</code>. Send measurements as 12 byte sensor Id with most significant byte first followed by 4 byte float measurement in little endian (least significant byte first) notation. A valid measurement could look like this:<br />[ 0x59, 0x5f, 0x9a, 0x28, 0x2d, 0xcb, 0xee, 0x77, 0xac, 0x0e, 0x5d, 0xc4, 0x9a, 0x99, 0x89, 0x40 ] but encoded as raw bytes. Multiple measurements are just multiple tuples of id and value. The number of bytes should be a multiple of 16.</p> <p><strong>senseBox Bytes with Timestamp Format</strong><br/> Submit measurements with timestamp as raw bytes. Set the &quot;content-type&quot; header to <code>application/snsbx-bytes-ts</code>. Send measurements as 12 byte sensor Id with most significant byte first followed by 4 byte float measurement in little endian (least significant byte first) notation followed by a 4 byte uint32_t unix timestamp in little endian (least significant byte first) notation. A valid measurement could look like this:<br />[ 0x59, 0x5f, 0x9a, 0x28, 0x2d, 0xcb, 0xee, 0x77, 0xac, 0x0e, 0x5d, 0xc4, 0x9a, 0x99, 0x89, 0x40, 0x34, 0x0c, 0x60, 0x59 ] but encoded as raw bytes. Multiple measurements are just multiple tuples of id, value and timestamp. The number of bytes should be a multiple of 20.</p> <p>For all encodings, the maximum count of values in one request is 2500.</p>",
     "group": "Measurements",
     "name": "postNewMeasurements",
     "parameter": {
@@ -1338,35 +1558,69 @@ define({ "api": [
             "group": "Parameter",
             "type": "String",
             "optional": false,
-            "field": ":senseBoxId",
+            "field": "senseBoxId",
             "description": "<p>the ID of the senseBox you are referring to.</p>"
+          }
+        ],
+        "Formats accepted for the location field": [
+          {
+            "group": "LocationOption",
+            "type": "Number",
+            "optional": false,
+            "field": "lat",
+            "description": "<p>Latitude between -90 and 90</p>"
+          },
+          {
+            "group": "LocationOption",
+            "type": "Number",
+            "optional": false,
+            "field": "lng",
+            "description": "<p>Longitude between -180 and 180</p>"
+          },
+          {
+            "group": "LocationOption",
+            "type": "Number",
+            "optional": true,
+            "field": "height",
+            "description": "<p>Height above ground in meters.</p>"
           }
         ]
       },
       "examples": [
         {
           "title": "JSON-Object:",
-          "content": "{\n  \"sensorID\": \"value\",\n  \"anotherSensorID\": [\"value\", \"createdAt as ISO8601-timestamp\"],\n  \"sensorIDtheThird\": [\"value\"]\n  ...\n}",
+          "content": "{\n  \"sensorID\": \"value\",\n  \"anotherSensorID\": [\"value\"]\n  \"sensorID3\": [\"value\", \"createdAt as RFC 3339-timestamp\"],\n  \"sensorID4\": [\"value\", \"createdAt as RFC 3339-timestamp\", \"location latlng-object or array\"],\n}",
           "type": "application/json"
         },
         {
           "title": "JSON-Array:",
-          "content": "[\n  {\"sensor\":\"sensorID\", \"value\":\"value\"},\n  {\"sensor\":\"anotherSensorId\", \"value\":\"value\", \"createdAt\": \"ISO8601-timestamp\"}\n  ...\n]",
+          "content": "[\n  {\"sensor\":\"sensorID\", \"value\":\"value\"},\n  {\"sensor\":\"anotherSensorId\", \"value\":\"value\", \"createdAt\": \"RFC 3339-timestamp\", \"location\": [lng,lat,height]}\n  ...\n]",
           "type": "application/json"
         },
         {
           "title": "CSV:",
-          "content": "sensorID,value\nanotherSensorId,value,ISO8601-timestamp\nsensorIDtheThird,value\n...",
+          "content": "sensorID,value\nanotherSensorId,value,RFC 3339-timestamp\nsensorIDtheThird,value\nanotherSensorId,value,RFC 3339-timestamp,longitude,latitude\nanotherSensorId,value,RFC 3339-timestamp,longitude,latitude,height\n...",
           "type": "text/csv"
         },
         {
           "title": "Luftdaten Format:",
           "content": "{\n  \"sensordatavalues\": [\n    {\n      \"value_type\": \"SDS_P1\",\n      \"value\": \"5.38\"\n    },\n    {\n      \"value_type\": \"SDS_P2\",\n      \"value\": \"4.98\"\n    }\n  ]\n}",
           "type": "application/json"
+        },
+        {
+          "title": "Location Object:",
+          "content": "{ \"lat\": 51.972, \"lng\": 7.684, \"height\": 66.6 }",
+          "type": "application/json"
+        },
+        {
+          "title": "Location Array:",
+          "content": "[7.684, 51.972, 66.6]",
+          "type": "application/json"
         }
       ]
     },
-    "filename": "./lib/controllers/boxesController.js",
+    "version": "0.0.0",
+    "filename": "./lib/controllers/measurementsController.js",
     "groupTitle": "Measurements"
   },
   {
@@ -1376,7 +1630,6 @@ define({ "api": [
     "description": "<p>returns an array with three numbers which denominates the count of senseBoxes, the count of measurements and the count of measurements in the last minute.</p>",
     "name": "getStatistics",
     "group": "Misc",
-    "version": "0.1.0",
     "parameter": {
       "fields": {
         "Parameter": [
@@ -1409,6 +1662,7 @@ define({ "api": [
         }
       ]
     },
+    "version": "0.0.0",
     "filename": "./lib/controllers/statisticsController.js",
     "groupTitle": "Misc"
   },
