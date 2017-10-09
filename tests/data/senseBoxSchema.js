@@ -16,9 +16,6 @@ module.exports = {
     'name': {
       'type': 'string'
     },
-    'boxType': {
-      'type': 'string'
-    },
     'grouptag': {
       'type': 'string'
     },
@@ -60,6 +57,22 @@ module.exports = {
         ]
       }
     },
+    'currentLocation': {
+      'type': 'object',
+      'properties': {
+        'coordinates': {
+          'type': 'array',
+          'items': { 'type': 'number' }
+        },
+        'timestamp': { 'type': 'string' },
+        'type': { 'type': 'string' }
+      },
+      'required': [
+        'coordinates',
+        'timestamp',
+        'type'
+      ]
+    },
     'loc': {
       'type': 'array',
       'items': {
@@ -99,9 +112,9 @@ module.exports = {
     'createdAt',
     'updatedAt',
     'name',
-    'boxType',
     'exposure',
     'sensors',
+    'currentLocation',
     'loc'
   ]
 };

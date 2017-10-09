@@ -6,7 +6,7 @@ const chakram = require('chakram'),
   expect = chakram.expect;
 
 const BASE_URL = process.env.OSEM_TEST_BASE_URL,
-  valid_sensebox = require('./data/valid_sensebox');
+  valid_sensebox = require('../data/valid_sensebox');
 
 describe('openSenseMap API senseBox:home Feinstaub Addon devices', function () {
 

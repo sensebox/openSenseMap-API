@@ -7,8 +7,8 @@ const chakram = require('chakram'),
   moment = require('moment');
 
 const BASE_URL = process.env.OSEM_TEST_BASE_URL,
-  valid_sensebox = require('./data/valid_sensebox'),
-  luftdaten_example_data = require('./data/luftdaten_example_data');
+  valid_sensebox = require('../data/valid_sensebox'),
+  luftdaten_example_data = require('../data/luftdaten_example_data');
 
 describe('openSenseMap API luftdaten.info devices', function () {
   let jwt, dht11_id, dht22_id, bmp180_id, bme280_id, custom_id;
@@ -153,7 +153,14 @@ describe('openSenseMap API luftdaten.info devices', function () {
       ]
     });
 
-    return chakram.post(`${BASE_URL}/boxes`, box, { headers: { 'Authorization': `Bearer ${jwt}` } })
+    return chakram.post(`${BASE_URL}/users/register`, { name: 'custom_luftdaten info', password: 'trallalala', email: 'trallala@email.com' })
+      .then(function (response) {
+        expect(response).to.have.status(201);
+        expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
+        expect(response.body.token).to.exist;
+
+        return chakram.post(`${BASE_URL}/boxes`, box, { headers: { 'Authorization': `Bearer ${response.body.token}` } });
+      })
       .then(function (response) {
         expect(response).to.have.status(201);
         expect(response).to.have.header('content-type', 'application/json; charset=utf-8');

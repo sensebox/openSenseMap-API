@@ -5,7 +5,7 @@ module.exports = function ({ bbox, model, sensors, lonlat } = {}) {
   const randomGeojsonOptions = { featureTypes: ['Point'] };
   let loc;
   if (lonlat) {
-    loc = [{ 'type': 'Feature', 'properties': {}, 'geometry': { 'type': 'Point', 'coordinates': lonlat } }];
+    loc = lonlat;
   } else if (bbox) {
     randomGeojsonOptions.bbox = bbox;
   } else {
@@ -13,7 +13,7 @@ module.exports = function ({ bbox, model, sensors, lonlat } = {}) {
   }
 
   if (!loc) {
-    loc = [ randomGeojson.generateGeoJSON(randomGeojsonOptions).features[0] ];
+    loc = randomGeojson.generateGeoJSON(randomGeojsonOptions).features[0].geometry.coordinates;
   }
 
   if (!sensors && !model) {
@@ -23,10 +23,9 @@ module.exports = function ({ bbox, model, sensors, lonlat } = {}) {
   const box = {
     'name': 'senseBox',
     'model': model,
-    'boxType': 'fixed',
     'exposure': 'indoor',
     'weblink': 'https://api.opensensemap.org',
-    'loc': loc,
+    'location': loc,
     'mqtt': {
       'enabled': false,
       'url': '',

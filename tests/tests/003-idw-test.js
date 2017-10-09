@@ -61,7 +61,6 @@ describe('openSenseMap API Routes: /statistics/idw', function () {
         ]);
       })
       .then(function () {
-
         requestNoData = chakram.get(`${BASE_URL}?exposure=outdoor&bbox=7.6,51.8,7.8,52.0&phenomenon=Luftdruck`);
 
         return chakram.get(`${process.env.OSEM_TEST_BASE_URL}/stats`, { headers: { 'x-apicache-bypass': true } });
@@ -105,8 +104,8 @@ describe('openSenseMap API Routes: /statistics/idw', function () {
       .then(function (response) {
         expect(response).status(404);
         expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
-        expect(response).json('code', 'NotFoundError');
-        expect(response).json('message', 'no senseBoxes found');
+        expect(response).json('code', 'NotFound');
+        expect(response).json('message', 'No senseBoxes found');
 
         return chakram.wait();
       });

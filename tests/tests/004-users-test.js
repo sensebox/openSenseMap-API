@@ -151,8 +151,9 @@ describe('openSenseMap API Routes: /users', function () {
   it('should deny to change email with wrong current passsword', function () {
     return chakram.put(`${BASE_URL}/users/me`, { email: 'new-email@email.www', currentPassword: 'wrongpassword' }, { headers: { 'Authorization': `Bearer ${jwt}` } })
       .then(function (response) {
-        expect(response).to.have.status(400);
-        expect(response).to.have.json('message', 'Password not correct.');
+        expect(response).to.have.status(403);
+        expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
+        expect(response).to.have.json('message', 'Password incorrect');
 
         return chakram.wait();
       });
@@ -227,6 +228,29 @@ describe('openSenseMap API Routes: /users', function () {
     return chakram.put(`${BASE_URL}/users/me`, { name: ' invalid name', currentPassword: '12345678' }, { headers: { 'Authorization': `Bearer ${jwt}` } })
       .then(function (response) {
         expect(response).to.have.status(422);
+
+        return chakram.wait();
+      });
+  });
+
+  it('should allow to register a new user with password leading and trailing spaces', function () {
+    return chakram.post(`${BASE_URL}/users/register`, { name: 'spaces_tester', password: ' leading and trailing spaces ', email: 'leading_spacesaddress@email.com' })
+      .then(function (response) {
+        expect(response).to.have.status(201);
+        expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
+        expect(response.body.token).to.exist;
+
+        return chakram.post(`${BASE_URL}/users/sign-in`, { email: 'leading_spacesaddress@email.com', password: ' leading and trailing spaces ' });
+      })
+      .then(function (response) {
+        expect(response).to.have.status(200);
+        expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
+        expect(response.body.token).to.exist;
+
+        return chakram.post(`${BASE_URL}/users/request-password-reset`, { email: 'leading_spacesaddress@email.com' });
+      })
+      .then(function (response) {
+        expect(response).to.have.status(200);
 
         return chakram.wait();
       });
@@ -457,7 +481,7 @@ describe('openSenseMap API Routes: /users', function () {
     return chakram.post(`${BASE_URL}/users/password-reset`, { password: 'ignored_anyway', token: 'invalid_password-reset_token', email: 'tester@test.test' })
       .then(function (response) {
         expect(response).to.have.status(403);
-        expect(response).to.have.json({ code: 'ForbiddenError',
+        expect(response).to.have.json({ code: 'Forbidden',
           message: 'Password reset for this user not possible' });
 
         return chakram.wait();
