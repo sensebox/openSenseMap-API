@@ -78,6 +78,17 @@ describe('downloading data', function () {
       });
   });
 
+  it('should allow download data through /boxes/data/?phenomenon&boxid as csv with multiple boxids', function () {
+    return chakram.get(`${BASE_URL}/boxes/data/?boxid=${boxIds[0]},${boxIds[1]}&phenomenon=Temperatur`)
+      .then(function (response) {
+        expect(response).to.have.status(200);
+        expect(response.body).not.to.be.empty;
+        expect(response).to.have.header('content-type', 'text/csv');
+
+        return chakram.wait();
+      });
+  });
+
   it('should allow download data via POST through /boxes/data/?phenomenon&boxid as csv', function () {
     return chakram.post(`${BASE_URL}/boxes/data`, { boxid: boxIds[0], phenomenon: 'Temperatur' })
       .then(function (response) {
