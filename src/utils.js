@@ -40,7 +40,15 @@ const parseTimestamp = function parseTimestamp (timestamp) {
   }
   lastTimePart = lastTimePart.slice(0, -1);
 
-  const [ second, millisecond = 0 ] = lastTimePart.split('.');
+  /* eslint-disable prefer-const */
+  let [ second, millisecond = '0' ] = lastTimePart.split('.');
+  /* eslint-enable prefer-const */
+
+  // values after the dot are interpreted as nanoseconds
+  // if there are more than 3 digits
+  if (millisecond.length > 3) {
+    millisecond = parseInt(millisecond, 10) / 1000000;
+  }
 
   return moment.utc([year, month - 1, day, hour, minute, second, millisecond]);
 };
