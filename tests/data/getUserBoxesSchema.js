@@ -98,6 +98,21 @@ module.exports = {
                     },
                     '_id': {
                       'type': 'string'
+                    },
+                    'lastMeasurement': {
+                      'type': 'object',
+                      'properties': {
+                        'value': {
+                          'type': 'string'
+                        },
+                        'createdAt': {
+                          'type': 'string'
+                        }
+                      },
+                      'required': [
+                        'value',
+                        'createdAt'
+                      ]
                     }
                   },
                   'required': [
