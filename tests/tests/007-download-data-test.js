@@ -309,4 +309,17 @@ describe('downloading data', function () {
         return chakram.wait();
       });
   });
+
+  it('should allow timestamps in the future for data retrieval', function () {
+    const now = moment.utc();
+
+    return chakram.get(`${BASE_URL}/boxes/${boxIds[0]}/data/${boxes[0].sensors[1]._id}?from-date=${now.add(10, 'days').toISOString()}&to-date=${now.add(14, 'days').toISOString()}`)
+      .then(function (response) {
+        expect(response).to.have.status(200);
+        expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
+        expect(response.body).to.be.empty;
+
+        return chakram.wait();
+      });
+  });
 });
