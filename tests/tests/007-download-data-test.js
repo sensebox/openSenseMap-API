@@ -10,7 +10,8 @@ process.env.OSEM_TEST_BASE_URL = 'http://localhost:8000';
 
 const BASE_URL = process.env.OSEM_TEST_BASE_URL,
   findAllSchema = require('../data/findAllSchema'),
-  measurementsSchema = require('../data/measurementsSchema');
+  measurementsSchema = require('../data/measurementsSchema'),
+  getUserBoxesSchema = require('../data/getUserBoxesSchema');
 
 describe('downloading data', function () {
   let jwt;
@@ -38,6 +39,24 @@ describe('downloading data', function () {
         return chakram.wait();
       });
   });
+
+  it('should let users retrieve their box with last Measurements populated', function () {
+    return chakram.get(`${BASE_URL}/users/me/boxes`, { headers: { 'Authorization': `Bearer ${jwt}` } })
+      .then(function (response) {
+        expect(response).to.have.status(200);
+        expect(response).to.have.schema(getUserBoxesSchema);
+        expect(response).json('data.boxes', function (boxes) {
+          expect(boxes.some(function ({ sensors }) {
+            return expect(sensors.some(function (sensor) {
+              return typeof sensor.lastMeasurement !== 'undefined' && sensor.lastMeasurement.createdAt && sensor.lastMeasurement.value;
+            })).true;
+          })).true;
+        });
+
+        return chakram.wait();
+      });
+  });
+
 
   it('should allow download data through /boxes/:boxid/data/:sensorid', function () {
     return chakram.get(`${BASE_URL}/boxes/${boxIds[0]}/data/${boxes[0].sensors[0]._id}`)
