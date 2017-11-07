@@ -128,10 +128,6 @@ module.exports = {
       'error',
       'expression'
     ],
-    'linebreak-style': [
-      'error',
-      'unix'
-    ],
     'lines-around-directive': [
       'error'
     ],
