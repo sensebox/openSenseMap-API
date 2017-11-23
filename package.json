@@ -21,7 +21,7 @@
     "csv-stringify": "^1.0.4",
     "honeybadger": "^1.2.1",
     "isemail": "^3.0.0",
-    "jsonpath": "^0.2.12",
+    "jsonpath": "^1.0.0",
     "jsonwebtoken": "^7.4.3",
     "lodash.isequal": "^4.5.0",
     "millify": "^2.0.1",
