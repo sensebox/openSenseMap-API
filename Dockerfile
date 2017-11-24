@@ -1,4 +1,4 @@
-FROM node:6-alpine
+FROM node:8-alpine
 
 # taken from node:6-onbuild
 RUN mkdir -p /usr/src/app
