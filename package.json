@@ -12,7 +12,6 @@
     "@turf/distance": "^4.6.0",
     "@turf/helpers": "^4.6.0",
     "@turf/hex-grid": "^4.6.1",
-    "@turf/rewind": "^5.0.4",
     "@turf/simplify": "^4.6.0",
     "@turf/square-grid": "^4.6.0",
     "@turf/triangle-grid": "^4.6.0",
