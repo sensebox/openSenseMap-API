@@ -5,9 +5,11 @@ services:
     ports:
       - "27017:27017"
     volumes:
-      - ./mongo-data:/data/db
+      - mongodata:/data/db
     environment:
       OSEM_dbhost: db
       OSEM_dbuser: senseboxapiuser
       OSEM_dbuserpass: userpass
 
+volumes:
+  mongodata:
