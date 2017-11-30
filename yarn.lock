@@ -49,19 +49,20 @@
   dependencies:
     "@turf/meta" "^4.6.0"
 
-"@turf/boolean-clockwise@^5.0.4":
-  version "5.0.4"
-  resolved "https://registry.yarnpkg.com/@turf/boolean-clockwise/-/boolean-clockwise-5.0.4.tgz#d2d7ebae0a5bc8f93429229532eeeaea556f3817"
-  dependencies:
-    "@turf/helpers" "^5.0.4"
-    "@turf/invariant" "^5.0.4"
-
 "@turf/centroid@^4.6.1":
   version "4.6.1"
   resolved "https://registry.yarnpkg.com/@turf/centroid/-/centroid-4.6.1.tgz#6ffe203746aa33dec17d41c22aa5691342e46496"
   dependencies:
     "@turf/helpers" "^4.6.0"
     "@turf/meta" "^4.6.0"
+
+"@turf/convex@^4.6.0":
+  version "4.6.0"
+  resolved "https://registry.yarnpkg.com/@turf/convex/-/convex-4.6.0.tgz#963afe831e929728b64eef30abcd82356222e17e"
+  dependencies:
+    "@turf/helpers" "^4.6.0"
+    "@turf/meta" "^4.6.0"
+    convex-hull "^1.0.3"
 
 "@turf/distance@^4.6.0":
   version "4.6.0"
@@ -74,10 +75,6 @@
   version "4.6.0"
   resolved "https://registry.yarnpkg.com/@turf/helpers/-/helpers-4.6.0.tgz#12398733b8ae28420df6166fa44c7ee8ffd6414c"
 
-"@turf/helpers@^5.0.4":
-  version "5.0.4"
-  resolved "https://registry.yarnpkg.com/@turf/helpers/-/helpers-5.0.4.tgz#e47a4e4f38dee3b47a3177a69de162d7a7a5837f"
-
 "@turf/hex-grid@^4.6.1":
   version "4.6.1"
   resolved "https://registry.yarnpkg.com/@turf/hex-grid/-/hex-grid-4.6.1.tgz#211ee084cad9c5ba60ceb36a2994e4bf6962f746"
@@ -89,15 +86,15 @@
   version "4.6.0"
   resolved "https://registry.yarnpkg.com/@turf/invariant/-/invariant-4.6.0.tgz#ba61401d537543f81ccfc588e12bb0d8e653dd80"
 
-"@turf/invariant@^5.0.4":
-  version "5.0.4"
-  resolved "https://registry.yarnpkg.com/@turf/invariant/-/invariant-5.0.4.tgz#1cc305f4de7c0f1bfd9d7c420aac282051262b41"
-  dependencies:
-    "@turf/helpers" "^5.0.4"
-
 "@turf/meta@^4.6.0":
   version "4.6.0"
   resolved "https://registry.yarnpkg.com/@turf/meta/-/meta-4.6.0.tgz#0d3f9a218e58d1c5e5deedf467c3321dd61203f3"
+
+"@turf/simplify@^4.6.0":
+  version "4.6.0"
+  resolved "https://registry.yarnpkg.com/@turf/simplify/-/simplify-4.6.0.tgz#e19e3c0eaf5fcec54eb978ab60f08843af6543c7"
+  dependencies:
+    simplify-js "^1.2.1"
 
 "@turf/square-grid@^4.6.0":
   version "4.6.0"
