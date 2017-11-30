@@ -95,8 +95,10 @@ describe('mails', function () {
     return chakram.post(`${BASE_URL}/users/confirm-email`, { token, email: valid_user.email })
       .then(function (response) {
         expect(response).to.have.status(403);
-        expect(response).to.have.json({ code: 'Forbidden',
-          message: 'invalid email confirmation token' });
+        expect(response).to.have.json({
+          code: 'Forbidden',
+          message: 'invalid email confirmation token'
+        });
 
         return chakram.wait();
       });
@@ -207,8 +209,10 @@ describe('mails', function () {
     return chakram.post(`${BASE_URL}/users/password-reset`, { token, password: 'newlongenoughpasswordNOT' })
       .then(function (response) {
         expect(response).to.have.status(403);
-        expect(response).to.have.json({ code: 'Forbidden',
-          message: 'Password reset for this user not possible' });
+        expect(response).to.have.json({
+          code: 'Forbidden',
+          message: 'Password reset for this user not possible'
+        });
         valid_user.password = 'newlongenoughpasswordNOT';
 
         // try to sign in with new password
@@ -222,7 +226,7 @@ describe('mails', function () {
   });
 
   it('should have sent senseBox registration mail with the sketch as attachment', function () {
-    const mail = findMail(mails, 'tester3@test.test', 'Your registration on openSenseMap');
+    const mail = findMail(mails, 'tester3@test.test', 'Your new senseBox on openSenseMap');
     expect(mail).to.exist;
     expect(mail.MIME.Parts).to.not.be.undefined;
     expect(mail.MIME.Parts[1].Body).to.not.be.undefined;
@@ -260,7 +264,7 @@ describe('mails', function () {
   });
 
   it('should have sent senseBox:home Feinstaub Addon registration mail with the sketch as attachment', function () {
-    const mail = findMail(mails, 'feinstaubuser@email', 'Your registration on openSenseMap');
+    const mail = findMail(mails, 'feinstaubuser@email', 'Your new senseBox on openSenseMap');
     expect(mail).to.exist;
     expect(mail.MIME.Parts).to.not.be.undefined;
     expect(mail.MIME.Parts[1].Body).to.not.be.undefined;
@@ -298,7 +302,7 @@ describe('mails', function () {
   });
 
   it('should have sent senseBox:home Wifi Feinstaub Addon registration mail with the sketch as attachment', function () {
-    const mail = findMail(mails, 'wififeinstaubuser@email', 'Your registration on openSenseMap');
+    const mail = findMail(mails, 'wififeinstaubuser@email', 'Your new senseBox on openSenseMap');
     expect(mail).to.exist;
     expect(mail.MIME.Parts).to.not.be.undefined;
     expect(mail.MIME.Parts[1].Body).to.not.be.undefined;
@@ -404,7 +408,7 @@ describe('mails', function () {
   });
 
   it('should have sent special luftdaten info welcome mail', function () {
-    const foundMails = findMailsAndParseBodys(mails, 'luftdaten@email', 'Your registration on openSenseMap');
+    const foundMails = findMailsAndParseBodys(mails, 'luftdaten@email', 'Your device on openSenseMap');
     expect(foundMails).not.to.be.empty;
     expect(foundMails.every(function (mail) {
       expect(mail).to.exist;
