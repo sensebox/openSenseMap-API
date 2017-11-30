@@ -152,8 +152,8 @@ describe('downloading data', function () {
         let isDescending = true;
         const lines = response.body.split('\n');
         for (let i = 2; i < lines.length - 1; i++) {
-          const [ createdAt ] = lines[i - 1].split(',');
-          const [ createdAt2 ] = lines[i].split(',');
+          const [createdAt] = lines[i - 1].split(',');
+          const [createdAt2] = lines[i].split(',');
           if (new Date(createdAt) - new Date(createdAt2) < 0) {
             isDescending = false;
             break;
@@ -337,6 +337,19 @@ describe('downloading data', function () {
         expect(response).to.have.status(200);
         expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
         expect(response.body).to.be.empty;
+
+        return chakram.wait();
+      });
+  });
+
+  it('should allow to specify bounding boxes with area greater than a single hemisphere', function () {
+    return chakram.get(`${BASE_URL}/boxes/data/?phenomenon=Temperatur&bbox=-180,-90,180,90`)
+      .then(function (response) {
+        expect(response).to.have.status(200);
+        expect(response).to.have.header('content-type', 'text/csv');
+
+        const data = response.body.split('\n');
+        expect(data.length).above(1);
 
         return chakram.wait();
       });
