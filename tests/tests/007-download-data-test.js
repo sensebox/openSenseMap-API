@@ -339,4 +339,17 @@ describe('downloading data', function () {
         return chakram.wait();
       });
   });
+
+  it('should allow to specify bounding boxes with area greater than a single hemisphere', function () {
+    return chakram.get(`${BASE_URL}/boxes/data/?phenomenon=Temperatur&bbox=-180,-90,180,90`)
+      .then(function (response) {
+        expect(response).to.have.status(200);
+        expect(response).to.have.header('content-type', 'text/csv');
+
+        const data = response.body.split('\n');
+        expect(data.length).above(1);
+
+        return chakram.wait();
+      });
+  });
 });
