@@ -1040,7 +1040,7 @@ define({ "api": [
             "type": "String",
             "optional": false,
             "field": "bbox",
-            "description": "<p>A bounding box containing 4 WGS84 coordinates separated by comata (,). Order is longitude, latitude and southwest, northeast. Minimal and maximal values are: -180, 180 for longitude and -90, 90 for latitude.</p>"
+            "description": "<p>A bounding box containing 4 WGS84 coordinates separated by comata (,). Order is: longitude southwest, latitude southwest, longitude northeast, latitude northeast. Minimal and maximal values are: -180, 180 for longitude and -90, 90 for latitude.</p>"
           },
           {
             "group": "Parameter",
@@ -1365,7 +1365,7 @@ define({ "api": [
             "type": "String",
             "optional": false,
             "field": "bbox",
-            "description": "<p>A bounding box containing 4 WGS84 coordinates separated by comata (,). Order is longitude, latitude and southwest, northeast. Minimal and maximal values are: -180, 180 for longitude and -90, 90 for latitude.</p>"
+            "description": "<p>A bounding box containing 4 WGS84 coordinates separated by comata (,). Order is: longitude southwest, latitude southwest, longitude northeast, latitude northeast. Minimal and maximal values are: -180, 180 for longitude and -90, 90 for latitude.</p>"
           },
           {
             "group": "Parameter",
