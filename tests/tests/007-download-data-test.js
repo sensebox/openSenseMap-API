@@ -152,8 +152,8 @@ describe('downloading data', function () {
         let isDescending = true;
         const lines = response.body.split('\n');
         for (let i = 2; i < lines.length - 1; i++) {
-          const [ createdAt ] = lines[i - 1].split(',');
-          const [ createdAt2 ] = lines[i].split(',');
+          const [createdAt] = lines[i - 1].split(',');
+          const [createdAt2] = lines[i].split(',');
           if (new Date(createdAt) - new Date(createdAt2) < 0) {
             isDescending = false;
             break;
