@@ -9,7 +9,8 @@ const expect = require('chai').expect,
   parseISO8601 = require('../helpers/iso8601'),
   shouldBeABox = require('../helpers/shouldBeABox'),
   shouldBeABoxWithSecrets = require('../helpers/shouldBeABoxWithSecrets'),
-  checkBoxLocation = require('../helpers/checkBoxLocation');
+  checkBoxLocation = require('../helpers/checkBoxLocation'),
+  initBoxWithMeasurements = require('../helpers/initBoxWithMeasurements');
 
 const shouldNotHappenThenner = function (err) {
   /* eslint-disable no-console */
@@ -307,24 +308,6 @@ describe('Box model', function () {
         });
     });
   });
-
-  const initBoxWithMeasurements = function initBoxWithMeasurements () {
-    let thebox;
-
-    return Box.initNew(senseBox())
-      .then(shouldBeABoxWithSecrets)
-      .then(function (box) {
-        thebox = box;
-
-        return Measurement.decodeMeasurements(box.sensors.map(s => { return { sensor_id: s._id.toString(), value: 2 }; }));
-      })
-      .then(function (msmts) {
-        return thebox.saveMeasurementsArray(msmts);
-      })
-      .then(function () {
-        return Box.findById(thebox._id);
-      });
-  };
 
   describe('Updating properties of a box', function () {
     it('should allow to delete multiple sensors in one request', function () {
