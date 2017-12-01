@@ -57,6 +57,25 @@ sensorSchema.methods.findLastMeasurement = function findLastMeasurement () {
     });
 };
 
+sensorSchema.statics.findSensorsWithMeasurements = function findSensorsWithMeasurements ({ fromDate, toDate }) {
+  return Measurement.aggregate([
+    {
+      $match: {
+        createdAt: {
+          '$gt': fromDate.toDate(),
+          '$lt': toDate.toDate()
+        }
+      }
+    },
+    {
+      $group: {
+        _id: '$sensor_id'
+      },
+    }
+  ])
+    .exec();
+};
+
 sensorSchema.methods.deleteMeasurements = function deleteMeasurements (createdAt) {
   const sensor = this;
 

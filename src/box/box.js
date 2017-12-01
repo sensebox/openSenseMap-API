@@ -873,7 +873,7 @@ const geoJsonStringifyReplacer = function geoJsonStringifyReplacer (key, box) {
   return box;
 };
 
-boxSchema.statics.findBoxesLastMeasurements = function findBoxesLastMeasurements (opts) {
+boxSchema.statics.findBoxesLastMeasurements = function findBoxesLastMeasurements (opts = {}) {
   const schema = this;
 
   const { format, phenomenon, fromDate, toDate } = opts,
