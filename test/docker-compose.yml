@@ -2,7 +2,7 @@ version: "2"
 
 services:
   test-runner:
-    image: node:6
+    image: node:8
     working_dir: /tests
     command: ["sh", "-c", "yarn install --cache-folder /yarn-cache --production=false && yarn run test"]
     volumes:
