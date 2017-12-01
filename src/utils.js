@@ -9,9 +9,7 @@ const parseTimestamp = function parseTimestamp (timestamp) {
   }
 
   // is not moment or date, should be safe to call .toString here
-  const [ dateParts, timeParts ] = timestamp
-    .toString()
-    .toUpperCase()
+  const [dateParts, timeParts] = timestamp.toString().toUpperCase()
     .split('T');
 
   if (!timeParts) {
@@ -21,7 +19,7 @@ const parseTimestamp = function parseTimestamp (timestamp) {
     return invalidTimestamp;
   }
 
-  const [ year, month, day ] = dateParts.split('-');
+  const [year, month, day] = dateParts.split('-');
   if (!month || !day) {
     const invalidTimestamp = moment.invalid();
     invalidTimestamp.__inputString = timestamp;
@@ -30,7 +28,7 @@ const parseTimestamp = function parseTimestamp (timestamp) {
   }
 
   /* eslint-disable prefer-const */
-  let [ hour, minute, lastTimePart ] = timeParts.split(':');
+  let [hour, minute, lastTimePart] = timeParts.split(':');
   /* eslint-enable prefer-const */
   if (!minute || !lastTimePart || !lastTimePart.endsWith('Z')) {
     const invalidTimestamp = moment.invalid();
@@ -41,7 +39,7 @@ const parseTimestamp = function parseTimestamp (timestamp) {
   lastTimePart = lastTimePart.slice(0, -1);
 
   /* eslint-disable prefer-const */
-  let [ second, millisecond = '0' ] = lastTimePart.split('.');
+  let [second, millisecond = '0'] = lastTimePart.split('.');
   /* eslint-enable prefer-const */
 
   // values after the dot are interpreted as nanoseconds
@@ -53,18 +51,15 @@ const parseTimestamp = function parseTimestamp (timestamp) {
   return moment.utc([year, month - 1, day, hour, minute, second, millisecond]);
 };
 
-const parseAndValidateTimestamp = function parseAndValidateTimestamp (timestamp) {
+const parseAndValidateTimestamp = function parseAndValidateTimestamp (
+  timestamp
+) {
   if (!moment.isMoment(timestamp)) {
     timestamp = parseTimestamp(timestamp);
   }
 
   if (!timestamp.isValid()) {
     throw new Error(`Invalid timestamp '${timestamp.creationData().input}'.`);
-  }
-
-  const nowPlusOneMinute = moment.utc().add(1, 'minutes');
-  if (nowPlusOneMinute.isBefore(timestamp)) {
-    throw new Error(`Timestamp ${timestamp.toISOString()} is too far into the future.`);
   }
 
   return timestamp;

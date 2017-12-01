@@ -51,7 +51,14 @@ const transformAndValidateMeasurements = function transformAndValidateMeasuremen
         if (typeof elem.createdAt === 'undefined') {
           elem.createdAt = now;
         } else {
-          elem.createdAt = parseAndValidateTimestamp(elem.createdAt);
+          const createdAt = parseAndValidateTimestamp(elem.createdAt);
+
+          const nowPlusOneMinute = utcNow().add(1, 'minutes');
+          if (nowPlusOneMinute.isBefore(createdAt)) {
+            throw new Error(`Timestamp ${createdAt.toISOString()} is too far into the future.`);
+          }
+
+          elem.createdAt = createdAt;
         }
 
         if (elem.location) {

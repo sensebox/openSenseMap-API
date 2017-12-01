@@ -14,6 +14,8 @@
 - Use `json` as default for `format` parameter of `Box.findBoxesLastMeasurements`
 - Parse timestamps based on RFC 3339
 - Convert RFC 3339 nanoseconds to milliseconds
+- Include PMS.. sensor models definitions from Adorfer
+- Populate boxes in getBoxes of User
 
 ## v0.0.1
 - Initial Release after splitting api and models

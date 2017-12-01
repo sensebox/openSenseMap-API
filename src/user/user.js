@@ -199,7 +199,7 @@ userSchema.post('save', function userPostSaveSendMails (user) {
     return;
   }
 
-  if (user.unconfirmedEmail && user.unconfirmedEmail !== '') {
+  if (user.unconfirmedEmail) {
     user.mail('confirmEmail');
   }
 });
@@ -454,7 +454,7 @@ userSchema.methods.updateUser = function updateUser ({ email, language, name, cu
   // for password and email changes, require parameter currentPassword to be valid.
   if ((newPassword && newPassword !== '') || (email && email !== '')) {
     // check if the request includes the old password
-    if (!currentPassword || currentPassword === '') {
+    if (!currentPassword) {
       return Promise.reject(new ModelError('To change your password or email address, please supply your current password.'));
     }
     updatePromise = user.checkPassword(currentPassword);
@@ -478,24 +478,24 @@ userSchema.methods.updateUser = function updateUser ({ email, language, name, cu
       // at this point its clear the user is allowed to change the details of their profile
 
       // we only set changed properties
-      if (name && name !== '' && user.name !== name) {
+      if (name && user.name !== name) {
         user.set('name', name);
         somethingsChanged = true;
       }
 
-      if (language && language !== '' && user.language !== language) {
+      if (language && user.language !== language) {
         user.set('language', language);
         somethingsChanged = true;
       }
 
-      if (email && email !== '' && user.email !== email) {
+      if (email && user.email !== email) {
         user.set('newEmail', email);
         msgs.push(' E-Mail changed. Please confirm your new address. Until confirmation, sign in using your old address');
         somethingsChanged = true;
       }
 
       // at this point its also clear the new password conforms to the password rules
-      if (newPassword && newPassword !== '') {
+      if (newPassword) {
         user.set('password', newPassword);
         msgs.push(' Password changed. Please sign in with your new password');
         signOut = true;
@@ -522,11 +522,10 @@ userSchema.methods.updateUser = function updateUser ({ email, language, name, cu
 };
 
 userSchema.methods.getBoxes = function getBoxes () {
-  return this
-    .populate('boxes')
-    .execPopulate()
-    .then(function (user) {
-      return user.boxes.map(b => b.toJSON({ includeSecrets: true }));
+  return Box.find({ _id: { $in: this.boxes } })
+    .populate(Box.BOX_SUB_PROPS_FOR_POPULATION)
+    .then(function (boxes) {
+      return boxes.map(b => b.toJSON({ includeSecrets: true }));
     });
 };
 
