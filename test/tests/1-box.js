@@ -59,8 +59,21 @@ describe('Box model', function () {
         name: 'integrationsbox',
         grouptag: 'grouptagTest',
         exposure: 'outdoor',
-        ttn: { dev_id: 'test_devid', app_id: 'test_appid', port: 55, profile: 'lora-serialization', decodeOptions: [] },
-        mqtt: { enabled: true, url: 'mqtt://testbroker', topic: 'some/test/topic', connectionOptions: '{}', decodeOptions: '{}', messageFormat: 'csv' }
+        ttn: {
+          dev_id: 'test_devid',
+          app_id: 'test_appid',
+          port: 55,
+          profile: 'lora-serialization',
+          decodeOptions: []
+        },
+        mqtt: {
+          enabled: true,
+          url: 'mqtt://testbroker',
+          topic: 'some/test/topic',
+          connectionOptions: '{}',
+          decodeOptions: '{}',
+          messageFormat: 'csv'
+        }
       });
 
       return Box.initNew(box)
@@ -129,7 +142,7 @@ describe('Box model', function () {
             unit: 'customUnit4',
             sensorType: 'customSensorType4',
             icon: 'icon!'
-          },
+          }
         ]
       });
 
@@ -145,7 +158,10 @@ describe('Box model', function () {
           expect(sensors).an('array');
           expect(sensors).not.empty;
 
-          for (const [index, { title, unit, sensorType, icon }] of sensors.entries()) {
+          for (const [
+            index,
+            { title, unit, sensorType, icon }
+          ] of sensors.entries()) {
             expect(title.includes('customSensor')).true;
             expect(title.endsWith(index.toString(10))).true;
 
@@ -165,15 +181,18 @@ describe('Box model', function () {
     });
 
     it('should not allow to specify sensors and model at the same time', function () {
-      const box = senseBox({ sensors: [ { title: 'sensor', unit: '%', sensorType: 'dummy' }] });
+      const box = senseBox({
+        sensors: [{ title: 'sensor', unit: '%', sensorType: 'dummy' }]
+      });
 
       box.model = 'homeEthernet';
 
-      return Box.initNew(box)
-        .then(shouldNotHappenThenner)
+      return Box.initNew(box).then(shouldNotHappenThenner)
         .catch(function (err) {
           expect(err.name).equal('ModelError');
-          expect(err.message).equal('Parameters model and sensors cannot be specified at the same time.');
+          expect(err.message).equal(
+            'Parameters model and sensors cannot be specified at the same time.'
+          );
         });
     });
 
@@ -182,7 +201,9 @@ describe('Box model', function () {
         .then(shouldNotHappenThenner)
         .catch(function (err) {
           expect(err.name).equal('ValidationError');
-          expect(err.message).equal('Box validation failed: model: `fancyNewModel` is not a valid enum value for path `model`., sensors: sensors are required if model is invalid or missing.');
+          expect(err.message).equal(
+            'Box validation failed: model: `fancyNewModel` is not a valid enum value for path `model`., sensors: sensors are required if model is invalid or missing.'
+          );
         });
     });
 
@@ -192,11 +213,12 @@ describe('Box model', function () {
       box.model = 'custom';
       box.sensors = [];
 
-      return Box.initNew(box)
-        .then(shouldNotHappenThenner)
+      return Box.initNew(box).then(shouldNotHappenThenner)
         .catch(function (err) {
           expect(err.name).equal('ModelError');
-          expect(err.message).equal('Parameters model and sensors cannot be specified at the same time.');
+          expect(err.message).equal(
+            'Parameters model and sensors cannot be specified at the same time.'
+          );
         });
     });
   });
@@ -205,14 +227,16 @@ describe('Box model', function () {
     it('should return the public properties', function () {
       const boxId = Object.keys(testBoxes)[0];
 
-      return Box.findBoxById(boxId)
-        .then(shouldBeABox)
-        .then(function (box) {
-          expect(box.loc).an('array');
-          expect(box.loc).lengthOf(1);
-          expect(box.loc[0].type).equal('Feature');
-          checkBoxLocation(box.loc[0].geometry);
-        });
+      return (
+        Box.findBoxById(boxId)
+          // .then(shouldBeABox)
+          .then(function (box) {
+            expect(box.loc).an('array');
+            expect(box.loc).lengthOf(1);
+            expect(box.loc[0].type).equal('Feature');
+            checkBoxLocation(box.loc[0].geometry);
+          })
+      );
     });
 
     it('should allow to include secrets', function () {
@@ -230,14 +254,17 @@ describe('Box model', function () {
 
     it('should allow to show only last measurements', function () {
       const boxId = Object.keys(testBoxes)[0];
-      const measurements = Measurement.decodeMeasurements(testBoxes[boxId].sensors.map(s => { return { sensor_id: s._id.toString(), value: 2 }; }));
+      const measurements = Measurement.decodeMeasurements(
+        testBoxes[boxId].sensors.map(s => {
+          return { sensor_id: s._id.toString(), value: 2 };
+        })
+      );
 
       return Box.findById(boxId)
         .then(function (box) {
-          return measurements
-            .then(function (ms) {
-              return box.saveMeasurementsArray(ms);
-            });
+          return measurements.then(function (ms) {
+            return box.saveMeasurementsArray(ms);
+          });
         })
         .then(function () {
           return Box.findBoxById(boxId, { onlyLastMeasurements: true });
@@ -247,52 +274,62 @@ describe('Box model', function () {
 
           for (const { lastMeasurement } of lastMeasurements.sensors) {
             expect(lastMeasurement).an('object');
-            expect(Object.keys(lastMeasurement)).members(['value', 'createdAt']);
+            expect(Object.keys(lastMeasurement)).members([
+              'value',
+              'createdAt'
+            ]);
             expect(parseISO8601(lastMeasurement.createdAt).isValid()).true;
           }
-
         });
     });
 
     it('should allow to show only locations', function () {
       const boxId = Object.keys(testBoxes)[0];
 
-      return Box.findBoxById(boxId, { onlyLocations: true })
-        .then(function (locations) {
-          expect(Object.keys(locations)).members(['_id', 'locations']);
-          expect(locations.locations).an('array');
-          for (const loc of locations.locations) {
-            checkBoxLocation(loc);
-          }
-        });
+      return Box.findBoxById(boxId, { onlyLocations: true }).then(function (
+        locations
+      ) {
+        expect(Object.keys(locations)).members(['_id', 'locations']);
+        expect(locations.locations).an('array');
+        for (const loc of locations.locations) {
+          checkBoxLocation(loc);
+        }
+      });
     });
 
     it('should allow to return box as geojson', function () {
       const boxId = Object.keys(testBoxes)[0];
 
-      return Box.findBoxById(boxId, { format: 'geojson' })
-        .then(function (geojsonBox) {
-          expect(geojsonBox).an('object');
-          expect(geojsonBox.type).equal('Feature');
-          expect(geojsonBox.geometry).an('object');
+      return Box.findBoxById(boxId, { format: 'geojson' }).then(function (
+        geojsonBox
+      ) {
+        expect(geojsonBox).an('object');
+        expect(geojsonBox.type).equal('Feature');
+        expect(geojsonBox.geometry).an('object');
 
-          expect(geojsonBox.geometry.coordinates).an('array');
-          expect(geojsonBox.geometry.coordinates).lengthOf.within(2, 3);
-          for (const coord of geojsonBox.geometry.coordinates) {
-            expect(coord).a('number');
-          }
-          expect(Math.abs(geojsonBox.geometry.coordinates[0])).most(180);
-          expect(Math.abs(geojsonBox.geometry.coordinates[1])).most(90);
-        });
+        expect(geojsonBox.geometry.coordinates).an('array');
+        expect(geojsonBox.geometry.coordinates).lengthOf.within(2, 3);
+        for (const coord of geojsonBox.geometry.coordinates) {
+          expect(coord).a('number');
+        }
+        expect(Math.abs(geojsonBox.geometry.coordinates[0])).most(180);
+        expect(Math.abs(geojsonBox.geometry.coordinates[1])).most(90);
+      });
     });
 
     it('should allow to disable population and specify own projection', function () {
       const boxId = Object.keys(testBoxes)[0];
 
-      return Box.findBoxById(boxId, { populate: false, projection: { name: 1, integrations: 1, exposure: 1, _id: 0 } })
-        .then(function (result) {
-          expect(Object.keys(result)).members([ 'name', 'integrations', 'exposure' ]);
-        });
+      return Box.findBoxById(boxId, {
+        populate: false,
+        projection: { name: 1, integrations: 1, exposure: 1, _id: 0 }
+      }).then(function (result) {
+        expect(Object.keys(result)).members([
+          'name',
+          'integrations',
+          'exposure'
+        ]);
+      });
     });
   });
 
@@ -300,12 +337,25 @@ describe('Box model', function () {
     it('should only serialize public properties', function () {
       const boxId = Object.keys(testBoxes)[0];
 
-      return Box.findById(boxId)
-        .then(function (box) {
-          const json = box.toJSON();
+      return Box.findById(boxId).then(function (box) {
+        const json = box.toJSON();
 
-          expect(Object.keys(json)).members(['createdAt', 'exposure', 'model', 'grouptag', 'image', 'name', 'updatedAt', 'currentLocation', 'sensors', 'description', 'weblink', '_id', 'loc']);
-        });
+        expect(Object.keys(json)).members([
+          'createdAt',
+          'exposure',
+          'model',
+          'grouptag',
+          'image',
+          'name',
+          'updatedAt',
+          'currentLocation',
+          'sensors',
+          'description',
+          'weblink',
+          '_id',
+          'loc'
+        ]);
+      });
     });
   });
 
@@ -332,7 +382,9 @@ describe('Box model', function () {
             expect(sensorsToDelete.findIndex(s => _id.equals(s._id))).equal(-1);
           }
 
-          return Measurement.count({ sensor_id: { $in: sensorsToDelete.map(s => s._id) } });
+          return Measurement.count({
+            sensor_id: { $in: sensorsToDelete.map(s => s._id) }
+          });
         })
         .then(function (count) {
           expect(count).equal(0);
@@ -340,7 +392,14 @@ describe('Box model', function () {
     });
 
     it('should allow to add a sensor to a box through updateBox', function () {
-      const newSensor = { title: 'newPhenomenon', unit: 'newUnit', icon: 'newIcon', sensorType: 'newSensorType', new: true, edited: true };
+      const newSensor = {
+        title: 'newPhenomenon',
+        unit: 'newUnit',
+        icon: 'newIcon',
+        sensorType: 'newSensorType',
+        new: true,
+        edited: true
+      };
       let numberOfSensors;
 
       return Box.initNew(senseBox())
@@ -407,7 +466,9 @@ describe('Box model', function () {
         .then(shouldNotHappenThenner)
         .catch(function (err) {
           expect(err.name).equal('ModelError');
-          expect(err.message).equal('Unable to delete sensor(s). A box needs at least one sensor.');
+          expect(err.message).equal(
+            'Unable to delete sensor(s). A box needs at least one sensor.'
+          );
         });
     });
 
@@ -415,31 +476,49 @@ describe('Box model', function () {
       return Box.initNew(senseBox())
         .then(shouldBeABoxWithSecrets)
         .then(function (box) {
-          return box.updateBox({ sensors: [{ deleted: true, _id: box.sensors[0]._id }] });
+          return box.updateBox({
+            sensors: [{ deleted: true, _id: box.sensors[0]._id }]
+          });
         })
         .then(function (box) {
-          return box.updateBox({ sensors: [{ deleted: true, _id: box.sensors[0]._id }] });
+          return box.updateBox({
+            sensors: [{ deleted: true, _id: box.sensors[0]._id }]
+          });
         })
         .then(function (box) {
-          return box.updateBox({ sensors: [{ deleted: true, _id: box.sensors[0]._id }] });
+          return box.updateBox({
+            sensors: [{ deleted: true, _id: box.sensors[0]._id }]
+          });
         })
         .then(function (box) {
-          return box.updateBox({ sensors: [{ deleted: true, _id: box.sensors[0]._id }] });
+          return box.updateBox({
+            sensors: [{ deleted: true, _id: box.sensors[0]._id }]
+          });
         })
         .then(function (box) {
-          return box.updateBox({ sensors: [{ deleted: true, _id: box.sensors[0]._id }] });
+          return box.updateBox({
+            sensors: [{ deleted: true, _id: box.sensors[0]._id }]
+          });
         })
         .then(shouldNotHappenThenner)
         .catch(function (err) {
           expect(err.name).equal('ModelError');
-          expect(err.message).equal('Unable to delete sensor(s). A box needs at least one sensor.');
+          expect(err.message).equal(
+            'Unable to delete sensor(s). A box needs at least one sensor.'
+          );
         });
     });
 
     it('should allow to change name the basic string properties of a box', function () {
-      const updatePayload = { name: 'new Name', exposure: 'outdoor',
-        grouptag: 'new Grouptag', weblink: 'http://www.opensensemap.org',
-        image: { type: 'png', data: 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVQYV2NgYAAAAAMAAWgmWQ0AAAAASUVORK5CYII=' },
+      const updatePayload = {
+        name: 'new Name',
+        exposure: 'outdoor',
+        grouptag: 'new Grouptag',
+        weblink: 'http://www.opensensemap.org',
+        image: {
+          type: 'png',
+          data: 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVQYV2NgYAAAAAMAAWgmWQ0AAAAASUVORK5CYII='
+        },
         description: 'this is the new description'
       };
 
@@ -451,13 +530,24 @@ describe('Box model', function () {
         .then(function (box) {
           return Box.findById(box._id);
         })
-        .then(function ({ name, exposure, grouptag, weblink, image, description }) {
+        .then(function ({
+          name,
+          exposure,
+          grouptag,
+          weblink,
+          image,
+          description
+        }) {
           expect(name).equal(updatePayload.name);
           expect(exposure).equal(updatePayload.exposure);
           expect(grouptag).equal(updatePayload.grouptag);
           expect(weblink).equal(updatePayload.weblink);
           expect(description).equal(updatePayload.description);
-          expect(moment().diff(moment(parseInt(image.split('_')[1].slice(0, -4), 36) * 1000))).to.be.below(1000);
+          expect(
+            moment().diff(
+              moment(parseInt(image.split('_')[1].slice(0, -4), 36) * 1000)
+            )
+          ).to.be.below(1000);
         });
     });
 
@@ -472,12 +562,16 @@ describe('Box model', function () {
         .then(shouldNotHappenThenner)
         .catch(function (err) {
           expect(err.name).equal('ValidationError');
-          expect(err.message).equal('Box validation failed: name: Path `name` is required.');
+          expect(err.message).equal(
+            'Box validation failed: name: Path `name` is required.'
+          );
         });
     });
 
     it('should allow to unset grouptag, description and weblink of a box', function () {
-      const updatePayload = { grouptag: 'new Grouptag', weblink: 'http://www.opensensemap.org',
+      const updatePayload = {
+        grouptag: 'new Grouptag',
+        weblink: 'http://www.opensensemap.org',
         description: 'this is the new description'
       };
 
@@ -511,7 +605,13 @@ describe('Box model', function () {
     });
 
     it('should allow to set ttn settings', function () {
-      const updatePayload = { ttn: { app_id: 'some_app_id', dev_id: 'some_dev_id', profile: 'sensebox/home' } };
+      const updatePayload = {
+        ttn: {
+          app_id: 'some_app_id',
+          dev_id: 'some_dev_id',
+          profile: 'sensebox/home'
+        }
+      };
 
       return Box.initNew(senseBox())
         .then(shouldBeABoxWithSecrets)
@@ -529,7 +629,16 @@ describe('Box model', function () {
     });
 
     it('should allow to set mqtt settings', function () {
-      const updatePayload = { mqtt: { enabled: true, url: 'mqtt://somebroker', topic: 'some/topic', connectionOptions: '', decodeOptions: '', messageFormat: 'csv' } };
+      const updatePayload = {
+        mqtt: {
+          enabled: true,
+          url: 'mqtt://somebroker',
+          topic: 'some/topic',
+          connectionOptions: '',
+          decodeOptions: '',
+          messageFormat: 'csv'
+        }
+      };
 
       return Box.initNew(senseBox())
         .then(shouldBeABoxWithSecrets)
@@ -539,7 +648,18 @@ describe('Box model', function () {
         .then(function (box) {
           return Box.findById(box._id);
         })
-        .then(function ({ integrations: { mqtt: { enabled, url, topic, decodeOptions, connectionOptions, messageFormat } } }) {
+        .then(function ({
+          integrations: {
+            mqtt: {
+              enabled,
+              url,
+              topic,
+              decodeOptions,
+              connectionOptions,
+              messageFormat
+            }
+          }
+        }) {
           expect(enabled).equal(updatePayload.mqtt.enabled);
           expect(url).equal(updatePayload.mqtt.url);
           expect(topic).equal(updatePayload.mqtt.topic);
@@ -561,12 +681,22 @@ describe('Box model', function () {
           return Box.findById(box._id);
         })
         .then(function ({ model, sensors }) {
-          expect(sensors.some(function ({ unit, sensorType, title }) {
-            return unit === 'µg/m³' && sensorType === 'SDS 011' && title === 'PM10';
-          })).true;
-          expect(sensors.some(function ({ unit, sensorType, title }) {
-            return unit === 'µg/m³' && sensorType === 'SDS 011' && title === 'PM2.5';
-          })).true;
+          expect(
+            sensors.some(function ({ unit, sensorType, title }) {
+              return (
+                unit === 'µg/m³' && sensorType === 'SDS 011' && title === 'PM10'
+              );
+            })
+          ).true;
+          expect(
+            sensors.some(function ({ unit, sensorType, title }) {
+              return (
+                unit === 'µg/m³' &&
+                sensorType === 'SDS 011' &&
+                title === 'PM2.5'
+              );
+            })
+          ).true;
           expect(model.includes('Feinstaub')).true;
         });
     });
@@ -591,5 +721,4 @@ describe('Box model', function () {
         });
     });
   });
-
 });

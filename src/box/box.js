@@ -94,7 +94,7 @@ const boxSchema = new Schema({
     required: false,
     /* eslint-disable func-name-matching */
     set: function imageSetter ({ type, data }) {
-    /* eslint-enable func-name-matching */
+      /* eslint-enable func-name-matching */
       if (type && data) {
         const filename = `${this._id}_${Math.round(Date.now() / 1000).toString(36)}.${type}`;
         try {
@@ -427,7 +427,7 @@ boxSchema.methods.saveMeasurement = function saveMeasurement (measurement) {
 
   // add or update the location
   return box.updateLocation(measurement.location, measurement.createdAt)
-  // create new measurement
+    // create new measurement
     .then(function (loc) {
       measurement.location = { type: 'Point', coordinates: loc.coordinates };
 
@@ -596,7 +596,7 @@ const measurementTransformer = function measurementTransformer (columns, sensors
 
     const originalMeasurementLocation = {};
     if (data.location) {
-      const { coordinates: [ lon, lat, height ] } = data.location;
+      const { coordinates: [lon, lat, height] } = data.location;
       Object.assign(originalMeasurementLocation, { lon, lat, height });
     }
 
@@ -831,7 +831,7 @@ boxSchema.methods.getLocations = function getLocations ({ format, fromDate, toDa
   const locs = box.locations.filter(function (loc) {
     return (
       fromDate.isSameOrBefore(loc.timestamp) &&
-          toDate.isSameOrAfter(loc.timestamp)
+      toDate.isSameOrAfter(loc.timestamp)
     );
   });
 
