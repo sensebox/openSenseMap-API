@@ -268,7 +268,7 @@ boxSchema.statics.findBoxById = function findBoxById (id, { lean = true, populat
 
   let findPromise = this.findById(id, projection);
 
-  if (populate === true) {
+  if (fullBox === true || onlyLastMeasurements === true) {
     findPromise = findPromise
       .populate(BOX_SUB_PROPS_FOR_POPULATION);
   }
