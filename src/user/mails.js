@@ -110,7 +110,8 @@ if (config.mailer_url && config.mailer_url.trim() !== '') {
       cert: config.mailer_cert,
       key: config.mailer_key,
       ca: config.mailer_ca,
-      json: payload
+      json: payload,
+      ecdhCurve: 'auto'
     })
       .then((response) => {
         log.info(`successfully sent mails: ${JSON.stringify(response)}`);
