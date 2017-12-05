@@ -52,7 +52,7 @@ measurementSchema.set('toJSON', {
   }
 });
 
-measurementSchema.statics.decodeMeasurements = function decodeMeasurements (measurements, { contentType = 'json', sensors }) {
+measurementSchema.statics.decodeMeasurements = function decodeMeasurements (measurements, { contentType = 'json', sensors } = {}) {
   return decodeHandlers[contentType].decodeMessage(measurements, { sensors })
     .catch(function (err) {
       throw new ModelError(err.message, { type: 'UnprocessableEntityError' });
