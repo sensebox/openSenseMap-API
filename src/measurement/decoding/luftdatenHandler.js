@@ -124,7 +124,7 @@ const transformLuftdatenJson = function transformLuftdatenJson (json, sensors) {
 
 
 module.exports = {
-  decodeMessage: function (message, { sensors }) {
+  decodeMessage: function (message, { sensors } = {}) {
     if (!sensors) {
       return Promise.reject(new Error('luftdaten handler needs sensors'));
     }

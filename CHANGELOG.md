@@ -1,6 +1,7 @@
 # @sensebox/opensensemap-api-models Changelog
 
 ## Unreleased
+- Fix destructuring error in json and luftdaten measurement decoding
 
 ## v0.0.2
 - Re-add bunyan logging

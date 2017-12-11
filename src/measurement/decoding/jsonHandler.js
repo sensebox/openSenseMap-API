@@ -68,7 +68,7 @@ const handleJSONObjectMultipleValues = function (obj) {
 
 
 module.exports = {
-  decodeMessage: function (message, { jsonPath }) {
+  decodeMessage: function (message, { jsonPath } = {}) {
     if (message) {
       // try to decode the json, or if already a js object
       // use it as given
