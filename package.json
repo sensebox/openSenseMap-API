@@ -11,7 +11,7 @@
     "Norwin Roosen"
   ],
   "dependencies": {
-    "@sensebox/opensensemap-api-models": "git://github.com/sensebox/openSenseMap-API-models.git#81d22f0",
+    "@sensebox/opensensemap-api-models": "0.0.2",
     "@turf/area": "^4.6.0",
     "@turf/bbox": "^4.6.0",
     "@turf/centroid": "^4.6.1",

@@ -8,9 +8,9 @@
   dependencies:
     wgs84 "0.0.0"
 
-"@sensebox/opensensemap-api-models@git://github.com/sensebox/openSenseMap-API-models.git#81d22f0":
-  version "0.0.1"
-  resolved "git://github.com/sensebox/openSenseMap-API-models.git#81d22f00432af21ea58b8d44467af6285ef506fd"
+"@sensebox/opensensemap-api-models@0.0.2":
+  version "0.0.2"
+  resolved "https://registry.yarnpkg.com/@sensebox/opensensemap-api-models/-/opensensemap-api-models-0.0.2.tgz#e200418456b1bf97d2de8df20cf15bb44239b95e"
   dependencies:
     "@sensebox/sketch-templater" "^1.0.7"
     "@turf/helpers" "^4.6.0"
