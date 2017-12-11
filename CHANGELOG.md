@@ -1,6 +1,8 @@
 # @sensebox/opensensemap-api-models Changelog
 
 ## Unreleased
+
+## v0.0.2
 - Re-add bunyan logging
 - toLowerCase email parameter in User `initPasswordReset` to conform to rest of email address handling
 - Fix case where addBox re-added existing box the the `boxes` array of an user
