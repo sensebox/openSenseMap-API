@@ -3,22 +3,24 @@
  * Booya!
  */
 
+/**
+ * define for Datetype parameters
+ * @apiDefine ISO8601Date A ISO8601 formatted timestamp. Will be parsed by MomentJS with enabled strict mode
+ */
+
 'use strict';
 
 const restify = require('restify'),
   { fullResponse, queryParser, jsonBodyParser, pre: { sanitizePath } } = restify.plugins,
-  utils = require('./lib/utils'),
-  db = require('./lib/db'),
-  { preRequest, preCors } = require('./lib/helpers/apiUtils'),
-  Box = require('./lib/models').Box,
+  config = require('./lib/config'),
+  { preRequest, preCors, Honeybadger, softwareRevision, postToSlack } = require('./lib/helpers/apiUtils'),
   routes = require('./lib/routes'),
   passport = require('passport'),
-  log = require('./lib/log');
-
-const { config, Honeybadger } = utils;
+  log = require('./lib/log'),
+  { db } = require('@sensebox/opensensemap-api-models');
 
 const server = restify.createServer({
-  name: `opensensemap-api (${utils.softwareRevision})`,
+  name: `opensensemap-api (${softwareRevision})`,
   log: log
 });
 
@@ -45,8 +47,7 @@ db.connect()
   .then(function () {
     server.listen(config.port, function () {
       log.info(`${server.name} listening at ${server.url}`);
-      utils.postToSlack(`openSenseMap API started. Revision: ${utils.softwareRevision}`);
-      Box.connectMQTTBoxes();
+      postToSlack(`openSenseMap API started. Revision: ${softwareRevision}`);
     });
   })
   .catch(function (err) {

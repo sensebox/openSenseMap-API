@@ -7,6 +7,8 @@ const chakram = require('chakram'),
   parseCSV = require('csv-parse/lib/sync'),
   moment = require('moment');
 
+const modelsRequirePath = '../../node_modules/@sensebox/opensensemap-api-models';
+
 const logResponseIfError = function logResponseIfError (r) {
   if (r.response.statusCode >= 400) {
     /* eslint-disable no-console */
@@ -44,7 +46,7 @@ describe('openSenseMap API locations tests', function () {
 
   describe('location validation', function () {
     /* eslint-disable global-require */
-    const { transformAndValidateCoords: validate } = require('../../lib/decoding/validators');
+    const { decoding: { validators: { transformAndValidateCoords: validate } } } = require(modelsRequirePath);
     /* eslint-enable global-require */
 
     it('should transform latlng object to array', function () {
@@ -761,8 +763,7 @@ describe('openSenseMap API locations tests', function () {
 
     it('should provide box.currentLocation for legacy measurements without location field', function () {
       /* eslint-disable global-require */
-      const { connect, mongoose } = require('../../lib/db');
-      const Measurement = require('../../lib/models/measurement').model;
+      const { db: { connect, mongoose }, Measurement } = require(modelsRequirePath);
       /* eslint-enable global-require */
       mongoose.set('debug', false);
 

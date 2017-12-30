@@ -3,14 +3,11 @@
 set -euo pipefail
 IFS=$'\n\t'
 
-
 # move to the build dir..
-cd $TRAVIS_BUILD_DIR
+cd "$TRAVIS_BUILD_DIR"
 
 # install apidocs
-npm install -g apidoc@0.17.5
-
-# deploy!
+npm install -g apidoc@0.17.6
 
 # run apidoc
 apidoc -i . -f js -e node_modules
@@ -42,6 +39,5 @@ git config user.email "travis@travis-ci.org"
 # commit
 git commit -m "apidoc build from ${TRAVIS_COMMIT} by Travis"
 
-# push to github!
+# push to github
 git push "https://${GITHUB_TOKEN}@github.com/${GITHUB_REPO}.git" gh-pages
-

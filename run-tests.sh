@@ -6,12 +6,16 @@ set -euo pipefail
 dont_clean_up=${dont_clean_up:-}
 show_logs=${show_logs:-}
 
+function runComposeCommand {
+  docker-compose -p osemapitest -f ./tests/docker-compose.yml "$@"
+}
+
 cmd=${1:-}
 logs_service=${2:-}
 
 case "$cmd" in
 "build" )
-  docker-compose -p osemapitest -f tests-docker-compose.yml build osem-api
+  runComposeCommand build osem-api
   exit 0;
   ;;
 "logs" )
@@ -35,21 +39,20 @@ fi
 function cleanup {
   if [[ -n "$show_logs" ]]; then
     if [[ -z "$logs_service" ]]; then
-      docker-compose -p osemapitest -f tests-docker-compose.yml logs
+      runComposeCommand logs
     else
-      docker-compose -p osemapitest -f tests-docker-compose.yml logs "$logs_service"
+      runComposeCommand logs "$logs_service"
     fi
   fi
 
   if [[ -z "$dont_clean_up" ]]; then
     echo 'cleanup!'
-    docker-compose -p osemapitest -f tests-docker-compose.yml down -v
+    runComposeCommand down -v
   fi
 }
 trap cleanup EXIT
 
-docker-compose -p osemapitest -f tests-docker-compose.yml down -v
-docker-compose -p osemapitest -f tests-docker-compose.yml up -d --force-recreate --remove-orphans
+runComposeCommand down -v
+runComposeCommand up -d --force-recreate --remove-orphans
 
-docker-compose -p osemapitest -f tests-docker-compose.yml exec osem-api npm test
-
+runComposeCommand exec osem-api yarn test

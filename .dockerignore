@@ -1,7 +1,5 @@
 node_modules
-mongo-data
 userimages
-osem-mongo
 docker-compose.yml
 Dockerfile
 .env*

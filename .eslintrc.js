@@ -152,6 +152,7 @@ module.exports = {
       'error',
       'never'
     ],
-    'no-warning-comments': 'error'
+    'no-warning-comments': 'error',
+    'prefer-promise-reject-errors': 'error'
   }
 };

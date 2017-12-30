@@ -1,6 +1,8 @@
 'use strict';
 
-process.env.OSEM_TEST_BASE_URL = 'http://localhost:8000';
+if (!process.env.OSEM_TEST_BASE_URL || process.env.OSEM_TEST_BASE_URL === '') {
+  process.env.OSEM_TEST_BASE_URL = 'http://localhost:8000';
+}
 
 const path = require('path').join(__dirname, 'tests');
 
