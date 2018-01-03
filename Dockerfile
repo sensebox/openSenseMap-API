@@ -16,7 +16,8 @@ COPY packages/models/package.json /usr/src/app/packages/models/
 # npm rebuild is required because the prebuilt binaries are not compatible with musl
 # remove when https://github.com/kelektiv/node.bcrypt.js/issues/528 is resolved
 RUN yarn install --pure-lockfile --production \
-  && npm rebuild bcrypt --build-from-source \
+  && npm rebuild bcrypt --build-from-source
+
 COPY . /usr/src/app
 
 # for git 2.1.4
