@@ -3,6 +3,13 @@
 set -euo pipefail
 IFS=$'\n\t'
 
+currentBranch=$(git branch | grep -e "^*" | cut -d' ' -f 2)
+
+if [ "$currentBranch" != "master" ]; then
+  echo "Docs can only be built from 'master' branch"
+  exit 0
+fi
+
 # move to the build dir..
 cd "$TRAVIS_BUILD_DIR"
 

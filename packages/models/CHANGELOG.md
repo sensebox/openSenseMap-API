@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+## v0.0.4
+- No Changes
+
 ## v0.0.3
 - Fix destructuring error in json and luftdaten measurement decoding
 

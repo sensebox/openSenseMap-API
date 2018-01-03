@@ -1,7 +1,7 @@
 'use strict';
 
 const isProdEnv = function isProdEnv () {
-  return process.env.ENV === 'prod';
+  return process.env.NODE_ENV === 'production';
 };
 
 // specify your config items
@@ -14,8 +14,8 @@ const config = {
   // database configuration, will be concatenated to a mongo db connection string
   dbhost: 'localhost',
   dbport: 27017,
-  dbuser: 'senseboxapiuser',
-  dbuserpass: 'userpass',
+  dbuser: 'admin',
+  dbuserpass: 'admin',
   dbauthsource: 'OSeM-api',
   dbdb: 'OSeM-api',
 

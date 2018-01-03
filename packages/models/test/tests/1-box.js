@@ -10,7 +10,8 @@ const expect = require('chai').expect,
   shouldBeABox = require('../helpers/shouldBeABox'),
   shouldBeABoxWithSecrets = require('../helpers/shouldBeABoxWithSecrets'),
   checkBoxLocation = require('../helpers/checkBoxLocation'),
-  initBoxWithMeasurements = require('../helpers/initBoxWithMeasurements');
+  initBoxWithMeasurements = require('../helpers/initBoxWithMeasurements'),
+  ensureIndexes = require('../helpers/ensureIndexes');
 
 const shouldNotHappenThenner = function (err) {
   /* eslint-disable no-console */
@@ -23,7 +24,8 @@ describe('Box model', function () {
   const testBoxes = {};
 
   before(function () {
-    return connect(dbConnectionString({ db: 'boxTest' }));
+    return connect(dbConnectionString({ db: 'boxTest' }))
+      .then(() => ensureIndexes());
   });
 
   after(function () {

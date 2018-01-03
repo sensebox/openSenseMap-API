@@ -1,4 +1,6 @@
 version: "2"
+volumes:
+  userimages:
 services:
   osem-api:
     build:
@@ -6,15 +8,13 @@ services:
       dockerfile: ./tests/tests-Dockerfile
     volumes:
       - ./:/usr/src/app/tests
-      - ../app.js:/usr/src/app/app.js
-      - ../lib:/usr/src/app/lib
-      - ../node_modules/@sensebox/opensensemap-api-models/index.js:/usr/src/app/node_modules/@sensebox/opensensemap-api-models/index.js
-      - ../node_modules/@sensebox/opensensemap-api-models/src:/usr/src/app/node_modules/@sensebox/opensensemap-api-models/src
+      - ../packages:/usr/src/app/packages
+      - ../package.json:/usr/src/app/package.json
+      - ../.scripts:/usr/src/app/.scripts
+      - userimages:/userimages
     environment:
-      OSEM_dbuser: senseboxapiuser
-      OSEM_dbuserpass: userpass
-      OSEM_dbhost: db
-      OSEM_imageFolder: ./userimages
+      OSEM_dbconnectionstring: mongodb://db/api-test
+      OSEM_imageFolder: /userimages
       OSEM_mailer_url: https://mailer:3924/
       OSEM_mailer_origin: http://osem-api:8000
       OSEM_mailer_cert: |-
@@ -152,8 +152,4 @@ services:
   #  image: eclipse-mosquitto:1.4.10
 
   db:
-    image: sensebox/opensensemap-api-mongo
-    environment:
-      OSEM_dbuser: senseboxapiuser
-      OSEM_dbuserpass: userpass
-
+    image: mongo:3.2

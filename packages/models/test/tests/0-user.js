@@ -7,7 +7,8 @@ const expect = require('chai').expect,
   moment = require('moment'),
   jwt = require('jsonwebtoken'),
   { jwt_algorithm, jwt_secret, jwt_issuer, jwt_validity_ms } = require('../../src/config'),
-  senseBox = require('../helpers/senseBox');
+  senseBox = require('../helpers/senseBox'),
+  ensureIndexes = require('../helpers/ensureIndexes');
 
 const shouldNotHappenThenner = function (err) {
   /* eslint-disable no-console */
@@ -18,8 +19,8 @@ const shouldNotHappenThenner = function (err) {
 
 describe('User model', function () {
   before(function () {
-    return connect(dbConnectionString({ db: 'userTest' }));
-    // return connect();
+    return connect(dbConnectionString({ db: 'userTest' }))
+      .then(() => ensureIndexes());
   });
 
   after(function () {

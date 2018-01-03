@@ -1,5 +1,6 @@
 'use strict';
 
+/* global describe it */
 const request = require('request-promise-native');
 
 if (!process.env.OSEM_TEST_BASE_URL || process.env.OSEM_TEST_BASE_URL === '') {
@@ -13,13 +14,18 @@ const connectWithRetry = function (success) {
       success();
     })
     .catch(function () {
-      /*eslint-disable no-console */
-      console.log('wait for http...');
       setTimeout(connectWithRetry, 500, success);
     });
 };
 
-connectWithRetry(function () {
-  console.log('http available');
+describe('waiting for initialization', function () {
+  it('waits for http ready', function (done) {
+    this.timeout(10000);
+    connectWithRetry(function () {
+      console.log('http available');
+      done();
+    });
+  });
+
 });
 /*eslint-enable no-console */

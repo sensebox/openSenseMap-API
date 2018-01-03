@@ -1,12 +1,15 @@
 'use strict';
 
-const { db: { connect, mongoose } } = require('../index');
+/* global describe it */
+const { db: { connect, mongoose } } = require('@sensebox/opensensemap-api-models');
 
-const success = function success () {
-  mongoose.disconnect();
-  process.exit();
-};
-
-connect()
-  .then(success);
-
+describe('waiting for initialization', function () {
+  it('waits for database ready', function (done) {
+    this.timeout(10000);
+    connect()
+      .then(function success () {
+        mongoose.disconnect();
+        done();
+      });
+  });
+});

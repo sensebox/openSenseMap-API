@@ -14,12 +14,13 @@ This allows you to use parts like models and decoding in your own project. See `
 See [`CHANGELOG.md`](CHANGELOG.md)
 
 #### Releasing a new version
-To create a new version, use `npm version`.
 1. Document your changes in [`CHANGELOG.md`](CHANGELOG.md). Do not `git add` the file.
-1. Run `npm version [ major | minor | patch ] -m "[v%s] Your commit message"`
+1. Run `yarn version`
 1. `git push origin master`
 1. `npm publish`
 
 ## License
 
 [MIT](license.md) - Matthias Pfeil 2015 - now
+
+Maintained by Gerald Pape

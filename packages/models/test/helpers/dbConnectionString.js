@@ -1,14 +1,10 @@
 'use strict';
 
 const createDbConnectionString = function createDbConnectionString ({
-  db = 'OSeM-api',
-  host = 'localhost',
-  port = 27017,
-  user = 'senseboxapiuser',
-  userpass = 'userpass',
-  authsource = 'OSeM-api'
+  db = 'test',
+  host = 'db',
 } = {}) {
-  return `mongodb://${user}:${userpass}@${host}:${port}/${db}?authSource=${authsource}`;
+  return `mongodb://${host}/${db}`;
 };
 
 module.exports = createDbConnectionString;
