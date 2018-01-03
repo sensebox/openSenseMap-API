@@ -29,10 +29,6 @@ const streams = [
   { level: 'info', type: 'raw', stream: consoleStream },
 ];
 
-// if (config.isProdEnv()) {
-//   streams.push({ type: 'rotating-file', level: 'error', path: path.resolve(config.logFolder, 'models-error.log') });
-// }
-
 const log = new bunyan.createLogger({
   name: 'OSeM-API models',
   src: true,

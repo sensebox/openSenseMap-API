@@ -1,6 +1,7 @@
 # @sensebox/opensensemap-api-models Changelog
 
 ## Unreleased
+- Removed log to file on error
 
 ## v0.0.4
 - No Changes
