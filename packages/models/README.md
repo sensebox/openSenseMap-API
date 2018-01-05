@@ -18,6 +18,7 @@ See [`CHANGELOG.md`](CHANGELOG.md)
 1. Run `yarn version`
 1. `git push origin master`
 1. `npm publish`
+1. Use the new version in the api package
 
 ## License
 
