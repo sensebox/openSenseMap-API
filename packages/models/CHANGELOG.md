@@ -2,6 +2,7 @@
 
 ## Unreleased
 - Removed log to file on error
+- cleanup unused files and directories
 
 ## v0.0.4
 - No Changes
