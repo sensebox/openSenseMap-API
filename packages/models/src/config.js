@@ -6,10 +6,9 @@ const isProdEnv = function isProdEnv () {
 
 // specify your config items
 // environment variables starting with `OSEM_` will override the values here.
-// Example: `OSEM_targetfolder` will override the setting for `targetFolder`
+// Example: `OSEM_dbhost` will override the setting for `dbhost`
 const config = {
   imageFolder: './userimages/', // absolute location of user images
-  logFolder: './logs/', // absolute location of error log files
 
   // database configuration, will be concatenated to a mongo db connection string
   dbhost: 'localhost',
