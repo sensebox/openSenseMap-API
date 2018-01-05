@@ -16,12 +16,14 @@ const restify = require('restify'),
   { preRequest, preCors, Honeybadger, softwareRevision, postToSlack } = require('./lib/helpers/apiUtils'),
   routes = require('./lib/routes'),
   passport = require('passport'),
-  log = require('./lib/log'),
+  bunyan = require('bunyan'),
   { db } = require('@sensebox/opensensemap-api-models');
+
+const log = bunyan.createLogger({ name: 'opensensemap-api', serializers: bunyan.stdSerializers });
 
 const server = restify.createServer({
   name: `opensensemap-api (${softwareRevision})`,
-  log: log
+  log
 });
 
 // We're using caddy as proxy. It supplies a 'X-Forwarded-Proto' header
@@ -40,11 +42,12 @@ server.use(jsonBodyParser());
 
 server.use(passport.initialize());
 
-// attach Routes
-routes(server);
-
 db.connect()
   .then(function () {
+    // attach Routes
+    routes(server);
+
+    // start the server
     server.listen(config.port, function () {
       log.info(`${server.name} listening at ${server.url}`);
       postToSlack(`openSenseMap API started. Revision: ${softwareRevision}`);

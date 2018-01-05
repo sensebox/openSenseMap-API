@@ -1,23 +1,13 @@
 'use strict';
 
 const isProdEnv = function isProdEnv () {
-  return process.env.ENV === 'prod';
+  return process.env.NODE_ENV === 'production';
 };
 
 // specify your config items
 // environment variables starting with `OSEM_` will override the values here.
-// Example: `OSEM_targetfolder` will override the setting for `targetFolder`
+// Example: `OSEM_port` will override the setting for `port`
 const config = {
-  logFolder: './logs/', // absolute location of error log files
-
-  // database configuration, will be concatenated to a mongo db connection string
-  dbhost: 'localhost',
-  dbport: 27017,
-  dbuser: 'admin',
-  dbuserpass: 'admin',
-  dbauthsource: 'OSeM-api',
-  dbdb: 'OSeM-api',
-
   api_base_domain: 'localhost', // the naked api domain. For example api.opensensemap.org
   api_protocol: (isProdEnv() ? 'https' : 'http'),
   api_url: '', // generated if not set from api_protocol and api_base_domain

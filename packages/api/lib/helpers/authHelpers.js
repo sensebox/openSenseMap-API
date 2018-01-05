@@ -4,8 +4,7 @@ const passport = require('passport'),
   config = require('../config'),
   LocalStrategy = require('passport-local'),
   passportJwt = require('passport-jwt'),
-  { User } = require('@sensebox/opensensemap-api-models'),
-  log = require('../log');
+  { User } = require('@sensebox/opensensemap-api-models');
 
 const { Strategy: JwtStrategy, ExtractJwt } = passportJwt;
 
@@ -39,15 +38,15 @@ const localLogin = new LocalStrategy(localOptions, function verifiyLocalLogin (e
           return done(null, user);
         });
     })
+  /* eslint-disable no-unused-vars */
     .catch(function (err) {
       if (err.name === 'ModelError' && err.message === 'Password incorrect') {
         return done(null, false, { error: MSG_CREDENTIALS_WRONG });
       }
 
-      log.error(err);
-
       done(err, false, { error: MSG_CREDENTIALS_WRONG });
     });
+  /* eslint-enable no-unused-vars */
 });
 passport.use(localLogin);
 
@@ -79,11 +78,11 @@ const jwtLogin = new JwtStrategy(jwtOptions, function verifiyJwtLogin (req, jwt,
 
       return done(null, user);
     })
+  /* eslint-disable no-unused-vars */
     .catch(function (err) {
-      log.error(err);
-
       done(null, false, { error: JWT_WRONG_OR_UNAUTHORIZED });
     });
+  /* eslint-enable no-unused-vars */
 });
 passport.use(jwtLogin);
 

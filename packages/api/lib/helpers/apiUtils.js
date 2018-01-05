@@ -46,7 +46,7 @@ const checkContentType = function (req, res, next) {
 const validUnsecuredPathRegex = new RegExp(`^\\${basePath}/[a-f\\d]{24}/((data)|([a-f\\d]{24}))/?$`, 'i');
 const preRequest = function preRequest (request, response, next) {
   response.charSet('utf-8');
-  request.log.info({ req: request }, 'REQUEST');
+  request.log.info({ req: request });
 
   if (process.env.ENV === 'prod'
     && (!request.headers['x-forwarded-proto'] || request.headers['x-forwarded-proto'] !== 'https')) {
