@@ -57,6 +57,10 @@ Also run the linter and fix possible linting issues with your code:
 
     yarn run lint
 
+Ideally, building a docker image should succeed:
+
+    docker build -t your-username/opensensemap-api .
+
 Push to your fork and submit [pull request].
 
 ### Good contributions
