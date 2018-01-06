@@ -18,6 +18,8 @@ Configuration values reside in the `lib/config.js` file. Configuration can also 
 - Commit your changes to your branch and push it to your fork
 - Create a pull request against the `development` branch
 
+See also: [CONTRIBUTING](CONTRIBUTING.md)
+
 ## Running Tests
 You can run the tests in containers using Docker and docker-compose.
 ```

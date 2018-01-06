@@ -61,7 +61,9 @@ Ideally, building a docker image should succeed:
 
     docker build -t your-username/opensensemap-api .
 
-Push to your fork and submit [pull request].
+Document your changes in the respective `CHANGELOG.md`.
+
+Push to your fork and submit [pull request] against `development` branch.
 
 ### Good contributions
 
