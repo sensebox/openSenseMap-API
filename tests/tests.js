@@ -1,6 +1,6 @@
 'use strict';
 
-if (!process.env.OSEM_TEST_BASE_URL || process.env.OSEM_TEST_BASE_URL === '') {
+if (!process.env.OSEM_TEST_BASE_URL) {
   process.env.OSEM_TEST_BASE_URL = 'http://localhost:8000';
 }
 

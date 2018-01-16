@@ -83,27 +83,25 @@ module.exports = {
         }
       }
 
-      if (typeof json !== 'undefined') {
-        // use the root '$' if no jsonPath was specified
-        let path = '$';
-        if (jsonPath) {
-          path = jsonPath;
-        }
-        // extract the json with jsonPath
-        const result = jsonPathModule.query(json, path, 1);
+      // use the root '$' if no jsonPath was specified
+      let path = '$';
+      if (jsonPath) {
+        path = jsonPath;
+      }
+      // extract the json with jsonPath
+      const result = jsonPathModule.query(json, path, 1);
 
-        if (result && result[0]) {
-          let decodedJson = result[0];
-          if (!Array.isArray(decodedJson)) {
-            try {
-              decodedJson = handleJSONObjectMultipleValues(decodedJson);
-            } catch (err) {
-              return Promise.reject(err);
-            }
+      if (result && result[0]) {
+        let decodedJson = result[0];
+        if (!Array.isArray(decodedJson)) {
+          try {
+            decodedJson = handleJSONObjectMultipleValues(decodedJson);
+          } catch (err) {
+            return Promise.reject(err);
           }
-
-          return transformAndValidateMeasurements(decodedJson);
         }
+
+        return transformAndValidateMeasurements(decodedJson);
       }
     }
 

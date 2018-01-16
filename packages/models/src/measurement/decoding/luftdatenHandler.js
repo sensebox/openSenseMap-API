@@ -143,18 +143,16 @@ module.exports = {
         }
       }
 
-      if (typeof json !== 'undefined') {
-        if (!json.sensordatavalues) {
-          return Promise.reject(new Error('Invalid luftdaten json. Missing `sensordatavalues`'));
-        }
-
-        const transformedMeasurements = transformLuftdatenJson(json, sensors);
-        if (transformedMeasurements.length === 0) {
-          return Promise.reject(new Error('No applicable values found'));
-        }
-
-        return transformAndValidateMeasurements(transformedMeasurements);
+      if (!json.sensordatavalues) {
+        return Promise.reject(new Error('Invalid luftdaten json. Missing `sensordatavalues`'));
       }
+
+      const transformedMeasurements = transformLuftdatenJson(json, sensors);
+      if (transformedMeasurements.length === 0) {
+        return Promise.reject(new Error('No applicable values found'));
+      }
+
+      return transformAndValidateMeasurements(transformedMeasurements);
     }
 
     return Promise.reject(new Error('Cannot decode empty message (luftdaten decoder)'));

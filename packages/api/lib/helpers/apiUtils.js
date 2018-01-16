@@ -55,7 +55,7 @@ const preRequest = function preRequest (request, response, next) {
     }
   }
 
-  return next() ;
+  return next();
 };
 
 // sends out CORS headers
@@ -97,12 +97,12 @@ const preCors = function preCors (request, response, next) {
 };
 
 let Honeybadger = {
-  notify () {},
-  resetContext () {}
+  notify () { },
+  resetContext () { }
 };
 
 /* eslint-disable global-require */
-if (honeybadger_apikey && honeybadger_apikey !== '') {
+if (honeybadger_apikey) {
   Honeybadger = require('honeybadger').configure({
     apiKey: honeybadger_apikey
   });
