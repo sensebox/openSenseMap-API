@@ -9,18 +9,7 @@ mongoose.Promise = global.Promise;
 
 mongoose.set('debug', !config.isProdEnv());
 
-const serverOptions = {
-  auto_reconnect: true,
-  reconnectTries: Number.MAX_VALUE,
-  socketOptions: {
-    keepAlive: 10000,
-    connectTimeoutMS: 10000,
-    socketTimeoutMS: 30000
-  }
-};
-
 const connect = function connect (connectionString) {
-
   if (!connectionString) {
     connectionString = config.dbconnectionstring;
   }
@@ -31,16 +20,16 @@ const connect = function connect (connectionString) {
 
   // Create the database connection
   return new Promise(function (resolve, reject) {
-    mongoose.connect(connectionString, {
-      keepAlive: 10000,
-      server: serverOptions,
-      replset: serverOptions,
-      promiseLibrary: global.Promise
-    })
+    mongoose
+      .connect(connectionString, {
+        useMongoClient: true,
+        reconnectTries: Number.MAX_VALUE,
+        promiseLibrary: global.Promise
+      })
       .then(function () {
-      // CONNECTION EVENTS
+        // CONNECTION EVENTS
 
-      // If the connection throws an error
+        // If the connection throws an error
         mongoose.connection.on('error', function (err) {
           log.error(err, 'Mongoose connection error');
           throw err;
@@ -61,7 +50,7 @@ const connect = function connect (connectionString) {
         return resolve();
       })
       .catch(function (err) {
-      // only called if the initial mongoose.connect fails on first connect
+        // only called if the initial mongoose.connect fails on first connect
         if (err.message.startsWith('failed to connect to server')) {
           log.info(`Error ${err.message} - retrying manually in 1 second.`);
           mongoose.connection.removeAllListeners();
