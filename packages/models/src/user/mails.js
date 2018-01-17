@@ -14,7 +14,7 @@ module.exports = {
 
 if (config.mailer_url && config.mailer_url.trim() !== '') {
   /* eslint-disable global-require */
-  const request = require('request-promise-native');
+  const got = require('got');
   /* eslint-enable global-require */
 
   const mailTemplates = {
@@ -105,16 +105,16 @@ if (config.mailer_url && config.mailer_url.trim() !== '') {
   };
 
   const requestMailer = (payload) => {
-    return request({
-      url: config.mailer_url,
+    return got(config.mailer_url, {
       cert: config.mailer_cert,
       key: config.mailer_key,
       ca: config.mailer_ca,
-      json: payload,
+      json: true,
+      body: payload,
       ecdhCurve: 'auto'
     })
       .then((response) => {
-        log.info(`successfully sent mails: ${JSON.stringify(response)}`);
+        log.info({ msg: 'successfully sent mails', mailer_response: response.body, mailer_response_code: response.statusCode });
 
         return response;
       })
