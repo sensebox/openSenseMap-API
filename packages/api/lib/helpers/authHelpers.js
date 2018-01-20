@@ -4,7 +4,8 @@ const passport = require('passport'),
   config = require('../config'),
   LocalStrategy = require('passport-local'),
   passportJwt = require('passport-jwt'),
-  { User } = require('@sensebox/opensensemap-api-models');
+  { User } = require('@sensebox/opensensemap-api-models'),
+  { isTokenBlacklisted } = require('./tokenBlacklist');
 
 const { Strategy: JwtStrategy, ExtractJwt } = passportJwt;
 
@@ -26,7 +27,7 @@ const MSG_CREDENTIALS_WRONG = 'Your login details could not be verified. Please 
 
 const localLogin = new LocalStrategy(localOptions, function verifiyLocalLogin (emailOrName, password, done) {
   // lowercase for email
-  User.findOne({ $or: [ { email: emailOrName.toLowerCase() }, { name: emailOrName } ] })
+  User.findOne({ $or: [{ email: emailOrName.toLowerCase() }, { name: emailOrName }] })
     .exec()
     .then(function (user) {
       if (!user) {
@@ -38,7 +39,7 @@ const localLogin = new LocalStrategy(localOptions, function verifiyLocalLogin (e
           return done(null, user);
         });
     })
-  /* eslint-disable no-unused-vars */
+    /* eslint-disable no-unused-vars */
     .catch(function (err) {
       if (err.name === 'ModelError' && err.message === 'Password incorrect') {
         return done(null, false, { error: MSG_CREDENTIALS_WRONG });
@@ -56,7 +57,7 @@ const jwtLogin = new JwtStrategy(jwtOptions, function verifiyJwtLogin (req, jwt,
   const jwtString = req.headers.authorization.split(' ')[1];
   // check if the token is blacklisted by performing a hmac digest on the string representation of the jwt.
   // also checks the existence of the jti claim
-  if (User.isTokenBlacklisted(jwt, jwtString)) {
+  if (isTokenBlacklisted(jwt, jwtString)) {
     return done(null, false, { error: JWT_WRONG_OR_UNAUTHORIZED });
   }
 
@@ -78,7 +79,7 @@ const jwtLogin = new JwtStrategy(jwtOptions, function verifiyJwtLogin (req, jwt,
 
       return done(null, user);
     })
-  /* eslint-disable no-unused-vars */
+    /* eslint-disable no-unused-vars */
     .catch(function (err) {
       done(null, false, { error: JWT_WRONG_OR_UNAUTHORIZED });
     });

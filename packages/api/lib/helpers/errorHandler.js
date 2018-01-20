@@ -2,6 +2,8 @@
 
 const restifyErrors = require('restify-errors');
 
+const restifyErrorNames = Object.keys(restifyErrors).filter(e => e.includes('Error') && e !== 'codeToHttpError');
+
 const handleError = function (err, next) {
   if (err.name === 'ModelError') {
     if (err.data && err.data.type) {
@@ -20,6 +22,10 @@ const handleError = function (err, next) {
     }
 
     return next(new restifyErrors.UnprocessableEntityError(`Validation failed: ${msgs.join(', ')}`));
+  }
+
+  if (restifyErrorNames.includes(err.name)) {
+    return next(err);
   }
 
   if (err.errors) {

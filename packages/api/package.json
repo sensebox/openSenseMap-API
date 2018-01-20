@@ -25,6 +25,7 @@
     "csv-stringify": "^1.0.4",
     "honeybadger": "^1.2.1",
     "isemail": "^3.0.0",
+    "jsonwebtoken": "^8.1.0",
     "millify": "^2.0.1",
     "moment": "^2.18.1",
     "passport": "^0.4.0",

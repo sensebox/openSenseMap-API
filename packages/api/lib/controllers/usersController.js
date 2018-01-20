@@ -4,7 +4,8 @@ const { User } = require('@sensebox/opensensemap-api-models'),
   { InternalServerError } = require('restify-errors'),
   { checkContentType } = require('../helpers/apiUtils'),
   { retrieveParameters } = require('../helpers/userParamHelpers'),
-  handleError = require('../helpers/errorHandler');
+  handleError = require('../helpers/errorHandler'),
+  { createToken, refreshJwt, invalidateToken } = require('../helpers/jwtHelpers');
 
 /**
  * define for nested user parameter for box creation request
@@ -48,7 +49,7 @@ const registerUser = function registerUser (req, res, next) {
   new User({ name, email, password, language })
     .save()
     .then(function (newUser) {
-      return newUser.createToken()
+      return createToken(newUser)
         .then(function ({ token, refreshToken }) {
           return res.send(201, { code: 'Created', message: 'Successfully registered new user', data: { user: newUser }, token, refreshToken });
         })
@@ -76,7 +77,7 @@ const registerUser = function registerUser (req, res, next) {
  * @apiError {String} 403 Unauthorized
  */
 const signIn = function signIn (req, res, next) {
-  req.user.createToken()
+  createToken(req.user)
     .then(function ({ token, refreshToken }) {
       return res.send(200, { code: 'Authorized', message: 'Successfully signed in', data: { user: req.user }, token, refreshToken });
     })
@@ -99,7 +100,7 @@ const signIn = function signIn (req, res, next) {
  * @apiError {Object} Forbidden `{"code":"ForbiddenError","message":"Refresh token invalid or too old. Please sign in with your username and password."}`
  */
 const refreshJWT = function refreshJWT (req, res, next) {
-  User.refreshJwt(req._userParams.token)
+  refreshJwt(req._userParams.token)
     .then(function ({ token, refreshToken, user }) {
       return res.send(200, { code: 'Authorized', message: 'Successfully refreshed auth', data: { user }, token, refreshToken });
     })
@@ -118,9 +119,9 @@ const refreshJWT = function refreshJWT (req, res, next) {
  * @apiSuccess {String} message `Successfully signed out`
  */
 const signOut = function signOut (req, res) {
-  req.user.signOut(req);
+  invalidateToken(req);
 
-  res.send(200, { code: 'Ok', message: 'Successfully signed out' });
+  return res.send(200, { code: 'Ok', message: 'Successfully signed out' });
 };
 
 /**
@@ -234,7 +235,7 @@ const updateUser = function updateUser (req, res, next) {
       }
 
       if (signOut === true) {
-        req.user.signOut(req);
+        invalidateToken(req);
       }
       next(res.send(200, { code: 'Ok', message: `User successfully saved.${messages.join('.')}`, data: { me: updatedUser } }));
     })
@@ -258,6 +259,8 @@ const deleteUser = function deleteUser (req, res, next) {
 
   req.user.checkPassword(password)
     .then(function () {
+      invalidateToken(req);
+
       return req.user.destroyUser(req);
     })
     .then(function () {
