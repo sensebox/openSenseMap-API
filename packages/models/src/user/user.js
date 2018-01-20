@@ -11,14 +11,11 @@
 const { mongoose } = require('../db'),
   bcrypt = require('bcrypt'),
   crypto = require('crypto'),
-  { jwt_algorithm, jwt_secret, jwt_issuer, password_min_length, password_salt_factor, jwt_validity_ms, refresh_token_validity_ms } = require('../config'),
+  { password_min_length, password_salt_factor } = require('../config'),
   uuid = require('uuid'),
-  jwt = require('jsonwebtoken'),
   { model: Box } = require('../box/box'),
   mails = require('./mails'),
   moment = require('moment'),
-  hashJWT = require('./jwtRefreshTokenHasher'),
-  tokenBlacklist = require('./tokenBlacklist'),
   timestamp = require('mongoose-timestamp'),
   ModelError = require('../modelError'),
   isemail = require('isemail');
@@ -33,8 +30,8 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
     unique: true,
-    minlength: [ 3, userNameRequirementsText ],
-    maxlength: [ 40, userNameRequirementsText ],
+    minlength: [3, userNameRequirementsText],
+    maxlength: [40, userNameRequirementsText],
     validate: {
       validator: function (v) {
         return nameValidRegex.test(v);
@@ -167,7 +164,7 @@ userSchema.path('unconfirmedEmail').validate({
       }
 
       return this.model('User')
-        .count({ $or: [ { email: user._newEmail }, { unconfirmedEmail: user._newEmail } ] })
+        .count({ $or: [{ email: user._newEmail }, { unconfirmedEmail: user._newEmail }] })
         .then(function (count) {
           user._newEmail = undefined;
           callback(count === 0);
@@ -254,82 +251,6 @@ userSchema.statics.initPasswordReset = function initPasswordReset ({ email }) {
 };
 // ---- End Password stuff -----
 
-// ---- JWT stuff ----
-const jwtSignOptions = {
-  algorithm: jwt_algorithm,
-  issuer: jwt_issuer,
-  expiresIn: Math.round(jwt_validity_ms / 1000)
-};
-
-userSchema.methods.createToken = function createToken () {
-  const payload = { role: this.role },
-    signOptions = Object.assign({ subject: this.email, jwtid: uuid() }, jwtSignOptions),
-    user = this;
-
-  return new Promise(function (resolve, reject) {
-    jwt.sign(payload, jwt_secret, signOptions, (err, token) => {
-      if (err) {
-        return reject(err);
-      }
-
-      // JWT generation was successful
-      // we now create the refreshToken.
-      // and set the refreshTokenExpires to 1 week
-      // it is a HMAC of the jwt string
-      const refreshToken = hashJWT(token);
-      user.update({
-        $set: {
-          refreshToken,
-          refreshTokenExpires: moment.utc()
-            .add(refresh_token_validity_ms, 'ms')
-            .toDate()
-        }
-      })
-        .exec()
-        .then(function () {
-          return resolve({ token, refreshToken });
-        })
-        .catch(function (err) {
-          return reject(err);
-        });
-
-    });
-  });
-};
-
-userSchema.methods.signOut = function signOut (req) {
-  // generates new JWT and refreshToken. Just don't send to the user
-  this.createToken()
-    .catch(function (err) {
-      throw err;
-    });
-
-  tokenBlacklist.addTokenToBlacklist(req._jwt, req._jwtString);
-};
-
-userSchema.statics.refreshJwt = function refreshJwt (refreshToken) {
-  return this.findOne({ refreshToken, refreshTokenExpires: { $gte: moment.utc().toDate() } })
-    .then(function (user) {
-      if (!user) {
-        throw new ModelError('Refresh token invalid or too old. Please sign in with your username and password.', { type: 'ForbiddenError' });
-      }
-
-      // invalidate old token
-      tokenBlacklist.addTokenHashToBlacklist(refreshToken);
-
-      return user.createToken()
-        .then(function ({ token, refreshToken }) {
-          return { token, refreshToken, user };
-        });
-    });
-};
-
-userSchema.statics.isTokenBlacklisted = function isTokenBlacklisted (jwt, jwtString) {
-  return tokenBlacklist.isTokenBlacklisted(jwt, jwtString);
-};
-
-// ---- End JWT Stuff ----
-
 userSchema.methods.addBox = function addBox (params) {
   const user = this;
 
@@ -402,12 +323,8 @@ userSchema.methods.removeBox = function removeBox (boxId) {
     });
 };
 
-userSchema.methods.destroyUser = function destroyUser (req) {
-  const user = this;
-  // sign out
-  user.signOut(req);
-
-  return user
+userSchema.methods.destroyUser = function destroyUser () {
+  return this
     .populate('boxes')
     .execPopulate()
     .then(function (userWithBoxes) {
@@ -530,7 +447,7 @@ userSchema.methods.getBoxes = function getBoxes () {
 };
 
 userSchema.statics.confirmEmail = function confirmEmail ({ token, email }) {
-  return this.findOne({ $and: [ { $or: [ { email: email }, { unconfirmedEmail: email } ] }, { emailConfirmationToken: token } ] })
+  return this.findOne({ $and: [{ $or: [{ email: email }, { unconfirmedEmail: email }] }, { emailConfirmationToken: token }] })
     .exec()
     .then(function (user) {
       if (!user) {

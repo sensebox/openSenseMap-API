@@ -5,8 +5,6 @@ const expect = require('chai').expect,
   { db: { connect, mongoose }, User } = require('../../index'),
   dbConnectionString = require('../helpers/dbConnectionString'),
   moment = require('moment'),
-  jwt = require('jsonwebtoken'),
-  { jwt_algorithm, jwt_secret, jwt_issuer, jwt_validity_ms } = require('../../src/config'),
   senseBox = require('../helpers/senseBox'),
   ensureIndexes = require('../helpers/ensureIndexes');
 
@@ -472,99 +470,8 @@ describe('User model', function () {
     });
   });
 
-  describe('Json web token and Refresh Token', function () {
-    let someRefreshToken, someJwtString, someJwt;
-    it('should allow to create a jwt and refresh token', function () {
-      return User.findOne({ name: 'Valid Username 2' })
-        .then(function (user) {
-          return user.createToken();
-        })
-        .then(function ({ token, refreshToken }) {
-          expect(token).exist;
-          expect(refreshToken).exist;
-
-          someJwtString = token;
-          someRefreshToken = refreshToken;
-
-          const decoded = jwt.verify(token, jwt_secret, { issuer: jwt_issuer, algorithms: [jwt_algorithm], subject: 'valid2@email.com', maxAge: jwt_validity_ms });
-          expect(moment.utc(decoded.iat * 1000)
-            .diff(moment.utc(), 'seconds'))
-            .below(2);
-          expect(moment.utc().add(jwt_validity_ms)
-            .diff(moment.utc(decoded.exp * 1000), 'seconds'))
-            .below(2);
-          expect(decoded.jti).not.empty;
-          expect(decoded.role).equal('user');
-
-          someJwt = decoded;
-        })
-        .then(function () {
-          expect(User.isTokenBlacklisted(someJwt, someJwtString)).false;
-        });
-    });
-
-    it('should allow to refresh jwt with refresh token', function () {
-      return User.refreshJwt(someRefreshToken)
-        .then(function ({ token, refreshToken }) {
-          expect(token).exist;
-          expect(refreshToken).exist;
-          expect(token).not.equal(someJwt);
-          expect(refreshToken).not.equal(someRefreshToken);
-
-          const decoded = jwt.verify(token, jwt_secret, { issuer: jwt_issuer, algorithms: [jwt_algorithm], subject: 'valid2@email.com', maxAge: jwt_validity_ms });
-          expect(moment.utc(decoded.iat * 1000)
-            .diff(moment.utc(), 'seconds'))
-            .below(2);
-          expect(moment.utc().add(jwt_validity_ms)
-            .diff(moment.utc(decoded.exp * 1000), 'seconds'))
-            .below(2);
-          expect(decoded.jti).not.empty;
-          expect(decoded.role).equal('user');
-
-        });
-    });
-
-    it('should have blacklisted the old token after refreshing', function () {
-      expect(User.isTokenBlacklisted(someJwt, someJwtString)).true;
-    });
-
-    it('should allow to blacklist (sign out) and not use the token after', function () {
-      return User.findOne({ name: 'Valid Username 2' })
-        .then(function (user) {
-          return user.createToken();
-        })
-        .then(function ({ token, refreshToken }) {
-          expect(token).exist;
-          expect(refreshToken).exist;
-
-          someJwtString = token;
-          someRefreshToken = refreshToken;
-
-          const decoded = jwt.verify(token, jwt_secret, { issuer: jwt_issuer, algorithms: [jwt_algorithm], subject: 'valid2@email.com', maxAge: jwt_validity_ms });
-          expect(moment.utc(decoded.iat * 1000)
-            .diff(moment.utc(), 'seconds'))
-            .below(2);
-          expect(moment.utc().add(jwt_validity_ms)
-            .diff(moment.utc(decoded.exp * 1000), 'seconds'))
-            .below(2);
-          expect(decoded.jti).not.empty;
-          expect(decoded.role).equal('user');
-
-          someJwt = decoded;
-
-          return User.findOne({ name: 'Valid Username 2' });
-        })
-        .then(function (user) {
-          return user.signOut({ _jwt: someJwt, _jwtString: someJwtString });
-        })
-        .then(function () {
-          expect(User.isTokenBlacklisted(someJwt, someJwtString)).true;
-        });
-    });
-  });
-
   describe('Box management', function () {
-    const boxes = [ senseBox({ name: 'sb1' }), senseBox({ name: 'sb2' }), senseBox({ name: 'sb3' })];
+    const boxes = [senseBox({ name: 'sb1' }), senseBox({ name: 'sb2' }), senseBox({ name: 'sb3' })];
     let userBoxes;
     before(function () {
       return User.findOne({ name: 'Valid Username 2' })
@@ -713,20 +620,9 @@ describe('User model', function () {
 
   describe('User deletion', function () {
     it('should allow to delete a user', function () {
-      let userToDestroy;
-
       return User.findOne({ name: 'Valid Username 2' })
         .then(function (user) {
-          userToDestroy = user;
-
-          return user.createToken();
-        })
-        .then(function ({ token }) {
-          expect(token).exist;
-
-          const _jwt = jwt.verify(token, jwt_secret, { issuer: jwt_issuer, algorithms: [jwt_algorithm], subject: 'valid2@email.com', maxAge: jwt_validity_ms });
-
-          return userToDestroy.destroyUser({ _jwt, _jwtString: token });
+          return user.destroyUser();
         })
         .then(function () {
           return User.findOne({ name: 'Valid Username 2' });
