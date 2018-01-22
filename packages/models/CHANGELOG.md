@@ -8,6 +8,7 @@
 - Use got instead of request for communication with the mailer
 - Move JWT handling into the api
 - Remove jsonwebtoken dependency
+- Use lorenwest/node-config for configuration
 
 ## v0.0.4
 - No Changes

@@ -1,8 +1,7 @@
 'use strict';
 
-const config = require('../config'),
+const config = require('config').get('openSenseMap-API-models.integrations'),
   log = require('../log');
-
 
 const noMailerConfiguredFunc = function () {
   return Promise.resolve({ 'msg': 'no mailer configured' });
@@ -12,7 +11,7 @@ module.exports = {
   sendMail: noMailerConfiguredFunc
 };
 
-if (config.mailer_url && config.mailer_url.trim() !== '') {
+if (config.get('mailer.url')) {
   /* eslint-disable global-require */
   const got = require('got');
   /* eslint-enable global-require */
@@ -105,10 +104,10 @@ if (config.mailer_url && config.mailer_url.trim() !== '') {
   };
 
   const requestMailer = (payload) => {
-    return got(config.mailer_url, {
-      cert: config.mailer_cert,
-      key: config.mailer_key,
-      ca: config.mailer_ca,
+    return got(config.get('mailer.url'), {
+      cert: config.get('mailer.cert'),
+      key: config.get('mailer.key'),
+      ca: config.get('ca_cert'),
       json: true,
       body: payload,
       ecdhCurve: 'auto'
@@ -133,7 +132,7 @@ if (config.mailer_url && config.mailer_url.trim() !== '') {
 
       // add user and origin to payload
       payload.user = user;
-      payload.origin = config.mailer_origin;
+      payload.origin = config.get('mailer.origin');
 
       // complete the payload
       const mailRequestPayload = [

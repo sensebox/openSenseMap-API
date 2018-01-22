@@ -9,6 +9,10 @@ Install it as dependency: `npm install --save @sensebox/opensensemap-api-models`
 
 This allows you to use parts like models and decoding in your own project. See `index.js`.
 
+## Configuration
+
+The package uses [lorenwest/node-config](https://github.com/lorenwest/node-config). The available configuration keys can be found in the [`index.js`](index.js) file. If you need an example for configuring the package, take a look at the [`docker-compose.yml`](../../tests/docker-compose.yml) file of the api tests.
+
 ## Changelog
 
 See [`CHANGELOG.md`](CHANGELOG.md)

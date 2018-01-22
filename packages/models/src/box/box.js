@@ -8,7 +8,7 @@ const { mongoose } = require('../db'),
   integrations = require('./integrations'),
   sensorLayouts = require('./sensorLayouts'),
   { model: Measurement } = require('../measurement/measurement'),
-  { api_measurements_post_domain, imageFolder } = require('../config'),
+  imageFolder = require('config').get('openSenseMap-API-models.image_folder'),
   {
     parseTimestamp,
     utcNow
@@ -22,7 +22,7 @@ const { mongoose } = require('../db'),
   jsonstringify = require('stringify-stream'),
   log = require('../log');
 
-const templateSketcher = new Sketcher(api_measurements_post_domain);
+const templateSketcher = new Sketcher();
 
 const locationSchema = new Schema({
   type: {

@@ -12,67 +12,33 @@ services:
       - ../package.json:/usr/src/app/package.json
       - ../.scripts:/usr/src/app/.scripts
       - userimages:/userimages
+      - ../config:/usr/src/app/config
     environment:
-      OSEM_dbconnectionstring: mongodb://db/api-test
-      OSEM_imageFolder: /userimages
-      OSEM_mailer_url: https://mailer:3924/
-      OSEM_mailer_origin: http://osem-api:8000
-      OSEM_mailer_cert: |-
-        -----BEGIN CERTIFICATE-----
-        MIIDMDCCAhgCCQDVuxUPFKIywjANBgkqhkiG9w0BAQsFADCBijEaMBgGCSqGSIb3
-        DQEJARYLY2FAc2Vuc2Vib3gxCzAJBgNVBAYTAkRFMQwwCgYDVQQIDANOUlcxETAP
-        BgNVBAcMCE11ZW5zdGVyMREwDwYDVQQKDAhzZW5zZUJveDEXMBUGA1UECwwOc2Vu
-        c2VCb3hEZXZPcHMxEjAQBgNVBAMMCW1haWxlcl9jYTAeFw0xNzAyMDMxMzI0MTNa
-        Fw0yNzAyMDExMzI0MTNaMIGwMR4wHAYJKoZIhvcNAQkBFg9jbGllbnRAc2Vuc2Vi
-        b3gxCzAJBgNVBAYTAkRFMQwwCgYDVQQIDANOUlcxETAPBgNVBAcMCE11ZW5zdGVy
-        MREwDwYDVQQKDAhzZW5zZUJveDEXMBUGA1UECwwOc2Vuc2VCb3hEZXZPcHMxETAP
-        BgNVBAMMCG9zZW0tYXBpMSEwHwYDVR0RDBhETlMuMT1hcGksRE5TLjI9b3NlbS1h
-        cGkwgZswEAYHKoZIzj0CAQYFK4EEACMDgYYABAETV8jg42RGG2KcbQSUny19M45a
-        15eaE4scTvIa0QyEnhpOJlT9/5/b1RNZW00tGnaustYO/nl8D0VKMLA19aNoAgEM
-        SdRI9BWmtjhoY6e35Mqf9q0Ptq4LwS0yUPLHa1rCSK51I1tpHyWaRYJ60riXJp4k
-        H+3HmSreYSz6oatwP//LlDANBgkqhkiG9w0BAQsFAAOCAQEAitEETj+lCbPBOVa7
-        jpNKAHsVDBxi9OsirM+mQZQOxe4VnlphnenpZz91AIfEvtfgSK35QfXT6N2MjAW4
-        Xqqni03xlRdcHAUjiG09dzhm8+NZLOCh2BTgLGFB2P6Gh6TuL2xgLfA0B+4dqOsY
-        FI3j90rJI9D45iH/5uszlvIkSAhOCtwvxi10+ZRF6HJjw2ZzrAV4zzpWfs4vxYqS
-        6Xh3MxOfW2it+Q8QqbWT2xG+hBW6BJMEiBa0YUwy4hAibnJvo5iBMMwwWJ3hpYE2
-        uMvl9QW/9MmT3UeDAjR1fFv+encJKCENv8hHzEucR5vXMn/AnK6Je+ojiVS4jiHw
-        TI8NLA==
-        -----END CERTIFICATE-----
-      OSEM_mailer_key: |-
-        -----BEGIN EC PARAMETERS-----
-        BgUrgQQAIw==
-        -----END EC PARAMETERS-----
-        -----BEGIN EC PRIVATE KEY-----
-        MIHcAgEBBEIAMvM/vo7b9q9uE0XbJM54K0dLES5KWGI99P+qCj1r5QBAY+lBWixJ
-        zbFXEZsTdGrFNg9yLkGzeIezsgfnkUu0Hq+gBwYFK4EEACOhgYkDgYYABAETV8jg
-        42RGG2KcbQSUny19M45a15eaE4scTvIa0QyEnhpOJlT9/5/b1RNZW00tGnaustYO
-        /nl8D0VKMLA19aNoAgEMSdRI9BWmtjhoY6e35Mqf9q0Ptq4LwS0yUPLHa1rCSK51
-        I1tpHyWaRYJ60riXJp4kH+3HmSreYSz6oatwP//LlA==
-        -----END EC PRIVATE KEY-----
-      OSEM_mailer_ca: |-
-        -----BEGIN CERTIFICATE-----
-        MIID6TCCAtGgAwIBAgIJAJ/bi2rj2SqDMA0GCSqGSIb3DQEBCwUAMIGKMRowGAYJ
-        KoZIhvcNAQkBFgtjYUBzZW5zZWJveDELMAkGA1UEBhMCREUxDDAKBgNVBAgMA05S
-        VzERMA8GA1UEBwwITXVlbnN0ZXIxETAPBgNVBAoMCHNlbnNlQm94MRcwFQYDVQQL
-        DA5zZW5zZUJveERldk9wczESMBAGA1UEAwwJbWFpbGVyX2NhMB4XDTE3MDIwMzEz
-        MjMxOVoXDTI3MDIwMTEzMjMxOVowgYoxGjAYBgkqhkiG9w0BCQEWC2NhQHNlbnNl
-        Ym94MQswCQYDVQQGEwJERTEMMAoGA1UECAwDTlJXMREwDwYDVQQHDAhNdWVuc3Rl
-        cjERMA8GA1UECgwIc2Vuc2VCb3gxFzAVBgNVBAsMDnNlbnNlQm94RGV2T3BzMRIw
-        EAYDVQQDDAltYWlsZXJfY2EwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIB
-        AQCl3b7zMX+qyXz5Tq5hVfUMn07oBbyb1k1bHfKXE3RDZWzQ79Kd4Qw+9fHK+6h1
-        KTxkVtnCtX5AGDQCAa91uvZ7YEMkOPN1OSebvAbYYaB3HjfDPo1bGDR6z8YmNSuO
-        fuHSCIzPQQLdwZRAuDYyMTf0h1IOxYjhMHwe4+9VC40pIYeUk4WCGtoGmvVLuMsA
-        BOCmWHfm/kkDTy7FfyJMtwKUTfVZ3dA6XS7sZRI3Ng4TupoyvE7fWloWF6bzS4zC
-        IF1uZ20OTbtTMtmfSLkcbPfbJfWBG+FL7M6fAZUUitslpzaueY+3r0delKLLap5Z
-        rJ1Jm1PfYaqK0mfo8yOwWFuzAgMBAAGjUDBOMB0GA1UdDgQWBBSAygFCONVABQKw
-        Sa1LpAY6vxwSBjAfBgNVHSMEGDAWgBSAygFCONVABQKwSa1LpAY6vxwSBjAMBgNV
-        HRMEBTADAQH/MA0GCSqGSIb3DQEBCwUAA4IBAQAYAdlXv07VtkHtoCUnTMQevoCs
-        Bewkap7n1r8lPm+dwc/3eN6DrJdnbQO+3DCRkkx8V7lKyWBDi+XIc6TxOeCVtVAu
-        id3ZRN56crWN1n1WUdRpMTVo78dbLk/nWLpxkp4O8+xovaOZLaQleIMUfQWY1bQz
-        mWM4SIMVtkSw/iYrqbeCuPl71xQxArNsZxoy+gFwoodqA+ESsax+Mm5sfAOFhBTB
-        4+0QFAmFHWtCKwVci0ruqAsfRFgeJ3y2JRulJoXu2z1Ymfai7qRISQ9HD2f3IRjM
-        MVBXzkCL1PtjBQ9BjbjRnSoWZNhShbbRHIG5U20D9Nyni18hOwBGsyxe2x5m
-        -----END CERTIFICATE-----
+      NODE_ENV: test
+      NODE_CONFIG: |-
+        {
+          "openSenseMap-API-models": {
+            "db": {
+              "mongo_uri": "mongodb://db/api-test"
+            },
+            "password": {
+              "salt_factor": 1
+            },
+            "image_folder": "/userimages",
+            "integrations": {
+              "ca_cert": "-----BEGIN CERTIFICATE-----\nMIID6TCCAtGgAwIBAgIJAJ/bi2rj2SqDMA0GCSqGSIb3DQEBCwUAMIGKMRowGAYJ\nKoZIhvcNAQkBFgtjYUBzZW5zZWJveDELMAkGA1UEBhMCREUxDDAKBgNVBAgMA05S\nVzERMA8GA1UEBwwITXVlbnN0ZXIxETAPBgNVBAoMCHNlbnNlQm94MRcwFQYDVQQL\nDA5zZW5zZUJveERldk9wczESMBAGA1UEAwwJbWFpbGVyX2NhMB4XDTE3MDIwMzEz\nMjMxOVoXDTI3MDIwMTEzMjMxOVowgYoxGjAYBgkqhkiG9w0BCQEWC2NhQHNlbnNl\nYm94MQswCQYDVQQGEwJERTEMMAoGA1UECAwDTlJXMREwDwYDVQQHDAhNdWVuc3Rl\ncjERMA8GA1UECgwIc2Vuc2VCb3gxFzAVBgNVBAsMDnNlbnNlQm94RGV2T3BzMRIw\nEAYDVQQDDAltYWlsZXJfY2EwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIB\nAQCl3b7zMX+qyXz5Tq5hVfUMn07oBbyb1k1bHfKXE3RDZWzQ79Kd4Qw+9fHK+6h1\nKTxkVtnCtX5AGDQCAa91uvZ7YEMkOPN1OSebvAbYYaB3HjfDPo1bGDR6z8YmNSuO\nfuHSCIzPQQLdwZRAuDYyMTf0h1IOxYjhMHwe4+9VC40pIYeUk4WCGtoGmvVLuMsA\nBOCmWHfm/kkDTy7FfyJMtwKUTfVZ3dA6XS7sZRI3Ng4TupoyvE7fWloWF6bzS4zC\nIF1uZ20OTbtTMtmfSLkcbPfbJfWBG+FL7M6fAZUUitslpzaueY+3r0delKLLap5Z\nrJ1Jm1PfYaqK0mfo8yOwWFuzAgMBAAGjUDBOMB0GA1UdDgQWBBSAygFCONVABQKw\nSa1LpAY6vxwSBjAfBgNVHSMEGDAWgBSAygFCONVABQKwSa1LpAY6vxwSBjAMBgNV\nHRMEBTADAQH/MA0GCSqGSIb3DQEBCwUAA4IBAQAYAdlXv07VtkHtoCUnTMQevoCs\nBewkap7n1r8lPm+dwc/3eN6DrJdnbQO+3DCRkkx8V7lKyWBDi+XIc6TxOeCVtVAu\nid3ZRN56crWN1n1WUdRpMTVo78dbLk/nWLpxkp4O8+xovaOZLaQleIMUfQWY1bQz\nmWM4SIMVtkSw/iYrqbeCuPl71xQxArNsZxoy+gFwoodqA+ESsax+Mm5sfAOFhBTB\n4+0QFAmFHWtCKwVci0ruqAsfRFgeJ3y2JRulJoXu2z1Ymfai7qRISQ9HD2f3IRjM\nMVBXzkCL1PtjBQ9BjbjRnSoWZNhShbbRHIG5U20D9Nyni18hOwBGsyxe2x5m\n-----END CERTIFICATE-----\n",
+              "mailer": {
+                "url": "https://mailer:3924/",
+                "origin": "http://osem-api:8000",
+                "key": "-----BEGIN EC PARAMETERS-----\nBgUrgQQAIw==\n-----END EC PARAMETERS-----\n-----BEGIN EC PRIVATE KEY-----\nMIHcAgEBBEIAMvM/vo7b9q9uE0XbJM54K0dLES5KWGI99P+qCj1r5QBAY+lBWixJ\nzbFXEZsTdGrFNg9yLkGzeIezsgfnkUu0Hq+gBwYFK4EEACOhgYkDgYYABAETV8jg\n42RGG2KcbQSUny19M45a15eaE4scTvIa0QyEnhpOJlT9/5/b1RNZW00tGnaustYO\n/nl8D0VKMLA19aNoAgEMSdRI9BWmtjhoY6e35Mqf9q0Ptq4LwS0yUPLHa1rCSK51\nI1tpHyWaRYJ60riXJp4kH+3HmSreYSz6oatwP//LlA==\n-----END EC PRIVATE KEY-----\n",
+                "cert": "-----BEGIN CERTIFICATE-----\nMIIDMDCCAhgCCQDVuxUPFKIywjANBgkqhkiG9w0BAQsFADCBijEaMBgGCSqGSIb3\nDQEJARYLY2FAc2Vuc2Vib3gxCzAJBgNVBAYTAkRFMQwwCgYDVQQIDANOUlcxETAP\nBgNVBAcMCE11ZW5zdGVyMREwDwYDVQQKDAhzZW5zZUJveDEXMBUGA1UECwwOc2Vu\nc2VCb3hEZXZPcHMxEjAQBgNVBAMMCW1haWxlcl9jYTAeFw0xNzAyMDMxMzI0MTNa\nFw0yNzAyMDExMzI0MTNaMIGwMR4wHAYJKoZIhvcNAQkBFg9jbGllbnRAc2Vuc2Vi\nb3gxCzAJBgNVBAYTAkRFMQwwCgYDVQQIDANOUlcxETAPBgNVBAcMCE11ZW5zdGVy\nMREwDwYDVQQKDAhzZW5zZUJveDEXMBUGA1UECwwOc2Vuc2VCb3hEZXZPcHMxETAP\nBgNVBAMMCG9zZW0tYXBpMSEwHwYDVR0RDBhETlMuMT1hcGksRE5TLjI9b3NlbS1h\ncGkwgZswEAYHKoZIzj0CAQYFK4EEACMDgYYABAETV8jg42RGG2KcbQSUny19M45a\n15eaE4scTvIa0QyEnhpOJlT9/5/b1RNZW00tGnaustYO/nl8D0VKMLA19aNoAgEM\nSdRI9BWmtjhoY6e35Mqf9q0Ptq4LwS0yUPLHa1rCSK51I1tpHyWaRYJ60riXJp4k\nH+3HmSreYSz6oatwP//LlDANBgkqhkiG9w0BAQsFAAOCAQEAitEETj+lCbPBOVa7\njpNKAHsVDBxi9OsirM+mQZQOxe4VnlphnenpZz91AIfEvtfgSK35QfXT6N2MjAW4\nXqqni03xlRdcHAUjiG09dzhm8+NZLOCh2BTgLGFB2P6Gh6TuL2xgLfA0B+4dqOsY\nFI3j90rJI9D45iH/5uszlvIkSAhOCtwvxi10+ZRF6HJjw2ZzrAV4zzpWfs4vxYqS\n6Xh3MxOfW2it+Q8QqbWT2xG+hBW6BJMEiBa0YUwy4hAibnJvo5iBMMwwWJ3hpYE2\nuMvl9QW/9MmT3UeDAjR1fFv+encJKCENv8hHzEucR5vXMn/AnK6Je+ojiVS4jiHw\nTI8NLA==\n-----END CERTIFICATE-----\n"
+              }
+            }
+          },
+          "sketch-templater": {
+            "ingress_domain": "test.ingress.domain"
+          }
+        }
     depends_on:
       - db
 

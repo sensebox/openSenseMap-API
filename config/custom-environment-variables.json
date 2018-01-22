@@ -1,0 +1,30 @@
+{
+  "openSenseMap-API-models": {
+    "db": {
+      "host": "OSEM_dbhost",
+      "port": "OSEM_dbport",
+      "user": "OSEM_dbuser",
+      "userpass": "OSEM_dbuserpass",
+      "authsource": "OSEM_dbauthsource",
+      "db": "OSEM_dbdb",
+      "mongo_uri": "OSEM_dbconnectionstring"
+    },
+    "integrations": {
+      "ca_cert": "OSEM_mailer_ca",
+      "mailer": {
+        "url": "OSEM_mailer_url",
+        "cert": "OSEM_mailer_cert",
+        "key": "OSEM_mailer_key",
+        "origin": "OSEM_mailer_origin"
+      }
+    },
+    "password": {
+      "min_length": "OSEM_password_min_length",
+      "salt_factor": "OSEM_password_salt_factor"
+    },
+    "image_folder": "OSEM_imageFolder"
+  },
+  "sketch-templater": {
+    "ingress_domain": "OSEM_api_measurements_post_domain"
+  }
+}

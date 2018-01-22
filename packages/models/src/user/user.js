@@ -11,7 +11,7 @@
 const { mongoose } = require('../db'),
   bcrypt = require('bcrypt'),
   crypto = require('crypto'),
-  { password_min_length, password_salt_factor } = require('../config'),
+  { min_length: password_min_length, salt_factor: password_salt_factor } = require('config').get('openSenseMap-API-models.password'),
   uuid = require('uuid'),
   { model: Box } = require('../box/box'),
   mails = require('./mails'),
