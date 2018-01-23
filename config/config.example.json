@@ -1,3 +1,4 @@
+/* vim: syntax=JSON5 */
 // openSenseMap-API configuration example
 {
   // The base domain under which the API is available on the internet.
