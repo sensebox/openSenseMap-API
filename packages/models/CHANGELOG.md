@@ -4,7 +4,7 @@
 - Removed log to file on error
 - cleanup unused files and directories
 - useMongoClient in db connection
-- Upgrade @sensebox/node-sketch-templater to 1.0.10
+- Upgrade @sensebox/node-sketch-templater to 1.1.1
 - Use got instead of request for communication with the mailer
 - Move JWT handling into the api
 - Remove jsonwebtoken dependency
