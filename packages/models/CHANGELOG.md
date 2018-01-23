@@ -1,6 +1,8 @@
 # @sensebox/opensensemap-api-models Changelog
 
 ## Unreleased
+
+## v0.0.5
 - Removed log to file on error
 - cleanup unused files and directories
 - useMongoClient in db connection
