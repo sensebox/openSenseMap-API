@@ -59,8 +59,8 @@ runComposeCommand up -d --force-recreate --remove-orphans
 
 #runComposeCommand exec osem-api yarn mocha tests/waitForDatabase.js packages/models/test/index.js #tests/waitForHttp.js tests/tests.js
 
-runComposeCommand exec osem-api yarn mocha tests/waitForHttp.js tests/tests.js
+runComposeCommand exec osem-api yarn mocha --exit tests/waitForHttp.js tests/tests.js
 
 runComposeCommand stop osem-api
 # use ./node_modules/.bin/mocha because the workspace does not have the devDependency mocha
-runComposeCommand run --workdir=/usr/src/app/packages/models osem-api ../../node_modules/.bin/mocha test/waitForDatabase test/index
+runComposeCommand run --workdir=/usr/src/app/packages/models osem-api ../../node_modules/.bin/mocha --exit test/waitForDatabase test/index
