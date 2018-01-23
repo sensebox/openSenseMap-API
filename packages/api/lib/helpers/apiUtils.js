@@ -43,12 +43,12 @@ const checkContentType = function (req, res, next) {
   return next();
 };
 
-const validUnsecuredPathRegex = new RegExp(`^\\/${config.get('routes.boxes')}/[a-f\\d]{24}/((data)|([a-f\\d]{24}))/?$`, 'i');
+const validUnsecuredPathRegex = new RegExp(`^\\${config.get('routes.boxes')}/[a-f\\d]{24}/((data)|([a-f\\d]{24}))/?$`, 'i');
 const preRequest = function preRequest (request, response, next) {
   response.charSet('utf-8');
   request.log.info({ req: request });
 
-  if (process.env.ENV === 'production'
+  if (process.env.NODE_ENV === 'production'
     && (!request.headers['x-forwarded-proto'] || request.headers['x-forwarded-proto'] !== 'https')) {
     if (request.method !== 'POST' || !validUnsecuredPathRegex.test(request.url)) {
       return next(new NotAuthorizedError('Access through http is not allowed'));
