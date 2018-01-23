@@ -20,7 +20,7 @@ See [`CHANGELOG.md`](CHANGELOG.md)
 #### Releasing a new version
 1. Document your changes in [`CHANGELOG.md`](CHANGELOG.md). Do not `git add` the file.
 1. Run `yarn version`
-1. `git push origin master`
+1. `git push --tags origin master`
 1. `npm publish`
 1. Use the new version in the api package
 
