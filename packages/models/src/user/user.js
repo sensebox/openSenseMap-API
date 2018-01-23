@@ -125,11 +125,11 @@ const preparePasswordHash = function preparePasswordHash (plaintextPassword) {
 };
 
 const passwordHasher = function passwordHasher (plaintextPassword) {
-  return bcrypt.hash(preparePasswordHash(plaintextPassword), password_salt_factor); // signature <String, Number> generates a salt and hashes in one step
+  return bcrypt.hash(preparePasswordHash(plaintextPassword), Number(password_salt_factor)); // signature <String, Number> generates a salt and hashes in one step
 };
 
 userSchema.statics.validatePassword = function validatePassword (newPassword) {
-  return newPassword.length >= password_min_length;
+  return newPassword.length >= Number(password_min_length);
 };
 
 userSchema.path('hashedPassword').validate(function () {
