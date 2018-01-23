@@ -1,6 +1,6 @@
 'use strict';
 
-const { jwt_algorithm, jwt_secret, jwt_issuer, jwt_validity_ms, refresh_token_validity_ms } = require('../config'),
+const config = require('config'),
   jwt = require('jsonwebtoken'),
   hashJWT = require('./jwtRefreshTokenHasher'),
   { addTokenToBlacklist, addTokenHashToBlacklist } = require('./tokenBlacklist'),
@@ -9,10 +9,13 @@ const { jwt_algorithm, jwt_secret, jwt_issuer, jwt_validity_ms, refresh_token_va
   { User } = require('@sensebox/opensensemap-api-models'),
   { ForbiddenError } = require('restify-errors');
 
+const { algorithm: jwt_algorithm, secret: jwt_secret, issuer: jwt_issuer, validity_ms: jwt_validity_ms } = config.get('jwt');
+const refresh_token_validity_ms = config.get('refresh_token.validity_ms');
+
 const jwtSignOptions = {
   algorithm: jwt_algorithm,
   issuer: jwt_issuer,
-  expiresIn: Math.round(jwt_validity_ms / 1000)
+  expiresIn: Math.round(Number(jwt_validity_ms) / 1000)
 };
 
 const createToken = function createToken (user) {
@@ -34,7 +37,7 @@ const createToken = function createToken (user) {
         $set: {
           refreshToken,
           refreshTokenExpires: moment.utc()
-            .add(refresh_token_validity_ms, 'ms')
+            .add(Number(refresh_token_validity_ms), 'ms')
             .toDate()
         }
       })

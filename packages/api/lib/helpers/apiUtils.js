@@ -1,7 +1,7 @@
 'use strict';
 
 const { NotAuthorizedError, UnsupportedMediaTypeError } = require('restify-errors'),
-  { basePath, honeybadger_apikey, slack_url } = require('../config'),
+  config = require('config'),
   apicache = require('apicache'),
   request = require('request');
 
@@ -43,12 +43,12 @@ const checkContentType = function (req, res, next) {
   return next();
 };
 
-const validUnsecuredPathRegex = new RegExp(`^\\${basePath}/[a-f\\d]{24}/((data)|([a-f\\d]{24}))/?$`, 'i');
+const validUnsecuredPathRegex = new RegExp(`^\\/${config.get('routes.boxes')}/[a-f\\d]{24}/((data)|([a-f\\d]{24}))/?$`, 'i');
 const preRequest = function preRequest (request, response, next) {
   response.charSet('utf-8');
   request.log.info({ req: request });
 
-  if (process.env.ENV === 'prod'
+  if (process.env.ENV === 'production'
     && (!request.headers['x-forwarded-proto'] || request.headers['x-forwarded-proto'] !== 'https')) {
     if (request.method !== 'POST' || !validUnsecuredPathRegex.test(request.url)) {
       return next(new NotAuthorizedError('Access through http is not allowed'));
@@ -102,17 +102,17 @@ let Honeybadger = {
 };
 
 /* eslint-disable global-require */
-if (honeybadger_apikey) {
+if (config.get('honeybadger_apikey')) {
   Honeybadger = require('honeybadger').configure({
-    apiKey: honeybadger_apikey
+    apiKey: config.get('honeybadger_apikey')
   });
 }
 /* eslint-enable global-require */
 
 
 const postToSlack = function postToSlack (text) {
-  if (slack_url) {
-    request.post({ url: slack_url, json: { text: text } });
+  if (config.get('slack_url')) {
+    request.post({ url: config.get('slack_url'), json: { text: text } });
   }
 };
 

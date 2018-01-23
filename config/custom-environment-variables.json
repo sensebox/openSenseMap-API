@@ -26,5 +26,27 @@
   },
   "sketch-templater": {
     "ingress_domain": "OSEM_api_measurements_post_domain"
+  },
+  "base_domain": "OSEM_api_base_domain",
+  "protocol": "OSEM_api_protocol",
+  "port": "OSEM_port",
+  "api_url": "OSEM_api_url",
+  "honeybadger_apikey": "OSEM_honeybadger_apikey",
+  "slack_url": "OSEM_slack_url",
+  "routes": {
+    "boxes": "OSEM_basePath",
+    "users": "OSEM_userPath",
+    "statistics": "OSEM_statisticsPath"
+  },
+  "jwt": {
+    "secret": "OSEM_jwt_secret",
+    "algorithm": "OSEM_jwt_algorithm",
+    "validity_ms": "OSEM_jwt_validity_ms",
+    "issuer": "OSEM_jwt_issuer"
+  },
+  "refresh_token": {
+    "secret": "OSEM_refresh_token_secret",
+    "algorithm": "OSEM_refresh_token_algorithm",
+    "validity_ms": "OSEM_refresh_token_validity_ms"
   }
 }

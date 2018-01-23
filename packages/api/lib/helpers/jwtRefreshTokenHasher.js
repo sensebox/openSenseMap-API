@@ -1,7 +1,7 @@
 'use strict';
 
 const crypto = require('crypto'),
-  { refresh_token_algorithm, refresh_token_secret } = require('../config');
+  { algorithm: refresh_token_algorithm, secret: refresh_token_secret } = require('config').get('refresh_token');
 
 const hashJWT = function hashJWT (jwtString) {
   if (typeof jwtString !== 'string') {

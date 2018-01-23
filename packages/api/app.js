@@ -12,7 +12,7 @@
 
 const restify = require('restify'),
   { fullResponse, queryParser, jsonBodyParser, pre: { sanitizePath } } = restify.plugins,
-  config = require('./lib/config'),
+  config = require('config'),
   { preRequest, preCors, Honeybadger, softwareRevision, postToSlack } = require('./lib/helpers/apiUtils'),
   routes = require('./lib/routes'),
   passport = require('passport'),
@@ -48,7 +48,7 @@ db.connect()
     routes(server);
 
     // start the server
-    server.listen(config.port, function () {
+    server.listen(Number(config.get('port')), function () {
       log.info(`${server.name} listening at ${server.url}`);
       postToSlack(`openSenseMap API started. Revision: ${softwareRevision}`);
     });

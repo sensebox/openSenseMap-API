@@ -1,7 +1,7 @@
 'use strict';
 
 const passport = require('passport'),
-  config = require('../config'),
+  config = require('config').get('jwt'),
   LocalStrategy = require('passport-local'),
   passportJwt = require('passport-jwt'),
   { User } = require('@sensebox/opensensemap-api-models'),
@@ -17,9 +17,9 @@ const localOptions = {
 const jwtOptions = {
   session: false,
   passReqToCallback: true,
-  secretOrKey: config.jwt_secret,
-  issuer: config.jwt_issuer,
-  algorithms: [config.jwt_algorithm],
+  secretOrKey: config.get('secret'),
+  issuer: config.get('issuer'),
+  algorithms: [config.get('algorithm')],
   jwtFromRequest: ExtractJwt.fromAuthHeaderWithScheme('Bearer')
 };
 

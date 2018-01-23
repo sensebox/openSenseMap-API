@@ -7,7 +7,8 @@ Originally, this API has been built as part of the bachelor thesis of [@mpfeil](
 You'll find that the repostiory uses yarn workspaces to separate the [API](packages/api) and the [database models](packages/models) for reuse in other projects. While the API is not published on npm, the package [`@sensebox/opensensemap-api-models`](https://www.npmjs.com/package/@sensebox/opensensemap-api-models) is published from [packages/models](packages/models) folder.
 
 ## Configuration
-Configuration values reside in the `lib/config.js` file. Configuration can also be set through environment variables starting with `OSEM_`. Environment variables override values in `lib/config.js`.
+
+Configuration of both the api and the models is done using mechanisms provided by [lorenwest/node-config](https://github.com/lorenwest/node-config). You can find an annotated example configuration with all keys in [`config/config.example.json`](config/config.example.json).
 
 ## Development
 - Have [Node.js] v8, [yarn](https://yarnpkg.com/), [Docker](https://docs.docker.com/engine/installation/) and [docker-compose](https://docs.docker.com/compose/install/) installed

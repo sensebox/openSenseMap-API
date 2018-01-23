@@ -8,9 +8,9 @@
   dependencies:
     wgs84 "0.0.0"
 
-"@sensebox/sketch-templater@^1.1.0":
-  version "1.1.0"
-  resolved "https://registry.yarnpkg.com/@sensebox/sketch-templater/-/sketch-templater-1.1.0.tgz#3bc89ae6d46d430e1978fecdb68fe1f88a40753a"
+"@sensebox/sketch-templater@^1.1.1":
+  version "1.1.1"
+  resolved "https://registry.yarnpkg.com/@sensebox/sketch-templater/-/sketch-templater-1.1.1.tgz#42be9f82b48f5cb685103e161aa7641a7b629155"
   dependencies:
     config "^1.29.2"
     dedent "^0.7.0"
@@ -1890,6 +1890,10 @@ ncp@~2.0.0:
 negotiator@^0.6.1:
   version "0.6.1"
   resolved "https://registry.yarnpkg.com/negotiator/-/negotiator-0.6.1.tgz#2b327184e8992101177b28563fb5e7102acd0ca9"
+
+node-config@^0.0.2:
+  version "0.0.2"
+  resolved "https://registry.yarnpkg.com/node-config/-/node-config-0.0.2.tgz#46b40dcfbcb0e66d46a15f81b54eac2130fb150d"
 
 node-pre-gyp@0.6.36:
   version "0.6.36"
