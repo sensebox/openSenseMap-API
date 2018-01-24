@@ -8,6 +8,10 @@
   dependencies:
     wgs84 "0.0.0"
 
+"@sensebox/eslint-config-sensebox@^1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@sensebox/eslint-config-sensebox/-/eslint-config-sensebox-1.0.0.tgz#4eabd72f65d0368cb41d763a780462045cad2733"
+
 "@sensebox/sketch-templater@^1.1.1":
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/@sensebox/sketch-templater/-/sketch-templater-1.1.1.tgz#42be9f82b48f5cb685103e161aa7641a7b629155"
@@ -797,7 +801,7 @@ eslint-visitor-keys@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/eslint-visitor-keys/-/eslint-visitor-keys-1.0.0.tgz#3f3180fb2e291017716acb4c9d6d5b5c34a6a81d"
 
-eslint@^4.5.0:
+eslint@4.16.0:
   version "4.16.0"
   resolved "https://registry.yarnpkg.com/eslint/-/eslint-4.16.0.tgz#934ada9e98715e1d7bbfd6f6f0519ed2fab35cc1"
   dependencies:
