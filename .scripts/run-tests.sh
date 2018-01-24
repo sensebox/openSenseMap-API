@@ -52,7 +52,7 @@ function cleanup {
 }
 trap cleanup EXIT
 
-runComposeCommand down -v
+runComposeCommand down -v --remove-orphans
 runComposeCommand up -d --force-recreate --remove-orphans
 
 #runComposeCommand exec osem-api yarn mocha tests/waitForDatabase.js packages/models/test/index.js tests/waitForHttp.js tests/tests.js
