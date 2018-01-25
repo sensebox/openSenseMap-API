@@ -23,6 +23,11 @@ config.util.setModuleDefaults('openSenseMap-API-models', {
       'cert': '',
       'key': '',
       'origin': ''
+    },
+    'mqtt': {
+      'url': '',
+      'cert': '',
+      'key': ''
     }
   },
   'password': {

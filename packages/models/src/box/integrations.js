@@ -2,7 +2,8 @@
 
 const { mongoose } = require('../db'),
   utils = require('../utils'),
-  isJSONParseableValidation = [utils.isJSONParseable, '{PATH} is not parseable as JSON'];
+  isJSONParseableValidation = [utils.isJSONParseable, '{PATH} is not parseable as JSON'],
+  mqttClient = require('./mqttClient');
 
 const mqttSchema = new mongoose.Schema({
   enabled: { type: Boolean, default: false, required: true },
@@ -48,7 +49,7 @@ const integrationSchema = new mongoose.Schema({
     validate: [{
       /* eslint-disable func-name-matching */
       validator: function validTTNDecodeOptions (ttn) {
-      /* eslint-enable func-name-matching */
+        /* eslint-enable func-name-matching */
         if (['debug', 'lora-serialization'].indexOf(ttn.profile) !== -1) {
           return (ttn.decodeOptions && ttn.decodeOptions.constructor === Array);
         }
@@ -62,35 +63,7 @@ const integrationSchema = new mongoose.Schema({
 const addIntegrationsToSchema = function addIntegrationsToSchema (schema) {
   schema.add({ integrations: { type: integrationSchema } });
 
-  // flag whether mqtt options have changed
-  schema.pre('save', function integrationsPreSave (next) {
-    if (this.modifiedPaths && typeof this.modifiedPaths === 'function') {
-      this._mqttChanged = this.modifiedPaths().some(function eachPath (path) {
-        return path.includes('integrations');
-      });
-    }
-    next();
-  });
-
-  // TODO
-  // // reconnect when mqtt option change was flagged
-  // schema.post('save', function integrationsPostSave (box) {
-  //   if (box._mqttChanged === true && box.integrations.mqtt) {
-  //     if (box.integrations.mqtt.enabled === true) {
-  //       // log.info('mqtt credentials changed, reconnecting');
-  //       mqttClient.connect(box);
-  //     } else if (box.integrations.mqtt.enabled === false) {
-  //       mqttClient.disconnect(box);
-  //     }
-  //   }
-  //   box._mqttChanged = undefined;
-  // });
-
-  // // disconnect mqtt on removal
-  // schema.pre('remove', function integrationsPostRemove (next) {
-  //   mqttClient.disconnect(this);
-  //   next();
-  // });
+  mqttClient.addToSchema(schema);
 };
 
 module.exports = {
