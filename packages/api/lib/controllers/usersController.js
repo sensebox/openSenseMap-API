@@ -2,7 +2,7 @@
 
 const { User } = require('@sensebox/opensensemap-api-models'),
   { InternalServerError } = require('restify-errors'),
-  { checkContentType } = require('../helpers/apiUtils'),
+  { checkContentType, redactEmail, postToSlack, clearCache } = require('../helpers/apiUtils'),
   { retrieveParameters } = require('../helpers/userParamHelpers'),
   handleError = require('../helpers/errorHandler'),
   { createToken, refreshJwt, invalidateToken } = require('../helpers/jwtHelpers');
@@ -49,6 +49,8 @@ const registerUser = function registerUser (req, res, next) {
   new User({ name, email, password, language })
     .save()
     .then(function (newUser) {
+      postToSlack(`New User: ${newUser.name} (${redactEmail(newUser.email)})`);
+
       return createToken(newUser)
         .then(function ({ token, refreshToken }) {
           return res.send(201, { code: 'Created', message: 'Successfully registered new user', data: { user: newUser }, token, refreshToken });
@@ -265,6 +267,8 @@ const deleteUser = function deleteUser (req, res, next) {
     })
     .then(function () {
       res.send(200, { code: 'Ok', message: 'User and all boxes of user marked for deletion. Bye Bye!' });
+      clearCache(['getBoxes', 'getStats']);
+      postToSlack(`User deleted: ${req.user.name} (${redactEmail(req.user.email)})`);
     })
     .catch(function (err) {
       handleError(err, next);

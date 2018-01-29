@@ -3,7 +3,7 @@
 const { NotAuthorizedError, UnsupportedMediaTypeError } = require('restify-errors'),
   config = require('config'),
   apicache = require('apicache'),
-  request = require('request');
+  got = require('got');
 
 const addCache = function addCache (duration, group) {
   // configure the apicache, set the group and only cache response code 200 responses
@@ -112,8 +112,28 @@ if (config.get('honeybadger_apikey')) {
 
 const postToSlack = function postToSlack (text) {
   if (config.get('slack_url')) {
-    request.post({ url: config.get('slack_url'), json: { text: text } });
+    got(config.get('slack_url'), {
+      json: true,
+      body: { text },
+      retries: 0
+    })
+      // swallow errors, we don't care
+      .catch(() => { });
   }
+};
+
+const redactEmail = function redactEmail (email) {
+  /* eslint-disable prefer-const */
+  let [name = '', domain = ''] = email.split('@');
+  /* eslint-enable prefer-const */
+
+  let [hostname = '', tld = ''] = domain.split('.');
+
+  tld = `${tld.slice(0, 1)}**`;
+  hostname = `${hostname.slice(0, 3)}****`;
+  name = `${name.slice(0, 3)}****`;
+
+  return `${name}@${hostname}.${tld}`;
 };
 
 const softwareRevision = (function () {
@@ -141,4 +161,5 @@ module.exports = {
   Honeybadger,
   postToSlack,
   softwareRevision,
+  redactEmail
 };

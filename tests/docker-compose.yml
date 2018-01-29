@@ -17,6 +17,7 @@ services:
       NODE_ENV: test
       NODE_CONFIG: |-
         {
+          "slack_url": "http://fake.slack.url/bla/bli/blu",
           "openSenseMap-API-models": {
             "db": {
               "mongo_uri": "mongodb://db/api-test"
