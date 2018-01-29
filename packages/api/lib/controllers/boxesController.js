@@ -45,7 +45,8 @@ const
     validateFromToTimeParams,
     checkBoxIdOwner
   } = require('../helpers/userParamHelpers'),
-  handleError = require('../helpers/errorHandler');
+  handleError = require('../helpers/errorHandler'),
+  jsonstringify = require('stringify-stream');
 
 /**
  * @apiDefine Addons
@@ -164,6 +165,17 @@ const getBoxLocations = function getBoxLocations (req, res, next) {
     });
 };
 
+const geoJsonStringifyReplacer = function geoJsonStringifyReplacer (key, box) {
+  if (key === '') {
+    const coordinates = box.currentLocation.coordinates;
+    box.currentLocation = undefined;
+    box.loc = undefined;
+
+    return point(coordinates, box);
+  }
+
+  return box;
+};
 
 /**
  * @api {get} /boxes?date=:date&phenomenon=:phenomenon&format=:format Get all senseBoxes
@@ -184,9 +196,17 @@ const getBoxes = function getBoxes (req, res, next) {
   // content-type is always application/json for this route
   res.header('Content-Type', 'application/json; charset=utf-8');
 
+  // default format
+  let stringifier = jsonstringify({ open: '[', close: ']' });
+  // format
+  if (req._userParams.format === 'geojson') {
+    stringifier = jsonstringify({ open: '{"type":"FeatureCollection","features":[', close: ']}' }, geoJsonStringifyReplacer);
+  }
+
   Box.findBoxesLastMeasurements(req._userParams)
     .then(function (stream) {
       stream
+        .pipe(stringifier)
         .on('error', function (err) {
           res.end(`Error: ${err.message}`);
         })
