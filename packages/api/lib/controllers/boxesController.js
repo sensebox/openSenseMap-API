@@ -39,6 +39,7 @@
 const
   { Box } = require('@sensebox/opensensemap-api-models'),
   { addCache, clearCache, checkContentType } = require('../helpers/apiUtils'),
+  { point } = require('@turf/helpers'),
   classifyTransformer = require('../transformers/classifyTransformer'),
   {
     retrieveParameters,
