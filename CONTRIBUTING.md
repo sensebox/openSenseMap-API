@@ -27,7 +27,11 @@ To install all dependencies, run
 
 ### Starting the project locally
 
-First, start your development database
+Before starting the development database, create the following network
+
+    docker network create api-db-network
+
+Afterwards, start your development database
 
     docker-compose up -d
 
