@@ -39,6 +39,7 @@
 const
   { Box } = require('@sensebox/opensensemap-api-models'),
   { addCache, clearCache, checkContentType } = require('../helpers/apiUtils'),
+  classifyTransformer = require('../transformers/classifyTransformer'),
   {
     retrieveParameters,
     parseAndValidateTimeParamsForFindAllBoxes,
@@ -187,6 +188,7 @@ const geoJsonStringifyReplacer = function geoJsonStringifyReplacer (key, box) {
  * @apiParam {String=json,geojson} [format=json] the format the sensor data is returned in.
  * @apiParam {String} [grouptag] only return boxes with this grouptag, allows to specify multiple separated with a comma
  * @apiParam {String="homeEthernet","homeWifi","homeEthernetFeinstaub","homeWifiFeinstaub","luftdaten_sds011","luftdaten_sds011_dht11","luftdaten_sds011_dht22","luftdaten_sds011_bmp180","luftdaten_sds011_bme280"} [model] only return boxes with this model, allows to specify multiple separated with a comma
+ * @apiParam {Boolean="true","false"} [classify] if specified, the api will classify the boxes accordingly to their last measurements.
  * @apiUse ExposureFilterParam
  * @apiSampleRequest https://api.opensensemap.org/boxes
  * @apiSampleRequest https://api.opensensemap.org/boxes?date=2015-03-07T02:50Z&phenomenon=Temperatur
@@ -490,7 +492,8 @@ module.exports = {
       { name: 'grouptag', dataType: ['StringWithEmpty'] },
       { name: 'phenomenon', dataType: 'StringWithEmpty' },
       { name: 'date', dataType: ['RFC 3339'] },
-      { name: 'format', defaultValue: 'json', allowedValues: ['json', 'geojson'] }
+      { name: 'format', defaultValue: 'json', allowedValues: ['json', 'geojson'] },
+      { name: 'classify', defaultValue: 'true', allowedValues: ['true', 'false'] },
     ]),
     parseAndValidateTimeParamsForFindAllBoxes,
     addCache('5 minutes', 'getBoxes'),
