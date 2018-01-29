@@ -11,7 +11,7 @@ if [ "$currentBranch" != "master" ]; then
 fi
 
 # Extract latest git tag
-currentVersion=$(git tag -l --sort=-v:refname | head -n 1 | tr -d 'v')
+currentVersion=$(git tag -l --sort=-v:refname | grep -E '^v[0-9]+$' | head -n 1 | tr -d 'v')
 
 # Increment
 newVersion=$(($currentVersion+1))
