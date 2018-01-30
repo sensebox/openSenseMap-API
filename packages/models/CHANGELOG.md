@@ -1,6 +1,7 @@
 # @sensebox/opensensemap-api-models Changelog
 
 ## Unreleased
+- move stringifier from box model to box controller in api for route `/boxes`
 
 ## v0.0.5
 - Removed log to file on error
