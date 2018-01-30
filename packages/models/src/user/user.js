@@ -190,8 +190,6 @@ userSchema.pre('save', function userPreSave (next) {
 userSchema.post('save', function userPostSaveSendMails (user) {
   if (user.wasNew) {
     user.mail('newUser');
-    // TODO
-    //postToSlack(`New User: ${user.name} (${redactEmail(user.email)})`);
 
     return;
   }
@@ -268,8 +266,6 @@ userSchema.methods.addBox = function addBox (params) {
             mailTemplate = 'newBoxLuftdaten';
           }
 
-          // TODO
-          // postToSlack(`New Box: ${user.name} (${redactEmail(user.email)}) just registered "${savedBox.name}" (${savedBox.model}): <https://opensensemap.org/explore/${savedBox._id}|link>`);
           user.mail(mailTemplate, savedBox);
 
           return savedBox;
@@ -316,8 +312,6 @@ userSchema.methods.removeBox = function removeBox (boxId) {
 
       // remove from boxes
       user.boxes.pull({ _id: boxId });
-      // TODO
-      // postToSlack(`Box deleted: ${user.name} (${redactEmail(user.email)}) just deleted "${box.name}" (${box.model})`);
 
       return user.save();
     });
@@ -329,8 +323,6 @@ userSchema.methods.destroyUser = function destroyUser () {
     .execPopulate()
     .then(function (userWithBoxes) {
       userWithBoxes.mail('deleteUser');
-      // TODO
-      // postToSlack(`User deleted: ${user.name} (${redactEmail(user.email)})`);
       // delete the boxes..
       for (const box of userWithBoxes.boxes) {
         box.removeSelfAndMeasurements();
