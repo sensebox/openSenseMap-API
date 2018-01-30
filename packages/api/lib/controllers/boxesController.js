@@ -41,6 +41,7 @@ const
   { addCache, clearCache, checkContentType } = require('../helpers/apiUtils'),
   { point } = require('@turf/helpers'),
   classifyTransformer = require('../transformers/classifyTransformer'),
+  { addCache, clearCache, checkContentType, redactEmail, postToSlack } = require('../helpers/apiUtils'),
   {
     retrieveParameters,
     parseAndValidateTimeParamsForFindAllBoxes,
@@ -377,6 +378,7 @@ const postNewBox = function postNewBox (req, res, next) {
     .then(function (newBox) {
       res.send(201, { message: 'Box successfully created', data: newBox });
       clearCache(['getBoxes', 'getStats']);
+      postToSlack(`New Box: ${req.user.name} (${redactEmail(req.user.email)}) just registered "${newBox.name}" (${newBox.model}): <https://opensensemap.org/explore/${newBox._id}|link>`);
     })
     .catch(function (err) {
       handleError(err, next);
@@ -420,6 +422,8 @@ const deleteBox = function deleteBox (req, res, next) {
     })
     .then(function () {
       res.send({ code: 'Ok', message: 'box and all associated measurements marked for deletion' });
+      clearCache(['getBoxes', 'getStats']);
+      postToSlack(`Box deleted: ${req.user.name} (${redactEmail(req.user.email)}) just deleted ${boxId}`);
     })
     .catch(function (err) {
       handleError(err, next);

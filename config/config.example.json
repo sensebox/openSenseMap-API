@@ -157,6 +157,26 @@
         // Required for sending mails
         // Environment variable "OSEM_mailer_origin"
         "origin": "http://my-opensensemap.com"
+      },
+      "mqtt": {
+        // Url of the mqtt service. If not specified, receiving measurements over
+        // mqtt is not supported.
+        // Should be the naked domain and a port
+        // No Environment variable
+        // No Default
+        "url": "mqtt-osem-integration:3925",
+        // Client certificate signed by the Certificate Authority for
+        // communicating with the mqtt service in pem format with \n as newlines
+        // Required for MQTT
+        // No Environment variable
+        // No Default
+        "cert": "-----BEGIN CERTIFICATE-----\nMIIE9DCCAtygAwIBA ... ",
+        // Key of the client certificate for communicating with the MQTT service
+        // in pem format with \n as newlines
+        // Required for MQTT
+        // No Environment variable
+        // No Default
+        "key": "-----BEGIN RSA PRIVATE KEY-----\nMIIJKQIBAAKCAg ...",
       }
     },
     "password": {
@@ -180,5 +200,5 @@
     // Environment variable: "OSEM_api_measurements_post_domain"
     // No default
     "ingress_domain": "ingress.my-opensensemap.com"
-  },
+  }
 }

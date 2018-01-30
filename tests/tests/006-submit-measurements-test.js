@@ -9,8 +9,8 @@ const chakram = require('chakram'),
 const BASE_URL = process.env.OSEM_TEST_BASE_URL,
   csv_example_data = require('../data/csv_example_data'),
   json_submit_data = require('../data/json_submit_data'),
-  byte_submit_data = require('../data/byte_submit_data');
-  // publishMqttMessage = require('../helpers/mqtt');
+  byte_submit_data = require('../data/byte_submit_data'),
+  publishMqttMessage = require('../helpers/mqtt');
 
 describe('submitting measurements', function () {
   let boxes = [];
@@ -299,35 +299,35 @@ describe('submitting measurements', function () {
       });
   });
 
-  //it('should accept measurements through mqtt', function () {
-  //  const submitTime = moment.utc();
+  it('should accept measurements through mqtt', function () {
+    const submitTime = moment.utc();
 
-  //  const payload = JSON.stringify(json_submit_data.json_arr(boxes[0].sensors));
+    const payload = JSON.stringify(json_submit_data.json_arr(boxes[0].sensors));
 
-  //  return publishMqttMessage('mqtt://mosquitto', 'mytopic', payload)
-  //    .then(function () {
-  //      return new Promise(function (resolve) {
-  //        setTimeout(resolve, 500);
-  //      })
-  //        .then(function () {
-  //          return chakram.get(`${BASE_URL}/boxes/${boxIds[0]}`);
-  //        });
-  //    })
-  //    .then(function (response) {
-  //      expect(response).to.have.status(200);
-  //      expect(response).to.have.json('sensors', function (sensors) {
-  //        sensors.forEach(function (sensor) {
-  //          expect(sensor.lastMeasurement).not.to.be.null;
-  //          expect(sensor.lastMeasurement.createdAt).to.exist;
-  //          const createdAt = moment.utc(sensor.lastMeasurement.createdAt);
-  //          expect(submitTime.diff(createdAt, 'minutes')).to.be.below(5);
-  //          countMeasurements = countMeasurements + 1;
-  //        });
-  //      });
+    return publishMqttMessage('mqtt://mosquitto', 'mytopic', payload)
+      .then(function () {
+        return new Promise(function (resolve) {
+          setTimeout(resolve, 500);
+        })
+          .then(function () {
+            return chakram.get(`${BASE_URL}/boxes/${boxIds[0]}`);
+          });
+      })
+      .then(function (response) {
+        expect(response).to.have.status(200);
+        expect(response).to.have.json('sensors', function (sensors) {
+          sensors.forEach(function (sensor) {
+            expect(sensor.lastMeasurement).not.to.be.null;
+            expect(sensor.lastMeasurement.createdAt).to.exist;
+            const createdAt = moment.utc(sensor.lastMeasurement.createdAt);
+            expect(submitTime.diff(createdAt, 'minutes')).to.be.below(5);
+            countMeasurements = countMeasurements + 1;
+          });
+        });
 
-  //      return chakram.wait();
-  //    });
-  //});
+        return chakram.wait();
+      });
+  });
 
   it('should accept measurements in random order', function () {
     const sensor_id = boxes[0].sensors[1]._id;
