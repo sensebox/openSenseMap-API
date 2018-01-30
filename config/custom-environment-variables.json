@@ -11,10 +11,10 @@
     },
     "integrations": {
       "ca_cert": "OSEM_mailer_ca",
+      "cert": "OSEM_mailer_cert",
+      "key": "OSEM_mailer_key",
       "mailer": {
         "url": "OSEM_mailer_url",
-        "cert": "OSEM_mailer_cert",
-        "key": "OSEM_mailer_key",
         "origin": "OSEM_mailer_origin"
       }
     },

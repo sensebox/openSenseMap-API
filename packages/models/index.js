@@ -18,16 +18,14 @@ config.util.setModuleDefaults('openSenseMap-API-models', {
   },
   'integrations': {
     'ca_cert': '',
+    'cert': '',
+    'key': '',
     'mailer': {
       'url': '',
-      'cert': '',
-      'key': '',
       'origin': ''
     },
     'mqtt': {
-      'url': '',
-      'cert': '',
-      'key': ''
+      'url': ''
     }
   },
   'password': {

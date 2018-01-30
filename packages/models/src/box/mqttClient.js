@@ -3,7 +3,7 @@
 const grpc = require('grpc'),
   { mqttProto } = require('@sensebox/osem-protos'),
   log = require('../log'),
-  config = require('config').get('openSenseMap-API-models.integrations');
+  config = require('config').get('openSenseMap-API-models');
 
 const genericCallback = function (err, response) {
   if (err) {
@@ -14,8 +14,7 @@ const genericCallback = function (err, response) {
 
 module.exports = {
   addToSchema (schema) {
-    const ca_cert = config.get('ca_cert'),
-      { cert, key, url } = config.get('mqtt');
+    const { ca_cert, key, cert, mqtt: { url } } = config.get('integrations');
 
     if (!ca_cert || !cert || !key || !url) {
       log.info('Missing MQTT integration configuration. Disabled');

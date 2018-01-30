@@ -105,8 +105,8 @@ if (config.get('mailer.url')) {
 
   const requestMailer = (payload) => {
     return got(config.get('mailer.url'), {
-      cert: config.get('mailer.cert'),
-      key: config.get('mailer.key'),
+      cert: config.get('cert'),
+      key: config.get('key'),
       ca: config.get('ca_cert'),
       json: true,
       body: payload,

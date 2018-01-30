@@ -5,7 +5,7 @@
   // Is used for generating api_url and jwt.issuer config values
   // Environment: "OSEM_api_base_domain"
   // Default: "localhost"
-  "base_domain": "OSEM_api_base_domain",
+  "base_domain": "api.my-opensensemap.com",
   // Protocol under which the API is available on the internet. In production,
   // this should be https. Make sure your proxy server serves your API TLS
   // encrypted.
@@ -22,7 +22,7 @@
   // If omitted, the value is generated using base_domain and protocol keys
   // Environment variable "OSEM_api_url"
   // Default: Generated from base_domain and protocol keys
-  "api_url": "OSEM_api_url",
+  "api_url": "https://api.my-opensensemap.com",
   // Honeybadger API key for error reporting
   // If not specified, Honeybadger integration is disabled
   // No default
@@ -132,6 +132,16 @@
       // Environment variable: "OSEM_mailer_ca"
       // No default
       "ca_cert": "-----BEGIN CERTIFICATE-----\nMIIFPzCCAyegAwIB ... ",
+      // Client certificate signed by the Certificate Authority for
+      // communicating with integration services in pem format with \n as newlines
+      // Environment variable "OSEM_mailer_cert"
+      // No default
+      "cert": "-----BEGIN CERTIFICATE-----\nMIIE9DCCAtygAwIBA ... ",
+      // Key of the client certificate for communicating with integration services
+      // in pem format with \n as newlines
+      // Environment variable "OSEM_mailer_key"
+      // No default
+      "key": "-----BEGIN RSA PRIVATE KEY-----\nMIIJKQIBAAKCAg ...",
       // Keys for communicating with the sensebox-mailer service
       "mailer": {
         // Url of the mailer service. If not specified, sending mails is disabled
@@ -139,18 +149,6 @@
         // Environment variable: "OSEM_mailer_url"
         // No default
         "url": "https://mailer:3924",
-        // Client certificate signed by the Certificate Authority for
-        // communicating with the mailer service in pem format with \n as newlines
-        // Required for sending mails
-        // Environment variable "OSEM_mailer_cert"
-        // No default
-        "cert": "-----BEGIN CERTIFICATE-----\nMIIE9DCCAtygAwIBA ... ",
-        // Key of the client certificate for communicating with the mailer service
-        // in pem format with \n as newlines
-        // Required for sending mails
-        // Environment variable "OSEM_mailer_key"
-        // No default
-        "key": "-----BEGIN RSA PRIVATE KEY-----\nMIIJKQIBAAKCAg ...",
         // Origin used in mails sent from the mailer service. The origin is used
         // to fill in the correct frontend url in the mails.
         // No trailing slash!
@@ -164,19 +162,7 @@
         // Should be the naked domain and a port
         // No Environment variable
         // No Default
-        "url": "mqtt-osem-integration:3925",
-        // Client certificate signed by the Certificate Authority for
-        // communicating with the mqtt service in pem format with \n as newlines
-        // Required for MQTT
-        // No Environment variable
-        // No Default
-        "cert": "-----BEGIN CERTIFICATE-----\nMIIE9DCCAtygAwIBA ... ",
-        // Key of the client certificate for communicating with the MQTT service
-        // in pem format with \n as newlines
-        // Required for MQTT
-        // No Environment variable
-        // No Default
-        "key": "-----BEGIN RSA PRIVATE KEY-----\nMIIJKQIBAAKCAg ...",
+        "url": "mqtt-osem-integration:3925"
       }
     },
     "password": {

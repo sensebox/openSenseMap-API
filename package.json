@@ -4,7 +4,7 @@
     "packages/*"
   ],
   "scripts": {
-    "start": "node packages/api/app.js",
+    "start": "node --trace-warnings packages/api/app.js",
     "start-dev-db": "docker-compose up -d db",
     "stop-dev-db": "docker-compose down db",
     "build-test-env": "./.scripts/run-tests.sh build",
