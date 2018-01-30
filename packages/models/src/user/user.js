@@ -63,7 +63,15 @@ const userSchema = new mongoose.Schema({
   language: {
     type: String,
     trim: true,
-    default: 'en_US'
+    default: 'en_US',
+    validate: {
+      /* eslint-disable func-name-matching */
+      validator: function validateLanguage (lang) {
+        return /^[a-z]{1,3}((-|_)[a-z]{1,3})?$/i.test(lang);
+      },
+      /* eslint-enable func-name-matching */
+      message: 'Parameter language only allows ISO 639-1 and ISO639-2 language codes'
+    }
   },
   hashedPassword: {
     type: String,

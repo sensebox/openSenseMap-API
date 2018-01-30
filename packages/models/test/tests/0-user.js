@@ -129,6 +129,24 @@ describe('User model', function () {
           expect(user.language).equal('de_DE');
         });
     });
+
+    it('should not allow to create an user with invalid language (1230)', function () {
+      return User.create({ name: 'Invalid Language User', password: '12345678', email: 'invalid-lang@user.com', language: '1230' })
+        .then(shouldNotHappenThenner)
+        .catch(function (err) {
+          expect(err.name).equal('ValidationError');
+          expect(err.message).equal('User validation failed: language: Parameter language only allows ISO 639-1 and ISO639-2 language codes');
+        });
+    });
+
+    it('should not allow to create an user with invalid language (english)', function () {
+      return User.create({ name: 'Invalid Language User', password: '12345678', email: 'invalid-lang@user.com', language: 'english' })
+        .then(shouldNotHappenThenner)
+        .catch(function (err) {
+          expect(err.name).equal('ValidationError');
+          expect(err.message).equal('User validation failed: language: Parameter language only allows ISO 639-1 and ISO639-2 language codes');
+        });
+    });
   });
 
   describe('checkPassword', function () {
