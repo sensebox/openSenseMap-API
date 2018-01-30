@@ -208,8 +208,16 @@ const getBoxes = function getBoxes (req, res, next) {
 
   Box.findBoxesLastMeasurements(req._userParams)
     .then(function (stream) {
+
+      if (req._userParams.classify === 'true') {
+        stream = stream
+          .pipe(classifyTransformer())
+          .on('error', function (err) {
+            res.end(`Error: ${err.message}`);
+          });
+      }
+
       stream
-        .pipe(classifyTransformer())
         .pipe(stringifier)
         .on('error', function (err) {
           res.end(`Error: ${err.message}`);
