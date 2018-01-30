@@ -1,5 +1,9 @@
 'use strict';
 
+/**
+ * This is the default config for the API package
+ */
+
 const defer = require('config/defer').deferConfig;
 
 const defaults = {
