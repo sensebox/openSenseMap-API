@@ -38,10 +38,9 @@
 
 const
   { Box } = require('@sensebox/opensensemap-api-models'),
-  { addCache, clearCache, checkContentType } = require('../helpers/apiUtils'),
+  { addCache, clearCache, checkContentType, redactEmail, postToSlack } = require('../helpers/apiUtils'),
   { point } = require('@turf/helpers'),
   classifyTransformer = require('../transformers/classifyTransformer'),
-  { addCache, clearCache, checkContentType, redactEmail, postToSlack } = require('../helpers/apiUtils'),
   {
     retrieveParameters,
     parseAndValidateTimeParamsForFindAllBoxes,

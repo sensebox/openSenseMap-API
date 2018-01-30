@@ -1,11 +1,8 @@
 'use strict';
 
 const Transform = require('stream').Transform,
-  inherits = require('util').inherits;
-
-const ONE_DAY = 1000 * 60 * 60 * 24;
-const SEVEN_DAYS = ONE_DAY * 7;
-const THIRTY_DAYS = ONE_DAY * 30;
+  inherits = require('util').inherits,
+  moment = require('moment');
 
 const classifyTransformer = function (classifyTransformerOptions, streamOptions) {
   if (!(this instanceof classifyTransformer)) {
@@ -34,10 +31,10 @@ classifyTransformer.prototype.defineState = function defineState (data, cb) {
   if (filteredSensorsWithMeasurements.length === 0) {
     state = 'old';
   } else {
-    const now = Date.now();
+    const now = moment.utc();
     const sortedSensors = filteredSensorsWithMeasurements.sort(function (a, b) {
-      const c = new Date(a.lastMeasurement.createdAt);
-      const d = new Date(b.lastMeasurement.createdAt);
+      const c = moment.utc(a.lastMeasurement.createdAt);
+      const d = moment.utc(b.lastMeasurement.createdAt);
 
       if (c > d) { return -1; }
       if (c < d) { return 1; }
@@ -45,12 +42,12 @@ classifyTransformer.prototype.defineState = function defineState (data, cb) {
       return 0;
     });
 
-    if (now - sortedSensors[0].lastMeasurement.createdAt < SEVEN_DAYS) {
+    if (moment.utc(sortedSensors[0].lastMeasurement.createdAt).isAfter(now.clone().subtract(7, 'days'))) {
       state = 'active';
     }
 
-    if (now - sortedSensors[0].lastMeasurement.createdAt < THIRTY_DAYS &&
-      now - sortedSensors[0].lastMeasurement.createdAt > SEVEN_DAYS)
+    if (moment.utc(sortedSensors[0].lastMeasurement.createdAt).isAfter(now.clone().subtract(30, 'days')) &&
+      moment.utc(sortedSensors[0].lastMeasurement.createdAt).isBefore(now.clone().subtract(7, 'days')))
     {
       state = 'inactive';
     }
@@ -67,12 +64,7 @@ classifyTransformer.prototype._transform = function _transform (data, encoding, 
 };
 
 classifyTransformer.prototype._flush = function (done) {
-  if (this._hasData) {
-    this.push('{"code":"NotFound","messages":"no boxes found"}');
-    done();
-  } else {
-    done();
-  }
+  done();
 };
 
 inherits(classifyTransformer, Transform);
