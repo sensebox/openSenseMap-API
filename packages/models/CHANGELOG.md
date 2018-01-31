@@ -1,6 +1,8 @@
 # @sensebox/opensensemap-api-models Changelog
 
 ## Unreleased
+
+## v0.0.6
 - Added mqtt-osem-integration MQTT service connection
 - Use single client certificate for all integrations
 - Removed cert and key fields in mqtt and mailer integration configuration
