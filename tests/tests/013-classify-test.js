@@ -94,16 +94,15 @@ describe('openSenseMap API Routes: getBoxes', function () {
     return chakram.get(`${BASE_URL}`, { headers: { 'x-apicache-bypass': true } })
       .then(function (response) {
         expect(response).status(200);
-        // expect(response.body).not.empty;
-        // expect(Array.isArray(response.body)).true;
-        // console.log(response.body);
-        // expect(response.body.every(function (box) {
-        //   if (box.state) {
-        //     return true;
-        //   }
+        expect(response.body).not.empty;
+        expect(Array.isArray(response.body)).true;
+        expect(response.body.every(function (box) {
+          if (box.state) {
+            return true;
+          }
 
-        //   return false;
-        // })).false;
+          return false;
+        })).false;
 
         return chakram.wait();
       });
