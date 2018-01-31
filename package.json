@@ -12,7 +12,8 @@
     "NOTpretest": "node tests/waitForHttp",
     "tag-container": "./.scripts/npm_tag-container.sh",
     "lint": "eslint --ignore-pattern node_modules --fix \"{tests,packages}/**/*.js\"",
-    "deploy-docs": "./.scripts/deploy-docs.sh"
+    "deploy-docs": "./.scripts/deploy-docs.sh",
+    "create-version-file": "node .scripts/create-version.js"
   },
   "devDependencies": {
     "@sensebox/eslint-config-sensebox": "^1.0.0",

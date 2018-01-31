@@ -136,19 +136,17 @@ const redactEmail = function redactEmail (email) {
   return `${name}@${hostname}.${tld}`;
 };
 
-const softwareRevision = (function () {
+const getVersion = (function () {
   try {
     /* eslint-disable global-require */
-    const parts = require('fs')
-      .readFileSync(`${__dirname}/../revision`)
-      .toString()
-      .split(' ');
+    const version = require('../../../../version');
     /* eslint-enable global-require */
-    parts[1] = new Date(parseInt(parts[1], 10) * 1000).toISOString();
 
-    return `${parts[0]} ${parts[1]} ${parts[2]}`;
+    console.log(version);
+
+    return version;
   } catch (err) {
-    return 'unknown revision';
+    return 'unknown version';
   }
 })();
 
@@ -160,6 +158,6 @@ module.exports = {
   preCors,
   Honeybadger,
   postToSlack,
-  softwareRevision,
+  getVersion,
   redactEmail
 };

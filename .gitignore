@@ -20,7 +20,7 @@ node_modules
 userimages
 .env
 doc/
-revision
+version.js
 
 dev_run_migration.sh
 

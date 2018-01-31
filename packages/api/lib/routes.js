@@ -2,7 +2,7 @@
 
 const { usersController, statisticsController, boxesController, sensorsController, measurementsController } = require('./controllers'),
   config = require('config'),
-  { softwareRevision } = require('./helpers/apiUtils'),
+  { getVersion } = require('./helpers/apiUtils'),
   { checkJwt, checkUsernamePassword } = require('./helpers/authHelpers'),
   { initUserParams } = require('./helpers/userParamHelpers');
 
@@ -26,7 +26,7 @@ const printRoutes = function printRoutes (req, res) {
 
   const lines = [
     `This is the openSenseMap API running on ${config.get('api_url')}`,
-    `Revision: ${softwareRevision}`,
+    `Version: ${getVersion}`,
     'You can find a detailed reference at https://docs.opensensemap.org',
     '',
     'Routes requiring no authentication:'

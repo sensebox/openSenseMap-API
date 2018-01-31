@@ -5,11 +5,13 @@ Dockerfile
 .eslintrc.js
 .travis.yml
 doc
-revision
+version.js
 .dockerignore
 .npmignore
 .gitignore
 .vscode
 *.md
-*.sh
+*-dev.sh
 *.log
+.github
+tests

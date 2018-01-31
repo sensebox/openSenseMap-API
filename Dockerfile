@@ -20,9 +20,8 @@ RUN yarn install --pure-lockfile --production \
 
 COPY . /usr/src/app
 
-# for git 2.1.4
-RUN echo -n $(git rev-parse --abbrev-ref HEAD) $(TZ=UTC git log --date=local --pretty=format:"%ct %h" -n 1) > revision \
-  && rm -rf .git
+RUN yarn create-version-file \
+  && rm -rf .git .scripts
 
 # Final stage
 FROM node:8-alpine
