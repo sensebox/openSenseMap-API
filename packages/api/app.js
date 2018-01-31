@@ -10,14 +10,15 @@
 
 'use strict';
 
-const restify = require('restify'),
+const
+  { db } = require('@sensebox/opensensemap-api-models'),
+  restify = require('restify'),
   { fullResponse, queryParser, jsonBodyParser, pre: { sanitizePath } } = restify.plugins,
   config = require('config'),
   { preRequest, preCors, Honeybadger, softwareRevision, postToSlack } = require('./lib/helpers/apiUtils'),
   routes = require('./lib/routes'),
   passport = require('passport'),
-  bunyan = require('bunyan'),
-  { db } = require('@sensebox/opensensemap-api-models');
+  bunyan = require('bunyan');
 
 const log = bunyan.createLogger({ name: 'opensensemap-api', serializers: bunyan.stdSerializers });
 
