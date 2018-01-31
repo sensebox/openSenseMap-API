@@ -142,8 +142,6 @@ const getVersion = (function () {
     const version = require('../../../../version');
     /* eslint-enable global-require */
 
-    console.log(version);
-
     return version;
   } catch (err) {
     return 'unknown version';
