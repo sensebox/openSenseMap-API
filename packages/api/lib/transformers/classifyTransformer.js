@@ -15,39 +15,30 @@ const classifyTransformer = function (classifyTransformerOptions, streamOptions)
   streamOptions.decodeStrings = false;
   streamOptions.objectMode = true;
 
+  this.now = moment.utc();
+  this.sevenDays = this.now.clone().subtract(7, 'days');
+  this.thirtyDays = this.now.clone().subtract(30, 'days');
+
   Transform.call(this, streamOptions);
 };
 
-classifyTransformer.prototype.defineState = function defineState (data, cb) {
+classifyTransformer.prototype._transform = function _transform (data, encoding, callback) {
   const box = data;
   let state = 'old';
 
-  const filteredSensorsWithMeasurements = box.sensors.filter(function (sensor) {
-    if (sensor.lastMeasurement && sensor.lastMeasurement.createdAt) {
-      return sensor;
+  for (const sensor of box.sensors) {
+    if (!sensor.lastMeasurement || !sensor.lastMeasurement.createdAt) {
+      break;
     }
-  });
 
-  if (filteredSensorsWithMeasurements.length === 0) {
-    state = 'old';
-  } else {
-    const now = moment.utc();
-    const sortedSensors = filteredSensorsWithMeasurements.sort(function (a, b) {
-      const c = moment.utc(a.lastMeasurement.createdAt);
-      const d = moment.utc(b.lastMeasurement.createdAt);
+    const lastMeasurementCreatedAt = moment.utc(sensor.lastMeasurement.createdAt);
 
-      if (c > d) { return -1; }
-      if (c < d) { return 1; }
-
-      return 0;
-    });
-
-    if (moment.utc(sortedSensors[0].lastMeasurement.createdAt).isAfter(now.clone().subtract(7, 'days'))) {
+    if (lastMeasurementCreatedAt.isAfter(this.sevenDays)) {
       state = 'active';
+      break;
     }
 
-    if (moment.utc(sortedSensors[0].lastMeasurement.createdAt).isAfter(now.clone().subtract(30, 'days')) &&
-      moment.utc(sortedSensors[0].lastMeasurement.createdAt).isBefore(now.clone().subtract(7, 'days')))
+    if (lastMeasurementCreatedAt.isBetween(this.thirtyDays, this.sevenDays))
     {
       state = 'inactive';
     }
@@ -55,16 +46,7 @@ classifyTransformer.prototype.defineState = function defineState (data, cb) {
 
   box['state'] = state;
   this.push(box);
-
-  return cb();
-};
-
-classifyTransformer.prototype._transform = function _transform (data, encoding, callback) {
-  this.defineState(data, callback);
-};
-
-classifyTransformer.prototype._flush = function (done) {
-  done();
+  callback();
 };
 
 inherits(classifyTransformer, Transform);
