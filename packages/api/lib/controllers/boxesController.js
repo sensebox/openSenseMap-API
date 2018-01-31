@@ -39,13 +39,16 @@
 const
   { Box } = require('@sensebox/opensensemap-api-models'),
   { addCache, clearCache, checkContentType, redactEmail, postToSlack } = require('../helpers/apiUtils'),
+  { point } = require('@turf/helpers'),
+  classifyTransformer = require('../transformers/classifyTransformer'),
   {
     retrieveParameters,
     parseAndValidateTimeParamsForFindAllBoxes,
     validateFromToTimeParams,
     checkBoxIdOwner
   } = require('../helpers/userParamHelpers'),
-  handleError = require('../helpers/errorHandler');
+  handleError = require('../helpers/errorHandler'),
+  jsonstringify = require('stringify-stream');
 
 /**
  * @apiDefine Addons
@@ -164,6 +167,17 @@ const getBoxLocations = function getBoxLocations (req, res, next) {
     });
 };
 
+const geoJsonStringifyReplacer = function geoJsonStringifyReplacer (key, box) {
+  if (key === '') {
+    const coordinates = box.currentLocation.coordinates;
+    box.currentLocation = undefined;
+    box.loc = undefined;
+
+    return point(coordinates, box);
+  }
+
+  return box;
+};
 
 /**
  * @api {get} /boxes?date=:date&phenomenon=:phenomenon&format=:format Get all senseBoxes
@@ -175,6 +189,7 @@ const getBoxLocations = function getBoxLocations (req, res, next) {
  * @apiParam {String=json,geojson} [format=json] the format the sensor data is returned in.
  * @apiParam {String} [grouptag] only return boxes with this grouptag, allows to specify multiple separated with a comma
  * @apiParam {String="homeEthernet","homeWifi","homeEthernetFeinstaub","homeWifiFeinstaub","luftdaten_sds011","luftdaten_sds011_dht11","luftdaten_sds011_dht22","luftdaten_sds011_bmp180","luftdaten_sds011_bme280"} [model] only return boxes with this model, allows to specify multiple separated with a comma
+ * @apiParam {Boolean="true","false"} [classify=false] if specified, the api will classify the boxes accordingly to their last measurements.
  * @apiUse ExposureFilterParam
  * @apiSampleRequest https://api.opensensemap.org/boxes
  * @apiSampleRequest https://api.opensensemap.org/boxes?date=2015-03-07T02:50Z&phenomenon=Temperatur
@@ -184,9 +199,26 @@ const getBoxes = function getBoxes (req, res, next) {
   // content-type is always application/json for this route
   res.header('Content-Type', 'application/json; charset=utf-8');
 
+  // default format
+  let stringifier = jsonstringify({ open: '[', close: ']' });
+  // format
+  if (req._userParams.format === 'geojson') {
+    stringifier = jsonstringify({ open: '{"type":"FeatureCollection","features":[', close: ']}' }, geoJsonStringifyReplacer);
+  }
+
   Box.findBoxesLastMeasurements(req._userParams)
     .then(function (stream) {
+
+      if (req._userParams.classify === 'true') {
+        stream = stream
+          .pipe(new classifyTransformer())
+          .on('error', function (err) {
+            res.end(`Error: ${err.message}`);
+          });
+      }
+
       stream
+        .pipe(stringifier)
         .on('error', function (err) {
           res.end(`Error: ${err.message}`);
         })
@@ -473,7 +505,8 @@ module.exports = {
       { name: 'grouptag', dataType: ['StringWithEmpty'] },
       { name: 'phenomenon', dataType: 'StringWithEmpty' },
       { name: 'date', dataType: ['RFC 3339'] },
-      { name: 'format', defaultValue: 'json', allowedValues: ['json', 'geojson'] }
+      { name: 'format', defaultValue: 'json', allowedValues: ['json', 'geojson'] },
+      { name: 'classify', defaultValue: 'false', allowedValues: ['true', 'false'] },
     ]),
     parseAndValidateTimeParamsForFindAllBoxes,
     addCache('5 minutes', 'getBoxes'),

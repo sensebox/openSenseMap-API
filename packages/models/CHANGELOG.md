@@ -6,6 +6,7 @@
 - Removed cert and key fields in mqtt and mailer integration configuration
 - Added cert and key fields for integrations client certificate configuration
 - Validate user language input. Fixes #133
+- move stringifier from box model to box controller in api for route `/boxes`
 
 ## v0.0.5
 - Removed log to file on error

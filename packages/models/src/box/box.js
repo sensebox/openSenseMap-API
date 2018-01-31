@@ -19,7 +19,6 @@ const { mongoose } = require('../db'),
   fs = require('fs'),
   { point } = require('@turf/helpers'),
   streamTransform = require('stream-transform'),
-  jsonstringify = require('stringify-stream'),
   log = require('../log');
 
 const templateSketcher = new Sketcher();
@@ -861,22 +860,10 @@ const locFieldTransformerFunction = function locFieldTransformerFunction (box) {
   return box;
 };
 
-const geoJsonStringifyReplacer = function geoJsonStringifyReplacer (key, box) {
-  if (key === '') {
-    const coordinates = box.currentLocation.coordinates;
-    box.currentLocation = undefined;
-    box.loc = undefined;
-
-    return point(coordinates, box);
-  }
-
-  return box;
-};
-
 boxSchema.statics.findBoxesLastMeasurements = function findBoxesLastMeasurements (opts = {}) {
   const schema = this;
 
-  const { format, phenomenon, fromDate, toDate } = opts,
+  const { phenomenon, fromDate, toDate } = opts,
     query = {};
 
   // simple string parameters
@@ -886,12 +873,6 @@ boxSchema.statics.findBoxesLastMeasurements = function findBoxesLastMeasurements
     }
   }
 
-  let stringifier = jsonstringify({ open: '[', close: ']' });
-  // format
-  if (format === 'geojson') {
-    stringifier = jsonstringify({ open: '{"type":"FeatureCollection","features":[', close: ']}' }, geoJsonStringifyReplacer);
-  }
-
   const locFieldTransformer = streamTransform(locFieldTransformerFunction);
 
   if (!fromDate && !toDate) {
@@ -899,7 +880,6 @@ boxSchema.statics.findBoxesLastMeasurements = function findBoxesLastMeasurements
       .populate(BOX_SUB_PROPS_FOR_POPULATION)
       .cursor({ lean: true })
       .pipe(locFieldTransformer) // effects of toJSON must be applied manually for streams
-      .pipe(stringifier)
     );
   }
 
@@ -941,8 +921,7 @@ boxSchema.statics.findBoxesLastMeasurements = function findBoxesLastMeasurements
           }
 
           return box;
-        }))
-        .pipe(stringifier);
+        }));
     });
 };
 
