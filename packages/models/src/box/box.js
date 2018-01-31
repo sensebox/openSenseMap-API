@@ -863,7 +863,7 @@ const locFieldTransformerFunction = function locFieldTransformerFunction (box) {
 boxSchema.statics.findBoxesLastMeasurements = function findBoxesLastMeasurements (opts = {}) {
   const schema = this;
 
-  const { format, phenomenon, fromDate, toDate } = opts,
+  const { phenomenon, fromDate, toDate } = opts,
     query = {};
 
   // simple string parameters
