@@ -126,7 +126,7 @@ describe('mails', function () {
         return chakram.post(`${BASE_URL}/users/sign-in`, valid_user);
       })
       .then(function (response) {
-        expect(response).to.have.status(401);
+        expect(response).to.have.status(403);
 
         return chakram.wait();
       });
@@ -219,7 +219,7 @@ describe('mails', function () {
         return chakram.post(`${BASE_URL}/users/sign-in`, valid_user);
       })
       .then(function (response) {
-        expect(response).to.have.status(401);
+        expect(response).to.have.status(403);
 
         return chakram.wait();
       });

@@ -324,7 +324,7 @@ describe('openSenseMap API Routes: /users', function () {
   it('should deny to sign in with wrong password', function () {
     return chakram.post(`${BASE_URL}/users/sign-in`, { email: 'tester@test.test', password: 'wrong password' })
       .then(function (response) {
-        expect(response).to.have.status(401);
+        expect(response).to.have.status(403);
 
         return chakram.wait();
       });
@@ -372,7 +372,7 @@ describe('openSenseMap API Routes: /users', function () {
   it('should deny to sign in with name in different case', function () {
     return chakram.post(`${BASE_URL}/users/sign-in`, { email: 'This Is Just A Nickname', password: 'some secure password' })
       .then(function (response) {
-        expect(response).to.have.status(401);
+        expect(response).to.have.status(403);
 
         return chakram.wait();
       });

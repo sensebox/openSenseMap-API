@@ -31,7 +31,6 @@
     "moment": "^2.18.1",
     "passport": "^0.4.0",
     "passport-jwt": "^3.0.0",
-    "passport-local": "^1.0.0",
     "restify": "^5.2.0",
     "restify-errors": "^5.0.0",
     "stringify-stream": "^1.0.5",

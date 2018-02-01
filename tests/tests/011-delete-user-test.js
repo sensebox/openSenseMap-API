@@ -19,7 +19,7 @@ describe('openSenseMap API Delete User tests', function () {
         return chakram.get(`${BASE_URL}/stats`);
       })
       .then(function (response) {
-        [ num_boxes_before, num_measurements_before ] = response.body;
+        [num_boxes_before, num_measurements_before] = response.body;
       });
   });
 
@@ -67,13 +67,13 @@ describe('openSenseMap API Delete User tests', function () {
         return chakram.post(`${BASE_URL}/users/sign-in`, valid_user);
       })
       .then(function (response) {
-        expect(response).to.have.status(401);
+        expect(response).to.have.status(403);
 
         return chakram.get(`${BASE_URL}/stats`, { headers: { 'x-apicache-bypass': true } });
       })
       .then(function (response) {
         expect(response).status(200);
-        const [ boxes, measurements ] = response.body;
+        const [boxes, measurements] = response.body;
 
         expect(boxes).to.be.below(num_boxes_before);
         expect(measurements).to.be.below(num_measurements_before);
@@ -97,7 +97,7 @@ describe('openSenseMap API Delete User tests', function () {
         return chakram.post(`${BASE_URL}/users/sign-in`, valid_user);
       })
       .then(function (response) {
-        expect(response).to.have.status(401);
+        expect(response).to.have.status(403);
 
         return chakram.wait();
       });

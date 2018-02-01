@@ -1,7 +1,7 @@
 'use strict';
 
 const { User } = require('@sensebox/opensensemap-api-models'),
-  { InternalServerError } = require('restify-errors'),
+  { InternalServerError, ForbiddenError } = require('restify-errors'),
   { checkContentType, redactEmail, postToSlack, clearCache } = require('../helpers/apiUtils'),
   { retrieveParameters } = require('../helpers/userParamHelpers'),
   handleError = require('../helpers/errorHandler'),
@@ -78,14 +78,30 @@ const registerUser = function registerUser (req, res, next) {
  * @apiSuccess {Object} data `{ "user": {"name":"fullname","email":"test@test.de","role":"user","language":"en_US","boxes":[],"emailIsConfirmed":false} }`
  * @apiError {String} 403 Unauthorized
  */
-const signIn = function signIn (req, res, next) {
-  createToken(req.user)
-    .then(function ({ token, refreshToken }) {
-      return res.send(200, { code: 'Authorized', message: 'Successfully signed in', data: { user: req.user }, token, refreshToken });
-    })
-    .catch(function (err) {
-      next(new InternalServerError(`unable to create jwt token: ${err.message}`));
-    });
+const signIn = async function signIn (req, res, next) {
+  const { email: emailOrName, password } = req._userParams;
+
+  try {
+    // lowercase for email
+    const user = await User
+      .findOne({ $or: [{ email: emailOrName.toLowerCase() }, { name: emailOrName }] })
+      .exec();
+
+    if (!user) {
+      throw new ForbiddenError('User and or password not valid!');
+    }
+
+    if (await user.checkPassword(password)) {
+      const { token, refreshToken } = await createToken(user);
+
+      return res.send(200, { code: 'Authorized', message: 'Successfully signed in', data: { user }, token, refreshToken });
+    }
+  } catch (err) {
+    if (err.name === 'ModelError' && err.message === 'Password incorrect') {
+      return handleError(new ForbiddenError('User and or password not valid!'), next);
+    }
+    handleError(err, next);
+  }
 };
 
 /**
@@ -312,6 +328,10 @@ module.exports = {
   ],
   signIn: [
     checkContentType,
+    retrieveParameters([
+      { name: 'email', required: true },
+      { predef: 'password' },
+    ]),
     signIn
   ],
   signOut,

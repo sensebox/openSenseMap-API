@@ -3,7 +3,7 @@
 const { usersController, statisticsController, boxesController, sensorsController, measurementsController } = require('./controllers'),
   config = require('config'),
   { getVersion } = require('./helpers/apiUtils'),
-  { checkJwt, checkUsernamePassword } = require('./helpers/authHelpers'),
+  { checkJwt } = require('./helpers/authHelpers'),
   { initUserParams } = require('./helpers/userParamHelpers');
 
 const spaces = function spaces (num) {
@@ -83,7 +83,7 @@ const routes = {
     { path: `${usersPath}/request-password-reset`, method: 'post', handler: usersController.requestResetPassword, reference: 'api-Users-request-password-reset' },
     { path: `${usersPath}/password-reset`, method: 'post', handler: usersController.resetPassword, reference: 'api-Users-password-reset' },
     { path: `${usersPath}/confirm-email`, method: 'post', handler: usersController.confirmEmailAddress, reference: 'api-Users-confirm-email' },
-    { path: `${usersPath}/sign-in`, method: 'post', handler: [checkUsernamePassword, usersController.signIn], reference: 'api-Users-sign-in' },
+    { path: `${usersPath}/sign-in`, method: 'post', handler: usersController.signIn, reference: 'api-Users-sign-in' },
     { path: `${usersPath}/refresh-auth`, method: 'post', handler: usersController.refreshJWT, reference: 'api-Users-refresh-auth' }
   ],
   'auth': [
