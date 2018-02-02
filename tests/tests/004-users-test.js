@@ -266,7 +266,7 @@ describe('openSenseMap API Routes: /users', function () {
         return chakram.get(`${BASE_URL}/users/me`, { headers: { 'Authorization': `Bearer ${jwt}` } });
       })
       .then(function (response) {
-        expect(response).to.have.status(401);
+        expect(response).to.have.status(403);
 
         // try to sign in with new password
         return chakram.post(`${BASE_URL}/users/sign-in`, { email: 'tester2@test.test', password: ' leading and trailing spaces ' });
@@ -294,7 +294,7 @@ describe('openSenseMap API Routes: /users', function () {
         return chakram.get(`${BASE_URL}/users/me`, { headers: { 'Authorization': `Bearer ${jwt}` } });
       })
       .then(function (response) {
-        expect(response).to.have.status(401);
+        expect(response).to.have.status(403);
 
         // try to sign in with new password
         return chakram.post(`${BASE_URL}/users/sign-in`, { email: 'tester2@test.test', password: '12345678910' });
@@ -400,7 +400,7 @@ describe('openSenseMap API Routes: /users', function () {
   it('should deny to use revoked jwt', function () {
     return chakram.post(`${BASE_URL}/boxes`, valid_sensebox(), { headers: { 'Authorization': `Bearer ${jwt}` } })
       .then(function (response) {
-        expect(response).to.have.status(401);
+        expect(response).to.have.status(403);
 
         return chakram.post(`${BASE_URL}/users/sign-in`, valid_user);
       })
@@ -451,7 +451,7 @@ describe('openSenseMap API Routes: /users', function () {
   it('should deny to use an old jwt after using a refresh token', function () {
     return chakram.post(`${BASE_URL}/boxes`, valid_sensebox(), { headers: { 'Authorization': `Bearer ${jwt}` } })
       .then(function (response) {
-        expect(response).to.have.status(401);
+        expect(response).to.have.status(403);
 
         return chakram.post(`${BASE_URL}/users/sign-in`, valid_user);
       })

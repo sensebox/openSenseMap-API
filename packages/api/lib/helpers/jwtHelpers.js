@@ -3,7 +3,7 @@
 const config = require('config'),
   jwt = require('jsonwebtoken'),
   hashJWT = require('./jwtRefreshTokenHasher'),
-  { addTokenToBlacklist, addTokenHashToBlacklist } = require('./tokenBlacklist'),
+  { addTokenToBlacklist, addTokenHashToBlacklist, isTokenBlacklisted } = require('./tokenBlacklist'),
   uuid = require('uuid'),
   moment = require('moment'),
   { User } = require('@sensebox/opensensemap-api-models'),
@@ -16,6 +16,11 @@ const jwtSignOptions = {
   algorithm: jwt_algorithm,
   issuer: jwt_issuer,
   expiresIn: Math.round(Number(jwt_validity_ms) / 1000)
+};
+
+const jwtVerifyOptions = {
+  algorithms: [jwt_algorithm],
+  issuer: jwt_issuer,
 };
 
 const createToken = function createToken (user) {
@@ -74,8 +79,57 @@ const refreshJwt = function refreshJwt (refreshToken) {
     });
 };
 
+const verifyJwt = function verifyJwt (req, res, next) {
+  // check if Authorization header is present
+  const rawAuthorizationHeader = req.header('authorization');
+  if (!rawAuthorizationHeader) {
+    return next(new ForbiddenError('invalid'));
+  }
+
+  const [bearer, jwtString] = rawAuthorizationHeader.split(' ');
+  if (bearer !== 'Bearer') {
+    return next(new ForbiddenError('invalid'));
+  }
+
+  jwt.verify(jwtString, jwt_secret, jwtVerifyOptions, function (err, decodedJwt) {
+    if (err) {
+      return next(new ForbiddenError('invalid'));
+    }
+
+    // check if the token is blacklisted by performing a hmac digest on the string representation of the jwt.
+    // also checks the existence of the jti claim
+    if (isTokenBlacklisted(decodedJwt, jwtString)) {
+      return next(new ForbiddenError('invalid'));
+    }
+
+    User.findOne({ email: decodedJwt.sub.toLowerCase(), role: decodedJwt.role })
+      .exec()
+      .then(function (user) {
+        if (!user) {
+          throw new Error();
+          // return next(new ForbiddenError('invalid'));
+        }
+
+        // check if there is a box id and check if this user owns this box
+        // if (jwt.role !== 'admin' && req._userParams.boxId && !user.boxes.some(b => b.equals(req._userParams.boxId))) {
+        //   return done(null, false, { error: JWT_WRONG_OR_UNAUTHORIZED });
+        // }
+
+        req.user = user;
+        req._jwt = decodedJwt;
+        req._jwtString = jwtString;
+
+        return next();
+      })
+      .catch(function () {
+        return next(new ForbiddenError('invalid'));
+      });
+  });
+};
+
 module.exports = {
   createToken,
   invalidateToken,
-  refreshJwt
+  refreshJwt,
+  verifyJwt
 };

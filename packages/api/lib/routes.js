@@ -3,7 +3,7 @@
 const { usersController, statisticsController, boxesController, sensorsController, measurementsController } = require('./controllers'),
   config = require('config'),
   { getVersion } = require('./helpers/apiUtils'),
-  { checkJwt } = require('./helpers/authHelpers'),
+  { verifyJwt } = require('./helpers/jwtHelpers'),
   { initUserParams } = require('./helpers/userParamHelpers');
 
 const spaces = function spaces (num) {
@@ -111,7 +111,7 @@ const initRoutes = function initRoutes (server) {
   }
 
   // Attach secured routes (needs authorization through jwt)
-  server.use(checkJwt);
+  server.use(verifyJwt);
 
   for (const route of routes.auth) {
     server[route.method]({ path: route.path }, route.handler);

@@ -17,7 +17,6 @@ const
   config = require('config'),
   { preRequest, preCors, Honeybadger, getVersion, postToSlack } = require('./lib/helpers/apiUtils'),
   routes = require('./lib/routes'),
-  passport = require('passport'),
   bunyan = require('bunyan');
 
 const log = bunyan.createLogger({ name: 'opensensemap-api', serializers: bunyan.stdSerializers });
@@ -40,8 +39,6 @@ server.pre(sanitizePath());
 server.use(fullResponse());
 server.use(queryParser());
 server.use(jsonBodyParser());
-
-server.use(passport.initialize());
 
 db.connect()
   .then(function () {

@@ -14,7 +14,7 @@ describe('openSenseMap API Delete User tests', function () {
   it('should deny to delete user without jwt', function () {
     return chakram.delete(`${BASE_URL}/users/me`)
       .then(function (response) {
-        expect(response).to.have.status(401);
+        expect(response).to.have.status(403);
 
         return chakram.get(`${BASE_URL}/stats`);
       })
