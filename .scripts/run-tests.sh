@@ -13,6 +13,8 @@ function runComposeCommand {
 cmd=${1:-}
 logs_service=${2:-}
 
+only_models_tests=${only_models_tests:-}
+
 case "$cmd" in
 "build" )
   runComposeCommand build osem-api
@@ -27,6 +29,10 @@ case "$cmd" in
   ;;
 "dont_clean_up" )
   dont_clean_up="true"
+  ;;
+"only_models" )
+  only_models_tests="true"
+  ;;
 esac
 
 mailer_tag=$(git rev-parse --abbrev-ref HEAD)
@@ -53,14 +59,13 @@ function cleanup {
 trap cleanup EXIT
 
 runComposeCommand down -v --remove-orphans
-runComposeCommand up -d --force-recreate --remove-orphans
 
-#runComposeCommand exec osem-api yarn mocha tests/waitForDatabase.js packages/models/test/index.js tests/waitForHttp.js tests/tests.js
+if [[ -z "$only_models_tests" ]]; then
+  runComposeCommand up -d --force-recreate --remove-orphans
+  runComposeCommand exec osem-api yarn mocha --exit tests/waitForHttp.js tests/tests.js
+  runComposeCommand stop osem-api
+fi
 
-#runComposeCommand exec osem-api yarn mocha tests/waitForDatabase.js packages/models/test/index.js #tests/waitForHttp.js tests/tests.js
-
-runComposeCommand exec osem-api yarn mocha --exit tests/waitForHttp.js tests/tests.js
-
-runComposeCommand stop osem-api
+runComposeCommand up -d --remove-orphans db mailer
 # use ./node_modules/.bin/mocha because the workspace does not have the devDependency mocha
 runComposeCommand run --workdir=/usr/src/app/packages/models osem-api ../../node_modules/.bin/mocha --exit test/waitForDatabase test/index
