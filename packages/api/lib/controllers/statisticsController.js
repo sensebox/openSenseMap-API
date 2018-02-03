@@ -97,6 +97,9 @@ const idwHandler = function (req, res, next) {
       res.header('Content-Type', 'application/json; charset=utf-8');
 
       cursor
+        .on('error', function (err) {
+          return handleError(err, next);
+        })
         .pipe(idwTransformer({
           numTimeSteps,
           numClasses,

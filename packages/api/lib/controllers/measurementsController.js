@@ -70,7 +70,7 @@ const getData = function getData (req, res, next) {
     .on('error', function (err) {
       res.end(`Error: ${err.message}`);
 
-      return next(err);
+      return handleError(err, next);
     })
     .pipe(res);
 };
@@ -126,6 +126,9 @@ const getDataMulti = function getDataMulti (req, res, next) {
       const stringifier = csvstringify({ columns, delimiter, header: 1 });
 
       cursor
+        .on('error', function (err) {
+          return handleError(err, next);
+        })
         .pipe(stringifier)
         .pipe(res);
 

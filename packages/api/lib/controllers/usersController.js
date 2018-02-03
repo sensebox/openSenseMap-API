@@ -233,16 +233,15 @@ const updateUser = function updateUser (req, res, next) {
   req.user.updateUser(req._userParams)
     .then(function ({ updated, signOut, messages, updatedUser }) {
       if (updated === false) {
-        return next(res.send(200, { code: 'Ok', message: 'No changed properties supplied. User remains unchanged.' }));
+        return res.send(200, { code: 'Ok', message: 'No changed properties supplied. User remains unchanged.' });
       }
 
       if (signOut === true) {
         invalidateToken(req);
       }
-      next(res.send(200, { code: 'Ok', message: `User successfully saved.${messages.join('.')}`, data: { me: updatedUser } }));
+      res.send(200, { code: 'Ok', message: `User successfully saved.${messages.join('.')}`, data: { me: updatedUser } });
     })
     .catch(function (err) {
-
       handleError(err, next);
     });
 };
