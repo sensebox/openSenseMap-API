@@ -3,6 +3,8 @@
 ## Unreleased
 - Fix an error where invalid timestamps were displayed as NaN in returned error messages
 - More strict timestamp parsing (With tests)
+- Remove "stream-transform" depency
+- Use mongoose built-in `QueryCursor#map` for data transformation
 
 ## v0.0.6
 - Added mqtt-osem-integration MQTT service connection

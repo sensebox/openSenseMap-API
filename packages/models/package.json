@@ -21,7 +21,6 @@
     "mongoose": "^4.13.6",
     "mongoose-timestamp": "^0.6",
     "simple-statistics": "^4.1.1",
-    "stream-transform": "^0.1.2",
     "stringify-stream": "^1.0.5",
     "uuid": "^3.1.0"
   },

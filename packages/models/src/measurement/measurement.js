@@ -5,7 +5,6 @@ const { mongoose } = require('../db'),
   decodeHandlers = require('./decoding'),
   ModelError = require('../modelError'),
   csvstringify = require('csv-stringify'),
-  streamTransform = require('stream-transform'),
   jsonstringify = require('stringify-stream'),
   outlierTransformer = require('./outlier/outlierTransformer');
 
@@ -126,7 +125,7 @@ measurementSchema.statics.getMeasurementsStream = function getMeasurementsStream
   let measurementsCursor = this
     .find(qry, { 'createdAt': 1, 'value': 1, 'location': 1, '_id': 0 })
     .cursor({ lean: true, limit: queryLimit })
-    .pipe(streamTransform(getDataTransformerFunction));
+    .map(getDataTransformerFunction);
 
   if (outliers) {
     measurementsCursor = measurementsCursor
