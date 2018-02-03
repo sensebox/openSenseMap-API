@@ -646,7 +646,6 @@ boxSchema.statics.findMeasurementsOfBoxesStream = function findMeasurementsOfBox
   }
 
   return this.find(query, BOX_PROPS_FOR_POPULATION)
-    .populate(BOX_SUB_PROPS_FOR_POPULATION)
     .lean()
     .then(function (boxData) {
       if (boxData.length === 0) {
