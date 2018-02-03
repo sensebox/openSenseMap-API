@@ -2,7 +2,7 @@
 
 /**
  * @apiDefine ExposureFilterParam
- * @apiParam {String="indoor","outdoor","mobile","unknown"} [exposure] only include boxes with this exposure.
+ * @apiParam {String="indoor","outdoor","mobile","unknown"} [exposure] only include boxes with this exposure. Allows to specify multiple exposures separated by comma (Example: `indoor,mobile`)
  */
 
 /**
@@ -500,7 +500,7 @@ module.exports = {
   ],
   getBoxes: [
     retrieveParameters([
-      { name: 'exposure', allowedValues: Box.BOX_VALID_EXPOSURES, dataType: 'StringWithEmpty' },
+      { name: 'exposure', allowedValues: Box.BOX_VALID_EXPOSURES, dataType: ['String'] },
       { name: 'model', dataType: ['StringWithEmpty'] },
       { name: 'grouptag', dataType: ['StringWithEmpty'] },
       { name: 'phenomenon', dataType: 'StringWithEmpty' },

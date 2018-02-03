@@ -109,7 +109,7 @@ const getDataMulti = function getDataMulti (req, res, next) {
 
   // exposure parameter
   if (exposure) {
-    queryParams['exposure'] = exposure;
+    queryParams['exposure'] = { '$in': exposure };
   }
 
   Box.findMeasurementsOfBoxesStream({
@@ -304,7 +304,7 @@ module.exports = {
       { name: 'boxId', aliases: ['senseboxid', 'senseboxids', 'boxid', 'boxids'], dataType: ['id'] },
       { name: 'phenomenon', required: true },
       { predef: 'delimiter' },
-      { name: 'exposure', allowedValues: Box.BOX_VALID_EXPOSURES },
+      { name: 'exposure', allowedValues: Box.BOX_VALID_EXPOSURES, dataType: ['String'] },
       { predef: 'columnsGetDataMulti' },
       { predef: 'bbox' },
       { predef: 'toDate' },

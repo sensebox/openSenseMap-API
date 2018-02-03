@@ -81,7 +81,7 @@ const idwHandler = function (req, res, next) {
 
   // exposure parameter
   if (exposure) {
-    queryParams['exposure'] = exposure;
+    queryParams['exposure'] = { '$in': exposure };
   }
 
   Box.findMeasurementsOfBoxesStream({
@@ -133,7 +133,7 @@ module.exports = {
   getIdw: [
     retrieveParameters([
       { predef: 'bbox', required: true },
-      { name: 'exposure', allowedValues: Box.BOX_VALID_EXPOSURES },
+      { name: 'exposure', allowedValues: Box.BOX_VALID_EXPOSURES, dataType: ['String'] },
       { name: 'phenomenon', required: true },
       { name: 'gridType', defaultValue: 'hex', allowedValues: ['hex', 'square', 'triangle'] },
       { name: 'cellWidth', dataType: 'Number', defaultValue: 50, min: 0.001 },

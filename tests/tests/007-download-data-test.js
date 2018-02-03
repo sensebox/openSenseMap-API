@@ -118,16 +118,52 @@ describe('downloading data', function () {
   });
 
   it('should allow to download csv from boxes with specified exposure', function () {
-    return chakram.get(`${BASE_URL}/boxes/data/?bbox=-180,-90,180,90&phenomenon=Temperatur&exposure=indoor&columns=exposure`)
+    const exposureFromDate = moment.utc().subtract(100, 'days')
+      .toISOString();
+    const exposureToDate = moment.utc()
+      .toISOString();
+
+    return chakram.get(`${BASE_URL}/boxes/data/?bbox=-180,-90,180,90&phenomenon=Temperatur&exposure=indoor&columns=exposure&from-date=${exposureFromDate}&to-date=${exposureToDate}`)
       .then(function (response) {
         expect(response).to.have.status(200);
         expect(response.body).not.to.be.empty;
         expect(response).to.have.header('content-type', 'text/csv');
         const [header, ...lines] = response.body.split('\n');
         expect(header).equal('exposure');
+        expect(lines).to.have.lengthOf(9);
         for (let i = 0; i < lines.length - 1; i++) {
           expect(lines[i]).equal('indoor');
         }
+
+        return chakram.wait();
+      });
+  });
+
+  it('should allow to download csv from boxes with multiple exposures', function () {
+    const exposureFromDate = moment.utc().subtract(100, 'days')
+      .toISOString();
+    const exposureToDate = moment.utc()
+      .toISOString();
+
+    return chakram.get(`${BASE_URL}/boxes/data/?bbox=-180,-90,180,90&phenomenon=Temperatur&exposure=indoor,outdoor&columns=exposure&from-date=${exposureFromDate}&to-date=${exposureToDate}`)
+      .then(function (response) {
+        expect(response).to.have.status(200);
+        expect(response.body).not.to.be.empty;
+        expect(response).to.have.header('content-type', 'text/csv');
+        const [header, ...lines] = response.body.split('\n');
+        expect(header).equal('exposure');
+        expect(lines).to.have.lengthOf(14);
+        let hasIndoor = false, hasOutdoor = false;
+        for (let i = 0; i < lines.length - 1; i++) {
+          if (hasIndoor === false && lines[i] === 'indoor') {
+            hasIndoor = true;
+          }
+          if (hasOutdoor === false && lines[i] === 'outdoor') {
+            hasOutdoor = true;
+          }
+        }
+        expect(hasOutdoor).true;
+        expect(hasIndoor).true;
 
         return chakram.wait();
       });
