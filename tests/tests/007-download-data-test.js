@@ -101,6 +101,10 @@ describe('downloading data', function () {
         expect(response).to.have.status(200);
         expect(response.body).not.to.be.empty;
         expect(response).to.have.header('content-type', 'text/csv');
+        /* eslint-disable no-unused-vars */
+        const [_, ...lines] = response.body.split('\n');
+        /* eslint-enable no-unused-vars */
+        expect(lines).to.have.lengthOf(9);
 
         return chakram.wait();
       });
@@ -112,6 +116,10 @@ describe('downloading data', function () {
         expect(response).to.have.status(200);
         expect(response.body).not.to.be.empty;
         expect(response).to.have.header('content-type', 'text/csv');
+        /* eslint-disable no-unused-vars */
+        const [_, ...lines] = response.body.split('\n');
+        /* eslint-enable no-unused-vars */
+        expect(lines).to.have.lengthOf(9);
 
         return chakram.wait();
       });
