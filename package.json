@@ -16,7 +16,7 @@
     "create-version-file": "node .scripts/create-version.js"
   },
   "devDependencies": {
-    "@sensebox/eslint-config-sensebox": "^1.0.0",
+    "@sensebox/eslint-config-sensebox": "^1.1.0",
     "@turf/invariant": "^4.6.0",
     "chai": "^4.1.2",
     "chakram": "^1.5.0",

@@ -8,9 +8,9 @@
   dependencies:
     wgs84 "0.0.0"
 
-"@sensebox/eslint-config-sensebox@^1.0.0":
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/@sensebox/eslint-config-sensebox/-/eslint-config-sensebox-1.0.0.tgz#4eabd72f65d0368cb41d763a780462045cad2733"
+"@sensebox/eslint-config-sensebox@^1.1.0":
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/@sensebox/eslint-config-sensebox/-/eslint-config-sensebox-1.1.0.tgz#2fec4ec7945f34e7296c619fabd589d722ecd984"
 
 "@sensebox/osem-protos@^1.1.0":
   version "1.1.0"

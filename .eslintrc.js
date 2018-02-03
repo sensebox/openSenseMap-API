@@ -5,5 +5,8 @@ module.exports = {
     es6: true,
     node: true
   },
-  extends: ['@sensebox/eslint-config-sensebox']
+  extends: ['@sensebox/eslint-config-sensebox'],
+  rules: {
+    complexity: ['warn', 20]
+  }
 };
