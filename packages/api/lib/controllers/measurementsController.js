@@ -108,7 +108,7 @@ const getDataMulti = function getDataMulti (req, res, next) {
   }
 
   // exposure parameter
-  if (req._userParams.exposure) {
+  if (exposure) {
     queryParams['exposure'] = exposure;
   }
 

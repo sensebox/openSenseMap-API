@@ -117,6 +117,22 @@ describe('downloading data', function () {
       });
   });
 
+  it('should allow to download csv from boxes with specified exposure', function () {
+    return chakram.get(`${BASE_URL}/boxes/data/?bbox=-180,-90,180,90&phenomenon=Temperatur&exposure=indoor&columns=exposure`)
+      .then(function (response) {
+        expect(response).to.have.status(200);
+        expect(response.body).not.to.be.empty;
+        expect(response).to.have.header('content-type', 'text/csv');
+        const [header, ...lines] = response.body.split('\n');
+        expect(header).equal('exposure');
+        for (let i = 0; i < lines.length - 1; i++) {
+          expect(lines[i]).equal('indoor');
+        }
+
+        return chakram.wait();
+      });
+  });
+
   it('should return the data for /boxes/:boxId/data/:sensorId in descending order', function () {
     return chakram.get(`${BASE_URL}/boxes/${boxIds[0]}/data/${boxes[0].sensors[1]._id}?from-date=2016-01-01T00:00:00Z&to-date=2016-01-31T23:59:59Z`)
       .then(function (response) {
@@ -202,7 +218,18 @@ describe('downloading data', function () {
       .then(function (response) {
         expect(response).to.have.status(422);
         expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
-        expect(response).json({ code: 'UnprocessableEntity', message: 'Illegal value for parameter bbox. Supplied coordinates are outside of (180, 90, -180, 90).' });
+        expect(response).json({ code: 'UnprocessableEntity', message: 'Illegal value for parameter bbox. Supplied coordinates are outside of -180, -90, 180, 90 (lngSW, latSW, lngNE, latNE).' });
+
+        return chakram.wait();
+      });
+  });
+
+  it('should return an error /boxes/:boxId/data/:sensorId for invalid bbox parameter (area is zero)', function () {
+    return chakram.get(`${BASE_URL}/boxes/data/?phenomenon=Temperatur&bbox=-180,90,180,90`)
+      .then(function (response) {
+        expect(response).to.have.status(422);
+        expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
+        expect(response).json({ code: 'UnprocessableEntity', message: 'Illegal value for parameter bbox. Supplied bounding box has zero surface area.' });
 
         return chakram.wait();
       });
