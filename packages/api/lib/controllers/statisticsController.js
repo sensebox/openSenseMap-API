@@ -151,7 +151,7 @@ const descriptiveStatisticsHandler = function descriptiveStatisticsHandler (req,
   // compute start and end times in milliseconds
   //
   fromDate = fromDate.valueOf() - (fromDate.valueOf() % window);
-  // always overshoot one averageWindow..
+  // always overshoot one window..
   toDate = toDate.valueOf() - (toDate.valueOf() % window) + window;
 
   const windows = [new Date(fromDate)];
@@ -161,7 +161,8 @@ const descriptiveStatisticsHandler = function descriptiveStatisticsHandler (req,
   }
 
   fromDate = new Date(fromDate);
-  toDate = new Date(toDate);
+  // add another window to toDate query parameter to get enough data
+  toDate = new Date(toDate + window);
 
   if (boxId && bbox) {
     return next(new BadRequestError('please specify only boxId or bbox'));

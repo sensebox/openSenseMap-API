@@ -84,8 +84,6 @@ descriptiveStatisticsTransformer.prototype._transform = function _transform (mea
     this.resetSensor(measurement);
   }
 
-
-
   // new sensor, push everything of the last sensor down the stream
   if (this._currSensor.sensorId !== measurement.sensorId) {
     // one last time for this sensor, execute the operation
