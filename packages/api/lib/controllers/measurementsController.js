@@ -4,7 +4,7 @@ const
   { BadRequestError, UnsupportedMediaTypeError } = require('restify-errors'),
   { Measurement, Box } = require('@sensebox/opensensemap-api-models'),
   csvstringify = require('csv-stringify'),
-  { checkContentType } = require('../helpers/apiUtils'),
+  { checkContentType, createDownloadFilename } = require('../helpers/apiUtils'),
   {
     retrieveParameters,
     validateFromToTimeParams
@@ -88,9 +88,10 @@ const getData = function getData (req, res, next) {
  * @apiUse BBoxParam
  * @apiUse ExposureFilterParam
  * @apiParam {String=createdAt,value,lat,lon,height,boxId,boxName,exposure,sensorId,phenomenon,unit,sensorType} [columns=createdAt,value,lat,lon] Comma separated list of columns to export.
+ * @apiParam {Boolean=true,false} [download=true] Set the `content-disposition` header to force browsers to download instead of displaying.
  */
 const getDataMulti = function getDataMulti (req, res, next) {
-  const { boxId, bbox, exposure, delimiter, columns, fromDate, toDate, phenomenon } = req._userParams;
+  const { boxId, bbox, exposure, delimiter, columns, fromDate, toDate, phenomenon, download } = req._userParams;
 
   // build query
   const queryParams = {
@@ -123,6 +124,9 @@ const getDataMulti = function getDataMulti (req, res, next) {
     .then(function (cursor) {
 
       res.header('Content-Type', 'text/csv');
+      if (download === 'true') {
+        res.header('Content-Disposition', `attachment; filename=${createDownloadFilename(req.date(), 'download', [phenomenon, ...columns], 'csv')}`);
+      }
       const stringifier = csvstringify({ columns, delimiter, header: 1 });
 
       cursor
@@ -308,7 +312,8 @@ module.exports = {
       { predef: 'columnsGetDataMulti' },
       { predef: 'bbox' },
       { predef: 'toDate' },
-      { predef: 'fromDate' }
+      { predef: 'fromDate' },
+      { name: 'download', defaultValue: 'true', allowedValues: ['true', 'false'] },
     ]),
     validateFromToTimeParams,
     getDataMulti

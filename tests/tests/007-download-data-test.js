@@ -177,6 +177,38 @@ describe('downloading data', function () {
       });
   });
 
+  it('should have the content-disposition header when calling /boxes/data/', function () {
+    return chakram.get(`${BASE_URL}/boxes/data/?boxid=${boxIds[0]},${boxIds[1]}&phenomenon=Temperatur`)
+      .then(function (response) {
+        expect(response).to.have.status(200);
+        expect(response.body).not.to.be.empty;
+        expect(response).to.have.header('content-type', 'text/csv');
+        expect(response).to.have.header('content-disposition', /opensensemap_org-download-Temperatur-createdAt-value-lat-lon-/);
+        /* eslint-disable no-unused-vars */
+        const [_, ...lines] = response.body.split('\n');
+        /* eslint-enable no-unused-vars */
+        expect(lines).to.have.lengthOf(9);
+
+        return chakram.wait();
+      });
+  });
+
+  it('should not have the content-disposition header when calling /boxes/data/?download=false', function () {
+    return chakram.get(`${BASE_URL}/boxes/data/?boxid=${boxIds[0]},${boxIds[1]}&phenomenon=Temperatur&download=false`)
+      .then(function (response) {
+        expect(response).to.have.status(200);
+        expect(response.body).not.to.be.empty;
+        expect(response).to.have.header('content-type', 'text/csv');
+        expect(response).to.not.have.header('content-disposition', /opensensemap_org-download-Temperatur-createdAt-value-lat-lon-/);
+        /* eslint-disable no-unused-vars */
+        const [_, ...lines] = response.body.split('\n');
+        /* eslint-enable no-unused-vars */
+        expect(lines).to.have.lengthOf(9);
+
+        return chakram.wait();
+      });
+  });
+
   it('should return the data for /boxes/:boxId/data/:sensorId in descending order', function () {
     return chakram.get(`${BASE_URL}/boxes/${boxIds[0]}/data/${boxes[0].sensors[1]._id}?from-date=2016-01-01T00:00:00Z&to-date=2016-01-31T23:59:59Z`)
       .then(function (response) {

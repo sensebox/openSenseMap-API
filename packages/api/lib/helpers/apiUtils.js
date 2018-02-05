@@ -148,6 +148,12 @@ const getVersion = (function () {
   }
 })();
 
+const createDownloadFilename = function createDownloadFilename (date, action, params, format) {
+  return `opensensemap_org-${action}-${encodeURI(encodeURI(params.join('-')))}-${date.toISOString()
+    .replace(/-|:|\.\d*Z/g, '')
+    .replace('T', '_')}.${format}`;
+};
+
 module.exports = {
   addCache,
   clearCache,
@@ -157,5 +163,6 @@ module.exports = {
   Honeybadger,
   postToSlack,
   getVersion,
-  redactEmail
+  redactEmail,
+  createDownloadFilename
 };
