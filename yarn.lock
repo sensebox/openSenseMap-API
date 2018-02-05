@@ -2628,6 +2628,10 @@ simple-statistics@^4.1.1:
   version "4.1.1"
   resolved "https://registry.yarnpkg.com/simple-statistics/-/simple-statistics-4.1.1.tgz#533c48d48336ba3d350d8135f20fa7138acb0c7d"
 
+simple-statistics@^5.2.1:
+  version "5.2.1"
+  resolved "https://registry.yarnpkg.com/simple-statistics/-/simple-statistics-5.2.1.tgz#b1a93a336c02053e04273c7ee84606b33b907c46"
+
 slice-ansi@1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/slice-ansi/-/slice-ansi-1.0.0.tgz#044f1a49d8842ff307aad6b505ed178bd950134d"

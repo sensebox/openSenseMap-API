@@ -29,11 +29,13 @@
     "jsonwebtoken": "^8.1.0",
     "millify": "^2.0.1",
     "moment": "^2.18.1",
+    "ms": "^2.1.1",
     "passport": "^0.4.0",
     "passport-jwt": "^3.0.0",
     "passport-local": "^1.0.0",
     "restify": "^5.2.0",
     "restify-errors": "^5.0.0",
+    "simple-statistics": "^5.2.1",
     "stringify-stream": "^1.0.5",
     "uuid": "^3.2.1"
   },
