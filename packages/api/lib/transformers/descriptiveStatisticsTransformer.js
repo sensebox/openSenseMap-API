@@ -54,6 +54,7 @@ descriptiveStatisticsTransformer.prototype.resetSensor = function resetSensor (m
   this._currSensor = measurement;
 
   // find the right _currWindowIndex to start..
+  this._currWindowIndex = 0;
   this.nextWindow(measurement);
 };
 
