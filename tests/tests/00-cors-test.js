@@ -15,6 +15,7 @@ describe('openSenseMap API CORS test', function () {
         expect(response).to.have.header('access-control-allow-origin', '*');
         expect(response).to.have.header('access-control-allow-methods', 'GET, OPTIONS');
         expect(response).to.have.header('access-control-allow-headers', /authorization/i);
+        expect(response).to.have.header('access-control-expose-headers', /content-disposition/i);
 
         return chakram.wait();
       });
@@ -27,6 +28,7 @@ describe('openSenseMap API CORS test', function () {
         expect(response).to.have.header('access-control-allow-origin', '*');
         expect(response).to.have.header('access-control-allow-methods', 'POST, OPTIONS');
         expect(response).to.have.header('access-control-allow-headers', /authorization/i);
+        expect(response).to.have.header('access-control-expose-headers', /content-disposition/i);
 
         return chakram.wait();
       });
