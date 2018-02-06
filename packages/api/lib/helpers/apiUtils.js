@@ -89,6 +89,10 @@ const preCors = function preCors (request, response, next) {
     response.header('access-control-max-age', 600);
   }
 
+  if (!response.getHeader('access-control-expose-headers')) {
+    response.header('access-control-expose-headers', 'content-disposition');
+  }
+
   if (request.method === 'OPTIONS') {
     return response.send(204);
   }
