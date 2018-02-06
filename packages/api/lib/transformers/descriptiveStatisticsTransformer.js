@@ -113,12 +113,14 @@ descriptiveStatisticsTransformer.prototype._transform = function _transform (mea
 };
 
 descriptiveStatisticsTransformer.prototype._flush = function (done) {
-  this.executeOperation();
-  // push the sensor down the stream
-  this.push({
-    ...this._currSensor,
-    ...this._windowValues
-  });
+  if (this._currSensor) {
+    this.executeOperation();
+    // push the sensor down the stream
+    this.push({
+      ...this._currSensor,
+      ...this._windowValues
+    });
+  }
   done();
 };
 
