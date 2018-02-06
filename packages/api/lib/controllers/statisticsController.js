@@ -127,17 +127,30 @@ const idwHandler = function (req, res, next) {
 
 /**
  * @api {get} /statistics/descriptive Compute basic descriptive statistics over specified time windows
- * @apiDescription Todo
- * @apiGroup Descriptive statistics
- * @apiName descriptiveStatistics
+ * @apiDescription Allows to compute basic descriptive statistical methods over multiple sensors and multiple time windows.
+ * The supported methods are: arithmetic mean, geometric mean, harmonic mean, maximum, median ,minimum, mode, root mean square, standard deviation, sum of values and variance.
+ * Parameters `from-date` and `to-date` are modified to fit you specified `window` parameter.
+ * You should either specifiy multiple station ids using the `boxId` parameter or a bounding box with the `bbox` parameter, but not both.
+ *
+ * By default, stations with exposure `mobile` are excluded.
+ * @apiGroup Statistics
+ * @apiName descriptive
+ * @apiParam {String} boxId Comma separated list of senseBox IDs.
  * @apiParam {String} phenomenon the name of the phenomenon you want to download the data for.
  * @apiUse BBoxParam
  * @apiUse ExposureFilterParam
- * @apiParam {RFC3339Date} from-date Beginning date of measurement data (default: 2 days ago from now)
- * @apiParam {RFC3339Date} to-date End date of measurement data (default: now)
+ * @apiParam {RFC3339Date} from-date Beginning date of measurement data
+ * @apiParam {RFC3339Date} to-date End date of measurement data
  * @apiParam {String=arithmeticMean,geometricMean,harmonicMean,max,median,min,mode,rootMeanSquare,standardDeviation,sum,variance} operation Statistical operation to execute
  * @apiParam {String} window Time window to apply. Either a number in Milliseconds or a [`zeit/ms`](https://npmjs.com/ms)-parseable string. At least 1 minute
  * @apiParam {Boolean=true,false} [download=true] Set the `content-disposition` header to force browsers to download instead of displaying.
+ * @apiParam {String} boxId Comma separated list of senseBox IDs.
+ * @apiUse SeparatorParam
+ * @apiParam {String=boxId,boxName,exposure,height,lat,lon,phenomenon,sensorType,unit} [columns] Comma separated list of additional columns to export.
+ * @apiSuccessExample {text/csv} Example CSV:
+ *  sensorId,2018-01-31T00:00:00.000Z,2018-02-01T00:00:00.000Z,2018-02-02T00:00:00.000Z,2018-02-03T00:00:00.000Z,2018-02-04T00:00:00.000Z,2018-02-05T00:00:00.000Z,2018-02-06T00:00:00.000Z,2018-02-07T00:00:00.000Z
+ *  5a787e38d55e821b639e890f,,,138,104,56,17,,
+ *  5a787e38d55e821b639e8915,,,138,104,56,17,,
  */
 const descriptiveStatisticsHandler = function descriptiveStatisticsHandler (req, res, next) {
   const { boxId, bbox, exposure, delimiter, columns, phenomenon, operation, download } = req._userParams;
@@ -273,7 +286,6 @@ module.exports = {
       { predef: 'fromDate', required: true },
       { name: 'window', required: true },
       { name: 'operation', required: true, allowedValues: ['arithmeticMean', 'geometricMean', 'harmonicMean', 'max', 'median', 'min', 'mode', 'rootMeanSquare', 'standardDeviation', 'sum', 'variance'] },
-      { name: 'includeMobile', defaultValue: 'false', allowedValues: ['true', 'false'] },
       { name: 'download', defaultValue: 'true', allowedValues: ['true', 'false'] }
     ]),
     validateFromToTimeParams,
