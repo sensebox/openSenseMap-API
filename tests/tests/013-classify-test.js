@@ -12,7 +12,7 @@ const BASE_URL = `${process.env.OSEM_TEST_BASE_URL}/boxes`;
 
 describe('openSenseMap API Routes: getBoxes Classification', function () {
   before('add test data', function () {
-    chakram.post(`${process.env.OSEM_TEST_BASE_URL}/users/register`, { name: 'classifytestuser', email: 'classifytestuser@test.test', password: '12345678' })
+    return chakram.post(`${process.env.OSEM_TEST_BASE_URL}/users/register`, { name: 'classifytestuser', email: 'classifytestuser@test.test', password: '12345678' })
       .then(function (response) {
         expect(response.body.token).to.exist;
 
@@ -62,13 +62,13 @@ describe('openSenseMap API Routes: getBoxes Classification', function () {
   });
 
   after('delete user', function () {
-    chakram.post(`${process.env.OSEM_TEST_BASE_URL}/users/sign-in`, { email: 'classifytestuser@test.test', password: '12345678' })
+    return chakram.post(`${process.env.OSEM_TEST_BASE_URL}/users/sign-in`, { email: 'classifytestuser@test.test', password: '12345678' })
       .then(function (response) {
         expect(response.body.token).to.exist;
 
         const jwt = response.body.token;
 
-        chakram.delete(`${process.env.OSEM_TEST_BASE_URL}/users/me`, { password: '12345678' }, { headers: { 'Authorization': `Bearer ${jwt}` } });
+        return chakram.delete(`${process.env.OSEM_TEST_BASE_URL}/users/me`, { password: '12345678' }, { headers: { 'Authorization': `Bearer ${jwt}` } });
       });
   });
 
