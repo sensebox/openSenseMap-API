@@ -101,6 +101,10 @@ describe('downloading data', function () {
         expect(response).to.have.status(200);
         expect(response.body).not.to.be.empty;
         expect(response).to.have.header('content-type', 'text/csv');
+        /* eslint-disable no-unused-vars */
+        const [_, ...lines] = response.body.split('\n');
+        /* eslint-enable no-unused-vars */
+        expect(lines).to.have.lengthOf(9);
 
         return chakram.wait();
       });
@@ -112,6 +116,10 @@ describe('downloading data', function () {
         expect(response).to.have.status(200);
         expect(response.body).not.to.be.empty;
         expect(response).to.have.header('content-type', 'text/csv');
+        /* eslint-disable no-unused-vars */
+        const [_, ...lines] = response.body.split('\n');
+        /* eslint-enable no-unused-vars */
+        expect(lines).to.have.lengthOf(9);
 
         return chakram.wait();
       });
@@ -164,6 +172,38 @@ describe('downloading data', function () {
         }
         expect(hasOutdoor).true;
         expect(hasIndoor).true;
+
+        return chakram.wait();
+      });
+  });
+
+  it('should have the content-disposition header when calling /boxes/data/', function () {
+    return chakram.get(`${BASE_URL}/boxes/data/?boxid=${boxIds[0]},${boxIds[1]}&phenomenon=Temperatur`)
+      .then(function (response) {
+        expect(response).to.have.status(200);
+        expect(response.body).not.to.be.empty;
+        expect(response).to.have.header('content-type', 'text/csv');
+        expect(response).to.have.header('content-disposition', /opensensemap_org-download-Temperatur-createdAt-value-lat-lon-/);
+        /* eslint-disable no-unused-vars */
+        const [_, ...lines] = response.body.split('\n');
+        /* eslint-enable no-unused-vars */
+        expect(lines).to.have.lengthOf(9);
+
+        return chakram.wait();
+      });
+  });
+
+  it('should not have the content-disposition header when calling /boxes/data/?download=false', function () {
+    return chakram.get(`${BASE_URL}/boxes/data/?boxid=${boxIds[0]},${boxIds[1]}&phenomenon=Temperatur&download=false`)
+      .then(function (response) {
+        expect(response).to.have.status(200);
+        expect(response.body).not.to.be.empty;
+        expect(response).to.have.header('content-type', 'text/csv');
+        expect(response).to.not.have.header('content-disposition', /opensensemap_org-download-Temperatur-createdAt-value-lat-lon-/);
+        /* eslint-disable no-unused-vars */
+        const [_, ...lines] = response.body.split('\n');
+        /* eslint-enable no-unused-vars */
+        expect(lines).to.have.lengthOf(9);
 
         return chakram.wait();
       });
