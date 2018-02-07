@@ -142,7 +142,7 @@ const idwHandler = function (req, res, next) {
  * @apiParam {RFC3339Date} from-date Beginning date of measurement data
  * @apiParam {RFC3339Date} to-date End date of measurement data
  * @apiParam {String=arithmeticMean,geometricMean,harmonicMean,max,median,min,mode,rootMeanSquare,standardDeviation,sum,variance} operation Statistical operation to execute
- * @apiParam {String} window Time window to apply. Either a number in Milliseconds or a [`zeit/ms`](https://npmjs.com/ms)-parseable string. At least 1 minute
+ * @apiParam {String} window Time window to apply. Either a number in Milliseconds or a [`zeit/ms`](https://npmjs.com/ms)-parseable string rounded to the nearest minute (Math.round(<window-in-milliseconds>) / 60000). At least 1 minute
  * @apiParam {Boolean=true,false} [download=true] Set the `content-disposition` header to force browsers to download instead of displaying.
  * @apiParam {String} boxId Comma separated list of senseBox IDs.
  * @apiUse SeparatorParam
@@ -152,13 +152,14 @@ const idwHandler = function (req, res, next) {
  *  5a787e38d55e821b639e890f,,,138,104,56,17,,
  *  5a787e38d55e821b639e8915,,,138,104,56,17,,
  */
+const minWindowLengthMs = ms('1m');
 const descriptiveStatisticsHandler = function descriptiveStatisticsHandler (req, res, next) {
   const { boxId, bbox, exposure, delimiter, columns, phenomenon, operation, download } = req._userParams;
   let { fromDate, toDate, window } = req._userParams;
 
-  window = ms(window);
-  if (!window || window < 60000) {
-    return next(new BadRequestError('Invalid window length. Smallest window size is 1 minute.'));
+  window = Math.round(ms(window) / minWindowLengthMs) * minWindowLengthMs;
+  if (!window || window < minWindowLengthMs) {
+    return next(new BadRequestError(`Invalid window length. Smallest window size is ${ms(minWindowLengthMs, { long: true })}.`));
   }
 
   // compute start and end times in milliseconds
