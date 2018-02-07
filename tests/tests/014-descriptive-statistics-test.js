@@ -133,7 +133,7 @@ ${box.sensorid},3,2018-02-05T14:06:12.620Z
         expect(response.body).not.empty;
         expect(response).to.have.header('content-type', 'text/csv');
         const [header, ...lines] = response.body.split('\n');
-        expect(header).equal('sensorId,2018-02-01T00:00:00.000Z,2018-02-02T00:00:00.000Z,2018-02-03T00:00:00.000Z,2018-02-04T00:00:00.000Z,2018-02-05T00:00:00.000Z,2018-02-06T00:00:00.000Z,2018-02-07T00:00:00.000Z');
+        expect(header).equal('sensorId,Temperatur_2018-02-01Z,Temperatur_2018-02-02Z,Temperatur_2018-02-03Z,Temperatur_2018-02-04Z,Temperatur_2018-02-05Z,Temperatur_2018-02-06Z,Temperatur_2018-02-07Z');
         expect(lines).to.have.lengthOf(4);
         for (let i = 0; i < lines.length - 1; i++) {
           const columns = lines[i].split(',');
@@ -157,7 +157,7 @@ ${box.sensorid},3,2018-02-05T14:06:12.620Z
         expect(response.body).not.empty;
         expect(response).to.have.header('content-type', 'text/csv');
         const [header, ...lines] = response.body.split('\n');
-        expect(header).equal('sensorId,2018-02-01T00:00:00.000Z,2018-02-02T00:00:00.000Z,2018-02-03T00:00:00.000Z,2018-02-04T00:00:00.000Z,2018-02-05T00:00:00.000Z,2018-02-06T00:00:00.000Z,2018-02-07T00:00:00.000Z');
+        expect(header).equal('sensorId,Temperatur_2018-02-01Z,Temperatur_2018-02-02Z,Temperatur_2018-02-03Z,Temperatur_2018-02-04Z,Temperatur_2018-02-05Z,Temperatur_2018-02-06Z,Temperatur_2018-02-07Z');
         expect(lines).to.have.lengthOf(4);
         for (let i = 0; i < lines.length - 1; i++) {
           const columns = lines[i].split(',');
@@ -183,4 +183,44 @@ ${box.sensorid},3,2018-02-05T14:06:12.620Z
         expect(response.body.split('\n')).lengthOf(2);
       });
   });
+
+  const windows = [
+    ['0.5d', /Temperatur_(\d){4}-(\d){2}-(\d){2}T(\d){2}Z/],
+    ['10d', /Temperatur_(\d){4}-(\d){2}-(\d){2}Z/],
+    ['10m', /Temperatur_(\d){4}-(\d){2}-(\d){2}T(\d){2}:(\d){2}Z/]
+  ];
+
+  for (const [msStr, regex] of windows) {
+    /* eslint-disable no-loop-func */
+    it(`should compute correct column names for ${msStr} window`, () => {
+      return chakram.get(`${BASE_URL}&operation=arithmeticMean&from-date=2018-02-01T12:05:01.909Z&to-date=2018-02-03T12:05:01.913Z&boxids=${boxIds}&window=${msStr}`)
+        .then(function (response) {
+          expect(response).status(200);
+          expect(response.body).not.empty;
+          expect(response).to.have.header('content-type', 'text/csv');
+          const lines = response.body.split('\n');
+          expect(lines).to.have.lengthOf(5);
+          const columns = lines[0].split(',');
+          for (let i = 1; i < columns.length - 1; i++) {
+            expect(columns[i]).match(regex);
+          }
+        });
+    });
+    /* eslint-enable no-loop-func */
+  }
+
+  it('should round to nearest minute', () => {
+    return chakram.get(`${BASE_URL}&window=1.5m&operation=arithmeticMean&from-date=2017-02-01T12:05:01.909Z&to-date=2017-02-06T12:05:01.913Z&boxids=${boxIds}`)
+      .then(function (response) {
+        expect(response).status(200);
+        expect(response.body).not.empty;
+        expect(response).to.have.header('content-type', 'text/csv');
+        const lines = response.body.split('\n');
+        expect(lines).lengthOf(2);
+        const columns = lines[0].split(',');
+        expect(columns[1]).equal('Temperatur_2017-02-01T12:04Z');
+        expect(columns[2]).equal('Temperatur_2017-02-01T12:06Z');
+      });
+  });
+
 });

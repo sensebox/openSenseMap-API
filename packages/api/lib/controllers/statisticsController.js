@@ -3,7 +3,7 @@
 const { Box, Measurement } = require('@sensebox/opensensemap-api-models'),
   { UnprocessableEntityError, BadRequestError } = require('restify-errors'),
   idwTransformer = require('../transformers/idwTransformer'),
-  { addCache, createDownloadFilename } = require('../helpers/apiUtils'),
+  { addCache, createDownloadFilename, computeTimestampTruncationLength } = require('../helpers/apiUtils'),
   { retrieveParameters, validateFromToTimeParams } = require('../helpers/userParamHelpers'),
   area = require('@turf/area'),
   millify = require('millify'),
@@ -148,7 +148,7 @@ const idwHandler = function (req, res, next) {
  * @apiUse SeparatorParam
  * @apiParam {String=boxId,boxName,exposure,height,lat,lon,phenomenon,sensorType,unit} [columns] Comma separated list of additional columns to export.
  * @apiSuccessExample {text/csv} Example CSV:
- *  sensorId,2018-01-31T00:00:00.000Z,2018-02-01T00:00:00.000Z,2018-02-02T00:00:00.000Z,2018-02-03T00:00:00.000Z,2018-02-04T00:00:00.000Z,2018-02-05T00:00:00.000Z,2018-02-06T00:00:00.000Z,2018-02-07T00:00:00.000Z
+ *  sensorId,Temperatur_2018-01-31,Temperatur_2018-02-01Z,Temperatur_2018-02-02Z,Temperatur_2018-02-03Z,Temperatur_2018-02-04Z,Temperatur_2018-02-05Z,Temperatur_2018-02-06Z,Temperatur_2018-02-07Z
  *  5a787e38d55e821b639e890f,,,138,104,56,17,,
  *  5a787e38d55e821b639e8915,,,138,104,56,17,,
  */
@@ -218,11 +218,22 @@ const descriptiveStatisticsHandler = function descriptiveStatisticsHandler (req,
         res.header('Content-Disposition', `attachment; filename=${createDownloadFilename(req.date(), operation, [phenomenon, ...columns], 'csv')}`);
       }
 
-      // construct a new array with columns for csv stringify in correct order
+      // get end parameter for timestamp substring
+      const timestampSubstringEnd = computeTimestampTruncationLength(window);
+
+      // construct the columns for csv stringify in correct order
       // (sensorId, <user specified columns>, <averageWindows>)
       // Start with sensorId. It should always be the the first column
       // append the wanted columns and the windows
-      const csvColumns = ['sensorId', ...columns, ...windows];
+      const csvColumns = {};
+      for (const col of ['sensorId', ...columns, ...windows]) {
+        // is a date?
+        if (typeof col.toISOString === 'function') {
+          csvColumns[col] = `${phenomenon}_${col.toISOString().substring(0, timestampSubstringEnd)}Z`;
+        } else { // otherwise just append
+          csvColumns[col] = col;
+        }
+      }
 
       cursor
         .on('error', function (err) {

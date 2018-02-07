@@ -158,6 +158,28 @@ const createDownloadFilename = function createDownloadFilename (date, action, pa
     .replace('T', '_')}.${format}`;
 };
 
+//                        1d        1h       1m
+const truncationValues = [86400000, 3600000, 60000];
+// 19 = seconds
+// 16 = minutes
+// 13 = hours
+// 10 = days
+// 7 = month
+// const substrVals = [19, 16, 13, 10, 7];
+const substrVals = [10, 13, 16];
+const computeTimestampTruncationLength = function computeTimestampTruncationLength (window) {
+
+  for (const [i, v] of truncationValues.entries()) {
+    if (window % v === 0) {
+      return substrVals[i];
+    }
+    // subStrEnd = substrVals[i];
+  }
+
+  return 23;
+
+};
+
 module.exports = {
   addCache,
   clearCache,
@@ -168,5 +190,6 @@ module.exports = {
   postToSlack,
   getVersion,
   redactEmail,
-  createDownloadFilename
+  createDownloadFilename,
+  computeTimestampTruncationLength
 };
