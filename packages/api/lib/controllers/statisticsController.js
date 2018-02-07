@@ -10,7 +10,8 @@ const { Box, Measurement } = require('@sensebox/opensensemap-api-models'),
   handleError = require('../helpers/errorHandler'),
   ms = require('ms'),
   csvstringify = require('csv-stringify'),
-  DescriptiveStatisticsTransformer = require('../transformers/descriptiveStatisticsTransformer');
+  DescriptiveStatisticsTransformer = require('../transformers/descriptiveStatisticsTransformer'),
+  dashify = require('dashify');
 
 /**
  * @api {get} /stats Get some statistics about the database
@@ -229,7 +230,7 @@ const descriptiveStatisticsHandler = function descriptiveStatisticsHandler (req,
       for (const col of ['sensorId', ...columns, ...windows]) {
         // is a date?
         if (typeof col.toISOString === 'function') {
-          csvColumns[col] = `${phenomenon}_${col.toISOString().substring(0, timestampSubstringEnd)}Z`;
+          csvColumns[col] = `${dashify(phenomenon, { condense: true })}_${col.toISOString().substring(0, timestampSubstringEnd)}Z`;
         } else { // otherwise just append
           csvColumns[col] = col;
         }

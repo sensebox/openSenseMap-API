@@ -23,6 +23,7 @@
     "bunyan": "^1.8.12",
     "config": "^1.29.2",
     "csv-stringify": "^1.0.4",
+    "dashify": "^1.0.0",
     "got": "^8.0.3",
     "honeybadger": "^1.2.1",
     "isemail": "^3.0.0",
