@@ -133,7 +133,7 @@ ${box.sensorid},3,2018-02-05T14:06:12.620Z
         expect(response.body).not.empty;
         expect(response).to.have.header('content-type', 'text/csv');
         const [header, ...lines] = response.body.split('\n');
-        expect(header).equal('sensorId,Temperatur_2018-02-01Z,Temperatur_2018-02-02Z,Temperatur_2018-02-03Z,Temperatur_2018-02-04Z,Temperatur_2018-02-05Z,Temperatur_2018-02-06Z,Temperatur_2018-02-07Z');
+        expect(header).equal('sensorId,temperatur_2018-02-01Z,temperatur_2018-02-02Z,temperatur_2018-02-03Z,temperatur_2018-02-04Z,temperatur_2018-02-05Z,temperatur_2018-02-06Z,temperatur_2018-02-07Z');
         expect(lines).to.have.lengthOf(4);
         for (let i = 0; i < lines.length - 1; i++) {
           const columns = lines[i].split(',');
@@ -157,7 +157,7 @@ ${box.sensorid},3,2018-02-05T14:06:12.620Z
         expect(response.body).not.empty;
         expect(response).to.have.header('content-type', 'text/csv');
         const [header, ...lines] = response.body.split('\n');
-        expect(header).equal('sensorId,Temperatur_2018-02-01Z,Temperatur_2018-02-02Z,Temperatur_2018-02-03Z,Temperatur_2018-02-04Z,Temperatur_2018-02-05Z,Temperatur_2018-02-06Z,Temperatur_2018-02-07Z');
+        expect(header).equal('sensorId,temperatur_2018-02-01Z,temperatur_2018-02-02Z,temperatur_2018-02-03Z,temperatur_2018-02-04Z,temperatur_2018-02-05Z,temperatur_2018-02-06Z,temperatur_2018-02-07Z');
         expect(lines).to.have.lengthOf(4);
         for (let i = 0; i < lines.length - 1; i++) {
           const columns = lines[i].split(',');
@@ -185,9 +185,9 @@ ${box.sensorid},3,2018-02-05T14:06:12.620Z
   });
 
   const windows = [
-    ['0.5d', /Temperatur_(\d){4}-(\d){2}-(\d){2}T(\d){2}Z/],
-    ['10d', /Temperatur_(\d){4}-(\d){2}-(\d){2}Z/],
-    ['10m', /Temperatur_(\d){4}-(\d){2}-(\d){2}T(\d){2}:(\d){2}Z/]
+    ['0.5d', /temperatur_(\d){4}-(\d){2}-(\d){2}T(\d){2}Z/],
+    ['10d', /temperatur_(\d){4}-(\d){2}-(\d){2}Z/],
+    ['10m', /temperatur_(\d){4}-(\d){2}-(\d){2}T(\d){2}:(\d){2}Z/]
   ];
 
   for (const [msStr, regex] of windows) {
@@ -218,8 +218,8 @@ ${box.sensorid},3,2018-02-05T14:06:12.620Z
         const lines = response.body.split('\n');
         expect(lines).lengthOf(2);
         const columns = lines[0].split(',');
-        expect(columns[1]).equal('Temperatur_2017-02-01T12:04Z');
-        expect(columns[2]).equal('Temperatur_2017-02-01T12:06Z');
+        expect(columns[1]).equal('temperatur_2017-02-01T12:04Z');
+        expect(columns[2]).equal('temperatur_2017-02-01T12:06Z');
       });
   });
 
