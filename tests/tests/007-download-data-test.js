@@ -245,6 +245,40 @@ describe('downloading data', function () {
         });
     });
 
+    it('should allow to compute outliers in measurements and mark them', function () {
+      return chakram.get(`${BASE_URL}/boxes/${boxIds[0]}/data/${boxes[0].sensors[1]._id}?outliers=mark`)
+        .then(function (response) {
+          expect(response).to.have.status(200);
+          expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
+          expect(response.body).not.lengthOf(0);
+          expect(response).json(function (measurementsArray) {
+            for (const measurement of measurementsArray) {
+              expect(measurement).keys('isOutlier', 'createdAt', 'value', 'location');
+              expect(typeof measurement.isOutlier).equal('boolean');
+            }
+          });
+
+          return chakram.wait();
+        });
+    });
+
+    it('should allow to compute outliers in measurements and replace them', function () {
+      return chakram.get(`${BASE_URL}/boxes/${boxIds[0]}/data/${boxes[0].sensors[1]._id}?outliers=replace`)
+        .then(function (response) {
+          expect(response).to.have.status(200);
+          expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
+          expect(response.body).not.lengthOf(0);
+          expect(response).json(function (measurementsArray) {
+            for (const measurement of measurementsArray) {
+              expect(measurement).keys('isOutlier', 'createdAt', 'value', 'location');
+              expect(typeof measurement.isOutlier).equal('boolean');
+            }
+          });
+
+          return chakram.wait();
+        });
+    });
+
   });
 
   describe('/boxes/data', function () {

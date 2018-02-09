@@ -3,10 +3,7 @@
 const { mongoose } = require('../db'),
   moment = require('moment'),
   decodeHandlers = require('./decoding'),
-  ModelError = require('../modelError'),
-  csvstringify = require('csv-stringify'),
-  jsonstringify = require('stringify-stream'),
-  outlierTransformer = require('./outlier/outlierTransformer');
+  ModelError = require('../modelError');
 
 const measurementSchema = new mongoose.Schema({
   value: {
@@ -89,29 +86,7 @@ measurementSchema.statics.findLatestMeasurementsForSensors = function findLatest
     .exec();
 };
 
-const csvColumns = ['createdAt', 'value'];
-
-const jsonLocationReplacer = function jsonLocationReplacer (k, v) {
-  // dont send unnecessary nested location
-  return (k === 'location') ? v.coordinates : v;
-};
-
-const getDataTransformerFunction = function getDataTransformerFunction (data) {
-  data.createdAt = data.createdAt.toISOString();
-
-  return data;
-};
-
-measurementSchema.statics.getMeasurementsStream = function getMeasurementsStream ({ format, delimiter, fromDate, toDate, sensorId, outliers, outlierWindow }) {
-  let stringifier;
-  // IDEA: add geojson point featurecollection format
-  if (format === 'csv') {
-    stringifier = csvstringify({ columns: csvColumns, header: 1, delimiter });
-  } else if (format === 'json') {
-    stringifier = jsonstringify({ open: '[', close: ']' }, jsonLocationReplacer);
-  }
-
-  // finally execute the query
+measurementSchema.statics.getMeasurementsStream = function getMeasurementsStream ({ fromDate, toDate, sensorId }) {
   const queryLimit = 10000;
 
   const qry = {
@@ -122,22 +97,9 @@ measurementSchema.statics.getMeasurementsStream = function getMeasurementsStream
     }
   };
 
-  let measurementsCursor = this
+  return this
     .find(qry, { 'createdAt': 1, 'value': 1, 'location': 1, '_id': 0 })
-    .cursor({ lean: true, limit: queryLimit })
-    .map(getDataTransformerFunction);
-
-  if (outliers) {
-    measurementsCursor = measurementsCursor
-      .pipe(outlierTransformer({
-        window: Math.trunc(outlierWindow), // only allow integer values
-        replaceOutlier: (outliers === 'replace')
-      }))
-      .pipe(stringifier);
-  }
-
-  return measurementsCursor
-    .pipe(stringifier);
+    .cursor({ lean: true, limit: queryLimit });
 };
 
 const measurementModel = mongoose.model('Measurement', measurementSchema);

@@ -9,7 +9,9 @@ const
     retrieveParameters,
     validateFromToTimeParams
   } = require('../helpers/userParamHelpers'),
-  handleError = require('../helpers/errorHandler');
+  handleError = require('../helpers/errorHandler'),
+  OutlierTransformer = require('../transformers/outlierTransformer'),
+  jsonstringify = require('stringify-stream');
 
 /**
  * @api {get} /boxes/:senseBoxId/sensors Get latest measurements of a senseBox
@@ -41,6 +43,11 @@ const getLatestMeasurements = function getLatestMeasurements (req, res, next) {
  * @apiParam {Number=1-50} [outlier-window=15] Size of moving window used as base to calculate the outliers.
  */
 
+const jsonLocationReplacer = function jsonLocationReplacer (k, v) {
+  // dont send unnecessary nested location
+  return (k === 'location') ? v.coordinates : v;
+};
+
 /**
  * @api {get} /boxes/:senseBoxId/data/:sensorId?from-date=fromDate&to-date=toDate&download=true&format=json Get the 10000 latest measurements for a sensor
  * @apiDescription Get up to 10000 measurements from a sensor for a specific time frame, parameters `from-date` and `to-date` are optional. If not set, the last 48 hours are used. The maximum time frame is 1 month. If `download=true` `Content-disposition` headers will be set. Allows for JSON or CSV format.
@@ -56,22 +63,39 @@ const getLatestMeasurements = function getLatestMeasurements (req, res, next) {
  * @apiUse SeparatorParam
  */
 const getData = function getData (req, res, next) {
-  const { sensorId, format, download } = req._userParams;
+  const { sensorId, format, download, outliers, outlierWindow, delimiter } = req._userParams;
+  let stringifier;
 
   // IDEA: add geojson point featurecollection format
   if (format === 'csv' || (download === 'true')) {
     res.header('Content-Type', 'text/csv');
     res.header('Content-Disposition', `attachment; filename=${sensorId}.${format}`);
+    stringifier = csvstringify({
+      columns: ['createdAt', 'value'], header: 1, delimiter, formatters: {
+        date: d => d.toISOString()
+      }
+    });
   } else if (format === 'json') {
     res.header('Content-Type', 'application/json; charset=utf-8');
+    // IDEA: add geojson point featurecollection format
+    stringifier = jsonstringify({ open: '[', close: ']' }, jsonLocationReplacer);
   }
 
-  Measurement.getMeasurementsStream(req._userParams)
+  let measurementsStream = Measurement.getMeasurementsStream(req._userParams)
     .on('error', function (err) {
-      res.end(`Error: ${err.message}`);
-
       return handleError(err, next);
-    })
+    });
+
+  if (outliers) {
+    measurementsStream = measurementsStream
+      .pipe(new OutlierTransformer({
+        window: Math.trunc(outlierWindow), // only allow integer values
+        replaceOutlier: (outliers === 'replace')
+      }));
+  }
+
+  measurementsStream
+    .pipe(stringifier)
     .pipe(res);
 };
 
