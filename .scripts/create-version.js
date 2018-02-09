@@ -5,16 +5,26 @@ const { writeFileSync } = require('fs'),
 
 const filename_version = 'version.js';
 
+const exec = function exec (cmd) {
+  return execSync(cmd)
+    .toString()
+    .trim();
+};
+
+const writeVersionFile = function writeVersionFile (version) {
+  writeFileSync(filename_version, `module.exports='${version}';`);
+};
+
 try {
-  const longHash = execSync('git log --pretty=format:"%H" -n 1');
-  const tag = execSync(`git tag --contains "${longHash}"`);
+  const longHash = exec('git log --pretty=format:"%H" -n 1');
+  const tag = exec(`git tag --contains "${longHash}"`);
 
   if (/^v[0-9]+$/.test(tag)) {
-    writeFileSync(filename_version, `module.exports='${tag}';`);
+    writeVersionFile(tag);
   } else {
-    const shortHash = execSync('git log --pretty=format:"%h" -n 1');
-    const branch = execSync('git rev-parse --abbrev-ref HEAD');
+    const shortHash = exec('git log --pretty=format:"%h" -n 1');
+    const branch = exec('git rev-parse --abbrev-ref HEAD');
 
-    writeFileSync(filename_version, `module.exports='${branch.toString().trim()}-${shortHash}';`);
+    writeVersionFile(`${branch}-${shortHash}`);
   }
 } catch (e) { }
