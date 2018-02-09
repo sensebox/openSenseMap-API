@@ -13,12 +13,10 @@ const { mongoose } = require('../db'),
     parseTimestamp,
     utcNow
   } = require('../utils'),
-  transform = require('stream-transform'),
   ModelError = require('../modelError'),
   Sketcher = require('@sensebox/sketch-templater'),
   fs = require('fs'),
   { point } = require('@turf/helpers'),
-  streamTransform = require('stream-transform'),
   log = require('../log');
 
 const templateSketcher = new Sketcher();
@@ -586,8 +584,8 @@ boxSchema.methods.removeSelfAndMeasurements = function removeSelfAndMeasurements
 };
 
 
-const measurementTransformer = function measurementTransformer (columns, sensors, { parseTimestamps, stringifyTimestamps, parseValues }) {
-  return transform(function (data) {
+const measurementTransformer = function measurementTransformer (columns, sensors, { parseTimestamps, parseValues } = {}) {
+  return function (data) {
     const theData = {
       createdAt: data.createdAt,
       value: data.value
@@ -618,16 +616,12 @@ const measurementTransformer = function measurementTransformer (columns, sensors
       theData.createdAt = parseTimestamp(data.createdAt);
     }
 
-    if (stringifyTimestamps) {
-      theData.createdAt = data.createdAt.toISOString();
-    }
-
     if (parseValues) {
       theData.value = parseFloat(data.value);
     }
 
     return theData;
-  });
+  };
 };
 
 boxSchema.statics.findMeasurementsOfBoxesStream = function findMeasurementsOfBoxesStream (opts) {
@@ -648,7 +642,6 @@ boxSchema.statics.findMeasurementsOfBoxesStream = function findMeasurementsOfBox
   }
 
   return this.find(query, BOX_PROPS_FOR_POPULATION)
-    .populate(BOX_SUB_PROPS_FOR_POPULATION)
     .lean()
     .then(function (boxData) {
       if (boxData.length === 0) {
@@ -682,10 +675,6 @@ boxSchema.statics.findMeasurementsOfBoxesStream = function findMeasurementsOfBox
       // and applies transformations to timestamps
       const transformer = measurementTransformer(columns, sensors, transformations);
 
-      transformer.on('error', function (err) {
-        throw err;
-      });
-
       const measureQuery = {
         'sensor_id': { '$in': Object.keys(sensors) },
         'createdAt': { '$gt': from, '$lt': to }
@@ -700,7 +689,7 @@ boxSchema.statics.findMeasurementsOfBoxesStream = function findMeasurementsOfBox
 
       return Measurement.find(measureQuery, { 'createdAt': 1, 'value': 1, 'location': 1, '_id': 0, 'sensor_id': 1 })
         .cursor({ lean: true, sort: order })
-        .pipe(transformer);
+        .map(transformer);
     });
 };
 
@@ -873,13 +862,11 @@ boxSchema.statics.findBoxesLastMeasurements = function findBoxesLastMeasurements
     }
   }
 
-  const locFieldTransformer = streamTransform(locFieldTransformerFunction);
-
   if (!fromDate && !toDate) {
     return Promise.resolve(schema.find(query, BOX_PROPS_FOR_POPULATION)
       .populate(BOX_SUB_PROPS_FOR_POPULATION)
       .cursor({ lean: true })
-      .pipe(locFieldTransformer) // effects of toJSON must be applied manually for streams
+      .map(locFieldTransformerFunction) // effects of toJSON must be applied manually for streams
     );
   }
 
@@ -901,7 +888,7 @@ boxSchema.statics.findBoxesLastMeasurements = function findBoxesLastMeasurements
       return schema.find(query, BOX_PROPS_FOR_POPULATION)
         .populate(BOX_SUB_PROPS_FOR_POPULATION)
         .cursor({ lean: true })
-        .pipe(streamTransform(function (box) {
+        .map(function (box) {
           if (box.currentLocation) {
             box.loc = [{ geometry: box.currentLocation, type: 'Feature' }];
           }
@@ -921,7 +908,7 @@ boxSchema.statics.findBoxesLastMeasurements = function findBoxesLastMeasurements
           }
 
           return box;
-        }));
+        });
     });
 };
 

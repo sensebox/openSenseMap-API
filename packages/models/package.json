@@ -1,7 +1,7 @@
 {
   "name": "@sensebox/opensensemap-api-models",
   "description": "openSenseMap data models and database connection",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "main": "index.js",
   "license": "MIT",
   "dependencies": {
@@ -11,7 +11,6 @@
     "bcrypt": "^1.0.2",
     "bunyan": "^1.8.12",
     "config": "^1.29.2",
-    "csv-stringify": "^1.0.4",
     "got": "^8.0.2",
     "grpc": "^1.8.4",
     "isemail": "^3.0.0",
@@ -20,9 +19,6 @@
     "moment": "^2.18.1",
     "mongoose": "^4.13.6",
     "mongoose-timestamp": "^0.6",
-    "simple-statistics": "^4.1.1",
-    "stream-transform": "^0.1.2",
-    "stringify-stream": "^1.0.5",
     "uuid": "^3.1.0"
   },
   "scripts": {

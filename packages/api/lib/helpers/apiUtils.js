@@ -3,7 +3,8 @@
 const { NotAuthorizedError, UnsupportedMediaTypeError } = require('restify-errors'),
   config = require('config'),
   apicache = require('apicache'),
-  got = require('got');
+  got = require('got'),
+  csvstringify = require('csv-stringify');
 
 const addCache = function addCache (duration, group) {
   // configure the apicache, set the group and only cache response code 200 responses
@@ -89,6 +90,10 @@ const preCors = function preCors (request, response, next) {
     response.header('access-control-max-age', 600);
   }
 
+  if (!response.getHeader('access-control-expose-headers')) {
+    response.header('access-control-expose-headers', 'content-disposition');
+  }
+
   if (request.method === 'OPTIONS') {
     return response.send(204);
   }
@@ -148,6 +153,42 @@ const getVersion = (function () {
   }
 })();
 
+const createDownloadFilename = function createDownloadFilename (date, action, params, format) {
+  return `opensensemap_org-${action}-${encodeURI(encodeURI(params.join('-')))}-${date.toISOString()
+    .replace(/-|:|\.\d*Z/g, '')
+    .replace('T', '_')}.${format}`;
+};
+
+//                        1d        1h       1m
+const truncationValues = [86400000, 3600000, 60000];
+// 19 = seconds
+// 16 = minutes
+// 13 = hours
+// 10 = days
+// 7 = month
+// const substrVals = [19, 16, 13, 10, 7];
+const substrVals = [10, 13, 16];
+const computeTimestampTruncationLength = function computeTimestampTruncationLength (window) {
+
+  for (const [i, v] of truncationValues.entries()) {
+    if (window % v === 0) {
+      return substrVals[i];
+    }
+    // subStrEnd = substrVals[i];
+  }
+
+  return 23;
+
+};
+
+const csvStringifier = function csvStringifier (columns, delimiter) {
+  return csvstringify({
+    columns, delimiter, header: 1, formatters: {
+      date: d => d.toISOString()
+    }
+  });
+};
+
 module.exports = {
   addCache,
   clearCache,
@@ -157,5 +198,8 @@ module.exports = {
   Honeybadger,
   postToSlack,
   getVersion,
-  redactEmail
+  redactEmail,
+  createDownloadFilename,
+  computeTimestampTruncationLength,
+  csvStringifier
 };

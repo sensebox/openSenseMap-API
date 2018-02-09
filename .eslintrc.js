@@ -5,5 +5,14 @@ module.exports = {
     es6: true,
     node: true
   },
-  extends: ['@sensebox/eslint-config-sensebox']
+  parserOptions: {
+    ecmaVersion: 2018,
+    ecmaFeatures: {
+      experimentalObjectRestSpread: true
+    }
+  },
+  extends: ['@sensebox/eslint-config-sensebox'],
+  rules: {
+    complexity: ['warn', 20]
+  }
 };

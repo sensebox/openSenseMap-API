@@ -23,12 +23,12 @@ const outlier = function (outlierOptions, streamOptions) {
 };
 
 outlier.prototype._transform = function _transform (data, encoding, callback) {
-  data.isOutlier = 'null';
+  data.isOutlier = false;
 
   const value = parseFloat(data.value);
   if (this._values.length === this._window) {
-    data.isOutlier = this.outlierCheck(value).toString();
-    if (data.isOutlier === 'true' && this._replaceOutlier === true) {
+    data.isOutlier = this.outlierCheck(value);
+    if (data.isOutlier && this._replaceOutlier === true) {
       data.value = ss.mean(this._values).toString();
     }
   }

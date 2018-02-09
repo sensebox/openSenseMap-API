@@ -4,7 +4,8 @@ const { BadRequestError, UnprocessableEntityError, InvalidArgumentError } = requ
   { utils: { parseAndValidateTimestamp }, db: { mongoose }, decoding: { validators: { transformAndValidateCoords } } } = require('@sensebox/opensensemap-api-models'),
   moment = require('moment'),
   isemail = require('isemail'),
-  handleModelError = require('./errorHandler');
+  handleModelError = require('./errorHandler'),
+  area = require('@turf/area');
 
 
 const decodeBase64Image = function (dataString) {
@@ -81,10 +82,10 @@ const bboxParser = function (bboxStr) {
   }
 
   if (Math.abs(lngSW) > 180 || Math.abs(lngNE) > 180 || Math.abs(latSW) > 90 || Math.abs(latNE) > 90) {
-    return new Error('Supplied coordinates are outside of (180, 90, -180, 90).');
+    return new Error('Supplied coordinates are outside of -180, -90, 180, 90 (lngSW, latSW, lngNE, latNE).');
   }
 
-  return {
+  const polygon = {
     type: 'Polygon',
     coordinates: [[
       [lngSW, latSW],
@@ -98,6 +99,12 @@ const bboxParser = function (bboxStr) {
       properties: { name: 'urn:x-mongodb:crs:strictwinding:EPSG:4326' }
     }
   };
+
+  if (area(polygon) === 0) {
+    return new Error('Supplied bounding box has zero surface area.');
+  }
+
+  return polygon;
 };
 
 const timestampParser = function timestampParser (timestamp) {

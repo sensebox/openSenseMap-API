@@ -1,13 +1,16 @@
 'use strict';
 
 const { Box, Measurement } = require('@sensebox/opensensemap-api-models'),
-  { UnprocessableEntityError } = require('restify-errors'),
+  { UnprocessableEntityError, BadRequestError } = require('restify-errors'),
   idwTransformer = require('../transformers/idwTransformer'),
-  { addCache } = require('../helpers/apiUtils'),
+  { addCache, createDownloadFilename, computeTimestampTruncationLength, csvStringifier } = require('../helpers/apiUtils'),
   { retrieveParameters, validateFromToTimeParams } = require('../helpers/userParamHelpers'),
   area = require('@turf/area'),
   millify = require('millify'),
-  handleError = require('../helpers/errorHandler');
+  handleError = require('../helpers/errorHandler'),
+  ms = require('ms'),
+  DescriptiveStatisticsTransformer = require('../transformers/descriptiveStatisticsTransformer'),
+  dashify = require('dashify');
 
 /**
  * @api {get} /stats Get some statistics about the database
@@ -81,7 +84,7 @@ const idwHandler = function (req, res, next) {
 
   // exposure parameter
   if (exposure) {
-    queryParams['exposure'] = exposure;
+    queryParams['exposure'] = { '$in': exposure };
   }
 
   Box.findMeasurementsOfBoxesStream({
@@ -97,6 +100,9 @@ const idwHandler = function (req, res, next) {
       res.header('Content-Type', 'application/json; charset=utf-8');
 
       cursor
+        .on('error', function (err) {
+          return handleError(err, next);
+        })
         .pipe(idwTransformer({
           numTimeSteps,
           numClasses,
@@ -119,6 +125,139 @@ const idwHandler = function (req, res, next) {
 
 };
 
+/**
+ * @api {get} /statistics/descriptive Compute basic descriptive statistics over specified time windows
+ * @apiDescription Allows to compute basic descriptive statistical methods over multiple sensors and multiple time windows.
+ * The supported methods are: arithmetic mean, geometric mean, harmonic mean, maximum, median ,minimum, mode, root mean square, standard deviation, sum of values and variance.
+ * Parameters `from-date` and `to-date` are modified to fit you specified `window` parameter.
+ * You should either specifiy multiple station ids using the `boxId` parameter or a bounding box with the `bbox` parameter, but not both.
+ *
+ * By default, stations with exposure `mobile` are excluded.
+ * @apiGroup Statistics
+ * @apiName descriptive
+ * @apiParam {String} boxId Comma separated list of senseBox IDs.
+ * @apiParam {String} phenomenon the name of the phenomenon you want to download the data for.
+ * @apiUse BBoxParam
+ * @apiUse ExposureFilterParam
+ * @apiParam {RFC3339Date} from-date Beginning date of measurement data
+ * @apiParam {RFC3339Date} to-date End date of measurement data
+ * @apiParam {String=arithmeticMean,geometricMean,harmonicMean,max,median,min,mode,rootMeanSquare,standardDeviation,sum,variance} operation Statistical operation to execute
+ * @apiParam {String} window Time window to apply. Either a number in Milliseconds or a [`zeit/ms`](https://npmjs.com/ms)-parseable string rounded to the nearest minute (Math.round(<window-in-milliseconds>) / 60000). At least 1 minute
+ * @apiParam {Boolean=true,false} [download=true] Set the `content-disposition` header to force browsers to download instead of displaying.
+ * @apiParam {String} boxId Comma separated list of senseBox IDs.
+ * @apiUse SeparatorParam
+ * @apiParam {String=boxId,boxName,exposure,height,lat,lon,phenomenon,sensorType,unit} [columns] Comma separated list of additional columns to export.
+ * @apiSuccessExample {text/csv} Example CSV:
+ *  sensorId,Temperatur_2018-01-31,Temperatur_2018-02-01Z,Temperatur_2018-02-02Z,Temperatur_2018-02-03Z,Temperatur_2018-02-04Z,Temperatur_2018-02-05Z,Temperatur_2018-02-06Z,Temperatur_2018-02-07Z
+ *  5a787e38d55e821b639e890f,,,138,104,56,17,,
+ *  5a787e38d55e821b639e8915,,,138,104,56,17,,
+ */
+const minWindowLengthMs = ms('1m');
+const descriptiveStatisticsHandler = function descriptiveStatisticsHandler (req, res, next) {
+  const { boxId, bbox, exposure, delimiter, columns, phenomenon, operation, download } = req._userParams;
+  let { fromDate, toDate, window } = req._userParams;
+
+  window = Math.round(ms(window) / minWindowLengthMs) * minWindowLengthMs;
+  if (!window || window < minWindowLengthMs) {
+    return next(new BadRequestError(`Invalid window length. Smallest window size is ${ms(minWindowLengthMs, { long: true })}.`));
+  }
+
+  // compute start and end times in milliseconds
+  //
+  fromDate = fromDate.valueOf() - (fromDate.valueOf() % window);
+  // always overshoot one window..
+  toDate = toDate.valueOf() - (toDate.valueOf() % window) + window;
+
+  const windows = [new Date(fromDate)];
+  // compute all possible windows
+  for (let i = 1; windows[i - 1].getTime() !== toDate; i = i + 1) {
+    windows.push(new Date(fromDate + window * i));
+  }
+
+  fromDate = new Date(fromDate);
+  // add another window to toDate query parameter to get enough data
+  toDate = new Date(toDate + window);
+
+  if (boxId && bbox) {
+    return next(new BadRequestError('please specify only boxId or bbox'));
+  } else if (!boxId && !bbox) {
+    return next(new BadRequestError('please specify either boxId or bbox'));
+  }
+
+  const opts = {
+    query: {
+      'sensors.title': phenomenon,
+      'exposure': { '$not': /mobile/ }
+    },
+    bbox,
+    from: fromDate,
+    to: toDate,
+    // add sensorId, value and createdAt to query columns
+    columns: ['createdAt', 'sensorId', 'value', ...columns],
+    order: { sensor_id: 1, createdAt: 1 },
+    transformations: { parseValues: true },
+  };
+
+  if (boxId) {
+    opts.query['_id'] = { '$in': boxId };
+  }
+
+  // exposure parameter
+  if (exposure) {
+    // remove mobile boxes
+    if (exposure.includes('mobile')) {
+      exposure.splice(exposure.indexOf('mobile', 1));
+    }
+    opts.query['exposure'] = { '$in': exposure };
+  }
+
+  Box.findMeasurementsOfBoxesStream(opts)
+    .then(function (cursor) {
+      res.header('Content-Type', 'text/csv');
+      if (download === 'true') {
+        res.header('Content-Disposition', `attachment; filename=${createDownloadFilename(req.date(), operation, [phenomenon, ...columns], 'csv')}`);
+      }
+
+      // get end parameter for timestamp substring
+      const timestampSubstringEnd = computeTimestampTruncationLength(window);
+
+      // construct the columns for csv stringify in correct order
+      // (sensorId, <user specified columns>, <averageWindows>)
+      // Start with sensorId. It should always be the the first column
+      // append the wanted columns and the windows
+      const csvColumns = {};
+      for (const col of ['sensorId', ...columns, ...windows]) {
+        // is a date?
+        if (typeof col.toISOString === 'function') {
+          csvColumns[col] = `${dashify(phenomenon, { condense: true })}_${col.toISOString().substring(0, timestampSubstringEnd)}Z`;
+        } else { // otherwise just append
+          csvColumns[col] = col;
+        }
+      }
+
+      cursor
+        .on('error', function (err) {
+          return handleError(err, next);
+        })
+        .pipe(new DescriptiveStatisticsTransformer({
+          operation,
+          windows
+        }))
+        .on('error', function (err) {
+          return handleError(err, next);
+        })
+        .pipe(csvStringifier(csvColumns, delimiter))
+        .on('error', function (err) {
+          return handleError(err, next);
+        })
+        .pipe(res);
+    })
+    .catch(function (err) {
+      handleError(err, next);
+    });
+
+};
+
 module.exports = {
   getStatistics: [
     retrieveParameters([
@@ -130,7 +269,7 @@ module.exports = {
   getIdw: [
     retrieveParameters([
       { predef: 'bbox', required: true },
-      { name: 'exposure', allowedValues: Box.BOX_VALID_EXPOSURES },
+      { name: 'exposure', allowedValues: Box.BOX_VALID_EXPOSURES, dataType: ['String'] },
       { name: 'phenomenon', required: true },
       { name: 'gridType', defaultValue: 'hex', allowedValues: ['hex', 'square', 'triangle'] },
       { name: 'cellWidth', dataType: 'Number', defaultValue: 50, min: 0.001 },
@@ -142,5 +281,22 @@ module.exports = {
     ]),
     validateFromToTimeParams,
     idwHandler
+  ],
+  descriptiveStatisticsHandler: [
+    retrieveParameters([
+      { name: 'boxId', aliases: ['senseboxid', 'senseboxids', 'boxid', 'boxids'], dataType: ['id'] },
+      { name: 'phenomenon', required: true },
+      { predef: 'delimiter' },
+      { name: 'exposure', allowedValues: Box.BOX_VALID_EXPOSURES, dataType: ['String'] },
+      { name: 'columns', dataType: ['String'], defaultValue: [], allowedValues: ['boxId', 'boxName', 'exposure', 'height', 'lat', 'lon', 'phenomenon', 'sensorType', 'unit'] },
+      { predef: 'bbox' },
+      { predef: 'toDate', required: true },
+      { predef: 'fromDate', required: true },
+      { name: 'window', required: true },
+      { name: 'operation', required: true, allowedValues: ['arithmeticMean', 'geometricMean', 'harmonicMean', 'max', 'median', 'min', 'mode', 'rootMeanSquare', 'standardDeviation', 'sum', 'variance'] },
+      { name: 'download', defaultValue: 'true', allowedValues: ['true', 'false'] }
+    ]),
+    validateFromToTimeParams,
+    descriptiveStatisticsHandler
   ]
 };
