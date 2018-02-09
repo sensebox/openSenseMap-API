@@ -1,6 +1,7 @@
 # @sensebox/opensensemap-api-models Changelog
 
 ## Unreleased
+- Expand .npmignore
 
 ## v0.0.7
 - Fix an error where invalid timestamps were displayed as NaN in returned error messages

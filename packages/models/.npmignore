@@ -4,3 +4,7 @@ test
 .gitignore
 .scripts
 .npmignore
+*.log
+README.md
+CHANGELOG.md
+migrations
