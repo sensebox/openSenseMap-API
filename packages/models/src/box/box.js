@@ -584,7 +584,7 @@ boxSchema.methods.removeSelfAndMeasurements = function removeSelfAndMeasurements
 };
 
 
-const measurementTransformer = function measurementTransformer (columns, sensors, { parseTimestamps, stringifyTimestamps, parseValues }) {
+const measurementTransformer = function measurementTransformer (columns, sensors, { parseTimestamps, parseValues } = {}) {
   return function (data) {
     const theData = {
       createdAt: data.createdAt,
@@ -614,10 +614,6 @@ const measurementTransformer = function measurementTransformer (columns, sensors
 
     if (parseTimestamps) {
       theData.createdAt = parseTimestamp(data.createdAt);
-    }
-
-    if (stringifyTimestamps) {
-      theData.createdAt = data.createdAt.toISOString();
     }
 
     if (parseValues) {
