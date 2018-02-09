@@ -260,7 +260,7 @@ describe('openSenseMap API Routes: /users', function () {
     return chakram.put(`${BASE_URL}/users/me`, { newPassword: ' leading and trailing spaces ', currentPassword: '12345678' }, { headers: { 'Authorization': `Bearer ${jwt}` } })
       .then(function (response) {
         expect(response).to.have.status(200);
-        expect(response).to.have.json('message', 'User successfully saved. Password changed. Please log in with your new password');
+        expect(response).to.have.json('message', 'User successfully saved. Password changed. Please sign in with your new password');
 
         // try to log in with old token
         return chakram.get(`${BASE_URL}/users/me`, { headers: { 'Authorization': `Bearer ${jwt}` } });
@@ -288,7 +288,7 @@ describe('openSenseMap API Routes: /users', function () {
     return chakram.put(`${BASE_URL}/users/me`, { newPassword: '12345678910', currentPassword: ' leading and trailing spaces ' }, { headers: { 'Authorization': `Bearer ${jwt}` } })
       .then(function (response) {
         expect(response).to.have.status(200);
-        expect(response).to.have.json('message', 'User successfully saved. Password changed. Please log in with your new password');
+        expect(response).to.have.json('message', 'User successfully saved. Password changed. Please sign in with your new password');
 
         // try to log in with old token
         return chakram.get(`${BASE_URL}/users/me`, { headers: { 'Authorization': `Bearer ${jwt}` } });
@@ -481,8 +481,10 @@ describe('openSenseMap API Routes: /users', function () {
     return chakram.post(`${BASE_URL}/users/password-reset`, { password: 'ignored_anyway', token: 'invalid_password-reset_token', email: 'tester@test.test' })
       .then(function (response) {
         expect(response).to.have.status(403);
-        expect(response).to.have.json({ code: 'Forbidden',
-          message: 'Password reset for this user not possible' });
+        expect(response).to.have.json({
+          code: 'Forbidden',
+          message: 'Password reset for this user not possible'
+        });
 
         return chakram.wait();
       });
@@ -535,8 +537,10 @@ describe('openSenseMap API Routes: /users', function () {
   });
 
   it('should deny to register with multiline username', function () {
-    return chakram.post(`${BASE_URL}/users/register`, { name: `multi
-    line name`, email: 'tester5@test.test', password: '12345678' })
+    return chakram.post(`${BASE_URL}/users/register`, {
+      name: `multi
+    line name`, email: 'tester5@test.test', password: '12345678'
+    })
       .then(function (response) {
         expect(response).to.have.status(422);
         expect(response).to.have.header('content-type', 'application/json; charset=utf-8');

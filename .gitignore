@@ -7,6 +7,7 @@ lib-cov
 *.pid
 *.gz
 .vscode
+.yarn-cache
 
 pids
 logs
@@ -16,10 +17,11 @@ dump
 npm-debug.log
 node_modules
 
-config/index.js
-
 userimages
-mongo-data
 .env
 doc/
-revision
+version.js
+
+dev_run_migration.sh
+
+development.json

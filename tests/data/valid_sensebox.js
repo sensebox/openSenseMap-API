@@ -1,7 +1,7 @@
 'use strict';
 
 const randomGeojson = require('randomgeojson');
-module.exports = function ({ bbox, model, sensors, lonlat } = {}) {
+module.exports = function ({ bbox, model, sensors, lonlat, name = '' } = {}) {
   const randomGeojsonOptions = { featureTypes: ['Point'] };
   let loc;
   if (lonlat) {
@@ -21,7 +21,7 @@ module.exports = function ({ bbox, model, sensors, lonlat } = {}) {
   }
 
   const box = {
-    'name': 'senseBox',
+    'name': `senseBox${name}`,
     'model': model,
     'exposure': 'indoor',
     'weblink': 'https://api.opensensemap.org',

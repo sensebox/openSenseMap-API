@@ -1,21 +1,26 @@
 'use strict';
 
-const request = require('request-promise-native');
+/* global describe it */
+const got = require('got');
 
-/*eslint-disable no-console */
-const connectWithRetry = function (success) {
-  return request('http://localhost:8000/boxes')
-    .then(function () {
-      success();
-    })
-    .catch(function () {
-      /*eslint-disable no-console */
-      console.log('wait for http...');
-      setTimeout(connectWithRetry, 500, success);
-    });
+if (!process.env.OSEM_TEST_BASE_URL) {
+  process.env.OSEM_TEST_BASE_URL = 'http://localhost:8000';
+}
+
+const connectWithRetry = function () {
+  return got(`${process.env.OSEM_TEST_BASE_URL}/boxes`, {
+    retries: () => {
+      process.stdout.write('.');
+
+      return 500;
+    }
+  });
 };
 
-connectWithRetry(function () {
-  console.log('http available');
+describe('waiting for initialization', function () {
+  it('waits for http ready', function () {
+    this.timeout(10000);
+
+    return connectWithRetry();
+  });
 });
-/*eslint-enable no-console */

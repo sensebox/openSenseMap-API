@@ -1,0 +1,158 @@
+/* vim: syntax=JSON5 */
+// openSenseMap-API configuration example
+{
+  // The base domain under which the API is available on the internet.
+  // Is used for generating api_url and jwt.issuer config values
+  // Default: "localhost"
+  "base_domain": "api.my-opensensemap.com",
+  // Protocol under which the API is available on the internet. In production,
+  // this should be https. Make sure your proxy server serves your API TLS
+  // encrypted.
+  // Is used for generating api_url and jwt.issuer config values
+  // Default: "https"
+  "protocol": "https",
+  // The port number to which the api attaches to. You should always run the API
+  // behind a proper Proxy server!
+  // Default: 8000
+  "port": 8080,
+  // The URL under which the API is available to the internet.
+  // If omitted, the value is generated using base_domain and protocol keys
+  // Default: Generated from base_domain and protocol keys
+  "api_url": "https://api.my-opensensemap.com",
+  // Honeybadger API key for error reporting
+  // If not specified, Honeybadger integration is disabled
+  // No default
+  "honeybadger_apikey": "a531z298s",
+  // A valid Slack incoming webhook url. Used for sending restart and status messages
+  // If not specified, Slack integration is disabled
+  // No default
+  "slack_url": "https://hooks.slack.com/services/A1...7/Z.....K/r....g",
+  // Routes configuration. Use this to customize your urls. These keys should
+  // always start with a slash (/)
+  "routes": {
+    // Base route for everything related to boxes and measurements
+    // Default: "/boxes"
+    "boxes": "/my-custom-boxes-path",
+    // Base route for everything related to users
+    // Default: "/users"
+    "users": "/my-custom-users-path",
+    // Base route for everything related to statistics
+    // Default: "/statistics"
+    "statistics": "/my-custom-statistics-path"
+  },
+  // Json Web Token configuration
+  "jwt": {
+    // Secret used to sign new JWTs. Should be at least 32 characters
+    // Default: "OH GOD THIS IS SO INSECURE PLS CHANGE ME"
+    "secret": "kZwndGNwteBGLhEQRdMxji2Zd1KstjbeZjAnjknust16KkvNguCj73BB51fI3pd",
+    // JWT algorithm to use for signing new JWTs. Currently only HMAC based
+    // algorithms are supported
+    // Default: "HS256"
+    "algorithm": "HS384",
+    // How long the JWT should be valid in milliseconds
+    // Default: 3600000 // 1 hour
+    "validity_ms": 1800000,
+    // JWT issuer (iss) claim. If not specified, the value is generated using the
+    // base_domain and protocol configuration keys
+    // Default: Generated from base_domain and protocol keys
+    "issuer": "https://api.my-opensensemap.com"
+  },
+  // Refresh token configuration. Refresh tokens are used as mechanism to request
+  // a new valid JWT. Refresh tokens are HMACs
+  "refresh_token": {
+    // Secret used to generate refresh tokens. Is the second argument of crypto.createHmac
+    // https://nodejs.org/docs/latest-v8.x/api/crypto.html#crypto_crypto_createhmac_algorithm_key_options
+    // Should be at least 32 characters
+    // Default: "I ALSO WANT TO BE CHANGED"
+    "secret": "LDdOyTnCjzFld9sCsv8gOxOeQryLE2guINop1fDgUbmSHEqdHH5p9X6toB76WK1",
+    // Algorithm used to generate refresh tokens. Is the first argument of crypto.createHmac
+    // https://nodejs.org/docs/latest-v8.x/api/crypto.html#crypto_crypto_createhmac_algorithm_key_options
+    // Valid values: See `echo 'require("crypto").getHashes()' | node -p -`
+    // Default: "sha256"
+    "algorithm": "sha512",
+    // How long the refresh token is valid in milliseconds
+    // Default: 604800000 // 1 Week
+    "validity_ms": 302400000
+  },
+  // Configuration for the @sensebox/opensensemap-api-models package
+  "openSenseMap-API-models": {
+    // Keys for configuring the mongo db connection
+    // If the mongo_uri key is specfied, all other keys are ignored. Otherwise,
+    // the mongoDB connection uri is build using the other keys
+    "db": {
+      // Hostname or IP of the database
+      // Default: "localhost"
+      "host": "my-mongo-db",
+      // Port of the database
+      // Default: 27017
+      "port": 27019,
+      // User for authenticating to the database
+      // Default: "admin"
+      "user": "osem-db-user",
+      // Password of the user for authenticating to the database
+      // Default: "admin"
+      "userpass": "my-secret-password123",
+      // MongoDB Authentication Source
+      // Default: "OSeM-api"
+      "authsource": "user-database",
+      // Database name to use
+      // Default: "OSeM-api"
+      "db": "my-osem-database",
+      // MongoDB connection uri. If specified, overrides all other keys and is
+      // used exclusively.
+      // No default
+      "mongo_uri": "mongodb://user:password@db-host/osem-api-db"
+    },
+    "integrations": {
+      // Integrations Certificate Authority certificate in pem format with \n
+      // as newlines (sed -z 's/\n/\\n/g' < certificate.crt)
+      // Required for sending mails
+      // No default
+      "ca_cert": "-----BEGIN CERTIFICATE-----\nMIIFPzCCAyegAwIB ... ",
+      // Client certificate signed by the Certificate Authority for
+      // communicating with integration services in pem format with \n as newlines
+      // No default
+      "cert": "-----BEGIN CERTIFICATE-----\nMIIE9DCCAtygAwIBA ... ",
+      // Key of the client certificate for communicating with integration services
+      // in pem format with \n as newlines
+      // No default
+      "key": "-----BEGIN RSA PRIVATE KEY-----\nMIIJKQIBAAKCAg ...",
+      // Keys for communicating with the sensebox-mailer service
+      "mailer": {
+        // Url of the mailer service. If not specified, sending mails is disabled
+        // Required for sending mails
+        // No default
+        "url": "https://mailer:3924",
+        // Origin used in mails sent from the mailer service. The origin is used
+        // to fill in the correct frontend url in the mails.
+        // No trailing slash!
+        // Required for sending mails
+        "origin": "http://my-opensensemap.com"
+      },
+      "mqtt": {
+        // Url of the mqtt service. If not specified, receiving measurements over
+        // mqtt is not supported.
+        // Should be the naked domain and a port
+        // No Default
+        "url": "mqtt-osem-integration:3925"
+      }
+    },
+    "password": {
+      // Minimum required password length
+      // Default: 8
+      "min_length": 10,
+      // Bcrypt password salt factor. Should be between 1 and 31.
+      // Default: 13
+      "salt_factor": 12
+    },
+    // Location on the filesystem where images should be saved
+    // Default: "./userimages"
+    "image_folder": "/var/lib/osem-images"
+  },
+  // Configuration for the @sensebox/sketch-templater package
+  "sketch-templater": {
+    // Ingress domain. Used in the generation of Arduino sketches
+    // No default
+    "ingress_domain": "ingress.my-opensensemap.com"
+  }
+}

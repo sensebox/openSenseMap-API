@@ -6,8 +6,6 @@ const chakram = require('chakram'),
   expect = chakram.expect,
   moment = require('moment');
 
-process.env.OSEM_TEST_BASE_URL = 'http://localhost:8000';
-
 const BASE_URL = process.env.OSEM_TEST_BASE_URL,
   csv_example_data = require('../data/csv_example_data'),
   json_submit_data = require('../data/json_submit_data'),
