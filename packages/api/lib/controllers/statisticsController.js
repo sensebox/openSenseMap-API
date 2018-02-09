@@ -3,13 +3,12 @@
 const { Box, Measurement } = require('@sensebox/opensensemap-api-models'),
   { UnprocessableEntityError, BadRequestError } = require('restify-errors'),
   idwTransformer = require('../transformers/idwTransformer'),
-  { addCache, createDownloadFilename, computeTimestampTruncationLength } = require('../helpers/apiUtils'),
+  { addCache, createDownloadFilename, computeTimestampTruncationLength, csvStringifier } = require('../helpers/apiUtils'),
   { retrieveParameters, validateFromToTimeParams } = require('../helpers/userParamHelpers'),
   area = require('@turf/area'),
   millify = require('millify'),
   handleError = require('../helpers/errorHandler'),
   ms = require('ms'),
-  csvstringify = require('csv-stringify'),
   DescriptiveStatisticsTransformer = require('../transformers/descriptiveStatisticsTransformer'),
   dashify = require('dashify');
 
@@ -247,11 +246,7 @@ const descriptiveStatisticsHandler = function descriptiveStatisticsHandler (req,
         .on('error', function (err) {
           return handleError(err, next);
         })
-        .pipe(csvstringify({
-          columns: csvColumns, delimiter, header: 1, formatters: {
-            date: d => d.toISOString()
-          }
-        }))
+        .pipe(csvStringifier(csvColumns, delimiter))
         .on('error', function (err) {
           return handleError(err, next);
         })

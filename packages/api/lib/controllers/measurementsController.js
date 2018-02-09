@@ -3,8 +3,7 @@
 const
   { BadRequestError, UnsupportedMediaTypeError } = require('restify-errors'),
   { Measurement, Box } = require('@sensebox/opensensemap-api-models'),
-  csvstringify = require('csv-stringify'),
-  { checkContentType, createDownloadFilename } = require('../helpers/apiUtils'),
+  { checkContentType, createDownloadFilename, csvStringifier } = require('../helpers/apiUtils'),
   {
     retrieveParameters,
     validateFromToTimeParams
@@ -70,11 +69,7 @@ const getData = function getData (req, res, next) {
   if (format === 'csv' || (download === 'true')) {
     res.header('Content-Type', 'text/csv');
     res.header('Content-Disposition', `attachment; filename=${sensorId}.${format}`);
-    stringifier = csvstringify({
-      columns: ['createdAt', 'value'], header: 1, delimiter, formatters: {
-        date: d => d.toISOString()
-      }
-    });
+    stringifier = csvStringifier(['createdAt', 'value'], delimiter);
   } else if (format === 'json') {
     res.header('Content-Type', 'application/json; charset=utf-8');
     // IDEA: add geojson point featurecollection format
@@ -142,8 +137,7 @@ const getDataMulti = function getDataMulti (req, res, next) {
     bbox,
     from: fromDate.toDate(),
     to: toDate.toDate(),
-    columns,
-    transformations: { stringifyTimestamps: true }
+    columns
   })
     .then(function (cursor) {
 
@@ -151,13 +145,12 @@ const getDataMulti = function getDataMulti (req, res, next) {
       if (download === 'true') {
         res.header('Content-Disposition', `attachment; filename=${createDownloadFilename(req.date(), 'download', [phenomenon, ...columns], 'csv')}`);
       }
-      const stringifier = csvstringify({ columns, delimiter, header: 1 });
 
       cursor
         .on('error', function (err) {
           return handleError(err, next);
         })
-        .pipe(stringifier)
+        .pipe(csvStringifier(columns, delimiter))
         .pipe(res);
 
     })
