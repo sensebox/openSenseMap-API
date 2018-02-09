@@ -290,8 +290,8 @@ module.exports = {
       { name: 'exposure', allowedValues: Box.BOX_VALID_EXPOSURES, dataType: ['String'] },
       { name: 'columns', dataType: ['String'], defaultValue: [], allowedValues: ['boxId', 'boxName', 'exposure', 'height', 'lat', 'lon', 'phenomenon', 'sensorType', 'unit'] },
       { predef: 'bbox' },
-      { predef: 'toDate', required: true },
-      { predef: 'fromDate', required: true },
+      { predef: 'toDateNoDefault', required: true },
+      { predef: 'fromDateNoDefault', required: true },
       { name: 'window', required: true },
       { name: 'operation', required: true, allowedValues: ['arithmeticMean', 'geometricMean', 'harmonicMean', 'max', 'median', 'min', 'mode', 'rootMeanSquare', 'standardDeviation', 'sum', 'variance'] },
       { name: 'download', defaultValue: 'true', allowedValues: ['true', 'false'] }
