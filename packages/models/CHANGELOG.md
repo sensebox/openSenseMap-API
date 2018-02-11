@@ -1,6 +1,8 @@
 # @sensebox/opensensemap-api-models Changelog
 
 ## Unreleased
+
+## v0.0.8
 - Expand .npmignore
 
 ## v0.0.7
