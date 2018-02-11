@@ -1,7 +1,10 @@
 # openSenseMap API Changelog
 
 ## Unreleased
+
+## v3
 - Avoid moment usage in ClassifyTransformer
+- Use @sensebox/opensensemap-api-models v0.0.8
 
 ## v2
 - Initial Release after splitting api and models
