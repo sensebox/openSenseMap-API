@@ -264,7 +264,7 @@ const postNewMeasurements = function postNewMeasurements (req, res, next) {
   const contentType = (
     luftdaten // if
       ? 'luftdaten' // then
-      : req.contentType().toLowerCase() // else
+      : req.getContentType() // else
   );
   if (Measurement.hasDecoder(contentType)) {
     Box.findBoxById(boxId, { populate: false, lean: false })
