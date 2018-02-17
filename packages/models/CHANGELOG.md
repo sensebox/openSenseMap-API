@@ -1,6 +1,7 @@
 # @sensebox/opensensemap-api-models Changelog
 
 ## Unreleased
+- Fix measurements with 'content-type: json' not parsed with JSON.parse.
 
 ## v0.0.8
 - Expand .npmignore

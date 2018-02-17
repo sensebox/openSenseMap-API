@@ -204,6 +204,32 @@ describe('submitting measurements', function () {
   });
 
   describe('multiple JSON object POST /boxes/boxid/data', function () {
+    it('should accept multiple measurements with timestamps as json object via POST and Content-type: json', function () {
+      let submitTime;
+
+      return chakram.post(`${BASE_URL}/boxes/${boxIds[0]}/data`, JSON.stringify(json_submit_data.json_obj(boxes[0].sensors)), { json: false, headers: { 'content-type': 'json' } })
+        .then(function (response) {
+          submitTime = moment.utc(response.response.headers.date, 'ddd, DD MMM YYYY HH:mm:ss GMT');
+          expect(response).to.have.status(201);
+          expect(response.body).to.equal('"Measurements saved in box"');
+
+          return chakram.get(`${BASE_URL}/boxes/${boxIds[0]}`);
+        })
+        .then(function (response) {
+          expect(response).to.have.json('sensors', function (sensors) {
+            sensors.forEach(function (sensor) {
+              expect(sensor.lastMeasurement).not.to.be.null;
+              expect(sensor.lastMeasurement.createdAt).to.exist;
+              const createdAt = moment.utc(sensor.lastMeasurement.createdAt);
+              expect(submitTime.diff(createdAt, 'minutes')).to.be.below(4);
+              countMeasurements = countMeasurements + 1;
+            });
+          });
+
+          return chakram.wait();
+        });
+    });
+
     it('should accept multiple measurements with timestamps as json object via POST', function () {
       let submitTime;
 

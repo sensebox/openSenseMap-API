@@ -283,6 +283,8 @@ describe('downloading data', function () {
 
   describe('/boxes/data', function () {
 
+    const expectedMeasurementsCount = 10;
+
     it('should allow download data through /boxes/data/?phenomenon&boxid as csv', function () {
       return chakram.get(`${BASE_URL}/boxes/data/?boxid=${boxIds[0]}&phenomenon=Temperatur`)
         .then(function (response) {
@@ -303,7 +305,7 @@ describe('downloading data', function () {
           /* eslint-disable no-unused-vars */
           const [_, ...lines] = response.body.split('\n');
           /* eslint-enable no-unused-vars */
-          expect(lines).to.have.lengthOf(9);
+          expect(lines).to.have.lengthOf(expectedMeasurementsCount);
 
           return chakram.wait();
         });
@@ -318,7 +320,7 @@ describe('downloading data', function () {
           /* eslint-disable no-unused-vars */
           const [_, ...lines] = response.body.split('\n');
           /* eslint-enable no-unused-vars */
-          expect(lines).to.have.lengthOf(9);
+          expect(lines).to.have.lengthOf(expectedMeasurementsCount);
 
           return chakram.wait();
         });
@@ -337,7 +339,7 @@ describe('downloading data', function () {
           expect(response).to.have.header('content-type', 'text/csv');
           const [header, ...lines] = response.body.split('\n');
           expect(header).equal('exposure');
-          expect(lines).to.have.lengthOf(9);
+          expect(lines).to.have.lengthOf(expectedMeasurementsCount);
           for (let i = 0; i < lines.length - 1; i++) {
             expect(lines[i]).equal('indoor');
           }
@@ -359,7 +361,7 @@ describe('downloading data', function () {
           expect(response).to.have.header('content-type', 'text/csv');
           const [header, ...lines] = response.body.split('\n');
           expect(header).equal('exposure');
-          expect(lines).to.have.lengthOf(14);
+          expect(lines).to.have.lengthOf(expectedMeasurementsCount + 5);
           let hasIndoor = false, hasOutdoor = false;
           for (let i = 0; i < lines.length - 1; i++) {
             if (hasIndoor === false && lines[i] === 'indoor') {
@@ -386,7 +388,7 @@ describe('downloading data', function () {
           /* eslint-disable no-unused-vars */
           const [_, ...lines] = response.body.split('\n');
           /* eslint-enable no-unused-vars */
-          expect(lines).to.have.lengthOf(9);
+          expect(lines).to.have.lengthOf(expectedMeasurementsCount);
 
           return chakram.wait();
         });
@@ -402,7 +404,7 @@ describe('downloading data', function () {
           /* eslint-disable no-unused-vars */
           const [_, ...lines] = response.body.split('\n');
           /* eslint-enable no-unused-vars */
-          expect(lines).to.have.lengthOf(9);
+          expect(lines).to.have.lengthOf(expectedMeasurementsCount);
 
           return chakram.wait();
         });
