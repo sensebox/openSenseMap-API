@@ -29,7 +29,7 @@ const descriptiveStatisticsTransformer = function (descriptiveStatisticsTransfor
 
   // Object with windows as keys to be filled with computed values
   // { new Date('2018-01-02T12:00:00Z'): 5, new Date('2018-01-02T12:00:00Z'): 7 ... }
-  this._windowValues = {};
+  this._windowValues = Object.create(null);
 
   // selected operation
   switch (operation) {
@@ -52,6 +52,8 @@ descriptiveStatisticsTransformer.prototype.resetSensor = function resetSensor (m
   // assign measurement as _currSensor
   // no need to strip unwanted properties, this is done later in stringification
   this._currSensor = measurement;
+
+  this._windowValues = Object.create(null);
 
   // find the right _currWindowIndex to start..
   this._currWindowIndex = 0;
