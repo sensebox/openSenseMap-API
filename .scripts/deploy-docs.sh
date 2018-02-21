@@ -3,7 +3,7 @@
 set -euo pipefail
 IFS=$'\n\t'
 
-if [[ -n "${TRAVIS_TAG}" ]]; then
+if [[ -z "${TRAVIS_TAG}" ]]; then
   echo "Docs can only be built from tags"
   exit 0
 fi
@@ -19,6 +19,9 @@ sed -i "1 s|$| ${TRAVIS_TAG}|" apidoc/introduction.md
 
 # run apidoc
 apidoc -i . -f js -e node_modules
+
+# reset the changes to please git
+git checkout -- apidoc/introduction.md
 
 # checkout gh-pages branch
 git remote set-branches --add origin gh-pages
