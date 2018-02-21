@@ -106,7 +106,7 @@ const getData = function getData (req, res, next) {
  * @apiUse SeparatorParam
  * @apiUse BBoxParam
  * @apiUse ExposureFilterParam
- * @apiParam {String=createdAt,value,lat,lon,height,boxId,boxName,exposure,sensorId,phenomenon,unit,sensorType} [columns=createdAt,value,lat,lon] Comma separated list of columns to export.
+ * @apiParam {String=createdAt,value,lat,lon,height,boxId,boxName,exposure,sensorId,phenomenon,unit,sensorType} [columns=sensorId,createdAt,value,lat,lon] Comma separated list of columns to export.
  * @apiParam {Boolean=true,false} [download=true] Set the `content-disposition` header to force browsers to download instead of displaying.
  */
 const getDataMulti = function getDataMulti (req, res, next) {
