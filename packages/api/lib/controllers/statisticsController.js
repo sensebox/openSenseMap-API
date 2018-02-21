@@ -172,31 +172,33 @@ const idwHandler = function (req, res, next) {
  *    }
  *  ]
  */
+// TODO document tidy parameter
+// TODO document tidy response format
 const minWindowLengthMs = ms('1m');
 const descriptiveStatisticsHandler = function descriptiveStatisticsHandler (req, res, next) {
-  const { boxId, bbox, exposure, delimiter, columns, phenomenon, operation, download, format } = req._userParams;
-  let { fromDate, toDate, window } = req._userParams;
+  const { boxId, bbox, exposure, delimiter, columns, phenomenon, operation, download, format, window } = req._userParams;
+  let { fromDate, toDate } = req._userParams;
 
-  window = Math.round(ms(window) / minWindowLengthMs) * minWindowLengthMs;
-  if (!window || window < minWindowLengthMs) {
+  const windowMs = Math.round(ms(window) / minWindowLengthMs) * minWindowLengthMs;
+  if (!windowMs || windowMs < minWindowLengthMs) {
     return next(new BadRequestError(`Invalid window length. Smallest window size is ${ms(minWindowLengthMs, { long: true })}.`));
   }
 
   // compute start and end times in milliseconds
   //
-  fromDate = fromDate.valueOf() - (fromDate.valueOf() % window);
+  fromDate = fromDate.valueOf() - (fromDate.valueOf() % windowMs);
   // always overshoot one window..
-  toDate = toDate.valueOf() - (toDate.valueOf() % window) + window;
+  toDate = toDate.valueOf() - (toDate.valueOf() % windowMs) + windowMs;
 
   const windows = [new Date(fromDate)];
   // compute all possible windows
   for (let i = 1; windows[i - 1].getTime() !== toDate; i = i + 1) {
-    windows.push(new Date(fromDate + window * i));
+    windows.push(new Date(fromDate + windowMs * i));
   }
 
   fromDate = new Date(fromDate);
   // add another window to toDate query parameter to get enough data
-  toDate = new Date(toDate + window);
+  toDate = new Date(toDate + windowMs);
 
   if (boxId && bbox) {
     return next(new BadRequestError('please specify only boxId or bbox'));
@@ -233,38 +235,57 @@ const descriptiveStatisticsHandler = function descriptiveStatisticsHandler (req,
 
   Box.findMeasurementsOfBoxesStream(opts)
     .then(function (cursor) {
-      let stringifier;
+      let stringifier, fileExtension, responseColumns;
+
+      const responseWindows = windows.map(w => w.toISOString());
 
       switch (format) {
       /* eslint-disable no-case-declarations*/
       case 'csv':
+        fileExtension = 'csv';
         res.header('Content-Type', 'text/csv');
         // get end parameter for timestamp substring
-        const timestampSubstringEnd = computeTimestampTruncationLength(window);
+        const timestampSubstringEnd = computeTimestampTruncationLength(windowMs);
         // construct the columns for csv stringify in correct order
         // (sensorId, <user specified columns>, <averageWindows>)
         // Start with sensorId. It should always be the the first column
         // append the wanted columns and the windows
-        const csvColumns = {};
-        for (const col of ['sensorId', ...columns, ...windows]) {
+        responseColumns = { 'sensorId': 'sensorId' };
+        for (const col of columns) {
           // is a date?
-          if (typeof col.toISOString === 'function') {
-            csvColumns[col] = `${dashify(phenomenon, { condense: true })}_${col.toISOString().substring(0, timestampSubstringEnd)}Z`;
-          } else { // otherwise just append
-            csvColumns[col] = col;
-          }
+          responseColumns[col] = col;
         }
-        stringifier = csvStringifier(csvColumns, delimiter);
+        for (const col of responseWindows) {
+          responseColumns[col] = `${dashify(phenomenon, { condense: true })}_${col.substring(0, timestampSubstringEnd)}Z`;
+        }
+
+        stringifier = csvStringifier(responseColumns, delimiter);
         break;
         /* eslint-enable no-case-declarations*/
       case 'json':
+        fileExtension = 'json';
         res.header('Content-Type', 'application/json');
-        stringifier = jsonstringify({ open: '[', close: ']' }, ['sensorId', ...columns, ...windows.map(w => w.toISOString())]);
+
+        stringifier = jsonstringify({ open: '[', close: ']' }, ['sensorId', ...columns, ...responseWindows]);
         break;
+      case 'tidy':
+        fileExtension = 'csv';
+        res.header('Content-Type', 'text/csv');
+
+        // construct the columns for tidy stringify in correct order
+        // (sensorId, <user specified columns>, time_start, <operation_window>)
+        // Start with sensorId. It should always be the the first column
+        // append the wanted columns and the rest
+        responseColumns = {};
+        for (const col of ['sensorId', ...columns, 'time_start', 'operation_window']) {
+          responseColumns[col] = col;
+        }
+        responseColumns.operation_window = `${operation}_${window}`;
+        stringifier = csvStringifier(responseColumns, delimiter);
       }
 
       if (download === 'true') {
-        res.header('Content-Disposition', `attachment; filename=${createDownloadFilename(req.date(), operation, [phenomenon, ...columns], format)}`);
+        res.header('Content-Disposition', `attachment; filename=${createDownloadFilename(req.date(), operation, [phenomenon, ...columns], fileExtension)}`);
       }
 
       // stream response to client
@@ -275,9 +296,7 @@ const descriptiveStatisticsHandler = function descriptiveStatisticsHandler (req,
         .pipe(new DescriptiveStatisticsTransformer({
           operation,
           windows,
-          // JSON.stringify does not stringify keys of type Date their to ISO8601
-          // representation like it does for Dates as values
-          stringifyWindowTimestampKeys: (format === 'json')
+          tidy: (format === 'tidy')
         }))
         .on('error', function (err) {
           return handleError(err, next);
@@ -331,7 +350,7 @@ module.exports = {
       { name: 'window', required: true },
       { name: 'operation', required: true, allowedValues: ['arithmeticMean', 'geometricMean', 'harmonicMean', 'max', 'median', 'min', 'mode', 'rootMeanSquare', 'standardDeviation', 'sum', 'variance'] },
       { name: 'download', defaultValue: 'true', allowedValues: ['true', 'false'] },
-      { name: 'format', defaultValue: 'csv', allowedValues: ['csv', 'json'] }
+      { name: 'format', defaultValue: 'csv', allowedValues: ['csv', 'json', 'tidy'] }
     ]),
     validateFromToTimeParams,
     descriptiveStatisticsHandler

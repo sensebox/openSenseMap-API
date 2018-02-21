@@ -15,12 +15,12 @@ const descriptiveStatisticsTransformer = function (descriptiveStatisticsTransfor
   streamOptions.decodeStrings = false;
   streamOptions.objectMode = true;
 
-  const { windows, operation, stringifyWindowTimestampKeys = false } = descriptiveStatisticsTransformerOptions;
+  const { windows, operation, tidy = false } = descriptiveStatisticsTransformerOptions;
   if (!windows) {
     throw new Error('Missing options. Please specify `windows` and `operation`.');
   }
 
-  this._stringifyWindowTimestampKeys = stringifyWindowTimestampKeys;
+  this._tidy = tidy;
   this._windows = windows;
 
   // compute possible average windows
@@ -72,14 +72,27 @@ descriptiveStatisticsTransformer.prototype.nextWindow = function nextWindow (mea
 
 descriptiveStatisticsTransformer.prototype.executeOperation = function executeOperation () {
   try {
-    let windowKey = this._windows[this._currWindowIndex];
-    if (this._stringifyWindowTimestampKeys === true) {
-      windowKey = windowKey.toISOString();
-    }
-    this._windowValues[windowKey] = this._operation(this._currValues);
+    this._windowValues[this._windows[this._currWindowIndex].toISOString()] = this._operation(this._currValues);
     /* eslint-disable no-empty */
   } catch (e) { /* ignore the error */ }
   /* eslint-enable */
+};
+
+descriptiveStatisticsTransformer.prototype.pushResults = function pushResults () {
+  if (this._tidy) {
+    // push windows one by one
+    for (const [windowKey, windowValue] of Object.entries(this._windowValues)) {
+      this.push({
+        ...this._currSensor,
+        ...{ time_start: windowKey, operation_window: windowValue }
+      });
+    }
+  } else {
+    this.push({
+      ...this._currSensor,
+      ...this._windowValues
+    });
+  }
 };
 
 descriptiveStatisticsTransformer.prototype._transform = function _transform (measurement, encoding, callback) {
@@ -96,10 +109,7 @@ descriptiveStatisticsTransformer.prototype._transform = function _transform (mea
     // one last time for this sensor, execute the operation
     this.executeOperation();
     // push the sensor down the stream
-    this.push({
-      ...this._currSensor,
-      ...this._windowValues
-    });
+    this.pushResults();
 
     // reset _currValues and reset _currSensor
     this.resetSensor(measurement);
@@ -122,10 +132,7 @@ descriptiveStatisticsTransformer.prototype._flush = function (done) {
   if (this._currSensor) {
     this.executeOperation();
     // push the sensor down the stream
-    this.push({
-      ...this._currSensor,
-      ...this._windowValues
-    });
+    this.pushResults();
   }
   done();
 };
