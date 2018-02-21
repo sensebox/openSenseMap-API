@@ -10,7 +10,8 @@ const { Box, Measurement } = require('@sensebox/opensensemap-api-models'),
   handleError = require('../helpers/errorHandler'),
   ms = require('ms'),
   DescriptiveStatisticsTransformer = require('../transformers/descriptiveStatisticsTransformer'),
-  dashify = require('dashify');
+  dashify = require('dashify'),
+  jsonstringify = require('stringify-stream');
 
 /**
  * @api {get} /stats Get some statistics about the database
@@ -147,6 +148,7 @@ const idwHandler = function (req, res, next) {
  * @apiParam {String} boxId Comma separated list of senseBox IDs.
  * @apiUse SeparatorParam
  * @apiParam {String=boxId,boxName,exposure,height,lat,lon,phenomenon,sensorType,unit} [columns] Comma separated list of additional columns to export.
+ * @apiParam {String=csv,json} [format=csv] Can be 'csv' (default) or 'json' (default: csv)
  * @apiSuccessExample {text/csv} Example CSV:
  *  sensorId,Temperatur_2018-01-31,Temperatur_2018-02-01Z,Temperatur_2018-02-02Z,Temperatur_2018-02-03Z,Temperatur_2018-02-04Z,Temperatur_2018-02-05Z,Temperatur_2018-02-06Z,Temperatur_2018-02-07Z
  *  5a787e38d55e821b639e890f,,,138,104,56,17,,
@@ -154,7 +156,7 @@ const idwHandler = function (req, res, next) {
  */
 const minWindowLengthMs = ms('1m');
 const descriptiveStatisticsHandler = function descriptiveStatisticsHandler (req, res, next) {
-  const { boxId, bbox, exposure, delimiter, columns, phenomenon, operation, download } = req._userParams;
+  const { boxId, bbox, exposure, delimiter, columns, phenomenon, operation, download, format } = req._userParams;
   let { fromDate, toDate, window } = req._userParams;
 
   window = Math.round(ms(window) / minWindowLengthMs) * minWindowLengthMs;
@@ -213,40 +215,56 @@ const descriptiveStatisticsHandler = function descriptiveStatisticsHandler (req,
 
   Box.findMeasurementsOfBoxesStream(opts)
     .then(function (cursor) {
-      res.header('Content-Type', 'text/csv');
-      if (download === 'true') {
-        res.header('Content-Disposition', `attachment; filename=${createDownloadFilename(req.date(), operation, [phenomenon, ...columns], 'csv')}`);
-      }
+      let stringifier;
 
-      // get end parameter for timestamp substring
-      const timestampSubstringEnd = computeTimestampTruncationLength(window);
-
-      // construct the columns for csv stringify in correct order
-      // (sensorId, <user specified columns>, <averageWindows>)
-      // Start with sensorId. It should always be the the first column
-      // append the wanted columns and the windows
-      const csvColumns = {};
-      for (const col of ['sensorId', ...columns, ...windows]) {
-        // is a date?
-        if (typeof col.toISOString === 'function') {
-          csvColumns[col] = `${dashify(phenomenon, { condense: true })}_${col.toISOString().substring(0, timestampSubstringEnd)}Z`;
-        } else { // otherwise just append
-          csvColumns[col] = col;
+      switch (format) {
+      /* eslint-disable no-case-declarations*/
+      case 'csv':
+        res.header('Content-Type', 'text/csv');
+        // get end parameter for timestamp substring
+        const timestampSubstringEnd = computeTimestampTruncationLength(window);
+        // construct the columns for csv stringify in correct order
+        // (sensorId, <user specified columns>, <averageWindows>)
+        // Start with sensorId. It should always be the the first column
+        // append the wanted columns and the windows
+        const csvColumns = {};
+        for (const col of ['sensorId', ...columns, ...windows]) {
+          // is a date?
+          if (typeof col.toISOString === 'function') {
+            csvColumns[col] = `${dashify(phenomenon, { condense: true })}_${col.toISOString().substring(0, timestampSubstringEnd)}Z`;
+          } else { // otherwise just append
+            csvColumns[col] = col;
+          }
         }
+        stringifier = csvStringifier(csvColumns, delimiter);
+        break;
+        /* eslint-enable no-case-declarations*/
+      case 'json':
+        res.header('Content-Type', 'application/json');
+        stringifier = jsonstringify({ open: '[', close: ']' }, ['sensorId', ...columns, ...windows.map(w => w.toISOString())]);
+        break;
       }
 
+      if (download === 'true') {
+        res.header('Content-Disposition', `attachment; filename=${createDownloadFilename(req.date(), operation, [phenomenon, ...columns], format)}`);
+      }
+
+      // stream response to client
       cursor
         .on('error', function (err) {
           return handleError(err, next);
         })
         .pipe(new DescriptiveStatisticsTransformer({
           operation,
-          windows
+          windows,
+          // JSON.stringify does not stringify keys of type Date their to ISO8601
+          // representation like it does for Dates as values
+          stringifyWindowTimestampKeys: (format === 'json')
         }))
         .on('error', function (err) {
           return handleError(err, next);
         })
-        .pipe(csvStringifier(csvColumns, delimiter))
+        .pipe(stringifier)
         .on('error', function (err) {
           return handleError(err, next);
         })
@@ -294,7 +312,8 @@ module.exports = {
       { predef: 'fromDateNoDefault', required: true },
       { name: 'window', required: true },
       { name: 'operation', required: true, allowedValues: ['arithmeticMean', 'geometricMean', 'harmonicMean', 'max', 'median', 'min', 'mode', 'rootMeanSquare', 'standardDeviation', 'sum', 'variance'] },
-      { name: 'download', defaultValue: 'true', allowedValues: ['true', 'false'] }
+      { name: 'download', defaultValue: 'true', allowedValues: ['true', 'false'] },
+      { name: 'format', defaultValue: 'csv', allowedValues: ['csv', 'json'] }
     ]),
     validateFromToTimeParams,
     descriptiveStatisticsHandler
