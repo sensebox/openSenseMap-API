@@ -153,6 +153,24 @@ const idwHandler = function (req, res, next) {
  *  sensorId,Temperatur_2018-01-31,Temperatur_2018-02-01Z,Temperatur_2018-02-02Z,Temperatur_2018-02-03Z,Temperatur_2018-02-04Z,Temperatur_2018-02-05Z,Temperatur_2018-02-06Z,Temperatur_2018-02-07Z
  *  5a787e38d55e821b639e890f,,,138,104,56,17,,
  *  5a787e38d55e821b639e8915,,,138,104,56,17,,
+ * @apiSuccessExample {application/json} Example JSON:
+ *  sensorId,Temperatur_2018-01-31,Temperatur_2018-02-01Z,Temperatur_2018-02-02Z,Temperatur_2018-02-03Z,Temperatur_2018-02-04Z,Temperatur_2018-02-05Z,Temperatur_2018-02-06Z,Temperatur_2018-02-07Z
+ *  [
+ *    {
+ *      "sensorId": "5a787e38d55e821b639e890f",
+ *      "2018-02-02T00:00:00.000Z": 138,
+ *      "2018-02-03T00:00:00.000Z": 104,
+ *      "2018-02-04T00:00:00.000Z": 56,
+ *      "2018-02-05T00:00:00.000Z": 17
+ *    },
+ *    {
+ *      "sensorId": "5a787e38d55e821b639e8915",
+ *      "2018-02-02T00:00:00.000Z": 138,
+ *      "2018-02-03T00:00:00.000Z": 104,
+ *      "2018-02-04T00:00:00.000Z": 56,
+ *      "2018-02-05T00:00:00.000Z": 17
+ *    }
+ *  ]
  */
 const minWindowLengthMs = ms('1m');
 const descriptiveStatisticsHandler = function descriptiveStatisticsHandler (req, res, next) {
