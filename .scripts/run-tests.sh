@@ -36,8 +36,8 @@ case "$cmd" in
 esac
 
 mailer_tag=$(git rev-parse --abbrev-ref HEAD)
-if [[ "$mailer_tag" == "master" || "$mailer_tag" == "development" ]]; then
-  export SENSEBOX_MAILER_TAG="$mailer_tag"
+if [[ "$mailer_tag" == "master" ]]; then
+  export SENSEBOX_MAILER_TAG="latest"
 else
   export SENSEBOX_MAILER_TAG="development"
 fi
