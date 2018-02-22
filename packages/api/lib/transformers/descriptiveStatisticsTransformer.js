@@ -15,12 +15,12 @@ const descriptiveStatisticsTransformer = function (descriptiveStatisticsTransfor
   streamOptions.decodeStrings = false;
   streamOptions.objectMode = true;
 
-  const { windows, operation } = descriptiveStatisticsTransformerOptions;
+  const { windows, operation, tidy = false } = descriptiveStatisticsTransformerOptions;
   if (!windows) {
     throw new Error('Missing options. Please specify `windows` and `operation`.');
   }
 
-  // this._descriptiveStatisticsOptions = descriptiveStatisticsTransformerOptions;
+  this._tidy = tidy;
   this._windows = windows;
 
   // compute possible average windows
@@ -29,7 +29,7 @@ const descriptiveStatisticsTransformer = function (descriptiveStatisticsTransfor
 
   // Object with windows as keys to be filled with computed values
   // { new Date('2018-01-02T12:00:00Z'): 5, new Date('2018-01-02T12:00:00Z'): 7 ... }
-  this._windowValues = {};
+  this._windowValues = Object.create(null);
 
   // selected operation
   switch (operation) {
@@ -53,6 +53,8 @@ descriptiveStatisticsTransformer.prototype.resetSensor = function resetSensor (m
   // no need to strip unwanted properties, this is done later in stringification
   this._currSensor = measurement;
 
+  this._windowValues = Object.create(null);
+
   // find the right _currWindowIndex to start..
   this._currWindowIndex = 0;
   this.nextWindow(measurement);
@@ -70,10 +72,27 @@ descriptiveStatisticsTransformer.prototype.nextWindow = function nextWindow (mea
 
 descriptiveStatisticsTransformer.prototype.executeOperation = function executeOperation () {
   try {
-    this._windowValues[this._windows[this._currWindowIndex]] = this._operation(this._currValues);
+    this._windowValues[this._windows[this._currWindowIndex].toISOString()] = this._operation(this._currValues);
     /* eslint-disable no-empty */
   } catch (e) { /* ignore the error */ }
   /* eslint-enable */
+};
+
+descriptiveStatisticsTransformer.prototype.pushResults = function pushResults () {
+  if (this._tidy) {
+    // push windows one by one
+    for (const [windowKey, windowValue] of Object.entries(this._windowValues)) {
+      this.push({
+        ...this._currSensor,
+        ...{ time_start: windowKey, operation_window: windowValue }
+      });
+    }
+  } else {
+    this.push({
+      ...this._currSensor,
+      ...this._windowValues
+    });
+  }
 };
 
 descriptiveStatisticsTransformer.prototype._transform = function _transform (measurement, encoding, callback) {
@@ -90,10 +109,7 @@ descriptiveStatisticsTransformer.prototype._transform = function _transform (mea
     // one last time for this sensor, execute the operation
     this.executeOperation();
     // push the sensor down the stream
-    this.push({
-      ...this._currSensor,
-      ...this._windowValues
-    });
+    this.pushResults();
 
     // reset _currValues and reset _currSensor
     this.resetSensor(measurement);
@@ -116,10 +132,7 @@ descriptiveStatisticsTransformer.prototype._flush = function (done) {
   if (this._currSensor) {
     this.executeOperation();
     // push the sensor down the stream
-    this.push({
-      ...this._currSensor,
-      ...this._windowValues
-    });
+    this.pushResults();
   }
   done();
 };

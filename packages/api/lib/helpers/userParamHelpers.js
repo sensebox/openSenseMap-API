@@ -332,7 +332,7 @@ const retrieveLocationParameter = function ({ value }) {
 };
 
 const
-  GET_DATA_MULTI_DEFAULT_COLUMNS = ['createdAt', 'value', 'lat', 'lon'],
+  GET_DATA_MULTI_DEFAULT_COLUMNS = ['sensorId', 'createdAt', 'value', 'lat', 'lon'],
   GET_DATA_MULTI_ALLOWED_COLUMNS = ['createdAt', 'value', 'lat', 'lon', 'height', 'unit', 'boxId', 'sensorId', 'phenomenon', 'sensorType', 'boxName', 'exposure'];
 
 // functions which receive req._userparams as parameter

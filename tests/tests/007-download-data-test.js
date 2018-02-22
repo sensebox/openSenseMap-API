@@ -296,6 +296,35 @@ describe('downloading data', function () {
         });
     });
 
+    it('should allow download data through /boxes/data/?phenomenon&boxid as csv with explicit parameter format=csv', function () {
+      return chakram.get(`${BASE_URL}/boxes/data/?boxid=${boxIds[0]}&phenomenon=Temperatur&format=csv`)
+        .then(function (response) {
+          expect(response).to.have.status(200);
+          expect(response.body).not.to.be.empty;
+          expect(response).to.have.header('content-type', 'text/csv');
+
+          return chakram.wait();
+        });
+    });
+
+    it('should allow download data through /boxes/data/?phenomenon&boxid as json', function () {
+      return chakram.get(`${BASE_URL}/boxes/data/?boxid=${boxIds[0]}&phenomenon=Temperatur&format=json&columns=sensorId,value,lat,lon,height`)
+        .then(function (response) {
+          expect(response).to.have.status(200);
+          expect(response.body).not.to.be.empty;
+          expect(response).to.have.header('content-type', 'application/json');
+          expect(Array.isArray(response.body)).true;
+          for (const m of response.body) {
+            expect(m.sensorId).to.exist;
+            expect(m.value).to.exist;
+            expect(m.lat).to.exist;
+            expect(m.lon).to.exist;
+          }
+
+          return chakram.wait();
+        });
+    });
+
     it('should allow download data through /boxes/data/?phenomenon&boxid as csv with multiple boxids', function () {
       return chakram.get(`${BASE_URL}/boxes/data/?boxid=${boxIds[0]},${boxIds[1]}&phenomenon=Temperatur`)
         .then(function (response) {
@@ -384,7 +413,7 @@ describe('downloading data', function () {
           expect(response).to.have.status(200);
           expect(response.body).not.to.be.empty;
           expect(response).to.have.header('content-type', 'text/csv');
-          expect(response).to.have.header('content-disposition', /opensensemap_org-download-Temperatur-createdAt-value-lat-lon-/);
+          expect(response).to.have.header('content-disposition', /opensensemap_org-download-Temperatur-sensorId-createdAt-value-lat-lon-/);
           /* eslint-disable no-unused-vars */
           const [_, ...lines] = response.body.split('\n');
           /* eslint-enable no-unused-vars */

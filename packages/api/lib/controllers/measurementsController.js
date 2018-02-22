@@ -106,11 +106,12 @@ const getData = function getData (req, res, next) {
  * @apiUse SeparatorParam
  * @apiUse BBoxParam
  * @apiUse ExposureFilterParam
- * @apiParam {String=createdAt,value,lat,lon,height,boxId,boxName,exposure,sensorId,phenomenon,unit,sensorType} [columns=createdAt,value,lat,lon] Comma separated list of columns to export.
+ * @apiParam {String="csv","json"} [format=csv] Can be 'csv' (default) or 'json' (default: csv)
+ * @apiParam {String=createdAt,value,lat,lon,height,boxId,boxName,exposure,sensorId,phenomenon,unit,sensorType} [columns=sensorId,createdAt,value,lat,lon] Comma separated list of columns to export.
  * @apiParam {Boolean=true,false} [download=true] Set the `content-disposition` header to force browsers to download instead of displaying.
  */
 const getDataMulti = function getDataMulti (req, res, next) {
-  const { boxId, bbox, exposure, delimiter, columns, fromDate, toDate, phenomenon, download } = req._userParams;
+  const { boxId, bbox, exposure, delimiter, columns, fromDate, toDate, phenomenon, download, format } = req._userParams;
 
   // build query
   const queryParams = {
@@ -140,19 +141,30 @@ const getDataMulti = function getDataMulti (req, res, next) {
     columns
   })
     .then(function (cursor) {
-
-      res.header('Content-Type', 'text/csv');
-      if (download === 'true') {
-        res.header('Content-Disposition', `attachment; filename=${createDownloadFilename(req.date(), 'download', [phenomenon, ...columns], 'csv')}`);
-      }
-
-      cursor
+      let stream = cursor
         .on('error', function (err) {
           return handleError(err, next);
-        })
-        .pipe(csvStringifier(columns, delimiter))
-        .pipe(res);
+        });
 
+      switch (format) {
+      case 'csv':
+        res.header('Content-Type', 'text/csv');
+        stream = stream
+          .pipe(csvStringifier(columns, delimiter));
+        break;
+      case 'json':
+        res.header('Content-Type', 'application/json');
+        stream = stream
+          .pipe(jsonstringify({ open: '[', close: ']' }));
+        break;
+      }
+
+      if (download === 'true') {
+        res.header('Content-Disposition', `attachment; filename=${createDownloadFilename(req.date(), 'download', [phenomenon, ...columns], format)}`);
+      }
+
+      stream
+        .pipe(res);
     })
     .catch(function (err) {
       handleError(err, next);
@@ -331,6 +343,7 @@ module.exports = {
       { predef: 'toDate' },
       { predef: 'fromDate' },
       { name: 'download', defaultValue: 'true', allowedValues: ['true', 'false'] },
+      { name: 'format', defaultValue: 'csv', allowedValues: ['csv', 'json'] }
     ]),
     validateFromToTimeParams,
     getDataMulti
