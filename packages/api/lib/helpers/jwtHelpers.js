@@ -23,7 +23,7 @@ const createToken = function createToken (user) {
     signOptions = Object.assign({ subject: user.email, jwtid: uuid() }, jwtSignOptions);
 
   return new Promise(function (resolve, reject) {
-    jwt.sign(payload, jwt_secret, signOptions, (err, token) => {
+    jwt.sign(payload, jwt_secret, signOptions, async (err, token) => {
       if (err) {
         return reject(err);
       }
@@ -33,21 +33,20 @@ const createToken = function createToken (user) {
       // and set the refreshTokenExpires to 1 week
       // it is a HMAC of the jwt string
       const refreshToken = hashJWT(token);
-      user.update({
-        $set: {
-          refreshToken,
-          refreshTokenExpires: moment.utc()
-            .add(Number(refresh_token_validity_ms), 'ms')
-            .toDate()
-        }
-      })
-        .exec()
-        .then(function () {
-          return resolve({ token, refreshToken });
-        })
-        .catch(function (err) {
-          return reject(err);
-        });
+      try {
+        await user.update({
+          $set: {
+            refreshToken,
+            refreshTokenExpires: moment.utc()
+              .add(Number(refresh_token_validity_ms), 'ms')
+              .toDate()
+          }
+        }).exec();
+
+        return resolve({ token, refreshToken });
+      } catch (err) {
+        return reject(err);
+      }
     });
   });
 };
@@ -57,21 +56,23 @@ const invalidateToken = function invalidateToken ({ user, _jwt, _jwtString } = {
   addTokenToBlacklist(_jwt, _jwtString);
 };
 
-const refreshJwt = function refreshJwt (refreshToken) {
-  return User.findOne({ refreshToken, refreshTokenExpires: { $gte: moment.utc().toDate() } })
-    .then(function (user) {
-      if (!user) {
-        throw new ForbiddenError('Refresh token invalid or too old. Please sign in with your username and password.');
-      }
+const refreshJwt = async function refreshJwt (refreshToken) {
+  const user = await User.findOne({ refreshToken, refreshTokenExpires: { $gte: moment.utc().toDate() } });
 
-      // invalidate old token
-      addTokenHashToBlacklist(refreshToken);
+  if (!user) {
+    throw new ForbiddenError('Refresh token invalid or too old. Please sign in with your username and password.');
+  }
 
-      return createToken(user)
-        .then(function ({ token, refreshToken }) {
-          return { token, refreshToken, user };
-        });
-    });
+  // invalidate old token
+  addTokenHashToBlacklist(refreshToken);
+
+  // try {
+  const { token, refreshToken: newRefreshToken } = await createToken(user);
+
+  return Promise.resolve({ token, refreshToken: newRefreshToken, user });
+  // } catch (err) {
+  //   throw err;
+  // }
 };
 
 module.exports = {

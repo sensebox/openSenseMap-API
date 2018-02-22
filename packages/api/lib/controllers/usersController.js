@@ -43,25 +43,24 @@ const { User } = require('@sensebox/opensensemap-api-models'),
  * @apiSuccess (Created 201) {String} refreshToken valid refresh token
  * @apiSuccess (Created 201) {Object} data `{ "user": {"name":"fullname","email":"test@test.de","role":"user","language":"en_US","boxes":[],"emailIsConfirmed":false} }`
  */
-const registerUser = function registerUser (req, res, next) {
+const registerUser = async function registerUser (req, res, next) {
   const { email, password, language, name } = req._userParams;
 
-  new User({ name, email, password, language })
-    .save()
-    .then(function (newUser) {
-      postToSlack(`New User: ${newUser.name} (${redactEmail(newUser.email)})`);
+  try {
+    const newUser = await new User({ name, email, password, language })
+      .save();
+    postToSlack(`New User: ${newUser.name} (${redactEmail(newUser.email)})`);
 
-      return createToken(newUser)
-        .then(function ({ token, refreshToken }) {
-          return res.send(201, { code: 'Created', message: 'Successfully registered new user', data: { user: newUser }, token, refreshToken });
-        })
-        .catch(function (err) {
-          next(new InternalServerError(`User successfully created but unable to create jwt token: ${err.message}`));
-        });
-    })
-    .catch(function (err) {
-      handleError(err, next);
-    });
+    try {
+      const { token, refreshToken } = await createToken(newUser);
+
+      return res.send(201, { code: 'Created', message: 'Successfully registered new user', data: { user: newUser }, token, refreshToken });
+    } catch (err) {
+      return next(new InternalServerError(`User successfully created but unable to create jwt token: ${err.message}`));
+    }
+  } catch (err) {
+    handleError(err, next);
+  }
 };
 
 /**
@@ -78,14 +77,13 @@ const registerUser = function registerUser (req, res, next) {
  * @apiSuccess {Object} data `{ "user": {"name":"fullname","email":"test@test.de","role":"user","language":"en_US","boxes":[],"emailIsConfirmed":false} }`
  * @apiError {String} 403 Unauthorized
  */
-const signIn = function signIn (req, res, next) {
-  createToken(req.user)
-    .then(function ({ token, refreshToken }) {
-      return res.send(200, { code: 'Authorized', message: 'Successfully signed in', data: { user: req.user }, token, refreshToken });
-    })
-    .catch(function (err) {
-      next(new InternalServerError(`unable to create jwt token: ${err.message}`));
-    });
+const signIn = async function signIn (req, res, next) {
+  try {
+    const { token, refreshToken } = await createToken(req.user);
+    res.send(200, { code: 'Authorized', message: 'Successfully signed in', data: { user: req.user }, token, refreshToken });
+  } catch (err) {
+    return next(new InternalServerError(`unable to create jwt token: ${err.message}`));
+  }
 };
 
 /**
@@ -101,14 +99,13 @@ const signIn = function signIn (req, res, next) {
  * @apiSuccess {Object} data `{ "user": {"name":"fullname","email":"test@test.de","role":"user","language":"en_US","boxes":[],"emailIsConfirmed":false} }`
  * @apiError {Object} Forbidden `{"code":"ForbiddenError","message":"Refresh token invalid or too old. Please sign in with your username and password."}`
  */
-const refreshJWT = function refreshJWT (req, res, next) {
-  refreshJwt(req._userParams.token)
-    .then(function ({ token, refreshToken, user }) {
-      return res.send(200, { code: 'Authorized', message: 'Successfully refreshed auth', data: { user }, token, refreshToken });
-    })
-    .catch(function (err) {
-      handleError(err, next);
-    });
+const refreshJWT = async function refreshJWT (req, res, next) {
+  try {
+    const { token, refreshToken, user } = await refreshJwt(req._userParams.token);
+    res.send(200, { code: 'Authorized', message: 'Successfully refreshed auth', data: { user }, token, refreshToken });
+  } catch (err) {
+    handleError(err, next);
+  }
 };
 
 /**
@@ -136,14 +133,13 @@ const signOut = function signOut (req, res) {
  * @apiSuccess {String} message `Password reset initiated`
  */
 // generate new password reset token and send the token to the user
-const requestResetPassword = function requestResetPassword (req, res, next) {
-  User.initPasswordReset(req._userParams)
-    .then(function () {
-      res.send(200, { code: 'Ok', message: 'Password reset initiated' });
-    })
-    .catch(function (err) {
-      handleError(err, next);
-    });
+const requestResetPassword = async function requestResetPassword (req, res, next) {
+  try {
+    await User.initPasswordReset(req._userParams);
+    res.send(200, { code: 'Ok', message: 'Password reset initiated' });
+  } catch (err) {
+    handleError(err, next);
+  }
 };
 
 /**
@@ -157,14 +153,13 @@ const requestResetPassword = function requestResetPassword (req, res, next) {
  * @apiSuccess {String} message `Password successfully changed. You can now login with your new password`
  */
 // set new password with reset token as auth
-const resetPassword = function resetPassword (req, res, next) {
-  User.resetPassword(req._userParams)
-    .then(function () {
-      res.send(200, { code: 'Ok', message: 'Password successfully changed. You can now login with your new password' });
-    })
-    .catch(function (err) {
-      handleError(err, next);
-    });
+const resetPassword = async function resetPassword (req, res, next) {
+  try {
+    await User.resetPassword(req._userParams);
+    res.send(200, { code: 'Ok', message: 'Password successfully changed. You can now login with your new password' });
+  } catch (err) {
+    handleError(err, next);
+  }
 };
 
 /**
@@ -177,14 +172,13 @@ const resetPassword = function resetPassword (req, res, next) {
  * @apiSuccess {String} code `Ok`
  * @apiSuccess {String} message `E-Mail successfully confirmed. Thank you`
  */
-const confirmEmailAddress = function confirmEmailAddress (req, res, next) {
-  User.confirmEmail(req._userParams)
-    .then(function () {
-      res.send(200, { code: 'Ok', message: 'E-Mail successfully confirmed. Thank you' });
-    })
-    .catch(function (err) {
-      handleError(err, next);
-    });
+const confirmEmailAddress = async function confirmEmailAddress (req, res, next) {
+  try {
+    await User.confirmEmail(req._userParams);
+    res.send(200, { code: 'Ok', message: 'E-Mail successfully confirmed. Thank you' });
+  } catch (err) {
+    handleError(err, next);
+  }
 };
 
 /**
@@ -195,15 +189,13 @@ const confirmEmailAddress = function confirmEmailAddress (req, res, next) {
  * @apiSuccess {String} code `Ok`
  * @apiSuccess {String} data A json object with a single `boxes` array field
  */
-const getUserBoxes = function getUserBoxes (req, res, next) {
-  req.user
-    .getBoxes()
-    .then(function (boxes) {
-      res.send(200, { code: 'Ok', data: { boxes } });
-    })
-    .catch(function (err) {
-      handleError(err, next);
-    });
+const getUserBoxes = async function getUserBoxes (req, res, next) {
+  try {
+    const boxes = await req.user.getBoxes();
+    res.send(200, { code: 'Ok', data: { boxes } });
+  } catch (err) {
+    handleError(err, next);
+  }
 };
 
 /**
@@ -229,21 +221,20 @@ const getUser = function getUser (req, res) {
  * @apiParam {String} [newPassword] the new password for this user. Should be at least 8 characters long.
  * @apiParam {String} currentPassword the current password for this user.
  */
-const updateUser = function updateUser (req, res, next) {
-  req.user.updateUser(req._userParams)
-    .then(function ({ updated, signOut, messages, updatedUser }) {
-      if (updated === false) {
-        return res.send(200, { code: 'Ok', message: 'No changed properties supplied. User remains unchanged.' });
-      }
+const updateUser = async function updateUser (req, res, next) {
+  try {
+    const { updated, signOut, messages, updatedUser } = await req.user.updateUser(req._userParams);
+    if (updated === false) {
+      return res.send(200, { code: 'Ok', message: 'No changed properties supplied. User remains unchanged.' });
+    }
 
-      if (signOut === true) {
-        invalidateToken(req);
-      }
-      res.send(200, { code: 'Ok', message: `User successfully saved.${messages.join('.')}`, data: { me: updatedUser } });
-    })
-    .catch(function (err) {
-      handleError(err, next);
-    });
+    if (signOut === true) {
+      invalidateToken(req);
+    }
+    res.send(200, { code: 'Ok', message: `User successfully saved.${messages.join('.')}`, data: { me: updatedUser } });
+  } catch (err) {
+    handleError(err, next);
+  }
 };
 
 /**
@@ -255,23 +246,20 @@ const updateUser = function updateUser (req, res, next) {
  * @apiParam {String} password the current password for this user.
  */
 
-const deleteUser = function deleteUser (req, res, next) {
+const deleteUser = async function deleteUser (req, res, next) {
   const { password } = req._userParams;
 
-  req.user.checkPassword(password)
-    .then(function () {
-      invalidateToken(req);
+  try {
+    await req.user.checkPassword(password);
+    invalidateToken(req);
 
-      return req.user.destroyUser(req);
-    })
-    .then(function () {
-      res.send(200, { code: 'Ok', message: 'User and all boxes of user marked for deletion. Bye Bye!' });
-      clearCache(['getBoxes', 'getStats']);
-      postToSlack(`User deleted: ${req.user.name} (${redactEmail(req.user.email)})`);
-    })
-    .catch(function (err) {
-      handleError(err, next);
-    });
+    await req.user.destroyUser(req);
+    res.send(200, { code: 'Ok', message: 'User and all boxes of user marked for deletion. Bye Bye!' });
+    clearCache(['getBoxes', 'getStats']);
+    postToSlack(`User deleted: ${req.user.name} (${redactEmail(req.user.email)})`);
+  } catch (err) {
+    handleError(err, next);
+  }
 };
 
 /**
@@ -283,19 +271,17 @@ const deleteUser = function deleteUser (req, res, next) {
  * @apiSuccess {String} code `Ok`
  * @apiSuccess {String} message `Email confirmation has been sent to <emailaddress>`
  */
-const requestEmailConfirmation = function requestEmailConfirmation (req, res, next) {
-  req.user.resendEmailConfirmation()
-    .then(function (result) {
-      let usedAddress = result.email;
-      if (result.unconfirmedEmail) {
-        usedAddress = result.unconfirmedEmail;
-      }
-
-      res.send(200, { code: 'Ok', message: `Email confirmation has been sent to ${usedAddress}` });
-    })
-    .catch(function (err) {
-      handleError(err, next);
-    });
+const requestEmailConfirmation = async function requestEmailConfirmation (req, res, next) {
+  try {
+    const result = await req.user.resendEmailConfirmation();
+    let usedAddress = result.email;
+    if (result.unconfirmedEmail) {
+      usedAddress = result.unconfirmedEmail;
+    }
+    res.send(200, { code: 'Ok', message: `Email confirmation has been sent to ${usedAddress}` });
+  } catch (err) {
+    handleError(err, next);
+  }
 };
 
 module.exports = {

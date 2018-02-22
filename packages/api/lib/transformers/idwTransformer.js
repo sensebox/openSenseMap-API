@@ -121,7 +121,7 @@ idwTransformer.prototype.addMeasurementToAverage = function addMeasurementToAver
   avg.count = avg.count + 1;
   avg.geom.properties.average = (
     ((avg.geom.properties.average * avg.count) + value) /
-      (avg.count + 1)
+    (avg.count + 1)
   );
 
   cb();
@@ -183,7 +183,7 @@ idwTransformer.prototype.pushBreaksToStream = function pushBreaksToStream () {
   this.push('],"featureCollection":');
 };
 
-idwTransformer.prototype._flush = function (done) {
+idwTransformer.prototype._flush = async function (done) {
   if (this._hasData === false) {
     this.push('{"code":"NotFound","message":"no measurements found"}');
     done();
@@ -192,14 +192,12 @@ idwTransformer.prototype._flush = function (done) {
 
     this._idwPromises.push(this.calculateIdwForControlPoints(this.resetAverageAndReturnControlPoints()));
 
-    Promise.all(this._idwPromises)
-      .then(() => {
-        this.push(JSON.stringify(this._samplingGrid));
-        // push timesteps to stream and close the json
-        this._timeSteps.push(this._currTimeStepStart.add(this._diffTimeSteps / 2).toISOString());
-        this.push(`,"timesteps":["${this._timeSteps.join('","')}"]}}`);
-        done();
-      });
+    await Promise.all(this._idwPromises);
+    this.push(JSON.stringify(this._samplingGrid));
+    // push timesteps to stream and close the json
+    this._timeSteps.push(this._currTimeStepStart.add(this._diffTimeSteps / 2).toISOString());
+    this.push(`,"timesteps":["${this._timeSteps.join('","')}"]}}`);
+    done();
   }
 };
 

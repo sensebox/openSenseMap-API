@@ -19,14 +19,12 @@ const
  * @apiName getLatestMeasurements
  * @apiUse BoxIdParam
  */
-const getLatestMeasurements = function getLatestMeasurements (req, res, next) {
-  Box.findBoxById(req._userParams.boxId, { onlyLastMeasurements: true })
-    .then(function (box) {
-      res.send(box);
-    })
-    .catch(function (err) {
-      handleError(err, next);
-    });
+const getLatestMeasurements = async function getLatestMeasurements (req, res, next) {
+  try {
+    res.send(await Box.findBoxById(req._userParams.boxId, { onlyLastMeasurements: true }));
+  } catch (err) {
+    handleError(err, next);
+  }
 };
 
 /**
@@ -110,7 +108,7 @@ const getData = function getData (req, res, next) {
  * @apiParam {String=createdAt,value,lat,lon,height,boxId,boxName,exposure,sensorId,phenomenon,unit,sensorType} [columns=sensorId,createdAt,value,lat,lon] Comma separated list of columns to export.
  * @apiParam {Boolean=true,false} [download=true] Set the `content-disposition` header to force browsers to download instead of displaying.
  */
-const getDataMulti = function getDataMulti (req, res, next) {
+const getDataMulti = async function getDataMulti (req, res, next) {
   const { boxId, bbox, exposure, delimiter, columns, fromDate, toDate, phenomenon, download, format } = req._userParams;
 
   // build query
@@ -133,42 +131,41 @@ const getDataMulti = function getDataMulti (req, res, next) {
     queryParams['exposure'] = { '$in': exposure };
   }
 
-  Box.findMeasurementsOfBoxesStream({
-    query: queryParams,
-    bbox,
-    from: fromDate.toDate(),
-    to: toDate.toDate(),
-    columns
-  })
-    .then(function (cursor) {
-      let stream = cursor
-        .on('error', function (err) {
-          return handleError(err, next);
-        });
-
-      switch (format) {
-      case 'csv':
-        res.header('Content-Type', 'text/csv');
-        stream = stream
-          .pipe(csvStringifier(columns, delimiter));
-        break;
-      case 'json':
-        res.header('Content-Type', 'application/json');
-        stream = stream
-          .pipe(jsonstringify({ open: '[', close: ']' }));
-        break;
-      }
-
-      if (download === 'true') {
-        res.header('Content-Disposition', `attachment; filename=${createDownloadFilename(req.date(), 'download', [phenomenon, ...columns], format)}`);
-      }
-
-      stream
-        .pipe(res);
-    })
-    .catch(function (err) {
-      handleError(err, next);
+  try {
+    let stream = await Box.findMeasurementsOfBoxesStream({
+      query: queryParams,
+      bbox,
+      from: fromDate.toDate(),
+      to: toDate.toDate(),
+      columns
     });
+    stream = stream
+      .on('error', function (err) {
+        return handleError(err, next);
+      });
+
+    switch (format) {
+    case 'csv':
+      res.header('Content-Type', 'text/csv');
+      stream = stream
+        .pipe(csvStringifier(columns, delimiter));
+      break;
+    case 'json':
+      res.header('Content-Type', 'application/json');
+      stream = stream
+        .pipe(jsonstringify({ open: '[', close: ']' }));
+      break;
+    }
+
+    if (download === 'true') {
+      res.header('Content-Disposition', `attachment; filename=${createDownloadFilename(req.date(), 'download', [phenomenon, ...columns], format)}`);
+    }
+
+    stream
+      .pipe(res);
+  } catch (err) {
+    handleError(err, next);
+  }
 };
 
 /**
@@ -184,27 +181,22 @@ const getDataMulti = function getDataMulti (req, res, next) {
  * @apiParam (RequestBody) {RFC3339Date} [createdAt] the timestamp of the measurement. Should conform to RFC 3339.
  * @apiParam (RequestBody) {Location} [location] the WGS84-coordinates of the measurement.
  */
-const postNewMeasurement = function postNewMeasurement (req, res, next) {
+const postNewMeasurement = async function postNewMeasurement (req, res, next) {
   const { boxId, sensorId, value, createdAt, location } = req._userParams;
 
-  Box.findBoxById(boxId, { populate: false, lean: false })
-    .then(function (box) {
-      return Measurement.decodeMeasurements([{
-        sensor_id: sensorId,
-        value,
-        createdAt,
-        location
-      }])
-        .then(function ([measurement]) {
-          return box.saveMeasurement(measurement);
-        });
-    })
-    .then(function () {
-      res.send(201, 'Measurement saved in box');
-    })
-    .catch(function (err) {
-      handleError(err, next);
-    });
+  try {
+    const box = await Box.findBoxById(boxId, { populate: false, lean: false });
+    const [measurement] = await Measurement.decodeMeasurements([{
+      sensor_id: sensorId,
+      value,
+      createdAt,
+      location
+    }]);
+    await box.saveMeasurement(measurement);
+    res.send(201, 'Measurement saved in box');
+  } catch (err) {
+    handleError(err, next);
+  }
 };
 
 /**
@@ -271,7 +263,7 @@ const postNewMeasurement = function postNewMeasurement (req, res, next) {
  *   ]
  * }
  */
-const postNewMeasurements = function postNewMeasurements (req, res, next) {
+const postNewMeasurements = async function postNewMeasurements (req, res, next) {
   const { boxId, luftdaten } = req._userParams;
   const contentType = (
     luftdaten // if
@@ -279,20 +271,14 @@ const postNewMeasurements = function postNewMeasurements (req, res, next) {
       : req.getContentType() // else
   );
   if (Measurement.hasDecoder(contentType)) {
-    Box.findBoxById(boxId, { populate: false, lean: false })
-      .then(function (box) {
-        return Measurement.decodeMeasurements(req.body, { contentType, sensors: box.sensors })
-          .then(function (measurements) {
-            // handler.decodeMessage succeeded, so just save measurements
-            return box.saveMeasurementsArray(measurements);
-          });
-      })
-      .then(function () {
-        res.send(201, 'Measurements saved in box');
-      })
-      .catch(function (err) {
-        handleError(err, next);
-      });
+    try {
+      const box = await Box.findBoxById(boxId, { populate: false, lean: false });
+      const measurements = await Measurement.decodeMeasurements(req.body, { contentType, sensors: box.sensors });
+      await box.saveMeasurementsArray(measurements);
+      res.send(201, 'Measurements saved in box');
+    } catch (err) {
+      handleError(err, next);
+    }
   } else {
     return next(new UnsupportedMediaTypeError('Unsupported content-type.'));
   }
