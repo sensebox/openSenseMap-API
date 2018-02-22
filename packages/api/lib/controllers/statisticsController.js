@@ -148,7 +148,7 @@ const idwHandler = function (req, res, next) {
  * @apiParam {String} boxId Comma separated list of senseBox IDs.
  * @apiUse SeparatorParam
  * @apiParam {String=boxId,boxName,exposure,height,lat,lon,phenomenon,sensorType,unit} [columns] Comma separated list of additional columns to export.
- * @apiParam {String=csv,json} [format=csv] Can be 'csv' (default) or 'json' (default: csv)
+ * @apiParam {String=csv,json,tidy} [format=csv] Controls the format of the responde. Default is `csv`. Specifying `json` returns a JSON array element for each sensor with RFC3339 timestamps key value pairs for the requested statistical operation. Specifying `tidy` returns a csv with rows for each window and sensor.
  * @apiSuccessExample {text/csv} Example CSV:
  *  sensorId,Temperatur_2018-01-31,Temperatur_2018-02-01Z,Temperatur_2018-02-02Z,Temperatur_2018-02-03Z,Temperatur_2018-02-04Z,Temperatur_2018-02-05Z,Temperatur_2018-02-06Z,Temperatur_2018-02-07Z
  *  5a787e38d55e821b639e890f,,,138,104,56,17,,
@@ -171,9 +171,21 @@ const idwHandler = function (req, res, next) {
  *      "2018-02-05T00:00:00.000Z": 17
  *    }
  *  ]
+ * @apiSuccessExample {text/csv} Example tidy CSV:
+ *  sensorId,time_start,arithmeticMean_1d
+ *  5a8e8c6c8432c3001bfe414a,2018-02-02T00:00:00.000Z,138
+ *  5a8e8c6c8432c3001bfe414a,2018-02-03T00:00:00.000Z,104
+ *  5a8e8c6c8432c3001bfe414a,2018-02-04T00:00:00.000Z,56
+ *  5a8e8c6c8432c3001bfe414a,2018-02-05T00:00:00.000Z,17
+ *  5a8e8c6c8432c3001bfe4150,2018-02-02T00:00:00.000Z,138
+ *  5a8e8c6c8432c3001bfe4150,2018-02-03T00:00:00.000Z,104
+ *  5a8e8c6c8432c3001bfe4150,2018-02-04T00:00:00.000Z,56
+ *  5a8e8c6c8432c3001bfe4150,2018-02-05T00:00:00.000Z,17
+ *  5a8e8c6c8432c3001bfe4156,2018-02-02T00:00:00.000Z,138
+ *  5a8e8c6c8432c3001bfe4156,2018-02-03T00:00:00.000Z,104
+ *  5a8e8c6c8432c3001bfe4156,2018-02-04T00:00:00.000Z,56
+ *  5a8e8c6c8432c3001bfe4156,2018-02-05T00:00:00.000Z,17
  */
-// TODO document tidy parameter
-// TODO document tidy response format
 const minWindowLengthMs = ms('1m');
 const descriptiveStatisticsHandler = function descriptiveStatisticsHandler (req, res, next) {
   const { boxId, bbox, exposure, delimiter, columns, phenomenon, operation, download, format, window } = req._userParams;
@@ -276,8 +288,8 @@ const descriptiveStatisticsHandler = function descriptiveStatisticsHandler (req,
         // (sensorId, <user specified columns>, time_start, <operation_window>)
         // Start with sensorId. It should always be the the first column
         // append the wanted columns and the rest
-        responseColumns = {};
-        for (const col of ['sensorId', ...columns, 'time_start', 'operation_window']) {
+        responseColumns = { 'sensorId': 'sensorId' };
+        for (const col of [...columns, 'time_start', 'operation_window']) {
           responseColumns[col] = col;
         }
         responseColumns.operation_window = `${operation}_${window}`;
