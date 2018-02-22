@@ -218,7 +218,7 @@ ${box.sensorid},3,2018-02-05T14:06:12.620Z
       });
   });
 
-  it('should return correct means as json with format=tidy parameter', () => {
+  it('should return correct means as tidy csv with format=tidy parameter', () => {
     return chakram.get(`${BASE_URL}&window=1d&operation=arithmeticMean&from-date=2018-02-01T12:05:01.909Z&to-date=2018-02-06T12:05:01.913Z&boxids=${boxIds}&format=tidy`)
       .then(function (response) {
         expect(response).status(200);
