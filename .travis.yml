@@ -12,7 +12,7 @@ node_js:
 
 install: true
 script:
-- ./.scripts/run-tests.sh
+- ./.scripts/run-tests.sh logs
 - ./.scripts/deploy-docs.sh
 
 env:
