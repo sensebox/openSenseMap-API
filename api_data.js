@@ -27,7 +27,7 @@ define({ "api": [
       }
     },
     "version": "0.0.0",
-    "filename": "./lib/controllers/boxesController.js",
+    "filename": "./packages/api/lib/controllers/boxesController.js",
     "groupTitle": "Boxes",
     "header": {
       "fields": {
@@ -129,7 +129,7 @@ define({ "api": [
       ]
     },
     "version": "0.0.0",
-    "filename": "./lib/controllers/boxesController.js",
+    "filename": "./packages/api/lib/controllers/boxesController.js",
     "groupTitle": "Boxes"
   },
   {
@@ -188,7 +188,7 @@ define({ "api": [
       ]
     },
     "version": "0.0.0",
-    "filename": "./lib/controllers/boxesController.js",
+    "filename": "./packages/api/lib/controllers/boxesController.js",
     "groupTitle": "Boxes"
   },
   {
@@ -254,6 +254,18 @@ define({ "api": [
           },
           {
             "group": "Parameter",
+            "type": "Boolean",
+            "allowedValues": [
+              "\"true\"",
+              "\"false\""
+            ],
+            "optional": true,
+            "field": "classify",
+            "defaultValue": "false",
+            "description": "<p>if specified, the api will classify the boxes accordingly to their last measurements.</p>"
+          },
+          {
+            "group": "Parameter",
             "type": "String",
             "allowedValues": [
               "\"indoor\"",
@@ -263,7 +275,7 @@ define({ "api": [
             ],
             "optional": true,
             "field": "exposure",
-            "description": "<p>only include boxes with this exposure.</p>"
+            "description": "<p>only include boxes with this exposure. Allows to specify multiple exposures separated by comma (Example: <code>indoor,mobile</code>)</p>"
           }
         ]
       }
@@ -280,7 +292,7 @@ define({ "api": [
       }
     ],
     "version": "0.0.0",
-    "filename": "./lib/controllers/boxesController.js",
+    "filename": "./packages/api/lib/controllers/boxesController.js",
     "groupTitle": "Boxes"
   },
   {
@@ -290,7 +302,7 @@ define({ "api": [
     "name": "getSketch",
     "group": "Boxes",
     "version": "0.0.0",
-    "filename": "./lib/controllers/boxesController.js",
+    "filename": "./packages/api/lib/controllers/boxesController.js",
     "groupTitle": "Boxes",
     "header": {
       "fields": {
@@ -583,7 +595,7 @@ define({ "api": [
       ]
     },
     "version": "0.0.0",
-    "filename": "./lib/controllers/boxesController.js",
+    "filename": "./packages/api/lib/controllers/boxesController.js",
     "groupTitle": "Boxes",
     "header": {
       "fields": {
@@ -892,7 +904,7 @@ define({ "api": [
     "group": "Boxes",
     "name": "updateBox",
     "version": "0.0.0",
-    "filename": "./lib/controllers/boxesController.js",
+    "filename": "./packages/api/lib/controllers/boxesController.js",
     "groupTitle": "Boxes",
     "header": {
       "fields": {
@@ -1053,13 +1065,13 @@ define({ "api": [
             ],
             "optional": true,
             "field": "exposure",
-            "description": "<p>only include boxes with this exposure.</p>"
+            "description": "<p>only include boxes with this exposure. Allows to specify multiple exposures separated by comma (Example: <code>indoor,mobile</code>)</p>"
           }
         ]
       }
     },
     "version": "0.0.0",
-    "filename": "./lib/controllers/statisticsController.js",
+    "filename": "./packages/api/lib/controllers/statisticsController.js",
     "groupTitle": "Interpolation"
   },
   {
@@ -1125,7 +1137,7 @@ define({ "api": [
       }
     },
     "version": "0.0.0",
-    "filename": "./lib/controllers/sensorsController.js",
+    "filename": "./packages/api/lib/controllers/sensorsController.js",
     "groupTitle": "Measurements",
     "header": {
       "fields": {
@@ -1285,7 +1297,7 @@ define({ "api": [
       }
     },
     "version": "0.0.0",
-    "filename": "./lib/controllers/measurementsController.js",
+    "filename": "./packages/api/lib/controllers/measurementsController.js",
     "groupTitle": "Measurements"
   },
   {
@@ -1330,6 +1342,18 @@ define({ "api": [
             "group": "Parameter",
             "type": "String",
             "allowedValues": [
+              "\"csv\"",
+              "\"json\""
+            ],
+            "optional": true,
+            "field": "format",
+            "defaultValue": "csv",
+            "description": "<p>Can be 'csv' (default) or 'json' (default: csv)</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "String",
+            "allowedValues": [
               "createdAt",
               "value",
               "lat",
@@ -1345,8 +1369,20 @@ define({ "api": [
             ],
             "optional": true,
             "field": "columns",
-            "defaultValue": "createdAt,value,lat,lon",
+            "defaultValue": "sensorId,createdAt,value,lat,lon",
             "description": "<p>Comma separated list of columns to export.</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "Boolean",
+            "allowedValues": [
+              "true",
+              "false"
+            ],
+            "optional": true,
+            "field": "download",
+            "defaultValue": "true",
+            "description": "<p>Set the <code>content-disposition</code> header to force browsers to download instead of displaying.</p>"
           },
           {
             "group": "Parameter",
@@ -1378,13 +1414,13 @@ define({ "api": [
             ],
             "optional": true,
             "field": "exposure",
-            "description": "<p>only include boxes with this exposure.</p>"
+            "description": "<p>only include boxes with this exposure. Allows to specify multiple exposures separated by comma (Example: <code>indoor,mobile</code>)</p>"
           }
         ]
       }
     },
     "version": "0.0.0",
-    "filename": "./lib/controllers/measurementsController.js",
+    "filename": "./packages/api/lib/controllers/measurementsController.js",
     "groupTitle": "Measurements"
   },
   {
@@ -1395,7 +1431,7 @@ define({ "api": [
     "group": "Measurements",
     "name": "getLatestMeasurements",
     "version": "0.0.0",
-    "filename": "./lib/controllers/measurementsController.js",
+    "filename": "./packages/api/lib/controllers/measurementsController.js",
     "groupTitle": "Measurements",
     "parameter": {
       "fields": {
@@ -1497,7 +1533,7 @@ define({ "api": [
       ]
     },
     "version": "0.0.0",
-    "filename": "./lib/controllers/measurementsController.js",
+    "filename": "./packages/api/lib/controllers/measurementsController.js",
     "groupTitle": "Measurements",
     "header": {
       "fields": {
@@ -1620,7 +1656,7 @@ define({ "api": [
       ]
     },
     "version": "0.0.0",
-    "filename": "./lib/controllers/measurementsController.js",
+    "filename": "./packages/api/lib/controllers/measurementsController.js",
     "groupTitle": "Measurements"
   },
   {
@@ -1663,7 +1699,7 @@ define({ "api": [
       ]
     },
     "version": "0.0.0",
-    "filename": "./lib/controllers/statisticsController.js",
+    "filename": "./packages/api/lib/controllers/statisticsController.js",
     "groupTitle": "Misc"
   },
   {
@@ -1674,8 +1710,174 @@ define({ "api": [
     "description": "<p>Returns all routes of this API in human readable format</p>",
     "group": "Misc",
     "version": "0.0.0",
-    "filename": "./lib/routes.js",
+    "filename": "./packages/api/lib/routes.js",
     "groupTitle": "Misc"
+  },
+  {
+    "type": "get",
+    "url": "/statistics/descriptive",
+    "title": "Compute basic descriptive statistics over specified time windows",
+    "description": "<p>Allows to compute basic descriptive statistical methods over multiple sensors and multiple time windows. The supported methods are: arithmetic mean, geometric mean, harmonic mean, maximum, median ,minimum, mode, root mean square, standard deviation, sum of values and variance. Parameters <code>from-date</code> and <code>to-date</code> are modified to fit you specified <code>window</code> parameter. You should either specifiy multiple station ids using the <code>boxId</code> parameter or a bounding box with the <code>bbox</code> parameter, but not both.</p> <p>By default, stations with exposure <code>mobile</code> are excluded.</p>",
+    "group": "Statistics",
+    "name": "descriptive",
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": false,
+            "field": "boxId",
+            "description": "<p>Comma separated list of senseBox IDs.</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": false,
+            "field": "phenomenon",
+            "description": "<p>the name of the phenomenon you want to download the data for.</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "RFC3339Date",
+            "optional": false,
+            "field": "from-date",
+            "description": "<p>Beginning date of measurement data</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "RFC3339Date",
+            "optional": false,
+            "field": "to-date",
+            "description": "<p>End date of measurement data</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "String",
+            "allowedValues": [
+              "arithmeticMean",
+              "geometricMean",
+              "harmonicMean",
+              "max",
+              "median",
+              "min",
+              "mode",
+              "rootMeanSquare",
+              "standardDeviation",
+              "sum",
+              "variance"
+            ],
+            "optional": false,
+            "field": "operation",
+            "description": "<p>Statistical operation to execute</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": false,
+            "field": "window",
+            "description": "<p>Time window to apply. Either a number in Milliseconds or a <a href=\"https://npmjs.com/ms\"><code>zeit/ms</code></a>-parseable string rounded to the nearest minute (Math.round(<window-in-milliseconds>) / 60000). At least 1 minute</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "Boolean",
+            "allowedValues": [
+              "true",
+              "false"
+            ],
+            "optional": true,
+            "field": "download",
+            "defaultValue": "true",
+            "description": "<p>Set the <code>content-disposition</code> header to force browsers to download instead of displaying.</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "String",
+            "allowedValues": [
+              "boxId",
+              "boxName",
+              "exposure",
+              "height",
+              "lat",
+              "lon",
+              "phenomenon",
+              "sensorType",
+              "unit"
+            ],
+            "optional": true,
+            "field": "columns",
+            "description": "<p>Comma separated list of additional columns to export.</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "String",
+            "allowedValues": [
+              "csv",
+              "json",
+              "tidy"
+            ],
+            "optional": true,
+            "field": "format",
+            "defaultValue": "csv",
+            "description": "<p>Controls the format of the responde. Default is <code>csv</code>. Specifying <code>json</code> returns a JSON array element for each sensor with RFC3339 timestamps key value pairs for the requested statistical operation. Specifying <code>tidy</code> returns a csv with rows for each window and sensor.</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": false,
+            "field": "bbox",
+            "description": "<p>A bounding box containing 4 WGS84 coordinates separated by comata (,). Order is: longitude southwest, latitude southwest, longitude northeast, latitude northeast. Minimal and maximal values are: -180, 180 for longitude and -90, 90 for latitude.</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "String",
+            "allowedValues": [
+              "\"indoor\"",
+              "\"outdoor\"",
+              "\"mobile\"",
+              "\"unknown\""
+            ],
+            "optional": true,
+            "field": "exposure",
+            "description": "<p>only include boxes with this exposure. Allows to specify multiple exposures separated by comma (Example: <code>indoor,mobile</code>)</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "String",
+            "allowedValues": [
+              "comma",
+              "semicolon"
+            ],
+            "optional": true,
+            "field": "delimiter",
+            "defaultValue": "comma",
+            "description": "<p>Only for csv: the delimiter for csv. Possible values: <code>semicolon</code>, <code>comma</code>. Per default a comma is used. Alternatively you can use separator as parameter name.</p>"
+          }
+        ]
+      }
+    },
+    "success": {
+      "examples": [
+        {
+          "title": "Example CSV:",
+          "content": "sensorId,Temperatur_2018-01-31,Temperatur_2018-02-01Z,Temperatur_2018-02-02Z,Temperatur_2018-02-03Z,Temperatur_2018-02-04Z,Temperatur_2018-02-05Z,Temperatur_2018-02-06Z,Temperatur_2018-02-07Z\n5a787e38d55e821b639e890f,,,138,104,56,17,,\n5a787e38d55e821b639e8915,,,138,104,56,17,,",
+          "type": "text/csv"
+        },
+        {
+          "title": "Example JSON:",
+          "content": "sensorId,Temperatur_2018-01-31,Temperatur_2018-02-01Z,Temperatur_2018-02-02Z,Temperatur_2018-02-03Z,Temperatur_2018-02-04Z,Temperatur_2018-02-05Z,Temperatur_2018-02-06Z,Temperatur_2018-02-07Z\n[\n  {\n    \"sensorId\": \"5a787e38d55e821b639e890f\",\n    \"2018-02-02T00:00:00.000Z\": 138,\n    \"2018-02-03T00:00:00.000Z\": 104,\n    \"2018-02-04T00:00:00.000Z\": 56,\n    \"2018-02-05T00:00:00.000Z\": 17\n  },\n  {\n    \"sensorId\": \"5a787e38d55e821b639e8915\",\n    \"2018-02-02T00:00:00.000Z\": 138,\n    \"2018-02-03T00:00:00.000Z\": 104,\n    \"2018-02-04T00:00:00.000Z\": 56,\n    \"2018-02-05T00:00:00.000Z\": 17\n  }\n]",
+          "type": "application/json"
+        },
+        {
+          "title": "Example tidy CSV:",
+          "content": "sensorId,time_start,arithmeticMean_1d\n5a8e8c6c8432c3001bfe414a,2018-02-02T00:00:00.000Z,138\n5a8e8c6c8432c3001bfe414a,2018-02-03T00:00:00.000Z,104\n5a8e8c6c8432c3001bfe414a,2018-02-04T00:00:00.000Z,56\n5a8e8c6c8432c3001bfe414a,2018-02-05T00:00:00.000Z,17\n5a8e8c6c8432c3001bfe4150,2018-02-02T00:00:00.000Z,138\n5a8e8c6c8432c3001bfe4150,2018-02-03T00:00:00.000Z,104\n5a8e8c6c8432c3001bfe4150,2018-02-04T00:00:00.000Z,56\n5a8e8c6c8432c3001bfe4150,2018-02-05T00:00:00.000Z,17\n5a8e8c6c8432c3001bfe4156,2018-02-02T00:00:00.000Z,138\n5a8e8c6c8432c3001bfe4156,2018-02-03T00:00:00.000Z,104\n5a8e8c6c8432c3001bfe4156,2018-02-04T00:00:00.000Z,56\n5a8e8c6c8432c3001bfe4156,2018-02-05T00:00:00.000Z,17",
+          "type": "text/csv"
+        }
+      ]
+    },
+    "version": "0.0.0",
+    "filename": "./packages/api/lib/controllers/statisticsController.js",
+    "groupTitle": "Statistics"
   },
   {
     "type": "post",
@@ -1725,7 +1927,7 @@ define({ "api": [
       }
     },
     "version": "0.0.0",
-    "filename": "./lib/controllers/usersController.js",
+    "filename": "./packages/api/lib/controllers/usersController.js",
     "groupTitle": "Users"
   },
   {
@@ -1749,7 +1951,7 @@ define({ "api": [
       }
     },
     "version": "0.0.0",
-    "filename": "./lib/controllers/usersController.js",
+    "filename": "./packages/api/lib/controllers/usersController.js",
     "groupTitle": "Users",
     "header": {
       "fields": {
@@ -1793,7 +1995,7 @@ define({ "api": [
     "description": "<p>Returns information about the currently signed in user</p>",
     "group": "Users",
     "version": "0.0.0",
-    "filename": "./lib/controllers/usersController.js",
+    "filename": "./packages/api/lib/controllers/usersController.js",
     "groupTitle": "Users",
     "header": {
       "fields": {
@@ -1857,7 +2059,7 @@ define({ "api": [
       }
     },
     "version": "0.0.0",
-    "filename": "./lib/controllers/usersController.js",
+    "filename": "./packages/api/lib/controllers/usersController.js",
     "groupTitle": "Users"
   },
   {
@@ -1908,7 +2110,7 @@ define({ "api": [
       }
     },
     "version": "0.0.0",
-    "filename": "./lib/controllers/usersController.js",
+    "filename": "./packages/api/lib/controllers/usersController.js",
     "groupTitle": "Users"
   },
   {
@@ -1986,7 +2188,7 @@ define({ "api": [
       }
     },
     "version": "0.0.0",
-    "filename": "./lib/controllers/usersController.js",
+    "filename": "./packages/api/lib/controllers/usersController.js",
     "groupTitle": "Users"
   },
   {
@@ -2038,7 +2240,7 @@ define({ "api": [
       }
     },
     "version": "0.0.0",
-    "filename": "./lib/controllers/usersController.js",
+    "filename": "./packages/api/lib/controllers/usersController.js",
     "groupTitle": "Users",
     "parameter": {
       "fields": {
@@ -2117,7 +2319,7 @@ define({ "api": [
       }
     },
     "version": "0.0.0",
-    "filename": "./lib/controllers/usersController.js",
+    "filename": "./packages/api/lib/controllers/usersController.js",
     "groupTitle": "Users"
   },
   {
@@ -2148,7 +2350,7 @@ define({ "api": [
       }
     },
     "version": "0.0.0",
-    "filename": "./lib/controllers/usersController.js",
+    "filename": "./packages/api/lib/controllers/usersController.js",
     "groupTitle": "Users",
     "header": {
       "fields": {
@@ -2266,7 +2468,7 @@ define({ "api": [
       }
     },
     "version": "0.0.0",
-    "filename": "./lib/controllers/usersController.js",
+    "filename": "./packages/api/lib/controllers/usersController.js",
     "groupTitle": "Users"
   },
   {
@@ -2297,7 +2499,7 @@ define({ "api": [
       }
     },
     "version": "0.0.0",
-    "filename": "./lib/controllers/usersController.js",
+    "filename": "./packages/api/lib/controllers/usersController.js",
     "groupTitle": "Users",
     "header": {
       "fields": {
@@ -2382,7 +2584,7 @@ define({ "api": [
       }
     },
     "version": "0.0.0",
-    "filename": "./lib/controllers/usersController.js",
+    "filename": "./packages/api/lib/controllers/usersController.js",
     "groupTitle": "Users",
     "header": {
       "fields": {
