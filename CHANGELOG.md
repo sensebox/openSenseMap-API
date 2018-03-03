@@ -1,6 +1,8 @@
 # openSenseMap API Changelog
 
 ## Unreleased
+
+## v4
 - Include sensorId as default column in measurements download
 - Add format parameter to bulk download and descriptive statistics routes
 - Support json format in bulk download route
