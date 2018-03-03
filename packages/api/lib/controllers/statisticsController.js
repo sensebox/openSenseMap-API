@@ -10,7 +10,8 @@ const { Box, Measurement } = require('@sensebox/opensensemap-api-models'),
   handleError = require('../helpers/errorHandler'),
   ms = require('ms'),
   DescriptiveStatisticsTransformer = require('../transformers/descriptiveStatisticsTransformer'),
-  dashify = require('dashify');
+  dashify = require('dashify'),
+  jsonstringify = require('stringify-stream');
 
 /**
  * @api {get} /stats Get some statistics about the database
@@ -23,25 +24,27 @@ const { Box, Measurement } = require('@sensebox/opensensemap-api-models'),
  * @apiSuccessExample {json} [human=true]
  * ["318","118M","393"]
  */
-const getStatistics = function getStatistics (req, res) {
+const getStatistics = async function getStatistics (req, res, next) {
   const { human } = req._userParams;
-  const qrys = [
-    Box.count({}),
-    Measurement.count({}),
-    Measurement.count({
-      createdAt: {
-        '$gt': new Date(Date.now() - 60000),
-        '$lt': new Date()
-      }
-    })
-  ];
-  Promise.all(qrys)
-    .then(function (results) {
-      if (human === 'true') {
-        results = results.map(r => millify(r).toString());
-      }
-      res.send(200, results);
-    });
+  try {
+    let results = await Promise.all([
+      Box.count({}),
+      Measurement.count({}),
+      Measurement.count({
+        createdAt: {
+          '$gt': new Date(Date.now() - 60000),
+          '$lt': new Date()
+        }
+      })
+    ]);
+    if (human === 'true') {
+      results = results.map(r => millify(r).toString());
+    }
+    res.send(200, results);
+
+  } catch (err) {
+    return next(err);
+  }
 };
 
 /**
@@ -69,7 +72,7 @@ const getStatistics = function getStatistics (req, res) {
 
 const idwColumns = ['sensorId', 'value', 'lat', 'lon'];
 
-const idwHandler = function (req, res, next) {
+const idwHandler = async function (req, res, next) {
   const { phenomenon, bbox, exposure, cellWidth, gridType, power, numTimeSteps, numClasses, fromDate, toDate } = req._userParams;
 
   // validate bbox param, we don't want too much load on our server!
@@ -87,42 +90,39 @@ const idwHandler = function (req, res, next) {
     queryParams['exposure'] = { '$in': exposure };
   }
 
-  Box.findMeasurementsOfBoxesStream({
-    query: queryParams,
-    bbox: bbox,
-    from: fromDate.toDate(),
-    to: toDate.toDate(),
-    columns: idwColumns,
-    order: { createdAt: 1 },
-    transformations: { parseTimestamps: true, parseValues: true }
-  })
-    .then(function (cursor) {
-      res.header('Content-Type', 'application/json; charset=utf-8');
-
-      cursor
-        .on('error', function (err) {
-          return handleError(err, next);
-        })
-        .pipe(idwTransformer({
-          numTimeSteps,
-          numClasses,
-          toDate,
-          fromDate,
-          bbox,
-          gridType,
-          cellWidth,
-          power
-        }))
-        .on('error', function (err) {
-          res.end(`Error: ${err.message}`);
-        })
-        .pipe(res);
-
-    })
-    .catch(function (err) {
-      handleError(err, next);
+  try {
+    const cursor = await Box.findMeasurementsOfBoxesStream({
+      query: queryParams,
+      bbox: bbox,
+      from: fromDate.toDate(),
+      to: toDate.toDate(),
+      columns: idwColumns,
+      order: { createdAt: 1 },
+      transformations: { parseTimestamps: true, parseValues: true }
     });
+    res.header('Content-Type', 'application/json; charset=utf-8');
 
+    cursor
+      .on('error', function (err) {
+        return handleError(err, next);
+      })
+      .pipe(idwTransformer({
+        numTimeSteps,
+        numClasses,
+        toDate,
+        fromDate,
+        bbox,
+        gridType,
+        cellWidth,
+        power
+      }))
+      .on('error', function (err) {
+        res.end(`Error: ${err.message}`);
+      })
+      .pipe(res);
+  } catch (err) {
+    handleError(err, next);
+  }
 };
 
 /**
@@ -147,36 +147,69 @@ const idwHandler = function (req, res, next) {
  * @apiParam {String} boxId Comma separated list of senseBox IDs.
  * @apiUse SeparatorParam
  * @apiParam {String=boxId,boxName,exposure,height,lat,lon,phenomenon,sensorType,unit} [columns] Comma separated list of additional columns to export.
+ * @apiParam {String=csv,json,tidy} [format=csv] Controls the format of the responde. Default is `csv`. Specifying `json` returns a JSON array element for each sensor with RFC3339 timestamps key value pairs for the requested statistical operation. Specifying `tidy` returns a csv with rows for each window and sensor.
  * @apiSuccessExample {text/csv} Example CSV:
  *  sensorId,Temperatur_2018-01-31,Temperatur_2018-02-01Z,Temperatur_2018-02-02Z,Temperatur_2018-02-03Z,Temperatur_2018-02-04Z,Temperatur_2018-02-05Z,Temperatur_2018-02-06Z,Temperatur_2018-02-07Z
  *  5a787e38d55e821b639e890f,,,138,104,56,17,,
  *  5a787e38d55e821b639e8915,,,138,104,56,17,,
+ * @apiSuccessExample {application/json} Example JSON:
+ *  sensorId,Temperatur_2018-01-31,Temperatur_2018-02-01Z,Temperatur_2018-02-02Z,Temperatur_2018-02-03Z,Temperatur_2018-02-04Z,Temperatur_2018-02-05Z,Temperatur_2018-02-06Z,Temperatur_2018-02-07Z
+ *  [
+ *    {
+ *      "sensorId": "5a787e38d55e821b639e890f",
+ *      "2018-02-02T00:00:00.000Z": 138,
+ *      "2018-02-03T00:00:00.000Z": 104,
+ *      "2018-02-04T00:00:00.000Z": 56,
+ *      "2018-02-05T00:00:00.000Z": 17
+ *    },
+ *    {
+ *      "sensorId": "5a787e38d55e821b639e8915",
+ *      "2018-02-02T00:00:00.000Z": 138,
+ *      "2018-02-03T00:00:00.000Z": 104,
+ *      "2018-02-04T00:00:00.000Z": 56,
+ *      "2018-02-05T00:00:00.000Z": 17
+ *    }
+ *  ]
+ * @apiSuccessExample {text/csv} Example tidy CSV:
+ *  sensorId,time_start,arithmeticMean_1d
+ *  5a8e8c6c8432c3001bfe414a,2018-02-02T00:00:00.000Z,138
+ *  5a8e8c6c8432c3001bfe414a,2018-02-03T00:00:00.000Z,104
+ *  5a8e8c6c8432c3001bfe414a,2018-02-04T00:00:00.000Z,56
+ *  5a8e8c6c8432c3001bfe414a,2018-02-05T00:00:00.000Z,17
+ *  5a8e8c6c8432c3001bfe4150,2018-02-02T00:00:00.000Z,138
+ *  5a8e8c6c8432c3001bfe4150,2018-02-03T00:00:00.000Z,104
+ *  5a8e8c6c8432c3001bfe4150,2018-02-04T00:00:00.000Z,56
+ *  5a8e8c6c8432c3001bfe4150,2018-02-05T00:00:00.000Z,17
+ *  5a8e8c6c8432c3001bfe4156,2018-02-02T00:00:00.000Z,138
+ *  5a8e8c6c8432c3001bfe4156,2018-02-03T00:00:00.000Z,104
+ *  5a8e8c6c8432c3001bfe4156,2018-02-04T00:00:00.000Z,56
+ *  5a8e8c6c8432c3001bfe4156,2018-02-05T00:00:00.000Z,17
  */
 const minWindowLengthMs = ms('1m');
-const descriptiveStatisticsHandler = function descriptiveStatisticsHandler (req, res, next) {
-  const { boxId, bbox, exposure, delimiter, columns, phenomenon, operation, download } = req._userParams;
-  let { fromDate, toDate, window } = req._userParams;
+const descriptiveStatisticsHandler = async function descriptiveStatisticsHandler (req, res, next) {
+  const { boxId, bbox, exposure, delimiter, columns, phenomenon, operation, download, format, window } = req._userParams;
+  let { fromDate, toDate } = req._userParams;
 
-  window = Math.round(ms(window) / minWindowLengthMs) * minWindowLengthMs;
-  if (!window || window < minWindowLengthMs) {
+  const windowMs = Math.round(ms(window) / minWindowLengthMs) * minWindowLengthMs;
+  if (!windowMs || windowMs < minWindowLengthMs) {
     return next(new BadRequestError(`Invalid window length. Smallest window size is ${ms(minWindowLengthMs, { long: true })}.`));
   }
 
   // compute start and end times in milliseconds
   //
-  fromDate = fromDate.valueOf() - (fromDate.valueOf() % window);
+  fromDate = fromDate.valueOf() - (fromDate.valueOf() % windowMs);
   // always overshoot one window..
-  toDate = toDate.valueOf() - (toDate.valueOf() % window) + window;
+  toDate = toDate.valueOf() - (toDate.valueOf() % windowMs) + windowMs;
 
   const windows = [new Date(fromDate)];
   // compute all possible windows
   for (let i = 1; windows[i - 1].getTime() !== toDate; i = i + 1) {
-    windows.push(new Date(fromDate + window * i));
+    windows.push(new Date(fromDate + windowMs * i));
   }
 
   fromDate = new Date(fromDate);
   // add another window to toDate query parameter to get enough data
-  toDate = new Date(toDate + window);
+  toDate = new Date(toDate + windowMs);
 
   if (boxId && bbox) {
     return next(new BadRequestError('please specify only boxId or bbox'));
@@ -211,51 +244,82 @@ const descriptiveStatisticsHandler = function descriptiveStatisticsHandler (req,
     opts.query['exposure'] = { '$in': exposure };
   }
 
-  Box.findMeasurementsOfBoxesStream(opts)
-    .then(function (cursor) {
+  try {
+    const cursor = await Box.findMeasurementsOfBoxesStream(opts);
+    let stringifier, fileExtension, responseColumns;
+
+    const responseWindows = windows.map(w => w.toISOString());
+
+    switch (format) {
+    /* eslint-disable no-case-declarations*/
+    case 'csv':
+      fileExtension = 'csv';
       res.header('Content-Type', 'text/csv');
-      if (download === 'true') {
-        res.header('Content-Disposition', `attachment; filename=${createDownloadFilename(req.date(), operation, [phenomenon, ...columns], 'csv')}`);
-      }
-
       // get end parameter for timestamp substring
-      const timestampSubstringEnd = computeTimestampTruncationLength(window);
-
+      const timestampSubstringEnd = computeTimestampTruncationLength(windowMs);
       // construct the columns for csv stringify in correct order
       // (sensorId, <user specified columns>, <averageWindows>)
       // Start with sensorId. It should always be the the first column
       // append the wanted columns and the windows
-      const csvColumns = {};
-      for (const col of ['sensorId', ...columns, ...windows]) {
+      responseColumns = { 'sensorId': 'sensorId' };
+      for (const col of columns) {
         // is a date?
-        if (typeof col.toISOString === 'function') {
-          csvColumns[col] = `${dashify(phenomenon, { condense: true })}_${col.toISOString().substring(0, timestampSubstringEnd)}Z`;
-        } else { // otherwise just append
-          csvColumns[col] = col;
-        }
+        responseColumns[col] = col;
+      }
+      for (const col of responseWindows) {
+        responseColumns[col] = `${dashify(phenomenon, { condense: true })}_${col.substring(0, timestampSubstringEnd)}Z`;
       }
 
-      cursor
-        .on('error', function (err) {
-          return handleError(err, next);
-        })
-        .pipe(new DescriptiveStatisticsTransformer({
-          operation,
-          windows
-        }))
-        .on('error', function (err) {
-          return handleError(err, next);
-        })
-        .pipe(csvStringifier(csvColumns, delimiter))
-        .on('error', function (err) {
-          return handleError(err, next);
-        })
-        .pipe(res);
-    })
-    .catch(function (err) {
-      handleError(err, next);
-    });
+      stringifier = csvStringifier(responseColumns, delimiter);
+      break;
+      /* eslint-enable no-case-declarations*/
+    case 'json':
+      fileExtension = 'json';
+      res.header('Content-Type', 'application/json');
 
+      stringifier = jsonstringify({ open: '[', close: ']' }, ['sensorId', ...columns, ...responseWindows]);
+      break;
+    case 'tidy':
+      fileExtension = 'csv';
+      res.header('Content-Type', 'text/csv');
+
+      // construct the columns for tidy stringify in correct order
+      // (sensorId, <user specified columns>, time_start, <operation_window>)
+      // Start with sensorId. It should always be the the first column
+      // append the wanted columns and the rest
+      responseColumns = { 'sensorId': 'sensorId' };
+      for (const col of [...columns, 'time_start', 'operation_window']) {
+        responseColumns[col] = col;
+      }
+      responseColumns.operation_window = `${operation}_${window}`;
+      stringifier = csvStringifier(responseColumns, delimiter);
+    }
+
+    if (download === 'true') {
+      res.header('Content-Disposition', `attachment; filename=${createDownloadFilename(req.date(), operation, [phenomenon, ...columns], fileExtension)}`);
+    }
+
+    // stream response to client
+    cursor
+      .on('error', function (err) {
+        return handleError(err, next);
+      })
+      .pipe(new DescriptiveStatisticsTransformer({
+        operation,
+        windows,
+        tidy: (format === 'tidy')
+      }))
+      .on('error', function (err) {
+        return handleError(err, next);
+      })
+      .pipe(stringifier)
+      .on('error', function (err) {
+        return handleError(err, next);
+      })
+      .pipe(res);
+  } catch (err) {
+    handleError(err, next);
+  }
 };
 
 module.exports = {
@@ -294,7 +358,8 @@ module.exports = {
       { predef: 'fromDateNoDefault', required: true },
       { name: 'window', required: true },
       { name: 'operation', required: true, allowedValues: ['arithmeticMean', 'geometricMean', 'harmonicMean', 'max', 'median', 'min', 'mode', 'rootMeanSquare', 'standardDeviation', 'sum', 'variance'] },
-      { name: 'download', defaultValue: 'true', allowedValues: ['true', 'false'] }
+      { name: 'download', defaultValue: 'true', allowedValues: ['true', 'false'] },
+      { name: 'format', defaultValue: 'csv', allowedValues: ['csv', 'json', 'tidy'] }
     ]),
     validateFromToTimeParams,
     descriptiveStatisticsHandler

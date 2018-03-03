@@ -17,7 +17,7 @@ services:
       NODE_ENV: test
       NODE_CONFIG: |-
         {
-          "slack_url": "http://fake.slack.url/bla/bli/blu",
+          "slack_url": "http://127.0.0.1/bla/bli/blu",
           "openSenseMap-API-models": {
             "db": {
               "mongo_uri": "mongodb://db/api-test"
@@ -178,7 +178,7 @@ services:
       - "8025:8025"
 
   mqtt-osem-integration:
-    image: sensebox/mqtt-osem-integration
+    image: sensebox/mqtt-osem-integration:v0.0.4
     depends_on:
       - db
     environment:

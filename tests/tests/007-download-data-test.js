@@ -283,12 +283,43 @@ describe('downloading data', function () {
 
   describe('/boxes/data', function () {
 
+    const expectedMeasurementsCount = 10;
+
     it('should allow download data through /boxes/data/?phenomenon&boxid as csv', function () {
       return chakram.get(`${BASE_URL}/boxes/data/?boxid=${boxIds[0]}&phenomenon=Temperatur`)
         .then(function (response) {
           expect(response).to.have.status(200);
           expect(response.body).not.to.be.empty;
           expect(response).to.have.header('content-type', 'text/csv');
+
+          return chakram.wait();
+        });
+    });
+
+    it('should allow download data through /boxes/data/?phenomenon&boxid as csv with explicit parameter format=csv', function () {
+      return chakram.get(`${BASE_URL}/boxes/data/?boxid=${boxIds[0]}&phenomenon=Temperatur&format=csv`)
+        .then(function (response) {
+          expect(response).to.have.status(200);
+          expect(response.body).not.to.be.empty;
+          expect(response).to.have.header('content-type', 'text/csv');
+
+          return chakram.wait();
+        });
+    });
+
+    it('should allow download data through /boxes/data/?phenomenon&boxid as json', function () {
+      return chakram.get(`${BASE_URL}/boxes/data/?boxid=${boxIds[0]}&phenomenon=Temperatur&format=json&columns=sensorId,value,lat,lon,height`)
+        .then(function (response) {
+          expect(response).to.have.status(200);
+          expect(response.body).not.to.be.empty;
+          expect(response).to.have.header('content-type', 'application/json');
+          expect(Array.isArray(response.body)).true;
+          for (const m of response.body) {
+            expect(m.sensorId).to.exist;
+            expect(m.value).to.exist;
+            expect(m.lat).to.exist;
+            expect(m.lon).to.exist;
+          }
 
           return chakram.wait();
         });
@@ -303,7 +334,7 @@ describe('downloading data', function () {
           /* eslint-disable no-unused-vars */
           const [_, ...lines] = response.body.split('\n');
           /* eslint-enable no-unused-vars */
-          expect(lines).to.have.lengthOf(9);
+          expect(lines).to.have.lengthOf(expectedMeasurementsCount);
 
           return chakram.wait();
         });
@@ -318,7 +349,7 @@ describe('downloading data', function () {
           /* eslint-disable no-unused-vars */
           const [_, ...lines] = response.body.split('\n');
           /* eslint-enable no-unused-vars */
-          expect(lines).to.have.lengthOf(9);
+          expect(lines).to.have.lengthOf(expectedMeasurementsCount);
 
           return chakram.wait();
         });
@@ -337,7 +368,7 @@ describe('downloading data', function () {
           expect(response).to.have.header('content-type', 'text/csv');
           const [header, ...lines] = response.body.split('\n');
           expect(header).equal('exposure');
-          expect(lines).to.have.lengthOf(9);
+          expect(lines).to.have.lengthOf(expectedMeasurementsCount);
           for (let i = 0; i < lines.length - 1; i++) {
             expect(lines[i]).equal('indoor');
           }
@@ -359,7 +390,7 @@ describe('downloading data', function () {
           expect(response).to.have.header('content-type', 'text/csv');
           const [header, ...lines] = response.body.split('\n');
           expect(header).equal('exposure');
-          expect(lines).to.have.lengthOf(14);
+          expect(lines).to.have.lengthOf(expectedMeasurementsCount + 5);
           let hasIndoor = false, hasOutdoor = false;
           for (let i = 0; i < lines.length - 1; i++) {
             if (hasIndoor === false && lines[i] === 'indoor') {
@@ -382,11 +413,11 @@ describe('downloading data', function () {
           expect(response).to.have.status(200);
           expect(response.body).not.to.be.empty;
           expect(response).to.have.header('content-type', 'text/csv');
-          expect(response).to.have.header('content-disposition', /opensensemap_org-download-Temperatur-createdAt-value-lat-lon-/);
+          expect(response).to.have.header('content-disposition', /opensensemap_org-download-Temperatur-sensorId-createdAt-value-lat-lon-/);
           /* eslint-disable no-unused-vars */
           const [_, ...lines] = response.body.split('\n');
           /* eslint-enable no-unused-vars */
-          expect(lines).to.have.lengthOf(9);
+          expect(lines).to.have.lengthOf(expectedMeasurementsCount);
 
           return chakram.wait();
         });
@@ -402,7 +433,7 @@ describe('downloading data', function () {
           /* eslint-disable no-unused-vars */
           const [_, ...lines] = response.body.split('\n');
           /* eslint-enable no-unused-vars */
-          expect(lines).to.have.lengthOf(9);
+          expect(lines).to.have.lengthOf(expectedMeasurementsCount);
 
           return chakram.wait();
         });

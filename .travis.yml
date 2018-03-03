@@ -1,17 +1,20 @@
-sudo: false
+sudo: required
+
+services:
+  - docker
+
+git:
+  depth: 1
 
 language: node_js
 node_js:
-  - "6"
+  - "8"
 
 install: true
-script: ./.scripts/deploy-docs.sh
+script:
+- yarn test && yarn deploy-docs
 
 env:
   global:
     - GITHUB_REPO: "sensebox/openSenseMap-API"
     - secure: "B1S19gMUgYsGSDcQGu9iXyC2Gv/I0Saw64cthMPXck4Scbog6vAQ4b8Zp2LvgcnfYGv+714KCrv1AunF0xdt/7CNi4426cyvmB8uNV5fZRaSrCq6iWOzqI616OLY7jwJ7Fu21PL7RgwZjoe4JKxY8XoSqnoDdZgclblL96ALfSY="
-
-branches:
-  only:
-    - master

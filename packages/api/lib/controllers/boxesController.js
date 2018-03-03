@@ -116,22 +116,19 @@ const
  * @apiUse ContentTypeJSON
  *
  */
-const updateBox = function updateBox (req, res, next) {
-  Box.findBoxById(req._userParams.boxId, { lean: false, populate: false })
-    .then(function (box) {
-      return box.updateBox(req._userParams);
-    })
-    .then(function (updatedBox) {
-      if (updatedBox._sensorsChanged === true) {
-        req.user.mail('newSketch', updatedBox);
-      }
+const updateBox = async function updateBox (req, res, next) {
+  try {
+    let box = await Box.findBoxById(req._userParams.boxId, { lean: false, populate: false });
+    box = await box.updateBox(req._userParams);
+    if (box._sensorsChanged === true) {
+      req.user.mail('newSketch', box);
+    }
 
-      res.send({ code: 'Ok', data: updatedBox.toJSON({ includeSecrets: true }) });
-      clearCache(['getBoxes']);
-    })
-    .catch(function (err) {
-      handleError(err, next);
-    });
+    res.send({ code: 'Ok', data: box.toJSON({ includeSecrets: true }) });
+    clearCache(['getBoxes']);
+  } catch (err) {
+    handleError(err, next);
+  }
 };
 
 /**
@@ -154,17 +151,13 @@ const updateBox = function updateBox (req, res, next) {
  *   { "coordinates": [7.68323, 51.9423], "type": "Point", "timestamp": "2017-07-27T12:02:00Z"}
  * ]
  */
-const getBoxLocations = function getBoxLocations (req, res, next) {
-  Box.findBoxById(req._userParams.boxId, { onlyLocations: true, lean: false })
-    .then(function (box) {
-      return box.getLocations(req._userParams);
-    })
-    .then(function (locations) {
-      res.send(locations);
-    })
-    .catch(function (err) {
-      handleError(err, next);
-    });
+const getBoxLocations = async function getBoxLocations (req, res, next) {
+  try {
+    const box = await Box.findBoxById(req._userParams.boxId, { onlyLocations: true, lean: false });
+    res.send(await box.getLocations(req._userParams));
+  } catch (err) {
+    handleError(err, next);
+  }
 };
 
 const geoJsonStringifyReplacer = function geoJsonStringifyReplacer (key, box) {
@@ -195,7 +188,7 @@ const geoJsonStringifyReplacer = function geoJsonStringifyReplacer (key, box) {
  * @apiSampleRequest https://api.opensensemap.org/boxes?date=2015-03-07T02:50Z&phenomenon=Temperatur
  * @apiSampleRequest https://api.opensensemap.org/boxes?date=2015-03-07T02:50Z,2015-04-07T02:50Z&phenomenon=Temperatur
  */
-const getBoxes = function getBoxes (req, res, next) {
+const getBoxes = async function getBoxes (req, res, next) {
   // content-type is always application/json for this route
   res.header('Content-Type', 'application/json; charset=utf-8');
 
@@ -206,27 +199,26 @@ const getBoxes = function getBoxes (req, res, next) {
     stringifier = jsonstringify({ open: '{"type":"FeatureCollection","features":[', close: ']}' }, geoJsonStringifyReplacer);
   }
 
-  Box.findBoxesLastMeasurements(req._userParams)
-    .then(function (stream) {
+  try {
+    let stream = await Box.findBoxesLastMeasurements(req._userParams);
 
-      if (req._userParams.classify === 'true') {
-        stream = stream
-          .pipe(new classifyTransformer())
-          .on('error', function (err) {
-            res.end(`Error: ${err.message}`);
-          });
-      }
-
-      stream
-        .pipe(stringifier)
+    if (req._userParams.classify === 'true') {
+      stream = stream
+        .pipe(new classifyTransformer())
         .on('error', function (err) {
           res.end(`Error: ${err.message}`);
-        })
-        .pipe(res);
-    })
-    .catch(function (err) {
-      handleError(err, next);
-    });
+        });
+    }
+
+    stream
+      .pipe(stringifier)
+      .on('error', function (err) {
+        res.end(`Error: ${err.message}`);
+      })
+      .pipe(res);
+  } catch (err) {
+    handleError(err, next);
+  }
 };
 
 /**
@@ -330,16 +322,14 @@ const getBoxes = function getBoxes (req, res, next) {
 }
  */
 
-const getBox = function getBox (req, res, next) {
+const getBox = async function getBox (req, res, next) {
   const { format, boxId } = req._userParams;
 
-  Box.findBoxById(boxId, { format })
-    .then(function (box) {
-      res.send(box);
-    })
-    .catch(function (err) {
-      handleError(err, next);
-    });
+  try {
+    res.send(await Box.findBoxById(boxId, { format }));
+  } catch (err) {
+    handleError(err, next);
+  }
 };
 
 /**
@@ -369,19 +359,16 @@ const getBox = function getBox (req, res, next) {
  * @apiUse ContentTypeJSON
  * @apiUse JWTokenAuth
  */
-const postNewBox = function postNewBox (req, res, next) {
-  req.user.addBox(req._userParams)
-    .then(function (newBox) {
-      return Box.populate(newBox, Box.BOX_SUB_PROPS_FOR_POPULATION);
-    })
-    .then(function (newBox) {
-      res.send(201, { message: 'Box successfully created', data: newBox });
-      clearCache(['getBoxes', 'getStats']);
-      postToSlack(`New Box: ${req.user.name} (${redactEmail(req.user.email)}) just registered "${newBox.name}" (${newBox.model}): <https://opensensemap.org/explore/${newBox._id}|link>`);
-    })
-    .catch(function (err) {
-      handleError(err, next);
-    });
+const postNewBox = async function postNewBox (req, res, next) {
+  try {
+    let newBox = await req.user.addBox(req._userParams);
+    newBox = await Box.populate(newBox, Box.BOX_SUB_PROPS_FOR_POPULATION);
+    res.send(201, { message: 'Box successfully created', data: newBox });
+    clearCache(['getBoxes', 'getStats']);
+    postToSlack(`New Box: ${req.user.name} (${redactEmail(req.user.email)}) just registered "${newBox.name}" (${newBox.model}): <https://opensensemap.org/explore/${newBox._id}|link>`);
+  } catch (err) {
+    handleError(err, next);
+  }
 };
 
 /**
@@ -391,15 +378,14 @@ const postNewBox = function postNewBox (req, res, next) {
  * @apiUse JWTokenAuth
  * @apiUse BoxIdParam
  */
-const getSketch = function getSketch (req, res, next) {
+const getSketch = async function getSketch (req, res, next) {
   res.header('Content-Type', 'text/plain; charset=utf-8');
-  Box.findBoxById(req._userParams.boxId, { populate: false, lean: false })
-    .then(function (box) {
-      res.send(box.getSketch());
-    })
-    .catch(function (err) {
-      handleError(err, next);
-    });
+  try {
+    const box = await Box.findBoxById(req._userParams.boxId, { populate: false, lean: false });
+    res.send(box.getSketch());
+  } catch (err) {
+    handleError(err, next);
+  }
 };
 
 /**
@@ -412,21 +398,19 @@ const getSketch = function getSketch (req, res, next) {
  * @apiUse JWTokenAuth
  * @apiUse BoxIdParam
  */
-const deleteBox = function deleteBox (req, res, next) {
+const deleteBox = async function deleteBox (req, res, next) {
   const { password, boxId } = req._userParams;
 
-  req.user.checkPassword(password)
-    .then(function () {
-      return req.user.removeBox(boxId);
-    })
-    .then(function () {
-      res.send({ code: 'Ok', message: 'box and all associated measurements marked for deletion' });
-      clearCache(['getBoxes', 'getStats']);
-      postToSlack(`Box deleted: ${req.user.name} (${redactEmail(req.user.email)}) just deleted ${boxId}`);
-    })
-    .catch(function (err) {
-      handleError(err, next);
-    });
+  try {
+    await req.user.checkPassword(password);
+    await req.user.removeBox(boxId);
+    res.send({ code: 'Ok', message: 'box and all associated measurements marked for deletion' });
+    clearCache(['getBoxes', 'getStats']);
+    postToSlack(`Box deleted: ${req.user.name} (${redactEmail(req.user.email)}) just deleted ${boxId}`);
+
+  } catch (err) {
+    handleError(err, next);
+  }
 };
 
 module.exports = {

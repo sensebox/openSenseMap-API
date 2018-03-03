@@ -15,3 +15,5 @@ version.js
 *.log
 .github
 tests
+apidoc
+apidoc.json

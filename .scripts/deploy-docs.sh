@@ -3,21 +3,25 @@
 set -euo pipefail
 IFS=$'\n\t'
 
-currentBranch=$(git branch | grep -e "^*" | cut -d' ' -f 2)
-
-if [ "$currentBranch" != "master" ]; then
-  echo "Docs can only be built from 'master' branch"
-  exit 0
-fi
-
 # move to the build dir..
 cd "$TRAVIS_BUILD_DIR"
 
 # install apidocs
 npm install -g apidoc@0.17.6
 
+# append the current version
+sed -i "1 s|$| ${TRAVIS_TAG}|" apidoc/introduction.md
+
 # run apidoc
 apidoc -i . -f js -e node_modules
+
+if [[ -z "${TRAVIS_TAG}" ]]; then
+  echo "Docs can only be built from tags"
+  exit 0
+fi
+
+# reset the changes to please git
+git checkout -- apidoc/introduction.md
 
 # checkout gh-pages branch
 git remote set-branches --add origin gh-pages

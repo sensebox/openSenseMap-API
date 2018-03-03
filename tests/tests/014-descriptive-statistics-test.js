@@ -174,6 +174,73 @@ ${box.sensorid},3,2018-02-05T14:06:12.620Z
       });
   });
 
+  it('should return correct means as csv with format=csv parameter', () => {
+    return chakram.get(`${BASE_URL}&window=1d&operation=arithmeticMean&from-date=2018-02-01T12:05:01.909Z&to-date=2018-02-06T12:05:01.913Z&boxids=${boxIds}&format=csv`)
+      .then(function (response) {
+        expect(response).status(200);
+        expect(response.body).not.empty;
+        expect(response).to.have.header('content-type', 'text/csv');
+        const [header, ...lines] = response.body.split('\n');
+        expect(header).equal('sensorId,temperatur_2018-02-01Z,temperatur_2018-02-02Z,temperatur_2018-02-03Z,temperatur_2018-02-04Z,temperatur_2018-02-05Z,temperatur_2018-02-06Z,temperatur_2018-02-07Z');
+        expect(lines).to.have.lengthOf(4);
+        for (let i = 0; i < lines.length - 1; i++) {
+          const columns = lines[i].split(',');
+          expect(columns).lengthOf(8);
+          expect(columns[1]).equal('');
+          expect(columns[2]).equal('138');
+          expect(columns[3]).equal('104');
+          expect(columns[4]).equal('56');
+          expect(columns[5]).equal('17');
+          expect(columns[6]).equal('');
+        }
+
+        return chakram.wait();
+      });
+  });
+
+  it('should return correct means as json with format=json parameter', () => {
+    return chakram.get(`${BASE_URL}&window=1d&operation=arithmeticMean&from-date=2018-02-01T12:05:01.909Z&to-date=2018-02-06T12:05:01.913Z&boxids=${boxIds}&format=json`)
+      .then(function (response) {
+        expect(response).status(200);
+        expect(response.body).not.empty;
+        expect(response).to.have.header('content-type', 'application/json');
+        expect(Array.isArray(response.body)).true;
+        expect(response.body).lengthOf(3);
+
+        for (const elem of response.body) {
+          expect(elem['2018-02-02T00:00:00.000Z']).equal(138);
+          expect(elem['2018-02-03T00:00:00.000Z']).equal(104);
+          expect(elem['2018-02-04T00:00:00.000Z']).equal(56);
+          expect(elem['2018-02-05T00:00:00.000Z']).equal(17);
+        }
+
+        return chakram.wait();
+      });
+  });
+
+  it('should return correct means as tidy csv with format=tidy parameter', () => {
+    return chakram.get(`${BASE_URL}&window=1d&operation=arithmeticMean&from-date=2018-02-01T12:05:01.909Z&to-date=2018-02-06T12:05:01.913Z&boxids=${boxIds}&format=tidy`)
+      .then(function (response) {
+        expect(response).status(200);
+        expect(response.body).not.empty;
+        expect(response).to.have.header('content-type', 'text/csv');
+        const [header, ...lines] = response.body.split('\n');
+        expect(header).equal('sensorId,time_start,arithmeticMean_1d');
+        expect(lines).to.have.lengthOf(13);
+        for (let i = 0; i < lines.length - 1;) {
+          for (const result of [['2018-02-02T00:00:00.000Z', '138'], ['2018-02-03T00:00:00.000Z', '104'], ['2018-02-04T00:00:00.000Z', '56'], ['2018-02-05T00:00:00.000Z', '17']]) {
+            const columns = lines[i].split(',');
+            expect(columns).lengthOf(3);
+            expect(columns[1]).equal(result[0]);
+            expect(columns[2]).equal(result[1]);
+            i = i + 1;
+          }
+        }
+
+        return chakram.wait();
+      });
+  });
+
   it('should return no means', () => {
     return chakram.get(`${BASE_URL}&window=1d&operation=arithmeticMean&from-date=2017-02-01T12:05:01.909Z&to-date=2017-02-06T12:05:01.913Z&boxids=${boxIds}`)
       .then(function (response) {
