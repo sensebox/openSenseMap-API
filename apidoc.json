@@ -1,0 +1,25 @@
+{
+  "name": "",
+  "title": "openSenseMap API documentation",
+  "url": "https://api.opensensemap.org",
+  "order": [
+    "register",
+    "getBox",
+    "getBoxes",
+    "postNewBox",
+    "updateBox",
+    "deleteBox",
+    "getScript",
+    "postNewMeasurement",
+    "getMeasurements",
+    "getData",
+    "calculateIdw"
+  ],
+  "template": {
+    "withCompare": false
+  },
+  "header": {
+    "title": "Introduction",
+    "filename": "apidoc/introduction.md"
+  }
+}

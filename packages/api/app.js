@@ -5,7 +5,7 @@
 
 /**
  * define for Datetype parameters
- * @apiDefine ISO8601Date A ISO8601 formatted timestamp. Will be parsed by MomentJS with enabled strict mode
+ * @apiDefine RFC3339Date A [RFC 3339](https://www.ietf.org/rfc/rfc3339.txt) formatted timestamp. Will be parsed by MomentJS with enabled strict mode
  */
 
 'use strict';

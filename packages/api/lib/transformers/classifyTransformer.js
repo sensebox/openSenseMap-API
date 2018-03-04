@@ -16,14 +16,15 @@ const classifyTransformer = function (classifyTransformerOptions, streamOptions)
   streamOptions.objectMode = true;
 
   this.now = moment.utc();
-  this.sevenDays = this.now.clone().subtract(7, 'days');
-  this.thirtyDays = this.now.clone().subtract(30, 'days');
+  this.sevenDays = this.now.clone().subtract(7, 'days')
+    .toDate();
+  this.thirtyDays = this.now.clone().subtract(30, 'days')
+    .toDate();
 
   Transform.call(this, streamOptions);
 };
 
-classifyTransformer.prototype._transform = function _transform (data, encoding, callback) {
-  const box = data;
+classifyTransformer.prototype._transform = function _transform (box, encoding, callback) {
   let state = 'old';
 
   for (const sensor of box.sensors) {
@@ -31,15 +32,14 @@ classifyTransformer.prototype._transform = function _transform (data, encoding, 
       break;
     }
 
-    const lastMeasurementCreatedAt = moment.utc(sensor.lastMeasurement.createdAt);
+    const lastMeasurementCreatedAt = sensor.lastMeasurement.createdAt;
 
-    if (lastMeasurementCreatedAt.isAfter(this.sevenDays)) {
+    if (lastMeasurementCreatedAt > this.sevenDays) {
       state = 'active';
       break;
     }
 
-    if (lastMeasurementCreatedAt.isBetween(this.thirtyDays, this.sevenDays))
-    {
+    if (lastMeasurementCreatedAt > this.thirtyDays) {
       state = 'inactive';
     }
   }

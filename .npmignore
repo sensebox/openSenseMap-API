@@ -21,3 +21,6 @@ mongo-data
 .env
 doc/
 version.js
+
+apidoc
+apidoc.json

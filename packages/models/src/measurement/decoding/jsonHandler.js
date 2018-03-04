@@ -73,7 +73,7 @@ module.exports = {
       // try to decode the json, or if already a js object
       // use it as given
       let json;
-      if (typeof message === 'object') {
+      if (!(message instanceof Buffer) && typeof message === 'object') {
         json = message;
       } else {
         try {

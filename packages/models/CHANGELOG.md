@@ -1,6 +1,12 @@
 # @sensebox/opensensemap-api-models Changelog
 
 ## Unreleased
+
+## v0.0.9
+- Fix measurements with 'content-type: json' not parsed with JSON.parse.
+- Update grpc to 1.9.1
+
+## v0.0.8
 - Expand .npmignore
 
 ## v0.0.7

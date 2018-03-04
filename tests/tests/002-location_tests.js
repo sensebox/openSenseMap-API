@@ -107,7 +107,7 @@ describe('openSenseMap API locations tests', function () {
           expect(response.body.data.currentLocation).to.exist;
           expect(response.body.data.currentLocation.coordinates).to.deep.equal(loc);
           expect(response.body.data.currentLocation.timestamp).to.exist;
-          expect(moment().diff(response.body.data.currentLocation.timestamp)).to.be.below(150);
+          expect(moment().diff(response.body.data.currentLocation.timestamp)).to.be.below(300);
 
           box = response.body.data;
 
@@ -129,7 +129,7 @@ describe('openSenseMap API locations tests', function () {
             loc.height,
           ]);
           expect(response.body.data.currentLocation.timestamp).to.exist;
-          expect(moment().diff(response.body.data.currentLocation.timestamp)).to.be.below(100);
+          expect(moment().diff(response.body.data.currentLocation.timestamp)).to.be.below(300);
 
           return chakram.wait();
         });
@@ -179,7 +179,7 @@ describe('openSenseMap API locations tests', function () {
           expect(response.body.data.currentLocation).to.exist;
           expect(response.body.data.currentLocation.coordinates).to.deep.equal(loc);
           expect(response.body.data.currentLocation.timestamp).to.exist;
-          expect(moment().diff(response.body.data.currentLocation.timestamp)).to.be.below(100);
+          expect(moment().diff(response.body.data.currentLocation.timestamp)).to.be.below(300);
 
           submitTimeLoc1 = response.body.data.currentLocation.timestamp;
 
@@ -201,7 +201,7 @@ describe('openSenseMap API locations tests', function () {
             loc.height,
           ]);
           expect(response.body.data.currentLocation.timestamp).to.exist;
-          expect(moment().diff(response.body.data.currentLocation.timestamp)).to.be.below(100);
+          expect(moment().diff(response.body.data.currentLocation.timestamp)).to.be.below(300);
 
           box = response.body.data;
 
