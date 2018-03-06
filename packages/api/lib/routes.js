@@ -1,6 +1,11 @@
 'use strict';
 
-const { usersController, statisticsController, boxesController, sensorsController, measurementsController } = require('./controllers'),
+const { usersController,
+    statisticsController,
+    boxesController,
+    sensorsController,
+    measurementsController,
+    managementController } = require('./controllers'),
   config = require('config'),
   { getVersion } = require('./helpers/apiUtils'),
   { verifyJwt } = require('./helpers/jwtHelpers'),
@@ -62,7 +67,7 @@ const printRoutes = function printRoutes (req, res) {
   res.end(lines.join('\n'));
 };
 
-const { boxes: boxesPath, users: usersPath, statistics: statisticsPath } = config.get('routes');
+const { boxes: boxesPath, users: usersPath, statistics: statisticsPath, management: managementPath } = config.get('routes');
 // the ones matching first are used
 // case is ignored
 const routes = {
@@ -99,6 +104,9 @@ const routes = {
     { path: `${usersPath}/sign-out`, method: 'post', handler: usersController.signOut, reference: 'api-Users-sign-out' },
     { path: `${usersPath}/me`, method: 'del', handler: usersController.deleteUser, reference: 'api-Users-deleteUser' },
     { path: `${usersPath}/me/resend-email-confirmation`, method: 'post', handler: usersController.requestEmailConfirmation, reference: 'api-Users-request-email-confirmation' }
+  ],
+  'management': [
+    { path: `${managementPath}/boxes`, method: 'get', handler: managementController.listBoxes, reference: 'api-Admin-listBoxes' }
   ]
 };
 
@@ -115,6 +123,12 @@ const initRoutes = function initRoutes (server) {
   server.use(verifyJwt);
 
   for (const route of routes.auth) {
+    server[route.method]({ path: route.path }, route.handler);
+  }
+
+  server.use(managementController.checkPrivilege);
+
+  for (const route of routes.management) {
     server[route.method]({ path: route.path }, route.handler);
   }
 };

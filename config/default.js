@@ -16,7 +16,8 @@ const defaults = {
   'routes': {
     'boxes': '/boxes',
     'users': '/users',
-    'statistics': '/statistics'
+    'statistics': '/statistics',
+    'management': '/management'
   },
   'jwt': {
     'secret': 'OH GOD THIS IS SO INSECURE PLS CHANGE ME', // should be at least 32 characters

@@ -38,7 +38,10 @@
     "users": "/my-custom-users-path",
     // Base route for everything related to statistics
     // Default: "/statistics"
-    "statistics": "/my-custom-statistics-path"
+    "statistics": "/my-custom-statistics-path",
+    // Base route for management routes
+    // Default: "/management"
+    "management": "/my-custom-management-path"
   },
   // Json Web Token configuration
   "jwt": {
