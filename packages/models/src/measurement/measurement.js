@@ -3,7 +3,8 @@
 const { mongoose } = require('../db'),
   moment = require('moment'),
   decodeHandlers = require('./decoding'),
-  ModelError = require('../modelError');
+  ModelError = require('../modelError'),
+  measurementTransformer = require('../transformers/measurementsTransformer');
 
 const measurementSchema = new mongoose.Schema({
   value: {
@@ -86,18 +87,26 @@ measurementSchema.statics.findLatestMeasurementsForSensors = function findLatest
     .exec();
 };
 
-measurementSchema.statics.getMeasurementsStream = function getMeasurementsStream ({ fromDate, toDate, sensorId }) {
+measurementSchema.statics.getMeasurementsStream = function getMeasurementsStream ({ fromDate, toDate, sensorId, transformations, order }) {
   const qry = {
     sensor_id: sensorId,
     createdAt: {
       $gte: fromDate.toDate(),
       $lte: toDate.toDate()
-    }
+    },
   };
 
-  return this
+  const cursor = this
     .find(qry, { 'createdAt': 1, 'value': 1, 'location': 1, '_id': 0 })
-    .cursor({ lean: true });
+    .cursor({ lean: true, sort: order });
+
+  if (transformations) {
+    const transformer = measurementTransformer(undefined, undefined, transformations);
+
+    return cursor.map(transformer);
+  }
+
+  return cursor;
 };
 
 const measurementModel = mongoose.model('Measurement', measurementSchema);

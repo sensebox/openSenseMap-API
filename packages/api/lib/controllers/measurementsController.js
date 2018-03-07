@@ -10,7 +10,9 @@ const
   } = require('../helpers/userParamHelpers'),
   handleError = require('../helpers/errorHandler'),
   OutlierTransformer = require('../transformers/outlierTransformer'),
-  jsonstringify = require('stringify-stream');
+  jsonstringify = require('stringify-stream'),
+  ms = require('ms'),
+  DescriptiveStatisticsTransformer = require('../transformers/descriptiveStatisticsTransformer');
 
 /**
  * @api {get} /boxes/:senseBoxId/sensors Get latest measurements of a senseBox
@@ -55,13 +57,28 @@ const jsonLocationReplacer = function jsonLocationReplacer (k, v) {
  * @apiUse OutlierParameters
  * @apiParam {RFC3339Date} [from-date] Beginning date of measurement data (default: 48 hours ago from now)
  * @apiParam {RFC3339Date} [to-date] End date of measurement data (default: now)
+ * @apiParam {String} window Time window to apply. Either a number in Milliseconds or a [`zeit/ms`](https://npmjs.com/ms)-parseable string rounded to the nearest minute (Math.round(<window-in-milliseconds>) / 60000). At least 1 minute
+ * @apiParam {String=arithmeticMean,geometricMean,harmonicMean,max,median,min,mode,rootMeanSquare,standardDeviation,sum,variance} operation Statistical operation to execute
  * @apiParam {String="json","csv"} [format=json] Can be 'json' (default) or 'csv' (default: json)
  * @apiParam {Boolean="true","false"} [download] if specified, the api will set the `content-disposition` header thus forcing browsers to download instead of displaying. Is always true for format csv.
  * @apiUse SeparatorParam
  */
 const getData = function getData (req, res, next) {
-  const { sensorId, format, download, outliers, outlierWindow, delimiter } = req._userParams;
+  const minWindowLengthMs = ms('1m');
+  const { sensorId, format, download, outliers, outlierWindow, delimiter, window, operation } = req._userParams;
+  let { fromDate, toDate } = req._userParams;
   let stringifier;
+
+  // Add transformations to parse values as floats
+  // as the descriptiveStatisticsTransformer requires it.
+  if (window && operation) {
+    req._userParams['transformations'] = {
+      parseValues: true
+    };
+    req._userParams['order'] = {
+      createdAt: 1
+    };
+  }
 
   // IDEA: add geojson point featurecollection format
   if (format === 'csv' || (download === 'true')) {
@@ -84,6 +101,41 @@ const getData = function getData (req, res, next) {
       .pipe(new OutlierTransformer({
         window: Math.trunc(outlierWindow), // only allow integer values
         replaceOutlier: (outliers === 'replace')
+      }));
+  }
+
+  if (window && operation) {
+    const windowMs = Math.round(ms(window) / minWindowLengthMs) * minWindowLengthMs;
+    if (!windowMs || windowMs < minWindowLengthMs) {
+      return next(new BadRequestError(`Invalid window length. Smallest window size is ${ms(minWindowLengthMs, { long: true })}.`));
+    }
+
+    // compute start and end times in milliseconds
+    //
+    fromDate = fromDate.valueOf() - (fromDate.valueOf() % windowMs);
+    // always overshoot one window..
+    toDate = toDate.valueOf() - (toDate.valueOf() % windowMs) + windowMs;
+
+    const windows = [new Date(fromDate)];
+    // compute all possible windows
+    for (let i = 1; windows[i - 1].getTime() !== toDate; i = i + 1) {
+      windows.push(new Date(fromDate + windowMs * i));
+    }
+
+    fromDate = new Date(fromDate);
+    // add another window to toDate query parameter to get enough data
+    toDate = new Date(toDate + windowMs);
+
+    const responseWindows = windows.map(w => w.toISOString());
+    stringifier = jsonstringify({ open: '[', close: ']' }, [...responseWindows]);
+    measurementsStream = measurementsStream
+      .on('error', function (err) {
+        return handleError(err, next);
+      })
+      .pipe(new DescriptiveStatisticsTransformer({
+        operation,
+        windows,
+        tidy: (format === 'tidy')
       }));
   }
 
@@ -312,6 +364,8 @@ module.exports = {
       { predef: 'delimiter' },
       { name: 'outliers', allowedValues: ['mark', 'replace'] },
       { name: 'outlierWindow', dataType: 'Integer', aliases: ['outlier-window'], defaultValue: 15, min: 1, max: 50 },
+      { name: 'window' },
+      { name: 'operation', allowedValues: ['arithmeticMean', 'geometricMean', 'harmonicMean', 'max', 'median', 'min', 'mode', 'rootMeanSquare', 'standardDeviation', 'sum', 'variance'] },
       { predef: 'toDate' },
       { predef: 'fromDate' }
     ]),
