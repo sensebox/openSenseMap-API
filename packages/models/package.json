@@ -7,7 +7,6 @@
   "dependencies": {
     "@sensebox/osem-protos": "^1.1.0",
     "@sensebox/sketch-templater": "^1.1.1",
-    "@turf/helpers": "^4.6.0",
     "bcrypt": "^1.0.2",
     "bunyan": "^1.8.12",
     "config": "^1.29.2",
