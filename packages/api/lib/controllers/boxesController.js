@@ -326,7 +326,16 @@ const getBox = async function getBox (req, res, next) {
   const { format, boxId } = req._userParams;
 
   try {
-    res.send(await Box.findBoxById(boxId, { format }));
+    const box = await Box.findBoxById(boxId);
+
+    if (format === 'geojson') {
+      const coordinates = box.currentLocation.coordinates;
+      box.currentLocation = undefined;
+      box.loc = undefined;
+
+      return res.send(point(coordinates, box));
+    }
+    res.send(box);
   } catch (err) {
     handleError(err, next);
   }

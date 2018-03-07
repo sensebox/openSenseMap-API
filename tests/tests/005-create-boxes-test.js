@@ -181,6 +181,26 @@ describe('openSenseMap API Routes: /boxes', function () {
       });
   });
 
+  it('should return a box as geojson', function () {
+    return chakram.get(`${BASE_URL}/boxes/${boxId}?format=geojson`)
+      .then(function (response) {
+        expect(response).to.have.status(200);
+        const geojsonBox = response.body;
+        expect(geojsonBox).an('object');
+        expect(geojsonBox.type).equal('Feature');
+        expect(geojsonBox.geometry).an('object');
+
+        expect(geojsonBox.geometry.coordinates).an('array');
+        for (const coord of geojsonBox.geometry.coordinates) {
+          expect(coord).a('number');
+        }
+        expect(Math.abs(geojsonBox.geometry.coordinates[0])).most(180);
+        expect(Math.abs(geojsonBox.geometry.coordinates[1])).most(90);
+
+        return chakram.wait();
+      });
+  });
+
   it('should let users retrieve their arduino sketch', function () {
     return chakram.get(`${BASE_URL}/boxes/${boxId}/script`, { headers: { 'Authorization': `Bearer ${jwt}` } })
       .then(function (response) {
@@ -423,7 +443,8 @@ describe('openSenseMap API Routes: /boxes', function () {
         expect(response).to.comprise.of.json('data.exposure', update_payload.exposure);
         expect(response).to.comprise.of.json('data.grouptag', update_payload.grouptag);
         expect(response).to.comprise.of.json('data.description', update_payload.description);
-        expect(response).to.comprise.of.json('data.currentLocation', { type: 'Point',
+        expect(response).to.comprise.of.json('data.currentLocation', {
+          type: 'Point',
           coordinates: [update_payload.location.lng, update_payload.location.lat]
         });
 
