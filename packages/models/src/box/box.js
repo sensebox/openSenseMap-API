@@ -16,7 +16,6 @@ const { mongoose } = require('../db'),
   ModelError = require('../modelError'),
   Sketcher = require('@sensebox/sketch-templater'),
   fs = require('fs'),
-  { point } = require('@turf/helpers'),
   log = require('../log');
 
 const templateSketcher = new Sketcher();
@@ -242,7 +241,7 @@ boxSchema.statics.initNew = function ({
 
 };
 
-boxSchema.statics.findBoxById = function findBoxById (id, { lean = true, populate = true, includeSecrets = false, onlyLastMeasurements = false, onlyLocations = false, format, projection = {} } = {}) {
+boxSchema.statics.findBoxById = function findBoxById (id, { lean = true, populate = true, includeSecrets = false, onlyLastMeasurements = false, onlyLocations = false, projection = {} } = {}) {
   let fullBox = populate;
   if (populate) {
     Object.assign(projection, BOX_PROPS_FOR_POPULATION);
@@ -279,14 +278,6 @@ boxSchema.statics.findBoxById = function findBoxById (id, { lean = true, populat
     .then(function (box) {
       if (!box) {
         throw new ModelError('Box not found', { type: 'NotFoundError' });
-      }
-
-      if (format === 'geojson') {
-        const coordinates = box.currentLocation.coordinates;
-        box.currentLocation = undefined;
-        box.loc = undefined;
-
-        return point(coordinates, box);
       }
 
       if (fullBox === true) {
