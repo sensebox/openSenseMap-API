@@ -285,6 +285,19 @@ describe('openSenseMap API Routes: /boxes', function () {
       });
   });
 
+  it('should reject to register a senseBox with empty sensors array', function () {
+    const box = { 'name': 'Wetterstation der AG Klimatologie Uni Münster', 'exposure': 'outdoor', 'location': [7.595878, 51.969263], sensors: [] };
+
+    return chakram.post(`${BASE_URL}/boxes`, box, { headers: { 'Authorization': `Bearer ${jwt2}` } })
+      .then(function (response) {
+        expect(response).to.have.status(422);
+        expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
+        expect(response).json({ code: 'UnprocessableEntity', message: 'Validation failed: sensors are required if model is invalid or missing.' });
+
+        return chakram.wait();
+      });
+  });
+
   it('should allow to delete a single sensor via PUT', function () {
     const tempsensor_id = boxObj.sensors[boxObj.sensors.findIndex(s => s.title === 'Temperatur')]._id;
     const delete_payload = { sensors: [{ deleted: true, _id: tempsensor_id }] };
@@ -298,6 +311,36 @@ describe('openSenseMap API Routes: /boxes', function () {
       })
       .then(function (response) {
         expect(response.body.sensors.length).to.be.equal(4);
+
+        return chakram.wait();
+      });
+  });
+
+  it('should allow to delete multiple sensors via PUT', function () {
+    const delete_payload = { sensors: boxObj.sensors.slice(1, 3).map((s) => { return { deleted: true, _id: s._id }; }) };
+
+    return chakram.put(`${BASE_URL}/boxes/${boxId}`, delete_payload, { headers: { 'Authorization': `Bearer ${jwt}` } })
+      .then(function (response) {
+        expect(response).to.have.status(200);
+        expect(response.body.data.sensors.length).to.be.equal(2);
+
+        return chakram.get(`${BASE_URL}/boxes/${boxId}`);
+      })
+      .then(function (response) {
+        expect(response.body.sensors.length).to.be.equal(2);
+
+        return chakram.wait();
+      });
+  });
+
+  it('should reject to delete sensors beyond 1 sensor', function () {
+    const delete_payload = { sensors: boxObj.sensors.slice(3).map((s) => { return { deleted: true, _id: s._id }; }) };
+
+    return chakram.put(`${BASE_URL}/boxes/${boxId}`, delete_payload, { headers: { 'Authorization': `Bearer ${jwt}` } })
+      .then(function (response) {
+        expect(response).to.have.status(400);
+        expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
+        expect(response).json({ code: 'BadRequest', message: 'Unable to delete sensor(s). A box needs at least one sensor.' });
 
         return chakram.wait();
       });
@@ -423,7 +466,8 @@ describe('openSenseMap API Routes: /boxes', function () {
         expect(response).to.comprise.of.json('data.exposure', update_payload.exposure);
         expect(response).to.comprise.of.json('data.grouptag', update_payload.grouptag);
         expect(response).to.comprise.of.json('data.description', update_payload.description);
-        expect(response).to.comprise.of.json('data.currentLocation', { type: 'Point',
+        expect(response).to.comprise.of.json('data.currentLocation', {
+          type: 'Point',
           coordinates: [update_payload.location.lng, update_payload.location.lat]
         });
 
