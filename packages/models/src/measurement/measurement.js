@@ -87,8 +87,6 @@ measurementSchema.statics.findLatestMeasurementsForSensors = function findLatest
 };
 
 measurementSchema.statics.getMeasurementsStream = function getMeasurementsStream ({ fromDate, toDate, sensorId }) {
-  const queryLimit = 10000;
-
   const qry = {
     sensor_id: sensorId,
     createdAt: {
@@ -99,7 +97,7 @@ measurementSchema.statics.getMeasurementsStream = function getMeasurementsStream
 
   return this
     .find(qry, { 'createdAt': 1, 'value': 1, 'location': 1, '_id': 0 })
-    .cursor({ lean: true, limit: queryLimit });
+    .cursor({ lean: true });
 };
 
 const measurementModel = mongoose.model('Measurement', measurementSchema);
