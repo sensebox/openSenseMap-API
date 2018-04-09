@@ -743,14 +743,6 @@ boxSchema.methods.updateSensors = function updateSensors (sensors) {
   }
 };
 
-boxSchema.methods.updateImage = function updateImage ({ type, data }) {
-  if (type && data) {
-    const extension = (type === 'image/jpeg') ? '.jpg' : '.png';
-    fs.writeFileSync(`${imageFolder}${this._id}${extension}`, data);
-    this.set('image', `${this._id}${extension}?${new Date().getTime()}`);
-  }
-};
-
 boxSchema.methods.getSketch = function getSketch ({ encoding } = {}) {
   return templateSketcher.generateSketch(this, { encoding });
 };
