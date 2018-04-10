@@ -5,6 +5,8 @@
 - Implement deletion of box images
 - Allow updating of box model value
 - Add 'includeSecrets' to user model toJSON
+- Expose 'passwordReset' method of user documents
+- Add 'findUserOfBox' and 'transferOwnershipOfBox' methods to user model
 
 ## v0.0.9
 - Fix measurements with 'content-type: json' not parsed with JSON.parse.

@@ -256,15 +256,20 @@ userSchema.statics.initPasswordReset = function initPasswordReset ({ email }) {
         throw new ModelError('Password reset for this user not possible', { type: 'ForbiddenError' });
       }
 
-      user.resetPasswordToken = uuid();
-      user.resetPasswordExpires = moment.utc()
-        .add(12, 'hours')
-        .toDate();
+      return user.passwordReset();
+    });
+};
 
-      return user.save()
-        .then(function (savedUser) {
-          return savedUser.mail('passwordReset');
-        });
+userSchema.methods.passwordReset = function passwordReset () {
+  const user = this;
+  user.resetPasswordToken = uuid();
+  user.resetPasswordExpires = moment.utc()
+    .add(12, 'hours')
+    .toDate();
+
+  return user.save()
+    .then(function (savedUser) {
+      return savedUser.mail('passwordReset');
     });
 };
 // ---- End Password stuff -----
@@ -495,6 +500,44 @@ userSchema.statics.resetPassword = function resetPassword ({ password, token }) 
       user.set('password', password);
 
       return user.save();
+    });
+};
+
+userSchema.statics.findUserOfBox = function findUserOfBox (boxId) {
+  if (boxId._id) {
+    boxId = boxId._id;
+  }
+
+  return this.findOne({ boxes: { $in: [boxId] } })
+    .exec();
+};
+
+userSchema.statics.transferOwnershipOfBox = function transferOwnershipOfBox (newOwnerId, boxId) {
+  const User = this;
+
+  return Promise.all([User.findUserOfBox(boxId), User.findById(newOwnerId).exec()])
+    .then(function ([originalOwner, newOwner]) {
+      if (!newOwner) {
+        throw new ModelError('New owner not found');
+      }
+
+      if (newOwner.boxes.indexOf(boxId) !== -1) {
+        throw new ModelError('New owner already owns this box');
+      }
+
+      newOwner.boxes.addToSet(boxId);
+      const promises = [newOwner.save()];
+
+      if (originalOwner) {
+        if (originalOwner.boxes.indexOf(boxId) === -1) {
+          throw new ModelError('User does not own this box');
+        }
+
+        originalOwner.boxes.pull(boxId);
+        promises.push(originalOwner.save());
+      }
+
+      return Promise.all(promises);
     });
 };
 

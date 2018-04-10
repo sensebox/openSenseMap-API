@@ -595,6 +595,31 @@ describe('User model', function () {
           expect(currentUserBoxes.every(b => b._i !== userBoxes[0]._id)).true;
         });
     });
+
+    it('should allow to find the owner of a box with just the boxId', async function () {
+      const user = await User.findOne({ name: 'Valid Username 2' });
+      const boxId = user.boxes[0];
+
+      const userByBoxId = await User.findUserOfBox(boxId);
+
+      expect(user._id.toString()).equal(userByBoxId._id.toString());
+    });
+
+    it('should allow to transfer the ownership of a box', async function () {
+      let oldOwner = await User.findOne({ name: 'Valid Username 2' });
+      let newOwner = await User.findOne({ name: 'new Valid Username' });
+
+      const boxId = oldOwner.boxes[0].toString();
+
+      await User.transferOwnershipOfBox(newOwner._id, boxId);
+
+      oldOwner = await User.findOne({ name: 'Valid Username 2' });
+      newOwner = await User.findOne({ name: 'new Valid Username' });
+
+      expect(oldOwner.boxes.every(b => b.toString() === boxId)).false;
+      expect(newOwner.boxes.some(b => b.toString() === boxId)).true;
+
+    });
   });
 
   describe('Email Confirmation', function () {
