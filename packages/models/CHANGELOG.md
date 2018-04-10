@@ -7,6 +7,7 @@
 - Add 'includeSecrets' to user model toJSON
 - Expose 'passwordReset' method of user documents
 - Add 'findUserOfBox' and 'transferOwnershipOfBox' methods to user model
+- Add 'sendMails' parameter to destroyUser user model method to silently delete users
 
 ## v0.0.9
 - Fix measurements with 'content-type: json' not parsed with JSON.parse.

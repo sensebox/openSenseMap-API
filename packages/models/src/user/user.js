@@ -342,12 +342,14 @@ userSchema.methods.removeBox = function removeBox (boxId) {
     });
 };
 
-userSchema.methods.destroyUser = function destroyUser () {
+userSchema.methods.destroyUser = function destroyUser ({ sendMail } = { sendMail: true }) {
   return this
     .populate('boxes')
     .execPopulate()
     .then(function (userWithBoxes) {
-      userWithBoxes.mail('deleteUser');
+      if (sendMail) {
+        userWithBoxes.mail('deleteUser');
+      }
       // delete the boxes..
       for (const box of userWithBoxes.boxes) {
         box.removeSelfAndMeasurements();
