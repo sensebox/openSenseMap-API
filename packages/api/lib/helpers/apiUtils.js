@@ -4,7 +4,8 @@ const { NotAuthorizedError, UnsupportedMediaTypeError } = require('restify-error
   config = require('config'),
   apicache = require('apicache'),
   got = require('got'),
-  csvstringify = require('csv-stringify');
+  csvstringify = require('csv-stringify'),
+  hostname = require('os').hostname();
 
 const addCache = function addCache (duration, group) {
   // configure the apicache, set the group and only cache response code 200 responses
@@ -117,6 +118,7 @@ if (config.get('honeybadger_apikey')) {
 
 const postToSlack = function postToSlack (text) {
   if (config.get('slack_url')) {
+    text = `[${hostname}]: ${text}`;
     got(config.get('slack_url'), {
       json: true,
       body: { text },
