@@ -791,7 +791,7 @@ boxSchema.methods.updateBox = function updateBox (args) {
   const box = this;
 
   // only grouptag, description and weblink can removed through setting them to empty string ('')
-  for (const prop of ['name', 'exposure', 'grouptag', 'description', 'weblink', 'image', 'integrations.mqtt', 'integrations.ttn']) {
+  for (const prop of ['name', 'exposure', 'grouptag', 'description', 'weblink', 'image', 'integrations.mqtt', 'integrations.ttn', 'model']) {
     if (typeof args[prop] !== 'undefined') {
       box.set(prop, (args[prop] === '' ? undefined : args[prop]));
     }

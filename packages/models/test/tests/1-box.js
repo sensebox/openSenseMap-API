@@ -524,7 +524,8 @@ describe('Box model', function () {
           type: 'png',
           data: 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVQYV2NgYAAAAAMAAWgmWQ0AAAAASUVORK5CYII='
         },
-        description: 'this is the new description'
+        description: 'this is the new description',
+        model: 'homeWifi'
       };
 
       return Box.initNew(senseBox())
@@ -543,13 +544,15 @@ describe('Box model', function () {
           grouptag,
           weblink,
           image,
-          description
+          description,
+          model
         }) {
           expect(name).equal(updatePayload.name);
           expect(exposure).equal(updatePayload.exposure);
           expect(grouptag).equal(updatePayload.grouptag);
           expect(weblink).equal(updatePayload.weblink);
           expect(description).equal(updatePayload.description);
+          expect(model).equal(updatePayload.model);
           expect(
             moment().diff(
               moment(parseInt(image.split('_')[1].slice(0, -4), 36) * 1000)
