@@ -97,13 +97,25 @@ const userSchema = new mongoose.Schema({
 });
 userSchema.plugin(timestamp);
 
+const toJSONProps = ['name', 'email', 'role', 'language', 'boxes', 'emailIsConfirmed'],
+  toJSONSecretProps = ['_id', 'unconfirmedEmail', 'lastUpdatedBy', 'createdAt', 'updatedAt'];
+
 // only send out names and email..
 userSchema.set('toJSON', {
   version: false,
-  transform: function transform (doc, ret) {
-    const { name, email, role, language, boxes, emailIsConfirmed } = ret;
+  transform: function transform (doc, ret, options) {
+    const user = {};
 
-    return { name, email, role, language, boxes, emailIsConfirmed };
+    let propsToUse = toJSONProps;
+    if (options && options.includeSecrets) {
+      propsToUse = [...propsToUse, ...toJSONSecretProps];
+    }
+
+    for (const prop of propsToUse) {
+      user[prop] = ret[prop];
+    }
+
+    return user;
   }
 });
 

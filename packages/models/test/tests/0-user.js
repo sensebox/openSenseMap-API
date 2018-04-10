@@ -189,6 +189,23 @@ describe('User model', function () {
           expect(jsonUser.lastUpdatedBy).not.exist;
         });
     });
+
+    it('should allow to serialize secret fields with "includeSecrets"', async function () {
+      return User.findOne({ name: 'Valid Username' })
+        .then(function (user) {
+          const jsonUser = user.toJSON({ includeSecrets: true });
+          expect(jsonUser._id).exist;
+          expect(jsonUser.lastUpdatedBy).exist;
+          expect(jsonUser.createdAt).exist;
+          expect(jsonUser.updatedAt).exist;
+
+          expect(jsonUser.resetPasswordExpires).not.exist;
+          expect(jsonUser.resetPasswordToken).not.exist;
+          expect(jsonUser.hashedPassword).not.exist;
+          expect(jsonUser.__v).not.exist;
+          expect(jsonUser.emailConfirmationToken).not.exist;
+        });
+    });
   });
 
   //({ email, language, name, currentPassword, newPassword }
