@@ -90,7 +90,7 @@ const boxSchema = new Schema({
     trim: true,
     required: false,
     /* eslint-disable func-name-matching */
-    set: function imageSetter ({ type, data }) {
+    set: function imageSetter ({ type, data, deleteImage }) {
       /* eslint-enable func-name-matching */
       if (type && data) {
         const filename = `${this._id}_${Math.round(Date.now() / 1000).toString(36)}.${type}`;
@@ -103,6 +103,14 @@ const boxSchema = new Schema({
         }
 
         return filename;
+      } else if (deleteImage === true) {
+        if (this.image) {
+          const oldFilename = `${imageFolder}${this.image}`;
+          const extensionToUse = this.image.slice(this.image.lastIndexOf('.'));
+          const newFilename = `${imageFolder}${Buffer.from((Buffer.from(`${Math.random().toString(36)
+            .slice(2)}${Date.now()}`).toString('base64'))).toString('hex')}${extensionToUse}`;
+          fs.rename(oldFilename, newFilename, () => {});
+        }
       }
     }
   },

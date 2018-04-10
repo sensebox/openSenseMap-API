@@ -149,8 +149,9 @@
       "salt_factor": 12
     },
     // Location on the filesystem where images should be saved
-    // Default: "./userimages"
-    "image_folder": "/var/lib/osem-images"
+    // Should always end with a trailing slash
+    // Default: "./userimages/"
+    "image_folder": "/var/lib/osem-images/"
   },
   // Configuration for the @sensebox/sketch-templater package
   "sketch-templater": {

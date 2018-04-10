@@ -32,7 +32,7 @@ config.util.setModuleDefaults('openSenseMap-API-models', {
     'min_length': 8,
     'salt_factor': 13
   },
-  'image_folder': './userimages',
+  'image_folder': './userimages/',
 });
 
 const { model: Box } = require('./src/box/box'),
