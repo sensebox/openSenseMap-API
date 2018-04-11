@@ -300,26 +300,6 @@ describe('Box model', function () {
       });
     });
 
-    it('should allow to return box as geojson', function () {
-      const boxId = Object.keys(testBoxes)[0];
-
-      return Box.findBoxById(boxId, { format: 'geojson' }).then(function (
-        geojsonBox
-      ) {
-        expect(geojsonBox).an('object');
-        expect(geojsonBox.type).equal('Feature');
-        expect(geojsonBox.geometry).an('object');
-
-        expect(geojsonBox.geometry.coordinates).an('array');
-        expect(geojsonBox.geometry.coordinates).lengthOf.within(2, 3);
-        for (const coord of geojsonBox.geometry.coordinates) {
-          expect(coord).a('number');
-        }
-        expect(Math.abs(geojsonBox.geometry.coordinates[0])).most(180);
-        expect(Math.abs(geojsonBox.geometry.coordinates[1])).most(90);
-      });
-    });
-
     it('should allow to disable population and specify own projection', function () {
       const boxId = Object.keys(testBoxes)[0];
 
