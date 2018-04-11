@@ -9,6 +9,12 @@ const { BadRequestError, UnprocessableEntityError, InvalidArgumentError, Forbidd
   config = require('config');
 
 const decodeBase64Image = function (dataString) {
+  if (dataString === 'deleteImage: true') {
+    return {
+      deleteImage: true
+    };
+  }
+
   const matches = dataString.match(/^data:(?:image\/(jpeg|png|gif));base64,(.+)$/m);
 
   if (matches) {

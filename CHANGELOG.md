@@ -1,6 +1,7 @@
 # openSenseMap API Changelog
 
 ## Unreleased
+- Allow users to delete their box images by sending `deleteImage: true`
 
 ## v4
 - Include sensorId as default column in measurements download
