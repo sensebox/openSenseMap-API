@@ -270,7 +270,7 @@ const deleteUser = async function deleteUser (req, res, next) {
     await req.user.checkPassword(password);
     invalidateToken(req);
 
-    await req.user.destroyUser(req);
+    await req.user.destroyUser();
     res.send(200, { code: 'Ok', message: 'User and all boxes of user marked for deletion. Bye Bye!' });
     clearCache(['getBoxes', 'getStats']);
     postToSlack(`User deleted: ${req.user.name} (${redactEmail(req.user.email)})`);
