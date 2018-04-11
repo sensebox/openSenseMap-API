@@ -27,6 +27,9 @@
   // If not specified, Slack integration is disabled
   // No default
   "slack_url": "https://hooks.slack.com/services/A1...7/Z.....K/r....g",
+  // Users with this role are allowed to management access to the API
+  // Default: "admin"
+  "management_role": "manager",
   // Routes configuration. Use this to customize your urls. These keys should
   // always start with a slash (/)
   "routes": {

@@ -45,7 +45,7 @@ const
     retrieveParameters,
     parseAndValidateTimeParamsForFindAllBoxes,
     validateFromToTimeParams,
-    checkBoxIdOwner
+    checkPrivilege
   } = require('../helpers/userParamHelpers'),
   handleError = require('../helpers/errorHandler'),
   jsonstringify = require('stringify-stream');
@@ -430,14 +430,14 @@ module.exports = {
       { predef: 'boxId', required: true },
       { predef: 'password' }
     ]),
-    checkBoxIdOwner,
+    checkPrivilege,
     deleteBox
   ],
   getSketch: [
     retrieveParameters([
       { predef: 'boxId', required: true },
     ]),
-    checkBoxIdOwner,
+    checkPrivilege,
     getSketch
   ],
   updateBox: [
@@ -456,7 +456,7 @@ module.exports = {
       { name: 'addons', dataType: 'object' },
       { predef: 'location' }
     ]),
-    checkBoxIdOwner,
+    checkPrivilege,
     updateBox
   ],
   // no auth required

@@ -1,12 +1,12 @@
 'use strict';
 
-const { BadRequestError, UnprocessableEntityError, InvalidArgumentError } = require('restify-errors'),
+const { BadRequestError, UnprocessableEntityError, InvalidArgumentError, ForbiddenError } = require('restify-errors'),
   { utils: { parseAndValidateTimestamp }, db: { mongoose }, decoding: { validators: { transformAndValidateCoords } } } = require('@sensebox/opensensemap-api-models'),
   moment = require('moment'),
   isemail = require('isemail'),
   handleModelError = require('./errorHandler'),
-  area = require('@turf/area');
-
+  area = require('@turf/area'),
+  config = require('config');
 
 const decodeBase64Image = function (dataString) {
   const matches = dataString.match(/^data:(?:image\/(jpeg|png|gif));base64,(.+)$/m);
@@ -489,14 +489,22 @@ const parseAndValidateTimeParamsForFindAllBoxes = function parseAndValidateTimeP
   next();
 };
 
-const checkBoxIdOwner = function checkBoxIdOwner (req, res, next) {
-  try {
-    req.user.checkBoxOwner(req._userParams.boxId);
-
+const checkPrivilege = function checkPrivilege (req, res, next) {
+  if (req.user && req.user.role === config.get('management_role')) {
     return next();
-  } catch (err) {
-    handleModelError(err, next);
   }
+
+  if (req._userParams.boxId) {
+    try {
+      req.user.checkBoxOwner(req._userParams.boxId);
+
+      return next();
+    } catch (err) {
+      return handleModelError(err, next);
+    }
+  }
+
+  return next(new ForbiddenError('Not signed in or not authorized to access.'));
 };
 
 module.exports = {
@@ -504,5 +512,5 @@ module.exports = {
   retrieveParameters,
   initUserParams,
   parseAndValidateTimeParamsForFindAllBoxes,
-  checkBoxIdOwner
+  checkPrivilege
 };
