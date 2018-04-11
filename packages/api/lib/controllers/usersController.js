@@ -66,7 +66,7 @@ const registerUser = async function registerUser (req, res, next) {
 /**
  * @api {post} /users/sign-in Sign in
  * @apiName sign-in
- * @apiDescription Sign in using email or name and password. The response contains a valid JSON Web Token
+ * @apiDescription Sign in using email or name and password. The response contains a valid JSON Web Token. Always use `application/json` as content-type.
  * @apiGroup Users
  * @apiParam {String} email the email or name of the user
  * @apiParam {String} password the password of the user
