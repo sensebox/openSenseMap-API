@@ -14,8 +14,8 @@ const normalUser = {
 };
 
 const adminUser = {
-  ...{ name: 'Peter Admin', role: 'admin', email: 'admin@admin.test' },
-  ...normalUser
+  ...normalUser,
+  ...{ name: 'Peter Admin', role: 'admin', email: 'admin@admin.test' }
 };
 
 const MANAGEMENT_URL = `${process.env.OSEM_TEST_BASE_URL}/management`;

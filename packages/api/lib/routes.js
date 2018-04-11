@@ -9,7 +9,7 @@ const { usersController,
   config = require('config'),
   { getVersion } = require('./helpers/apiUtils'),
   { verifyJwt } = require('./helpers/jwtHelpers'),
-  { initUserParams } = require('./helpers/userParamHelpers');
+  { initUserParams, checkPrivilege } = require('./helpers/userParamHelpers');
 
 const spaces = function spaces (num) {
   let str = ' ';
@@ -106,7 +106,17 @@ const routes = {
     { path: `${usersPath}/me/resend-email-confirmation`, method: 'post', handler: usersController.requestEmailConfirmation, reference: 'api-Users-request-email-confirmation' }
   ],
   'management': [
-    { path: `${managementPath}/boxes`, method: 'get', handler: managementController.listBoxes, reference: 'api-Admin-listBoxes' }
+    { path: `${managementPath}/boxes`, method: 'get', handler: managementController.listBoxes, reference: 'api-Admin-listBoxes' },
+    { path: `${managementPath}/boxes/:boxId`, method: 'get', handler: managementController.getBox, reference: 'api-Admin-getBox' },
+    { path: `${managementPath}/boxes/:boxId`, method: 'put', handler: managementController.updateBox, reference: 'api-Admin-updateBox' },
+    { path: `${managementPath}/boxes/delete`, method: 'post', handler: managementController.deleteBoxes, reference: 'api-Admin-deleteBoxes' },
+
+    { path: `${managementPath}/users`, method: 'get', handler: managementController.listUsers, reference: 'api-Admin-listUsers' },
+    { path: `${managementPath}/users/:userId`, method: 'get', handler: managementController.getUser, reference: 'api-Admin-getUser' },
+    { path: `${managementPath}/users/:userId`, method: 'put', handler: managementController.updateUser, reference: 'api-Admin-updateUser' },
+    { path: `${managementPath}/users/delete`, method: 'post', handler: managementController.deleteUsers, reference: 'api-Admin-deleteUsers' },
+    { path: `${managementPath}/users/:userId/exec`, method: 'post', handler: managementController.execUserAction, reference: 'api-Admin-execUserAction' },
+
   ]
 };
 
@@ -126,7 +136,7 @@ const initRoutes = function initRoutes (server) {
     server[route.method]({ path: route.path }, route.handler);
   }
 
-  server.use(managementController.checkPrivilege);
+  server.use(checkPrivilege);
 
   for (const route of routes.management) {
     server[route.method]({ path: route.path }, route.handler);
