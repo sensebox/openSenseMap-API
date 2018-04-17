@@ -412,10 +412,10 @@ const deleteBox = async function deleteBox (req, res, next) {
 
   try {
     await req.user.checkPassword(password);
-    await req.user.removeBox(boxId);
+    const box = await req.user.removeBox(boxId);
     res.send({ code: 'Ok', message: 'box and all associated measurements marked for deletion' });
     clearCache(['getBoxes', 'getStats']);
-    postToSlack(`Box deleted: ${req.user.name} (${redactEmail(req.user.email)}) just deleted ${boxId}`);
+    postToSlack(`Box deleted: ${req.user.name} (${redactEmail(req.user.email)}) just deleted "${box.name}" (${boxId})`);
 
   } catch (err) {
     handleError(err, next);

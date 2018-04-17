@@ -564,17 +564,18 @@ describe('User model', function () {
     });
 
     it('should allow to remove a box if the user is the owner', function () {
-      let ctBoxes, currentUserBoxes;
+      let ctBoxes, currentUserBoxes, validUser;
 
       return User.findOne({ name: 'Valid Username 2' })
         .then(function (user) {
           ctBoxes = user.boxes.length;
           currentUserBoxes = user.boxes;
+          validUser = user;
 
           return user.removeBox(userBoxes[0]._id);
         })
-        .then(function (user) {
-          expect(user.boxes.length).equal(ctBoxes - 1);
+        .then(function () {
+          expect(validUser.boxes.length).equal(ctBoxes - 1);
           expect(currentUserBoxes.every(b => b._i !== userBoxes[0]._id)).true;
         });
     });
