@@ -28,7 +28,7 @@ const { User } = require('@sensebox/opensensemap-api-models'),
  * @apiHeader {String} Authorization allows to send a valid JSON Web Token along with this request with `Bearer` prefix.
  * @apiHeaderExample {String} Authorization Header Example
  *   Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE0ODMwMDYxNTIsImV4cCI6MTQ4MzAwOTc1MiwiaXNzIjoibG9jYWxob3N0OjgwMDAiLCJzdWIiOiJ0ZXN0QHRlc3QuZGUiLCJqdGkiOiJmMjNiOThkNi1mMjRlLTRjOTQtYWE5Ni1kMWI4M2MzNmY1MjAifQ.QegeWHWetw19vfgOvkTCsBfaSOPnjakhzzRjVtNi-2Q
- * @apiError {String} 403 Unauthorized
+ * @apiError {String} 403 {"code":"Forbidden","message":"Invalid JWT. Please sign sign in"}
  */
 
 /**
