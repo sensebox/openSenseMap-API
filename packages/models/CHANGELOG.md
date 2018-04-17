@@ -9,6 +9,7 @@
 - Expose 'passwordReset' method of user documents
 - Add 'findUserOfBox' and 'transferOwnershipOfBox' methods to user model
 - Add 'sendMails' parameter to destroyUser user model method to silently delete users
+- Update @sensebox/node-sketch-templater to 1.1.2
 
 ## v0.0.9
 - Fix measurements with 'content-type: json' not parsed with JSON.parse.

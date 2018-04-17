@@ -338,7 +338,11 @@ userSchema.methods.removeBox = function removeBox (boxId) {
       // remove from boxes
       user.boxes.pull({ _id: boxId });
 
-      return user.save();
+      return user.save()
+        .then(function () {
+          return box;
+        });
+
     });
 };
 

@@ -16,9 +16,9 @@
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/@sensebox/osem-protos/-/osem-protos-1.1.0.tgz#a7de8bc6be867953f1309181a012063c23299e79"
 
-"@sensebox/sketch-templater@^1.1.1":
-  version "1.1.1"
-  resolved "https://registry.yarnpkg.com/@sensebox/sketch-templater/-/sketch-templater-1.1.1.tgz#42be9f82b48f5cb685103e161aa7641a7b629155"
+"@sensebox/sketch-templater@^1.1.2":
+  version "1.1.2"
+  resolved "https://registry.yarnpkg.com/@sensebox/sketch-templater/-/sketch-templater-1.1.2.tgz#8d2d6c685236e832fc362c9dfd600a184563b4d0"
   dependencies:
     config "^1.29.2"
     dedent "^0.7.0"
@@ -575,8 +575,8 @@ concat-stream@^1.6.0:
     typedarray "^0.0.6"
 
 config@^1.29.2:
-  version "1.29.2"
-  resolved "https://registry.yarnpkg.com/config/-/config-1.29.2.tgz#2ebdc92639eb9d06fffd302f1ee32e2ad0e94e11"
+  version "1.30.0"
+  resolved "https://registry.yarnpkg.com/config/-/config-1.30.0.tgz#1d60a9f35348a13c175798d384e81a5a16c3ba6e"
   dependencies:
     json5 "0.4.0"
     os-homedir "1.0.2"
