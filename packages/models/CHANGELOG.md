@@ -2,6 +2,13 @@
 
 ## Unreleased
 - Remove format argument of findBoxById
+- Remove box.updateImage
+- Implement deletion of box images
+- Allow updating of box model value
+- Add 'includeSecrets' to user model toJSON
+- Expose 'passwordReset' method of user documents
+- Add 'findUserOfBox' and 'transferOwnershipOfBox' methods to user model
+- Add 'sendMails' parameter to destroyUser user model method to silently delete users
 - Update @sensebox/node-sketch-templater to 1.1.2
 
 ## v0.0.9

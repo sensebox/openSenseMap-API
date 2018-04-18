@@ -45,7 +45,7 @@ const
     retrieveParameters,
     parseAndValidateTimeParamsForFindAllBoxes,
     validateFromToTimeParams,
-    checkBoxIdOwner
+    checkPrivilege
   } = require('../helpers/userParamHelpers'),
   handleError = require('../helpers/errorHandler'),
   jsonstringify = require('stringify-stream');
@@ -71,7 +71,7 @@ const
  * @apiParam (RequestBody) {MqttOption} [mqtt] settings for the MQTT integration of this senseBox
  * @apiParam (RequestBody) {TTNOption} [ttn] settings for the TTN integration of this senseBox
  * @apiParam (RequestBody) {String} [description] the updated description of this senseBox. Send '' (empty string) to delete this property.
- * @apiParam (RequestBody) {String} [image] the updated image of this senseBox encoded as base64 data uri.
+ * @apiParam (RequestBody) {String} [image] the updated image of this senseBox encoded as base64 data uri. To delete the current image, send 'deleteImage: true'.
  * @apiParam (RequestBody) {Object} [addons] allows to add addons to the box. Submit as Object with key `add` and the desired addon as value like `{"add":"feinstaub"}`
  * @apiParamExample {json} Request-Example:
  * {
@@ -430,14 +430,14 @@ module.exports = {
       { predef: 'boxId', required: true },
       { predef: 'password' }
     ]),
-    checkBoxIdOwner,
+    checkPrivilege,
     deleteBox
   ],
   getSketch: [
     retrieveParameters([
       { predef: 'boxId', required: true },
     ]),
-    checkBoxIdOwner,
+    checkPrivilege,
     getSketch
   ],
   updateBox: [
@@ -456,7 +456,7 @@ module.exports = {
       { name: 'addons', dataType: 'object' },
       { predef: 'location' }
     ]),
-    checkBoxIdOwner,
+    checkPrivilege,
     updateBox
   ],
   // no auth required

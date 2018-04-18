@@ -89,7 +89,7 @@ const boxSchema = new Schema({
     trim: true,
     required: false,
     /* eslint-disable func-name-matching */
-    set: function imageSetter ({ type, data }) {
+    set: function imageSetter ({ type, data, deleteImage }) {
       /* eslint-enable func-name-matching */
       if (type && data) {
         const filename = `${this._id}_${Math.round(Date.now() / 1000).toString(36)}.${type}`;
@@ -102,6 +102,14 @@ const boxSchema = new Schema({
         }
 
         return filename;
+      } else if (deleteImage === true) {
+        if (this.image) {
+          const oldFilename = `${imageFolder}${this.image}`;
+          const extensionToUse = this.image.slice(this.image.lastIndexOf('.'));
+          const newFilename = `${imageFolder}${Buffer.from((Buffer.from(`${Math.random().toString(36)
+            .slice(2)}${Date.now()}`).toString('base64'))).toString('hex')}${extensionToUse}`;
+          fs.rename(oldFilename, newFilename, () => {});
+        }
       }
     }
   },
@@ -734,14 +742,6 @@ boxSchema.methods.updateSensors = function updateSensors (sensors) {
   }
 };
 
-boxSchema.methods.updateImage = function updateImage ({ type, data }) {
-  if (type && data) {
-    const extension = (type === 'image/jpeg') ? '.jpg' : '.png';
-    fs.writeFileSync(`${imageFolder}${this._id}${extension}`, data);
-    this.set('image', `${this._id}${extension}?${new Date().getTime()}`);
-  }
-};
-
 boxSchema.methods.getSketch = function getSketch ({ encoding } = {}) {
   return templateSketcher.generateSketch(this, { encoding });
 };
@@ -782,7 +782,7 @@ boxSchema.methods.updateBox = function updateBox (args) {
   const box = this;
 
   // only grouptag, description and weblink can removed through setting them to empty string ('')
-  for (const prop of ['name', 'exposure', 'grouptag', 'description', 'weblink', 'image', 'integrations.mqtt', 'integrations.ttn']) {
+  for (const prop of ['name', 'exposure', 'grouptag', 'description', 'weblink', 'image', 'integrations.mqtt', 'integrations.ttn', 'model']) {
     if (typeof args[prop] !== 'undefined') {
       box.set(prop, (args[prop] === '' ? undefined : args[prop]));
     }

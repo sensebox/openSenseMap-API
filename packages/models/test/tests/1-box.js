@@ -11,7 +11,8 @@ const expect = require('chai').expect,
   shouldBeABoxWithSecrets = require('../helpers/shouldBeABoxWithSecrets'),
   checkBoxLocation = require('../helpers/checkBoxLocation'),
   initBoxWithMeasurements = require('../helpers/initBoxWithMeasurements'),
-  ensureIndexes = require('../helpers/ensureIndexes');
+  ensureIndexes = require('../helpers/ensureIndexes'),
+  fs = require('fs');
 
 const shouldNotHappenThenner = function (err) {
   /* eslint-disable no-console */
@@ -491,6 +492,8 @@ describe('Box model', function () {
         });
     });
 
+    let boxid;
+
     it('should allow to change name the basic string properties of a box', function () {
       const updatePayload = {
         name: 'new Name',
@@ -501,7 +504,8 @@ describe('Box model', function () {
           type: 'png',
           data: 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVQYV2NgYAAAAAMAAWgmWQ0AAAAASUVORK5CYII='
         },
-        description: 'this is the new description'
+        description: 'this is the new description',
+        model: 'homeWifi'
       };
 
       return Box.initNew(senseBox())
@@ -510,6 +514,8 @@ describe('Box model', function () {
           return box.updateBox(updatePayload);
         })
         .then(function (box) {
+          boxid = box._id;
+
           return Box.findById(box._id);
         })
         .then(function ({
@@ -518,19 +524,32 @@ describe('Box model', function () {
           grouptag,
           weblink,
           image,
-          description
+          description,
+          model
         }) {
           expect(name).equal(updatePayload.name);
           expect(exposure).equal(updatePayload.exposure);
           expect(grouptag).equal(updatePayload.grouptag);
           expect(weblink).equal(updatePayload.weblink);
           expect(description).equal(updatePayload.description);
+          expect(model).equal(updatePayload.model);
           expect(
             moment().diff(
               moment(parseInt(image.split('_')[1].slice(0, -4), 36) * 1000)
             )
           ).to.be.below(1000);
+          expect(fs.existsSync(`/userimages/${image}`)).true;
         });
+    });
+
+    it('should allow to delete the image of a box', async function () {
+      let box = await Box.findById(boxid);
+      expect(box.image).not.empty;
+      expect(fs.existsSync(`/userimages/${box.image}`)).true;
+      await box.updateBox({ image: 'deleteImage' });
+      box = await Box.findById(boxid);
+      expect(box.image).not.exist;
+      expect(fs.existsSync(`/userimages/${box.image}`)).false;
     });
 
     it('should not allow to change name of a box to empty string', function () {

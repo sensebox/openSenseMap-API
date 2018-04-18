@@ -71,36 +71,34 @@ const refreshJwt = async function refreshJwt (refreshToken) {
   // invalidate old token
   addTokenHashToBlacklist(refreshToken);
 
-  // try {
   const { token, refreshToken: newRefreshToken } = await createToken(user);
 
   return Promise.resolve({ token, refreshToken: newRefreshToken, user });
-  // } catch (err) {
-  //   throw err;
-  // }
 };
+
+const jwtInvalidErrorMessage = 'Invalid JWT authorization. Please sign in to obtain new JWT.';
 
 const verifyJwt = function verifyJwt (req, res, next) {
   // check if Authorization header is present
   const rawAuthorizationHeader = req.header('authorization');
   if (!rawAuthorizationHeader) {
-    return next(new ForbiddenError('invalid'));
+    return next(new ForbiddenError(jwtInvalidErrorMessage));
   }
 
   const [bearer, jwtString] = rawAuthorizationHeader.split(' ');
   if (bearer !== 'Bearer') {
-    return next(new ForbiddenError('invalid'));
+    return next(new ForbiddenError(jwtInvalidErrorMessage));
   }
 
   jwt.verify(jwtString, jwt_secret, jwtVerifyOptions, function (err, decodedJwt) {
     if (err) {
-      return next(new ForbiddenError('invalid'));
+      return next(new ForbiddenError(jwtInvalidErrorMessage));
     }
 
     // check if the token is blacklisted by performing a hmac digest on the string representation of the jwt.
     // also checks the existence of the jti claim
     if (isTokenBlacklisted(decodedJwt, jwtString)) {
-      return next(new ForbiddenError('invalid'));
+      return next(new ForbiddenError(jwtInvalidErrorMessage));
     }
 
     User.findOne({ email: decodedJwt.sub.toLowerCase(), role: decodedJwt.role })
@@ -108,13 +106,7 @@ const verifyJwt = function verifyJwt (req, res, next) {
       .then(function (user) {
         if (!user) {
           throw new Error();
-          // return next(new ForbiddenError('invalid'));
         }
-
-        // check if there is a box id and check if this user owns this box
-        // if (jwt.role !== 'admin' && req._userParams.boxId && !user.boxes.some(b => b.equals(req._userParams.boxId))) {
-        //   return done(null, false, { error: JWT_WRONG_OR_UNAUTHORIZED });
-        // }
 
         req.user = user;
         req._jwt = decodedJwt;
@@ -123,7 +115,7 @@ const verifyJwt = function verifyJwt (req, res, next) {
         return next();
       })
       .catch(function () {
-        return next(new ForbiddenError('invalid'));
+        return next(new ForbiddenError(jwtInvalidErrorMessage));
       });
   });
 };

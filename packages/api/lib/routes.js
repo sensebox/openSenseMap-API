@@ -1,10 +1,15 @@
 'use strict';
 
-const { usersController, statisticsController, boxesController, sensorsController, measurementsController } = require('./controllers'),
+const { usersController,
+    statisticsController,
+    boxesController,
+    sensorsController,
+    measurementsController,
+    managementController } = require('./controllers'),
   config = require('config'),
   { getVersion } = require('./helpers/apiUtils'),
   { verifyJwt } = require('./helpers/jwtHelpers'),
-  { initUserParams } = require('./helpers/userParamHelpers');
+  { initUserParams, checkPrivilege } = require('./helpers/userParamHelpers');
 
 const spaces = function spaces (num) {
   let str = ' ';
@@ -62,7 +67,7 @@ const printRoutes = function printRoutes (req, res) {
   res.end(lines.join('\n'));
 };
 
-const { boxes: boxesPath, users: usersPath, statistics: statisticsPath } = config.get('routes');
+const { boxes: boxesPath, users: usersPath, statistics: statisticsPath, management: managementPath } = config.get('routes');
 // the ones matching first are used
 // case is ignored
 const routes = {
@@ -99,6 +104,19 @@ const routes = {
     { path: `${usersPath}/sign-out`, method: 'post', handler: usersController.signOut, reference: 'api-Users-sign-out' },
     { path: `${usersPath}/me`, method: 'del', handler: usersController.deleteUser, reference: 'api-Users-deleteUser' },
     { path: `${usersPath}/me/resend-email-confirmation`, method: 'post', handler: usersController.requestEmailConfirmation, reference: 'api-Users-request-email-confirmation' }
+  ],
+  'management': [
+    { path: `${managementPath}/boxes`, method: 'get', handler: managementController.listBoxes, reference: 'api-Admin-listBoxes' },
+    { path: `${managementPath}/boxes/:boxId`, method: 'get', handler: managementController.getBox, reference: 'api-Admin-getBox' },
+    { path: `${managementPath}/boxes/:boxId`, method: 'put', handler: managementController.updateBox, reference: 'api-Admin-updateBox' },
+    { path: `${managementPath}/boxes/delete`, method: 'post', handler: managementController.deleteBoxes, reference: 'api-Admin-deleteBoxes' },
+
+    { path: `${managementPath}/users`, method: 'get', handler: managementController.listUsers, reference: 'api-Admin-listUsers' },
+    { path: `${managementPath}/users/:userId`, method: 'get', handler: managementController.getUser, reference: 'api-Admin-getUser' },
+    { path: `${managementPath}/users/:userId`, method: 'put', handler: managementController.updateUser, reference: 'api-Admin-updateUser' },
+    { path: `${managementPath}/users/delete`, method: 'post', handler: managementController.deleteUsers, reference: 'api-Admin-deleteUsers' },
+    { path: `${managementPath}/users/:userId/exec`, method: 'post', handler: managementController.execUserAction, reference: 'api-Admin-execUserAction' },
+
   ]
 };
 
@@ -115,6 +133,12 @@ const initRoutes = function initRoutes (server) {
   server.use(verifyJwt);
 
   for (const route of routes.auth) {
+    server[route.method]({ path: route.path }, route.handler);
+  }
+
+  server.use(checkPrivilege);
+
+  for (const route of routes.management) {
     server[route.method]({ path: route.path }, route.handler);
   }
 };

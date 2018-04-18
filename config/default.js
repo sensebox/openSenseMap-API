@@ -13,10 +13,12 @@ const defaults = {
   'api_url': '', // if not set, generated from api_protocol and api_base_domain
   'honeybadger_apikey': '',
   'slack_url': '',
+  'management_role': 'admin',
   'routes': {
     'boxes': '/boxes',
     'users': '/users',
-    'statistics': '/statistics'
+    'statistics': '/statistics',
+    'management': '/management'
   },
   'jwt': {
     'secret': 'OH GOD THIS IS SO INSECURE PLS CHANGE ME', // should be at least 32 characters

@@ -189,6 +189,23 @@ describe('User model', function () {
           expect(jsonUser.lastUpdatedBy).not.exist;
         });
     });
+
+    it('should allow to serialize secret fields with "includeSecrets"', async function () {
+      return User.findOne({ name: 'Valid Username' })
+        .then(function (user) {
+          const jsonUser = user.toJSON({ includeSecrets: true });
+          expect(jsonUser._id).exist;
+          expect(jsonUser.lastUpdatedBy).exist;
+          expect(jsonUser.createdAt).exist;
+          expect(jsonUser.updatedAt).exist;
+
+          expect(jsonUser.resetPasswordExpires).not.exist;
+          expect(jsonUser.resetPasswordToken).not.exist;
+          expect(jsonUser.hashedPassword).not.exist;
+          expect(jsonUser.__v).not.exist;
+          expect(jsonUser.emailConfirmationToken).not.exist;
+        });
+    });
   });
 
   //({ email, language, name, currentPassword, newPassword }
@@ -578,6 +595,31 @@ describe('User model', function () {
           expect(validUser.boxes.length).equal(ctBoxes - 1);
           expect(currentUserBoxes.every(b => b._i !== userBoxes[0]._id)).true;
         });
+    });
+
+    it('should allow to find the owner of a box with just the boxId', async function () {
+      const user = await User.findOne({ name: 'Valid Username 2' });
+      const boxId = user.boxes[0];
+
+      const userByBoxId = await User.findUserOfBox(boxId);
+
+      expect(user._id.toString()).equal(userByBoxId._id.toString());
+    });
+
+    it('should allow to transfer the ownership of a box', async function () {
+      let oldOwner = await User.findOne({ name: 'Valid Username 2' });
+      let newOwner = await User.findOne({ name: 'new Valid Username' });
+
+      const boxId = oldOwner.boxes[0].toString();
+
+      await User.transferOwnershipOfBox(newOwner._id, boxId);
+
+      oldOwner = await User.findOne({ name: 'Valid Username 2' });
+      newOwner = await User.findOne({ name: 'new Valid Username' });
+
+      expect(oldOwner.boxes.every(b => b.toString() === boxId)).false;
+      expect(newOwner.boxes.some(b => b.toString() === boxId)).true;
+
     });
   });
 

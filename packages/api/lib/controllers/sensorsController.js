@@ -2,7 +2,7 @@
 
 const { Box } = require('@sensebox/opensensemap-api-models'),
   { checkContentType } = require('../helpers/apiUtils'),
-  { retrieveParameters, validateFromToTimeParams, checkBoxIdOwner } = require('../helpers/userParamHelpers'),
+  { retrieveParameters, validateFromToTimeParams, checkPrivilege } = require('../helpers/userParamHelpers'),
   handleError = require('../helpers/errorHandler');
 
 /**
@@ -62,7 +62,7 @@ module.exports = {
       { predef: 'fromDateNoDefault' }
     ]),
     validateFromToTimeParams,
-    checkBoxIdOwner,
+    checkPrivilege,
     deleteSensorData
   ]
 };

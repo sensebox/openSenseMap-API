@@ -97,13 +97,25 @@ const userSchema = new mongoose.Schema({
 });
 userSchema.plugin(timestamp);
 
+const toJSONProps = ['name', 'email', 'role', 'language', 'boxes', 'emailIsConfirmed'],
+  toJSONSecretProps = ['_id', 'unconfirmedEmail', 'lastUpdatedBy', 'createdAt', 'updatedAt'];
+
 // only send out names and email..
 userSchema.set('toJSON', {
   version: false,
-  transform: function transform (doc, ret) {
-    const { name, email, role, language, boxes, emailIsConfirmed } = ret;
+  transform: function transform (doc, ret, options) {
+    const user = {};
 
-    return { name, email, role, language, boxes, emailIsConfirmed };
+    let propsToUse = toJSONProps;
+    if (options && options.includeSecrets) {
+      propsToUse = [...propsToUse, ...toJSONSecretProps];
+    }
+
+    for (const prop of propsToUse) {
+      user[prop] = ret[prop];
+    }
+
+    return user;
   }
 });
 
@@ -244,15 +256,20 @@ userSchema.statics.initPasswordReset = function initPasswordReset ({ email }) {
         throw new ModelError('Password reset for this user not possible', { type: 'ForbiddenError' });
       }
 
-      user.resetPasswordToken = uuid();
-      user.resetPasswordExpires = moment.utc()
-        .add(12, 'hours')
-        .toDate();
+      return user.passwordReset();
+    });
+};
 
-      return user.save()
-        .then(function (savedUser) {
-          return savedUser.mail('passwordReset');
-        });
+userSchema.methods.passwordReset = function passwordReset () {
+  const user = this;
+  user.resetPasswordToken = uuid();
+  user.resetPasswordExpires = moment.utc()
+    .add(12, 'hours')
+    .toDate();
+
+  return user.save()
+    .then(function (savedUser) {
+      return savedUser.mail('passwordReset');
     });
 };
 // ---- End Password stuff -----
@@ -329,12 +346,14 @@ userSchema.methods.removeBox = function removeBox (boxId) {
     });
 };
 
-userSchema.methods.destroyUser = function destroyUser () {
+userSchema.methods.destroyUser = function destroyUser ({ sendMail } = { sendMail: true }) {
   return this
     .populate('boxes')
     .execPopulate()
     .then(function (userWithBoxes) {
-      userWithBoxes.mail('deleteUser');
+      if (sendMail) {
+        userWithBoxes.mail('deleteUser');
+      }
       // delete the boxes..
       for (const box of userWithBoxes.boxes) {
         box.removeSelfAndMeasurements();
@@ -487,6 +506,44 @@ userSchema.statics.resetPassword = function resetPassword ({ password, token }) 
       user.set('password', password);
 
       return user.save();
+    });
+};
+
+userSchema.statics.findUserOfBox = function findUserOfBox (boxId) {
+  if (boxId._id) {
+    boxId = boxId._id;
+  }
+
+  return this.findOne({ boxes: { $in: [boxId] } })
+    .exec();
+};
+
+userSchema.statics.transferOwnershipOfBox = function transferOwnershipOfBox (newOwnerId, boxId) {
+  const User = this;
+
+  return Promise.all([User.findUserOfBox(boxId), User.findById(newOwnerId).exec()])
+    .then(function ([originalOwner, newOwner]) {
+      if (!newOwner) {
+        throw new ModelError('New owner not found');
+      }
+
+      if (newOwner.boxes.indexOf(boxId) !== -1) {
+        throw new ModelError('New owner already owns this box');
+      }
+
+      newOwner.boxes.addToSet(boxId);
+      const promises = [newOwner.save()];
+
+      if (originalOwner) {
+        if (originalOwner.boxes.indexOf(boxId) === -1) {
+          throw new ModelError('User does not own this box');
+        }
+
+        originalOwner.boxes.pull(boxId);
+        promises.push(originalOwner.save());
+      }
+
+      return Promise.all(promises);
     });
 };
 

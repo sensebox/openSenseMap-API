@@ -1,6 +1,8 @@
 # openSenseMap API Changelog
 
 ## Unreleased
+- Allow users to delete their box images by sending `deleteImage: true`
+- Change Forbidden Response for invalid JWT authorization
 
 ## v4
 - Include sensorId as default column in measurements download

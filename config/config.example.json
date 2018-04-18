@@ -27,6 +27,9 @@
   // If not specified, Slack integration is disabled
   // No default
   "slack_url": "https://hooks.slack.com/services/A1...7/Z.....K/r....g",
+  // Users with this role are allowed to management access to the API
+  // Default: "admin"
+  "management_role": "manager",
   // Routes configuration. Use this to customize your urls. These keys should
   // always start with a slash (/)
   "routes": {
@@ -38,7 +41,10 @@
     "users": "/my-custom-users-path",
     // Base route for everything related to statistics
     // Default: "/statistics"
-    "statistics": "/my-custom-statistics-path"
+    "statistics": "/my-custom-statistics-path",
+    // Base route for management routes
+    // Default: "/management"
+    "management": "/my-custom-management-path"
   },
   // Json Web Token configuration
   "jwt": {
@@ -146,8 +152,9 @@
       "salt_factor": 12
     },
     // Location on the filesystem where images should be saved
-    // Default: "./userimages"
-    "image_folder": "/var/lib/osem-images"
+    // Should always end with a trailing slash
+    // Default: "./userimages/"
+    "image_folder": "/var/lib/osem-images/"
   },
   // Configuration for the @sensebox/sketch-templater package
   "sketch-templater": {

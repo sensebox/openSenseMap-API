@@ -28,7 +28,7 @@ const { User } = require('@sensebox/opensensemap-api-models'),
  * @apiHeader {String} Authorization allows to send a valid JSON Web Token along with this request with `Bearer` prefix.
  * @apiHeaderExample {String} Authorization Header Example
  *   Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE0ODMwMDYxNTIsImV4cCI6MTQ4MzAwOTc1MiwiaXNzIjoibG9jYWxob3N0OjgwMDAiLCJzdWIiOiJ0ZXN0QHRlc3QuZGUiLCJqdGkiOiJmMjNiOThkNi1mMjRlLTRjOTQtYWE5Ni1kMWI4M2MzNmY1MjAifQ.QegeWHWetw19vfgOvkTCsBfaSOPnjakhzzRjVtNi-2Q
- * @apiError {String} 403 Unauthorized
+ * @apiError {String} 403 {"code":"Forbidden","message":"Invalid JWT. Please sign sign in"}
  */
 
 /**
@@ -66,7 +66,7 @@ const registerUser = async function registerUser (req, res, next) {
 /**
  * @api {post} /users/sign-in Sign in
  * @apiName sign-in
- * @apiDescription Sign in using email or name and password. The response contains a valid JSON Web Token
+ * @apiDescription Sign in using email or name and password. The response contains a valid JSON Web Token. Always use `application/json` as content-type.
  * @apiGroup Users
  * @apiParam {String} email the email or name of the user
  * @apiParam {String} password the password of the user
@@ -270,7 +270,7 @@ const deleteUser = async function deleteUser (req, res, next) {
     await req.user.checkPassword(password);
     invalidateToken(req);
 
-    await req.user.destroyUser(req);
+    await req.user.destroyUser();
     res.send(200, { code: 'Ok', message: 'User and all boxes of user marked for deletion. Bye Bye!' });
     clearCache(['getBoxes', 'getStats']);
     postToSlack(`User deleted: ${req.user.name} (${redactEmail(req.user.email)})`);

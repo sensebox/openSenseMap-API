@@ -23,6 +23,10 @@ Example:
 
     5a8d1c25bc2d41001927a265
 
+## Parameters
+
+Only if noted otherwise, all requests assume the payload encoded as JSON with `Content-type: application/json` header. Parameters prepended with a colon (`:`) are parameters which should be specified through the URL.
+
 ## Source code and Licenses
 
 You can find the whole source code of the API at GitHub in the [sensebox/openSenseMap-API](https://github.com/sensebox/openSenseMap-API) repository. You can obtain the code under the MIT License.
