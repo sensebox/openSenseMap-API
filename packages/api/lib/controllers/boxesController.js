@@ -356,8 +356,9 @@ const getBox = async function getBox (req, res, next) {
  * @apiParam (RequestBody) {String} [grouptag] the grouptag of this senseBox.
  * @apiParam (RequestBody) {String="indoor","outdoor","mobile","unknown"} exposure the exposure of this senseBox.
  * @apiParam (RequestBody) {Location} location the coordinates of this senseBox.
- * @apiParam (RequestBody) {String="homeEthernet","homeWifi","homeEthernetFeinstaub","homeWifiFeinstaub","luftdaten_sds011","luftdaten_sds011_dht11","luftdaten_sds011_dht22","luftdaten_sds011_bmp180","luftdaten_sds011_bme280"} [model] specify the model if you want to use a predefined senseBox model, autocreating sensor definitions.
+ * @apiParam (RequestBody) {String="homeV2Ethernet","homeV2Wifi","homeEthernet","homeWifi","homeEthernetFeinstaub","homeWifiFeinstaub","luftdaten_sds011","luftdaten_sds011_dht11","luftdaten_sds011_dht22","luftdaten_sds011_bmp180","luftdaten_sds011_bme280"} [model] specify the model if you want to use a predefined senseBox model, autocreating sensor definitions.
  * @apiParam (RequestBody) {Sensor[]} [sensors] an array containing the sensors of this senseBox. Only use if `model` is unspecified.
+ * @apiParam (RequestBody) {String="hdc1080","bmp280","tsl45315","veml6070","sds 011"} [sensorTemplates] Specify which sensors should be included.
  * @apiParam (RequestBody) {Object} [mqtt] specify parameters of the MQTT integration for external measurement upload. Please see below for the accepted parameters
  * @apiParam (RequestBody) {Object} [ttn] specify parameters for the TTN integration for measurement from TheThingsNetwork.org upload. Please see below for the accepted parameters
  *
@@ -478,6 +479,7 @@ module.exports = {
       { name: 'exposure', allowedValues: Box.BOX_VALID_EXPOSURES },
       { name: 'model', allowedValues: Box.BOX_VALID_MODELS },
       { name: 'sensors', dataType: ['object'] },
+      { name: 'sensorTemplates', dataType: ['String'], allowedValues: ['hdc1080', 'bmp280', 'sds 011', 'tsl45315', 'veml6070'] },
       { name: 'mqtt', dataType: 'object' },
       { name: 'ttn', dataType: 'object' },
       { predef: 'location', required: true }

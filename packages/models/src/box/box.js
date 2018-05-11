@@ -207,6 +207,7 @@ boxSchema.statics.initNew = function ({
   exposure,
   model,
   sensors,
+  sensorTemplates,
   mqtt: {
     enabled, url, topic, decodeOptions: mqttDecodeOptions, connectionOptions, messageFormat
   } = { enabled: false },
@@ -219,7 +220,17 @@ boxSchema.statics.initNew = function ({
   if (model && sensors) {
     return Promise.reject(new ModelError('Parameters model and sensors cannot be specified at the same time.', { type: 'UnprocessableEntityError' }));
   } else if (model && !sensors) {
-    sensors = sensorLayouts.getSensorsForModel(model);
+    if (sensorTemplates) {
+      const layout = sensorLayouts.getSensorsForModel(model);
+      sensors = [];
+      for (const sensor of layout) {
+        if (sensorTemplates.includes(sensor['sensorType'].toLowerCase())) {
+          sensors.push(sensor);
+        }
+      }
+    } else {
+      sensors = sensorLayouts.getSensorsForModel(model);
+    }
   }
 
   const integrations = {
