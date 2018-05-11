@@ -2,6 +2,7 @@
 
 const senseboxhome = require('./sensebox.home'),
   senseboxhome_feinstaub = require('./sensebox.home.feinstaub'),
+  senseboxhome_v2 = require('./sensebox.home.mcu'),
   luftdaten_sds011 = require('./luftdaten/sds011'),
   luftdaten_sds011_dht11 = require('./luftdaten/sds011.dht11'),
   luftdaten_sds011_dht22 = require('./luftdaten/sds011.dht22'),
@@ -28,6 +29,8 @@ const senseboxhome = require('./sensebox.home'),
  */
 
 const modelDefinitions = {
+  'homeV2Ethernet': senseboxhome_v2,
+  'homeV2Wifi': senseboxhome_v2,
   'homeEthernet': senseboxhome,
   'homeWifi': senseboxhome,
   'homeEthernetFeinstaub': senseboxhome_feinstaub,
