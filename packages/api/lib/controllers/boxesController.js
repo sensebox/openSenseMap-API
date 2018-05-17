@@ -392,7 +392,7 @@ const getSketch = async function getSketch (req, res, next) {
   res.header('Content-Type', 'text/plain; charset=utf-8');
   try {
     const box = await Box.findBoxById(req._userParams.boxId, { populate: false, lean: false });
-    res.send(box.getSketch());
+    res.send(box.getSketch({ serialPort: req._userParams.serialPort }));
   } catch (err) {
     handleError(err, next);
   }
@@ -437,6 +437,7 @@ module.exports = {
   getSketch: [
     retrieveParameters([
       { predef: 'boxId', required: true },
+      { name: 'serialPort', dataType: 'String', allowedValues: ['Serial1', 'Serial2'] }
     ]),
     checkPrivilege,
     getSketch
@@ -480,6 +481,7 @@ module.exports = {
       { name: 'model', allowedValues: Box.BOX_VALID_MODELS },
       { name: 'sensors', dataType: ['object'] },
       { name: 'sensorTemplates', dataType: ['String'], allowedValues: ['hdc1080', 'bmp280', 'sds 011', 'tsl45315', 'veml6070'] },
+      { name: 'serialPort', dataType: 'String', allowedValues: ['Serial1', 'Serial2'] },
       { name: 'mqtt', dataType: 'object' },
       { name: 'ttn', dataType: 'object' },
       { predef: 'location', required: true }
