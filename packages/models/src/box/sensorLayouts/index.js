@@ -30,7 +30,9 @@ const senseboxhome = require('./sensebox.home'),
 
 const modelDefinitions = {
   'homeV2Ethernet': senseboxhome_v2,
+  'homeV2EthernetFeinstaub': senseboxhome_v2,
   'homeV2Wifi': senseboxhome_v2,
+  'homeV2WifiFeinstaub': senseboxhome_v2,
   'homeEthernet': senseboxhome,
   'homeWifi': senseboxhome,
   'homeEthernetFeinstaub': senseboxhome_feinstaub,
