@@ -208,6 +208,7 @@ boxSchema.statics.initNew = function ({
   model,
   sensors,
   sensorTemplates,
+  serialPort,
   mqtt: {
     enabled, url, topic, decodeOptions: mqttDecodeOptions, connectionOptions, messageFormat
   } = { enabled: false },
@@ -753,7 +754,11 @@ boxSchema.methods.updateSensors = function updateSensors (sensors) {
   }
 };
 
-boxSchema.methods.getSketch = function getSketch ({ encoding } = {}) {
+boxSchema.methods.getSketch = function getSketch ({ encoding, serialPort } = {}) {
+  if (serialPort) {
+    this.serialPort = serialPort;
+  }
+
   return templateSketcher.generateSketch(this, { encoding });
 };
 

@@ -276,12 +276,14 @@ userSchema.methods.passwordReset = function passwordReset () {
 
 userSchema.methods.addBox = function addBox (params) {
   const user = this;
+  const serialPort = params.serialPort;
 
   // initialize new box
   return Box.initNew(params)
     .then(function (savedBox) {
       // request is valid
       // persist the saved box in the user
+      savedBox.serialPort = serialPort;
       user.boxes.addToSet(savedBox._id);
 
       return user.save()
