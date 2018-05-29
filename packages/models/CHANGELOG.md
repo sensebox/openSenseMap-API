@@ -1,6 +1,8 @@
 # @sensebox/opensensemap-api-models Changelog
 
 ## Unreleased
+
+## v0.0.10
 - Remove format argument of findBoxById
 - Remove box.updateImage
 - Implement deletion of box images
