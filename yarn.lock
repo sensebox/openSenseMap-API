@@ -16,9 +16,9 @@
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/@sensebox/osem-protos/-/osem-protos-1.1.0.tgz#a7de8bc6be867953f1309181a012063c23299e79"
 
-"@sensebox/sketch-templater@^1.1.2":
-  version "1.1.2"
-  resolved "https://registry.yarnpkg.com/@sensebox/sketch-templater/-/sketch-templater-1.1.2.tgz#8d2d6c685236e832fc362c9dfd600a184563b4d0"
+"@sensebox/sketch-templater@^1.2.0":
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/@sensebox/sketch-templater/-/sketch-templater-1.2.0.tgz#eee75392ead92ad2dcb2c67275c38674fead5cc2"
   dependencies:
     config "^1.29.2"
     dedent "^0.7.0"
