@@ -75,7 +75,7 @@ define({ "api": [
             "type": "String",
             "optional": false,
             "field": "403",
-            "description": "<p>Unauthorized</p>"
+            "description": "<p>{&quot;code&quot;:&quot;Forbidden&quot;,&quot;message&quot;:&quot;Invalid JWT. Please sign sign in&quot;}</p>"
           }
         ]
       },
@@ -332,7 +332,7 @@ define({ "api": [
             "type": "String",
             "optional": false,
             "field": "403",
-            "description": "<p>Unauthorized</p>"
+            "description": "<p>{&quot;code&quot;:&quot;Forbidden&quot;,&quot;message&quot;:&quot;Invalid JWT. Please sign sign in&quot;}</p>"
           }
         ]
       }
@@ -399,6 +399,8 @@ define({ "api": [
             "group": "RequestBody",
             "type": "String",
             "allowedValues": [
+              "\"homeV2Ethernet\"",
+              "\"homeV2Wifi\"",
               "\"homeEthernet\"",
               "\"homeWifi\"",
               "\"homeEthernetFeinstaub\"",
@@ -419,6 +421,20 @@ define({ "api": [
             "optional": true,
             "field": "sensors",
             "description": "<p>an array containing the sensors of this senseBox. Only use if <code>model</code> is unspecified.</p>"
+          },
+          {
+            "group": "RequestBody",
+            "type": "String",
+            "allowedValues": [
+              "\"hdc1080\"",
+              "\"bmp280\"",
+              "\"tsl45315\"",
+              "\"veml6070\"",
+              "\"sds 011\""
+            ],
+            "optional": true,
+            "field": "sensorTemplates",
+            "description": "<p>Specify which sensors should be included.</p>"
           },
           {
             "group": "RequestBody",
@@ -643,7 +659,7 @@ define({ "api": [
             "type": "String",
             "optional": false,
             "field": "403",
-            "description": "<p>Unauthorized</p>"
+            "description": "<p>{&quot;code&quot;:&quot;Forbidden&quot;,&quot;message&quot;:&quot;Invalid JWT. Please sign sign in&quot;}</p>"
           }
         ]
       },
@@ -718,7 +734,7 @@ define({ "api": [
             "type": "String",
             "optional": true,
             "field": "image",
-            "description": "<p>the updated image of this senseBox encoded as base64 data uri.</p>"
+            "description": "<p>the updated image of this senseBox encoded as base64 data uri. To delete the current image, send 'deleteImage: true'.</p>"
           },
           {
             "group": "RequestBody",
@@ -945,7 +961,7 @@ define({ "api": [
             "type": "String",
             "optional": false,
             "field": "403",
-            "description": "<p>Unauthorized</p>"
+            "description": "<p>{&quot;code&quot;:&quot;Forbidden&quot;,&quot;message&quot;:&quot;Invalid JWT. Please sign sign in&quot;}</p>"
           },
           {
             "group": "Error 4xx",
@@ -1178,7 +1194,7 @@ define({ "api": [
             "type": "String",
             "optional": false,
             "field": "403",
-            "description": "<p>Unauthorized</p>"
+            "description": "<p>{&quot;code&quot;:&quot;Forbidden&quot;,&quot;message&quot;:&quot;Invalid JWT. Please sign sign in&quot;}</p>"
           },
           {
             "group": "Error 4xx",
@@ -1981,7 +1997,7 @@ define({ "api": [
             "type": "String",
             "optional": false,
             "field": "403",
-            "description": "<p>Unauthorized</p>"
+            "description": "<p>{&quot;code&quot;:&quot;Forbidden&quot;,&quot;message&quot;:&quot;Invalid JWT. Please sign sign in&quot;}</p>"
           }
         ]
       }
@@ -2025,7 +2041,7 @@ define({ "api": [
             "type": "String",
             "optional": false,
             "field": "403",
-            "description": "<p>Unauthorized</p>"
+            "description": "<p>{&quot;code&quot;:&quot;Forbidden&quot;,&quot;message&quot;:&quot;Invalid JWT. Please sign sign in&quot;}</p>"
           }
         ]
       }
@@ -2380,7 +2396,7 @@ define({ "api": [
             "type": "String",
             "optional": false,
             "field": "403",
-            "description": "<p>Unauthorized</p>"
+            "description": "<p>{&quot;code&quot;:&quot;Forbidden&quot;,&quot;message&quot;:&quot;Invalid JWT. Please sign sign in&quot;}</p>"
           }
         ]
       }
@@ -2391,7 +2407,7 @@ define({ "api": [
     "url": "/users/sign-in",
     "title": "Sign in",
     "name": "sign_in",
-    "description": "<p>Sign in using email or name and password. The response contains a valid JSON Web Token</p>",
+    "description": "<p>Sign in using email or name and password. The response contains a valid JSON Web Token. Always use <code>application/json</code> as content-type.</p>",
     "group": "Users",
     "parameter": {
       "fields": {
@@ -2529,7 +2545,7 @@ define({ "api": [
             "type": "String",
             "optional": false,
             "field": "403",
-            "description": "<p>Unauthorized</p>"
+            "description": "<p>{&quot;code&quot;:&quot;Forbidden&quot;,&quot;message&quot;:&quot;Invalid JWT. Please sign sign in&quot;}</p>"
           }
         ]
       }
@@ -2614,7 +2630,7 @@ define({ "api": [
             "type": "String",
             "optional": false,
             "field": "403",
-            "description": "<p>Unauthorized</p>"
+            "description": "<p>{&quot;code&quot;:&quot;Forbidden&quot;,&quot;message&quot;:&quot;Invalid JWT. Please sign sign in&quot;}</p>"
           }
         ]
       }
