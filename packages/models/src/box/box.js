@@ -875,26 +875,26 @@ const buildFindBoxesQuery = function buildFindBoxesQuery (opts = {}) {
   }
 
   return query;
-}
+};
 
 // returns a minimal subset of the box documents for speed
 boxSchema.statics.findBoxesMinimal = function findBoxesMinimal (opts = {}) {
-  const query = buildFindBoxesQuery(opts)
+  const query = buildFindBoxesQuery(opts);
   const props = {
-    _id: 1,             // required by frontend
-    updatedAt: 1,       // needed for classifyTransformer
+    _id: 1, // required by frontend
+    updatedAt: 1, // needed for classifyTransformer
     currentLocation: 1, // required by frontend
-    exposure: 1,        // required by frontend
-    name: 1,            // required by frontend
-  }
+    exposure: 1, // required by frontend
+    name: 1, // required by frontend
+  };
 
   return Promise.resolve(this.find(query, props).cursor({ lean: true }));
-}
+};
 
 boxSchema.statics.findBoxesLastMeasurements = function findBoxesLastMeasurements (opts = {}) {
   const schema = this;
   const { fromDate, toDate } = opts;
-  const query = buildFindBoxesQuery(opts)
+  const query = buildFindBoxesQuery(opts);
 
   if (!fromDate && !toDate) {
     return Promise.resolve(schema.find(query, BOX_PROPS_FOR_POPULATION)
@@ -913,7 +913,7 @@ boxSchema.statics.findBoxesLastMeasurements = function findBoxesLastMeasurements
       let measurementsLength = measurements.length;
 
       return schema.find(query, BOX_PROPS_FOR_POPULATION)
-        .populate(populationOpts)
+        .populate(BOX_SUB_PROPS_FOR_POPULATION)
         .cursor({ lean: true })
         .map(function (box) {
           if (box.currentLocation) {

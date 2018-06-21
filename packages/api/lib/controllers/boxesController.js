@@ -183,6 +183,7 @@ const geoJsonStringifyReplacer = function geoJsonStringifyReplacer (key, box) {
  * @apiParam {String} [grouptag] only return boxes with this grouptag, allows to specify multiple separated with a comma
  * @apiParam {String="homeEthernet","homeWifi","homeEthernetFeinstaub","homeWifiFeinstaub","luftdaten_sds011","luftdaten_sds011_dht11","luftdaten_sds011_dht22","luftdaten_sds011_bmp180","luftdaten_sds011_bme280"} [model] only return boxes with this model, allows to specify multiple separated with a comma
  * @apiParam {Boolean="true","false"} [classify=false] if specified, the api will classify the boxes accordingly to their last measurements.
+ * @apiParam {Boolean="true","false"} [minimal=false] if specified, the api will only return a minimal set of box metadata consisting of [_id, updatedAt, currentLocation, exposure, name] for a fast response.
  * @apiUse ExposureFilterParam
  * @apiSampleRequest https://api.opensensemap.org/boxes
  * @apiSampleRequest https://api.opensensemap.org/boxes?date=2015-03-07T02:50Z&phenomenon=Temperatur
