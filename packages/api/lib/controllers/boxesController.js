@@ -200,7 +200,12 @@ const getBoxes = async function getBoxes (req, res, next) {
   }
 
   try {
-    let stream = await Box.findBoxesLastMeasurements(req._userParams);
+    let stream;
+    if (req._userParams.minimal === 'true') {
+      stream = await Box.findBoxesMinimal(req._userParams);
+    } else {
+      stream = await Box.findBoxesLastMeasurements(req._userParams);
+    }
 
     if (req._userParams.classify === 'true') {
       stream = stream
@@ -504,6 +509,7 @@ module.exports = {
       { name: 'date', dataType: ['RFC 3339'] },
       { name: 'format', defaultValue: 'json', allowedValues: ['json', 'geojson'] },
       { name: 'classify', defaultValue: 'false', allowedValues: ['true', 'false'] },
+      { name: 'minimal', defaultValue: 'false', allowedValues: ['true', 'false'] },
     ]),
     parseAndValidateTimeParamsForFindAllBoxes,
     addCache('5 minutes', 'getBoxes'),
