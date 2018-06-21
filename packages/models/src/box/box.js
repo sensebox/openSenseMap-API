@@ -856,9 +856,7 @@ const locFieldTransformerFunction = function locFieldTransformerFunction (box) {
   return box;
 };
 
-boxSchema.statics.findBoxesLastMeasurements = function findBoxesLastMeasurements (opts = {}) {
-  const schema = this;
-
+const buildFindBoxesQuery = function buildFindBoxesQuery (opts = {}) {
   const { phenomenon, fromDate, toDate } = opts,
     query = {};
 
@@ -869,6 +867,35 @@ boxSchema.statics.findBoxesLastMeasurements = function findBoxesLastMeasurements
     }
   }
 
+  // search for phenomenon only together with time params
+  if (fromDate || toDate) {
+    if (phenomenon) {
+      query['sensors.title'] = phenomenon;
+    }
+  }
+
+  return query;
+}
+
+// returns a minimal subset of the box documents for speed
+boxSchema.statics.findBoxesMinimal = function findBoxesMinimal (opts = {}) {
+  const query = buildFindBoxesQuery(opts)
+  const props = {
+    _id: 1,             // required by frontend
+    updatedAt: 1,       // needed for classifyTransformer
+    currentLocation: 1, // required by frontend
+    exposure: 1,        // required by frontend
+    name: 1,            // required by frontend
+  }
+
+  return Promise.resolve(this.find(query, props).cursor({ lean: true }));
+}
+
+boxSchema.statics.findBoxesLastMeasurements = function findBoxesLastMeasurements (opts = {}) {
+  const schema = this;
+  const { fromDate, toDate } = opts;
+  const query = buildFindBoxesQuery(opts)
+
   if (!fromDate && !toDate) {
     return Promise.resolve(schema.find(query, BOX_PROPS_FOR_POPULATION)
       .populate(BOX_SUB_PROPS_FOR_POPULATION)
@@ -877,23 +904,16 @@ boxSchema.statics.findBoxesLastMeasurements = function findBoxesLastMeasurements
     );
   }
 
-  if (phenomenon) {
-    query['sensors.title'] = phenomenon;
-  }
-
   return Measurement.findLatestMeasurementsForSensors(fromDate, toDate)
     .then(function (measurements) {
       query['sensors._id'] = {
         $in: measurements.map(m => m.sensor_id)
       };
-      if (phenomenon) {
-        query['sensors.title'] = phenomenon;
-      }
 
       let measurementsLength = measurements.length;
 
       return schema.find(query, BOX_PROPS_FOR_POPULATION)
-        .populate(BOX_SUB_PROPS_FOR_POPULATION)
+        .populate(populationOpts)
         .cursor({ lean: true })
         .map(function (box) {
           if (box.currentLocation) {
