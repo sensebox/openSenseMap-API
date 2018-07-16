@@ -481,7 +481,7 @@ module.exports = {
       { name: 'model', allowedValues: Box.BOX_VALID_MODELS },
       { name: 'sensors', dataType: ['object'] },
       { name: 'sensorTemplates', dataType: ['String'], allowedValues: ['hdc1080', 'bmp280', 'sds 011', 'tsl45315', 'veml6070'] },
-      { name: 'serialPort', dataType: 'String', allowedValues: ['Serial1', 'Serial2'] },
+      { name: 'serialPort', dataType: 'String', defaultValue: 'Serial1', allowedValues: ['Serial1', 'Serial2'] },
       { name: 'mqtt', dataType: 'object' },
       { name: 'ttn', dataType: 'object' },
       { predef: 'location', required: true }
