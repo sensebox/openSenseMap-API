@@ -57,7 +57,18 @@ const
 
 /**
  * @api {put} /boxes/:senseBoxId Update a senseBox
- * @apiDescription Modify the specified senseBox.
+ * @apiDescription
+ * Modify the properties of a senseBox. Almost every aspect of a senseBox can be modified through this endpoint.
+ *
+ * ### Creating, updating or deleting sensors:
+ *
+ * Your request should contain a `sensors` array with at least one `sensor` object. You'll need to specify at least one of these properties:
+ *
+ * - `sensor` object has `"edited"` key present: Tell the API to replace all keys of the sensor with the specified `_id` with the supllied keys. (Specify all properties! `{ _id, title, unit, sensorType, icon }`)
+ * - `sensor` object has `"edited"` and `"new"` keys: Tell the API this sensor is new and should be added to the senseBox. (Specify all properties! `{ title, unit, sensorType }`)
+ * - `sensor` object has `"deleted"` key: Tell the API to delete this sensor from the senseBox. **Also deletes all measurements of this sensor!!** Needs the `_id` property.
+ *
+ * `sensor` objects without `edited`, `new`, or `deleted` keys will be ignored!
  *
  * @apiUse SensorBody
  * @apiUse LocationBody
@@ -73,6 +84,9 @@ const
  * @apiParam (RequestBody) {String} [description] the updated description of this senseBox. Send '' (empty string) to delete this property.
  * @apiParam (RequestBody) {String} [image] the updated image of this senseBox encoded as base64 data uri. To delete the current image, send 'deleteImage: true'.
  * @apiParam (RequestBody) {Object} [addons] allows to add addons to the box. Submit as Object with key `add` and the desired addon as value like `{"add":"feinstaub"}`
+ * @apiParam (Sensor) {String} edited *Value is ignored. Presence alone is enough* Tell the API to consider this sensor for changing or deleting. Specify all properties, even if not changed!
+ * @apiParam (Sensor) {String} new *Value is ignored. Presence alone is enough* Tell the API to add this new sensor to the senseBox.
+ * @apiParam (Sensor) {String} deleted *Value is ignored. Presence alone is enough* Tell the API to delete this sensor from the senseBox. *Warning: This will also delete all measurements of this sensor*
  * @apiParamExample {json} Request-Example:
  * {
  *  "_id": "56e741ff933e450c0fe2f705",
@@ -87,7 +101,8 @@ const
  *      "title": "UV-Intensität",
  *      "unit": "μW/cm²",
  *      "sensorType": "VEML6070",
- *      "icon": "osem-sprinkles"
+ *      "icon": "osem-sprinkles",
+ *      "edited": "true"
  *    }
  *  ],
  *  "location": {
