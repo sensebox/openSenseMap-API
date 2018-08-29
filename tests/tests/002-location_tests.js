@@ -708,8 +708,8 @@ describe('openSenseMap API locations tests', function () {
             m.lon >= 9.9 && m.lon <= 10.1
           ));
 
-          expect(data).to.be.an('array').with.length(3);
-          expect(measuresFiltered).to.be.an('array').with.length(3);
+          expect(data).to.be.an('array').with.length(2);
+          expect(measuresFiltered).to.be.an('array').with.length(2);
 
           return chakram.wait();
         });
