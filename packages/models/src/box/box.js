@@ -363,7 +363,7 @@ boxSchema.methods.deleteMeasurementsOfSensor = function deleteMeasurementsOfSens
  * locations of measurements.
  *
  * @param {Array} coords A VALIDATED array of coordinates [lng,lat,height].
- * @param {Date|String} timestamp The time associated with the coordinates.
+ * @param {moment.Moment} timestamp The time associated with the coordinates.
  * @returns a Promise with the new or updated location document.
  */
 boxSchema.methods.updateLocation = function updateLocation (coords, timestamp) {
@@ -375,28 +375,33 @@ boxSchema.methods.updateLocation = function updateLocation (coords, timestamp) {
 
   // search for temporally adjacent locations
   // (assuming that box.locations is ordered by location.timestamp)
-  let loc, locIndex;
-  for (locIndex = 0; locIndex < box.locations.length; locIndex++) {
-    loc = box.locations[locIndex];
-    if (!loc || timestamp.isBefore(loc.timestamp)) {
-      loc = box.locations[locIndex - 1];
+  let earlierLoc, laterLocIndex;
+  for (laterLocIndex = 0; laterLocIndex < box.locations.length; laterLocIndex++) {
+    earlierLoc = box.locations[laterLocIndex];
+    if (!earlierLoc || timestamp.isBefore(earlierLoc.timestamp)) {
+      earlierLoc = box.locations[laterLocIndex - 1];
       break;
     }
   }
 
   // check whether we insert a new location or update a existing one, depending on spatiotemporal setting
-  if (!loc && !coords) {
+  if (!earlierLoc && !coords) {
     // the timestamp is earlier than any location we have, but no location is provided
     // -> use the next laterLoc location (there is always one from registration)
-    box.locations[locIndex - 1].timestamp = timestamp;
+    box.locations[laterLocIndex].timestamp = timestamp;
 
-    return box.save().then(() => Promise.resolve(box.locations[locIndex - 1]));
+    // update currentLocation when there's no later location
+    if (!box.locations[laterLocIndex + 1]) {
+      box.currentLocation = box.locations[laterLocIndex];
+    }
+
+    return box.save().then(() => Promise.resolve(box.locations[laterLocIndex]));
   } else if (
-    !loc ||
+    !earlierLoc ||
     (
       coords &&
-      !isEqual(loc.coordinates, coords) &&
-      !timestamp.isSame(loc.timestamp)
+      !isEqual(earlierLoc.coordinates, coords) &&
+      !timestamp.isSame(earlierLoc.timestamp)
     )
   ) {
     // insert a new location, if coords and timestamps differ from prevLoc
@@ -408,11 +413,11 @@ boxSchema.methods.updateLocation = function updateLocation (coords, timestamp) {
       timestamp: timestamp
     };
 
-    // insert the new location at right place in array
-    box.locations.splice(locIndex, 0, newLoc);
+    // insert the new location after earlierLoc in array
+    box.locations.splice(laterLocIndex, 0, newLoc);
 
-    // update currentLocation, if necessary
-    if (!box.locations[locIndex + 1]) {
+    // update currentLocation when there's no later location
+    if (!box.locations[laterLocIndex + 1]) {
       box.currentLocation = newLoc;
     }
 
@@ -422,7 +427,7 @@ boxSchema.methods.updateLocation = function updateLocation (coords, timestamp) {
 
   // coords and timestamps are equal or not provided
   // -> return unmodified previous location
-  return Promise.resolve(loc);
+  return Promise.resolve(earlierLoc);
 };
 
 boxSchema.methods.saveMeasurement = function saveMeasurement (measurement) {
