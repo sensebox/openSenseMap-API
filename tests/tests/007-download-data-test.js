@@ -8,6 +8,7 @@ const chakram = require('chakram'),
 
 const BASE_URL = process.env.OSEM_TEST_BASE_URL,
   findAllSchema = require('../data/findAllSchema'),
+  findAllSchemaBoxes = require('../data/findAllSchemaBoxes'),
   measurementsSchema = require('../data/measurementsSchema'),
   getUserBoxesSchema = require('../data/getUserBoxesSchema');
 
@@ -64,7 +65,7 @@ describe('downloading data', function () {
           expect(Array.isArray(response.body)).to.be.true;
           expect(response.body.length).to.be.equal(boxCount);
           expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
-          expect(response).to.have.schema(findAllSchema);
+          expect(response).to.have.schema(findAllSchemaBoxes);
 
           return chakram.wait();
         });

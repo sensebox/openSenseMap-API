@@ -256,8 +256,6 @@ describe('openSenseMap API locations tests', function () {
           for (const box of response.body) {
             expect(box.currentLocation).to.exist;
             expect(box.locations).to.not.exist;
-            expect(box.loc).to.exist;
-            expect(box.loc).to.deep.equal([{ type: 'Feature', geometry: box.currentLocation }]);
           }
 
           return chakram.wait();

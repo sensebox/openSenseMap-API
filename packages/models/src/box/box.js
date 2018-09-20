@@ -554,6 +554,7 @@ boxSchema.methods.saveMeasurementsArray = function saveMeasurementsArray (measur
   return Measurement.insertMany(measurements)
     .then(function () {
       const updateQuery = {};
+      let lastMeasurementAt;
 
       // set lastMeasurementIds..
       for (let i = 0; i < box.sensors.length; i++) {
@@ -570,7 +571,7 @@ boxSchema.methods.saveMeasurementsArray = function saveMeasurementsArray (measur
             lastMeasurementAt = lastMeasurements[box.sensors[i]._id].createdAt;
           }
 
-          // TODO compare lastMeasurement with actual lastMeasurement
+          // TODO compare lastMeasurement with actual lastMeasurement and fix tests
           // if (lastMeasurements[box.sensors[i]._id].createdAt.isAfter(box.sensors[i].lastMeasurement.createdAt)) {
           const measureId = lastMeasurements[box.sensors[i]._id]._id;
           updateQuery.$set[`sensors.${i}.lastMeasurement`] = measureId;
@@ -872,14 +873,6 @@ boxSchema.methods.getLocations = function getLocations ({ format, fromDate, toDa
   return locs;
 };
 
-const locFieldTransformerFunction = function locFieldTransformerFunction (box) {
-  if (box.currentLocation) {
-    box.loc = [{ geometry: box.currentLocation, type: 'Feature' }];
-  }
-
-  return box;
-};
-
 boxSchema.statics.findBoxesLastMeasurements = function findBoxesLastMeasurements (opts = {}) {
   const schema = this;
 
@@ -896,7 +889,6 @@ boxSchema.statics.findBoxesLastMeasurements = function findBoxesLastMeasurements
   if (!fromDate && !toDate) {
     return Promise.resolve(schema.find(query, BOX_PROPS_FOR_POPULATION)
       .cursor({ lean: true })
-      .map(locFieldTransformerFunction) // effects of toJSON must be applied manually for streams
     );
   }
 
