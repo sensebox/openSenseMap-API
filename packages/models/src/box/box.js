@@ -116,6 +116,10 @@ const boxSchema = new Schema({
   sensors: {
     type: [sensorSchema],
     required: [true, 'sensors are required if model is invalid or missing.'],
+  },
+  lastMeasurementAt: {
+    type: Date,
+    required: false
   }
 });
 boxSchema.plugin(timestamp);
@@ -132,6 +136,7 @@ const BOX_PROPS_FOR_POPULATION = {
   sensors: 1,
   description: 1,
   weblink: 1,
+  lastMeasurementAt: 1
 };
 
 const BOX_SUB_PROPS_FOR_POPULATION = [
@@ -557,9 +562,28 @@ boxSchema.methods.saveMeasurementsArray = function saveMeasurementsArray (measur
             updateQuery.$set = {};
           }
 
+          // Get latest createdAt of measurements
+          if (
+            lastMeasurementAt === undefined ||
+            lastMeasurements[box.sensors[i]._id].createdAt.isAfter(lastMeasurementAt)
+          ) {
+            lastMeasurementAt = lastMeasurements[box.sensors[i]._id].createdAt;
+          }
+
+          // TODO compare lastMeasurement with actual lastMeasurement
+          // if (lastMeasurements[box.sensors[i]._id].createdAt.isAfter(box.sensors[i].lastMeasurement.createdAt)) {
           const measureId = lastMeasurements[box.sensors[i]._id]._id;
           updateQuery.$set[`sensors.${i}.lastMeasurement`] = measureId;
+          // }
         }
+      }
+
+      // Only update lastMeasurementAt if there is a newer measurement
+      if (
+        box.lastMeasurementAt === undefined ||
+        lastMeasurementAt.isAfter(box.lastMeasurementAt)
+      ) {
+        updateQuery.$set['lastMeasurementAt'] = lastMeasurementAt;
       }
 
       if (newLocations.length) {
@@ -871,7 +895,6 @@ boxSchema.statics.findBoxesLastMeasurements = function findBoxesLastMeasurements
 
   if (!fromDate && !toDate) {
     return Promise.resolve(schema.find(query, BOX_PROPS_FOR_POPULATION)
-      .populate(BOX_SUB_PROPS_FOR_POPULATION)
       .cursor({ lean: true })
       .map(locFieldTransformerFunction) // effects of toJSON must be applied manually for streams
     );
