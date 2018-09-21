@@ -289,7 +289,7 @@ boxSchema.statics.findBoxById = function findBoxById (id, { lean = true, populat
 
   let findPromise = this.findById(id, projection);
 
-  if (fullBox === true || onlyLastMeasurements === true) {
+  if (fullBox === true || onlyLastMeasurements === true || projection.hasOwnProperty('sensors')) {
     findPromise = findPromise
       .populate(BOX_SUB_PROPS_FOR_POPULATION);
   }
@@ -571,11 +571,15 @@ boxSchema.methods.saveMeasurementsArray = function saveMeasurementsArray (measur
             lastMeasurementAt = lastMeasurements[box.sensors[i]._id].createdAt;
           }
 
-          // TODO compare lastMeasurement with actual lastMeasurement and fix tests
-          // if (lastMeasurements[box.sensors[i]._id].createdAt.isAfter(box.sensors[i].lastMeasurement.createdAt)) {
-          const measureId = lastMeasurements[box.sensors[i]._id]._id;
-          updateQuery.$set[`sensors.${i}.lastMeasurement`] = measureId;
-          // }
+          // compare send measurements with actual lastMeasurements if each sensor
+          if (
+            box.sensors[i].lastMeasurement === undefined ||
+            box.sensors[i].lastMeasurement !== undefined &&
+            lastMeasurements[box.sensors[i]._id].createdAt.isAfter(box.sensors[i].lastMeasurement.createdAt)
+          ) {
+            const measureId = lastMeasurements[box.sensors[i]._id]._id;
+            updateQuery.$set[`sensors.${i}.lastMeasurement`] = measureId;
+          }
         }
       }
 

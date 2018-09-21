@@ -317,14 +317,41 @@ describe('submitting measurements', function () {
             expect(response.body[i].value).equal(payload[i].value.toString());
           }
 
-          return chakram.get(`${BASE_URL}/boxes/${boxIds[0]}`);
+          countMeasurements = countMeasurements + payload.length;
+
+          return chakram.wait();
+        });
+    });
+
+    it('should accept historical measurements but not update lastMeasurement of sensors', () => {
+      const payload = [
+        { sensor: boxes[0].sensors[0]._id, value: 0.1, createdAt: '2010-01-01T04:03:02.000Z' },
+        { sensor: boxes[0].sensors[1]._id, value: 0.2, createdAt: '2010-01-06T01:00:22.000Z' },
+        { sensor: boxes[0].sensors[2]._id, value: 0.5, createdAt: '2010-01-12T12:12:07.000Z' },
+        { sensor: boxes[0].sensors[3]._id, value: 0.3, createdAt: '2010-01-02T01:00:22.000Z' },
+      ];
+
+      return chakram.post(`${BASE_URL}/boxes/${boxIds[0]}/data`, payload)
+        .then(function (response) {
+          expect(response).to.have.status(201);
+          expect(response.body).to.equal('Measurements saved in box');
+
+          return chakram.get(`${BASE_URL}/boxes/${boxIds[0]}/sensors`);
         })
         .then(function (response) {
           expect(response).to.have.status(200);
+          expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
 
-          const sensor = response.body.sensors.find(s => s._id === sensor_id);
-          expect(sensor).to.exist;
-          expect(sensor.lastMeasurement.createdAt).equal(payload[0].createdAt);
+          for (let i = 0; i < response.body.sensors.length; i++) {
+            const sensorID = response.body.sensors[i]._id;
+            const lastMeasurement = response.body.sensors[i].lastMeasurement;
+
+            payload.forEach(element => {
+              if (element.sensor === sensorID) {
+                expect(lastMeasurement.createdAt).to.not.equal(element.createdAt);
+              }
+            });
+          }
 
           countMeasurements = countMeasurements + payload.length;
 
@@ -332,6 +359,34 @@ describe('submitting measurements', function () {
         });
     });
 
+    it('should accept historical measurements but not update property lastMeasurementAt of box', () => {
+      const payload = [
+        { sensor: boxes[0].sensors[0]._id, value: 0.1, createdAt: '2010-01-01T04:03:02.000Z' },
+        { sensor: boxes[0].sensors[1]._id, value: 0.2, createdAt: '2010-01-06T01:00:22.000Z' },
+        { sensor: boxes[0].sensors[2]._id, value: 0.5, createdAt: '2010-01-12T12:12:07.000Z' },
+        { sensor: boxes[0].sensors[3]._id, value: 0.3, createdAt: '2010-01-02T01:00:22.000Z' },
+      ];
+
+      return chakram.post(`${BASE_URL}/boxes/${boxIds[0]}/data`, payload)
+        .then(function (response) {
+          expect(response).to.have.status(201);
+          expect(response.body).to.equal('Measurements saved in box');
+
+          return chakram.get(`${BASE_URL}/boxes/${boxIds[0]}`);
+        })
+        .then(function (response) {
+          expect(response).to.have.status(200);
+          expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
+
+          payload.forEach(element => {
+            expect(element.createdAt).to.not.equal(response.body.lastMeasurementAt);
+          });
+
+          countMeasurements = countMeasurements + payload.length;
+
+          return chakram.wait();
+        });
+    });
   });
 
   describe('multiple bytes POST /boxes/boxid/data', function () {
