@@ -27,10 +27,12 @@ const classifyTransformer = function (classifyTransformerOptions, streamOptions)
 classifyTransformer.prototype._transform = function _transform (box, encoding, callback) {
   let state = 'old';
 
-  if (box.updatedAt > this.thirtyDays) {
-    state = 'inactive';
-  } else if (box.updatedAt > this.sevenDays) {
+  const lastMeasurementCreatedAt = box.lastMeasurementAt;
+
+  if (lastMeasurementCreatedAt > this.sevenDays) {
     state = 'active';
+  } else if (lastMeasurementCreatedAt > this.thirtyDays) {
+    state = 'inactive';
   }
 
   box['state'] = state;

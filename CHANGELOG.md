@@ -1,6 +1,8 @@
 # openSenseMap API Changelog
 
 ## Unreleased
+
+## v5
 - Allow users to delete their box images by sending `deleteImage: true`
 - Change Forbidden Response for invalid JWT authorization
 - Use @sensebox/opensensemap-api-models v0.0.10
