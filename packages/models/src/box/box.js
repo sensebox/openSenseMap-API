@@ -903,7 +903,7 @@ boxSchema.statics.findBoxesMinimal = function findBoxesMinimal (opts = {}) {
   const query = buildFindBoxesQuery(opts);
   const props = {
     _id: 1, // required by frontend
-    updatedAt: 1, // needed for classifyTransformer
+    lastMeasurementAt: 1, // needed for classifyTransformer
     currentLocation: 1, // required by frontend
     exposure: 1, // required by frontend
     name: 1, // required by frontend
