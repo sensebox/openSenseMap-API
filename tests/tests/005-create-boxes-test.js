@@ -599,6 +599,28 @@ describe('openSenseMap API Routes: /boxes', function () {
       });
   });
 
+  it('should allow to request minimal boxes', function () {
+    return chakram.get(`${BASE_URL}/boxes?minimal=true`)
+      .then(function (response) {
+        expect(response).to.have.status(200);
+        expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
+        expect(Array.isArray(response.body)).to.be.true;
+        expect(response.body.length).to.be.equal(3);
+        for (const box of response.body) {
+          expect(Object.keys(box))
+            .to.not.include('loc')
+            .and.to.not.include('locations')
+            .and.not.include('weblink')
+            .and.not.include('image')
+            .and.not.include('description')
+            .and.not.include('model')
+            .and.not.include('sensors');
+        }
+
+        return chakram.wait();
+      });
+  });
+
   it('should allow to unset the grouptag, description and weblink of the box via PUT', function () {
     const update_payload = { grouptag: '', description: '', weblink: '' };
 
