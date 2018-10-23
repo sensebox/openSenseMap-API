@@ -272,7 +272,7 @@ const postNewMeasurements = async function postNewMeasurements (req, res, next) 
   );
   if (Measurement.hasDecoder(contentType)) {
     try {
-      const box = await Box.findBoxById(boxId, { populate: false, lean: false });
+      const box = await Box.findBoxById(boxId, { populate: false, lean: false, projection: { sensors: 1, locations: 1, lastMeasurementAt: 1, currentLocation: 1, model: 1 } });
       const measurements = await Measurement.decodeMeasurements(req.body, { contentType, sensors: box.sensors });
       await box.saveMeasurementsArray(measurements);
       res.send(201, 'Measurements saved in box');

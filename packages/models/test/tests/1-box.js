@@ -336,7 +336,8 @@ describe('Box model', function () {
           'description',
           'weblink',
           '_id',
-          'loc'
+          'loc',
+          'lastMeasurementAt'
         ]);
       });
     });
