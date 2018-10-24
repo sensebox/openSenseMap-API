@@ -316,6 +316,38 @@ describe('Box model', function () {
     });
   });
 
+  describe('findBoxesMinimal()', function () {
+    it('should return all boxes with minimal subset of attributes', function () {
+      const testBoxIds = Object.keys(testBoxes);
+
+      return Box.findBoxesMinimal().then(function (queryCursor) {
+        queryCursor.on('data', (box) => {
+          expect(Object.keys(box)).members([
+            '_id',
+            'updatedAt',
+            'currentLocation',
+            'exposure',
+            'name',
+          ]);
+
+          expect(Object.keys(box))
+            .to.not.include('loc')
+            .and.to.not.include('locations')
+            .and.not.include('weblink')
+            .and.not.include('image')
+            .and.not.include('description')
+            .and.not.include('model')
+            .and.not.include('sensors');
+        });
+
+        queryCursor.on('end', () => {
+          expect(true).to.be.true;
+        });
+
+      });
+    });
+  });
+
   describe('JSON serialization', function () {
     it('should only serialize public properties', function () {
       const boxId = Object.keys(testBoxes)[0];
