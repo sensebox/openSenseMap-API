@@ -341,6 +341,27 @@ describe('openSenseMap API locations tests', function () {
         });
     });
 
+    it('should predate first location for measurement with timestamp and no location', function () {
+      const createdAt = moment().subtract(10, 'm');
+      const measurement = { value: -1, createdAt };
+
+      return chakram.post(POST_MEASUREMENT_URL, measurement, authHeader)
+        .then(logResponseIfError)
+        .then(function (response) {
+          expect(response).to.have.status(201);
+
+          return chakram.get(`${GET_BOX_URL}/locations`);
+        })
+        .then(logResponseIfError)
+        .then(function (response) {
+          expect(response).to.have.status(200);
+          expect(moment(response.body[0].timestamp).diff(createdAt))
+            .to.equal(0);
+
+          return chakram.wait();
+        });
+    });
+
     it('should infer measurement.location for measurements without location', function () {
       // timestamp shortly after location that was set through -1 measurement
       const measurement1 = { value: -0.5, createdAt: moment().subtract(1, 'm') };
@@ -670,8 +691,8 @@ describe('openSenseMap API locations tests', function () {
             m.lon >= -1 && m.lon <= 0
           ));
 
-          expect(data).to.be.an('array').with.length(2);
-          expect(measuresFiltered).to.be.an('array').with.length(2);
+          expect(data).to.be.an('array').with.length(3);
+          expect(measuresFiltered).to.be.an('array').with.length(3);
 
           return chakram.get(CURRENT_LOC_DATA_URL);
         })
@@ -737,8 +758,8 @@ describe('openSenseMap API locations tests', function () {
             m.lon >= -1 && m.lon <= 0
           ));
 
-          expect(data).to.be.an('array').with.length(2);
-          expect(measuresFiltered).to.be.an('array').with.length(2);
+          expect(data).to.be.an('array').with.length(3);
+          expect(measuresFiltered).to.be.an('array').with.length(3);
 
           return chakram.get(CURRENT_LOC_DATA_URL);
         })
@@ -808,7 +829,7 @@ describe('openSenseMap API locations tests', function () {
         .then(logResponseIfError)
         .then(function (response) {
           expect(response).to.have.status(200);
-          expect(response.body).to.be.an('array').with.length(8);
+          expect(response.body).to.be.an('array').with.length(9);
 
           for (const m of response.body) {
             expect(m.location.timestamp).to.not.exist;
