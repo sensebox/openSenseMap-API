@@ -318,13 +318,12 @@ describe('Box model', function () {
 
   describe('findBoxesMinimal()', function () {
     it('should return all boxes with minimal subset of attributes', function () {
-      const testBoxIds = Object.keys(testBoxes);
 
       return Box.findBoxesMinimal().then(function (queryCursor) {
         queryCursor.on('data', (box) => {
           expect(Object.keys(box)).members([
             '_id',
-            'updatedAt',
+            'lastMeasurementAt',
             'currentLocation',
             'exposure',
             'name',
