@@ -200,6 +200,7 @@ const geoJsonStringifyReplacer = function geoJsonStringifyReplacer (key, box) {
  * @apiParam {Boolean="true","false"} [classify=false] if specified, the api will classify the boxes accordingly to their last measurements.
  * @apiParam {Boolean="true","false"} [minimal=false] if specified, the api will only return a minimal set of box metadata consisting of [_id, updatedAt, currentLocation, exposure, name] for a fast response.
  * @apiUse ExposureFilterParam
+ * @apiUse BBoxParam
  * @apiSampleRequest https://api.opensensemap.org/boxes
  * @apiSampleRequest https://api.opensensemap.org/boxes?date=2015-03-07T02:50Z&phenomenon=Temperatur
  * @apiSampleRequest https://api.opensensemap.org/boxes?date=2015-03-07T02:50Z,2015-04-07T02:50Z&phenomenon=Temperatur
@@ -526,6 +527,7 @@ module.exports = {
       { name: 'format', defaultValue: 'json', allowedValues: ['json', 'geojson'] },
       { name: 'classify', defaultValue: 'false', allowedValues: ['true', 'false'] },
       { name: 'minimal', defaultValue: 'false', allowedValues: ['true', 'false'] },
+      { predef: 'bbox' },
     ]),
     parseAndValidateTimeParamsForFindAllBoxes,
     addCache('5 minutes', 'getBoxes'),

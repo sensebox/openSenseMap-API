@@ -262,6 +262,20 @@ describe('openSenseMap API locations tests', function () {
         });
     });
 
+    it('should allow filtering boxes by bounding box', () => {
+      const loc = [120.123456, 60.654321, 12.123];
+
+      return chakram.get(`${BASE_URL}?bbox=120,60,121,61`)
+        .then(logResponseIfError)
+        .then(function (response) {
+          expect(response).to.have.status(200);
+
+          expect(response.body).to.be.an('array');
+          expect(response.body).to.have.length(1);
+          expect(response.body[0].currentLocation.coordinates).to.deep.equal(loc);
+        });
+    });
+
   });
 
   describe('POST /boxes/:boxID/:sensorID', function () {
