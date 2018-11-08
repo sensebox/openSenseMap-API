@@ -883,7 +883,7 @@ boxSchema.methods.getLocations = function getLocations ({ format, fromDate, toDa
 };
 
 const buildFindBoxesQuery = function buildFindBoxesQuery (opts = {}) {
-  const { phenomenon, fromDate, toDate } = opts,
+  const { phenomenon, fromDate, toDate, bbox } = opts,
     query = {};
 
   // simple string parameters
@@ -891,6 +891,11 @@ const buildFindBoxesQuery = function buildFindBoxesQuery (opts = {}) {
     if (opts[param]) {
       query[param] = { '$in': opts[param] };
     }
+  }
+
+  // bbox search parameter
+  if (bbox) {
+    query['locations'] = { '$geoWithin': { '$geometry': bbox } };
   }
 
   // search for phenomenon only together with time params
