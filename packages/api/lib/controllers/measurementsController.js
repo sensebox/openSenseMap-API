@@ -216,6 +216,9 @@ const postNewMeasurement = async function postNewMeasurement (req, res, next) {
  * **Luftdaten Format**<br/>
  * Decoding of luftdaten.info json format. Activate by specifying `luftdaten=true` in the query string. The API now tries to convert the objects in the `sensordatavalues` key to the openSenseMap JSON Array format. Sensors are matched by the key `value_type` against the `title` of the sensors of this box. `SDS_P1` matches sensors with title `PM10`, `SDS_P2` matches sensors with title `PM2.5`. You can find all matchings in the source code of the openSenseMap-API (`lib/decoding/luftdatenHandler.js`)
  *
+ * **hackAIR Format**<br/>
+ * Decoding of hackAIR json format. Activate by specifying `hackair=true` in the query string. The API now tries to convert the values in the `reading` key to the openSenseMap JSON Array format. Sensors are matched by the key `sensor_description` against the `title` of the sensors of this box. `PM2.5_AirPollutantValue` matches sensors with title `PM2.5`, `PM10_AirPollutantValue` matches sensors with title `PM10`. You can find all matchings in the source code of the openSenseMap-API (`lib/decoding/hackAirHandler.js`)
+ *
  * **senseBox Bytes Format**<br/>
  * Submit measurements as raw bytes. Set the "content-type" header to `application/snsbx-bytes`. Send measurements as 12 byte sensor Id with most significant byte first followed by 4 byte float measurement in little endian (least significant byte first) notation. A valid measurement could look like this:<br />[ 0x59, 0x5f, 0x9a, 0x28, 0x2d, 0xcb, 0xee, 0x77, 0xac, 0x0e, 0x5d, 0xc4, 0x9a, 0x99, 0x89, 0x40 ] but encoded as raw bytes. Multiple measurements are just multiple tuples of id and value. The number of bytes should be a multiple of 16.
  *
@@ -229,6 +232,7 @@ const postNewMeasurement = async function postNewMeasurement (req, res, next) {
  * @apiUse BoxIdParam
  * @apiUse LocationBody
  * @apiParam {String} [luftdaten] Specify whatever you want (like `luftdaten=1`. Signals the api to treat the incoming data as luftdaten.info formatted json.
+ * * @apiParam {String} [hackair] Specify whatever you want (like `hackair=1`. Signals the api to treat the incoming data as hackair formatted json.
  * @apiParamExample {application/json} JSON-Object:
  * {
  *   "sensorID": "value",
@@ -262,14 +266,27 @@ const postNewMeasurement = async function postNewMeasurement (req, res, next) {
  *     }
  *   ]
  * }
+ * @apiParamExample {application/json} hackAIR Format:
+ * {
+ *   "reading": {
+ *     "PM2.5_AirPollutantValue": "7.93",
+ *     "PM10_AirPollutantValue": "32.63"
+ *    },
+ *    "battery": "5.99",
+ *    "tamper": "0",
+ *    "error": "4"
+ * }
  */
 const postNewMeasurements = async function postNewMeasurements (req, res, next) {
-  const { boxId, luftdaten } = req._userParams;
-  const contentType = (
-    luftdaten // if
-      ? 'luftdaten' // then
-      : req.getContentType() // else
-  );
+  const { boxId, luftdaten, hackair } = req._userParams;
+  let contentType = req.getContentType();
+
+  if (hackair) {
+    contentType = 'hackair';
+  } else if (luftdaten) {
+    contentType = 'luftdaten';
+  }
+
   if (Measurement.hasDecoder(contentType)) {
     try {
       const box = await Box.findBoxById(boxId, { populate: false, lean: false, projection: { sensors: 1, locations: 1, lastMeasurementAt: 1, currentLocation: 1, model: 1 } });
@@ -300,7 +317,8 @@ module.exports = {
   postNewMeasurements: [
     retrieveParameters([
       { predef: 'boxId', required: true },
-      { name: 'luftdaten' }
+      { name: 'luftdaten' },
+      { name: 'hackair' }
     ]),
     postNewMeasurements
   ],
