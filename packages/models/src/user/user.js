@@ -295,7 +295,7 @@ userSchema.methods.addBox = function addBox (params) {
 
           user.mail(mailTemplate, savedBox);
 
-          return savedBox;
+          return savedBox.toJSON({ includeSecrets: true });
         });
     });
 };
