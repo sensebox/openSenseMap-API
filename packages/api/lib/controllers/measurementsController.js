@@ -10,7 +10,8 @@ const
   } = require('../helpers/userParamHelpers'),
   handleError = require('../helpers/errorHandler'),
   OutlierTransformer = require('../transformers/outlierTransformer'),
-  jsonstringify = require('stringify-stream');
+  jsonstringify = require('stringify-stream'),
+  { UnauthorizedError } = require('restify-errors');
 
 /**
  * @api {get} /boxes/:senseBoxId/sensors Get latest measurements of a senseBox
@@ -289,7 +290,12 @@ const postNewMeasurements = async function postNewMeasurements (req, res, next) 
 
   if (Measurement.hasDecoder(contentType)) {
     try {
-      const box = await Box.findBoxById(boxId, { populate: false, lean: false, projection: { sensors: 1, locations: 1, lastMeasurementAt: 1, currentLocation: 1, model: 1 } });
+      const box = await Box.findBoxById(boxId, { populate: false, lean: false, projection: { sensors: 1, locations: 1, lastMeasurementAt: 1, currentLocation: 1, model: 1, access_token: 1 } });
+
+      if (contentType === 'hackair' && box.access_token !== req.headers.authorization) {
+        throw new UnauthorizedError('Access token not valid!');
+      }
+
       const measurements = await Measurement.decodeMeasurements(req.body, { contentType, sensors: box.sensors });
       await box.saveMeasurementsArray(measurements);
       res.send(201, 'Measurements saved in box');
