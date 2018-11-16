@@ -293,6 +293,10 @@ userSchema.methods.addBox = function addBox (params) {
             mailTemplate = 'newBoxLuftdaten';
           }
 
+          if (savedBox.model && savedBox.model.toString().includes('hackair')) {
+            mailTemplate = 'newBoxHackAir';
+          }
+
           user.mail(mailTemplate, savedBox);
 
           return savedBox.toJSON({ includeSecrets: true });

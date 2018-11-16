@@ -35,6 +35,13 @@ if (config.get('mailer.url')) {
         }
       };
     },
+    'newBoxHackAir' (user, box) {
+      return {
+        payload: {
+          box
+        }
+      };
+    },
     'newUser' (user) {
       return {
         payload: {
