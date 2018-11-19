@@ -19,13 +19,12 @@ logs_service=${2:-}
 dont_clean_up=${dont_clean_up:-}
 show_logs=${show_logs:-}
 only_models_tests=${only_models_tests:-}
-CI=${CI:-}
 git_branch=$(git rev-parse --abbrev-ref HEAD)
 
 # Decide which mailer tag to use
-# on branch development, use the development tag
-# in CI use the latest tag
-if [[ $CI == "true" || $git_branch == "master" ]]; then
+# on branch master, use the latest tag
+# on all other branches, use the development tag
+if [[ $git_branch == "master" ]]; then
   export SENSEBOX_MAILER_TAG="latest"
 else
   export SENSEBOX_MAILER_TAG="development"
