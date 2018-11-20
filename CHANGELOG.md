@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+## v6
+- Use @sensebox/opensensemap-api-models v0.0.11
+- Support for `hackAIR` devices
+- Support for `bbox` query parameter on `/boxes`. Closes #174
+
 ## v5
 - Allow users to delete their box images by sending `deleteImage: true`
 - Change Forbidden Response for invalid JWT authorization
