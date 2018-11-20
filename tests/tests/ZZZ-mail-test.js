@@ -434,6 +434,25 @@ describe('mails', function () {
     expect(mail).to.exist;
   });
 
+  it('should have sent special hackAIR welcome mail', async function () {
+    const foundMails = await getMails('hackair@email', 'Your device on openSenseMap');
+    expect(foundMails).not.to.be.empty;
+    expect(foundMails.every(function (mail) {
+      expect(mail).to.exist;
+      const links = mail('a');
+      let hasLink = false;
+      links.each(function (_, link) {
+        const href = $(link).attr('href');
+        if (href.includes('hackair_home_v2.html')) {
+          hasLink = true;
+        }
+      });
+      expect(hasLink).to.be.true;
+
+      return hasLink;
+    })).true;
+  });
+
   it('should allow to confirm a email address after requesting a resend of a confirmation token', async function () {
     let token;
     const mail = await getMail('tester4@test.test', 'E-Mail address confirmation');

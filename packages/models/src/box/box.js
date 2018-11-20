@@ -16,7 +16,8 @@ const { mongoose } = require('../db'),
   ModelError = require('../modelError'),
   Sketcher = require('@sensebox/sketch-templater'),
   fs = require('fs'),
-  log = require('../log');
+  log = require('../log'),
+  crypto = require('crypto');
 
 const templateSketcher = new Sketcher();
 
@@ -120,6 +121,10 @@ const boxSchema = new Schema({
   lastMeasurementAt: {
     type: Date,
     required: false
+  },
+  access_token: {
+    type: String,
+    required: false
   }
 });
 boxSchema.plugin(timestamp);
@@ -160,6 +165,7 @@ boxSchema.set('toJSON', {
 
     if (options && options.includeSecrets) {
       box.integrations = ret.integrations;
+      box.access_token = ret.access_token;
     }
 
     return box;
@@ -252,6 +258,9 @@ boxSchema.statics.initNew = function ({
     timestamp: new Date(),
   };
 
+  // Create acces token for box. Right now just used for hackAIR devices
+  const access_token = crypto.randomBytes(32).toString('hex');
+
   // create box document and persist in database
   return this.create({
     name,
@@ -261,7 +270,8 @@ boxSchema.statics.initNew = function ({
     exposure,
     model,
     sensors,
-    integrations
+    integrations,
+    access_token
   });
 
 };
@@ -273,6 +283,7 @@ boxSchema.statics.findBoxById = function findBoxById (id, { lean = true, populat
   }
   if (includeSecrets) {
     projection.integrations = 1;
+    projection.access_token = 1;
   }
   if (onlyLastMeasurements) {
     projection = {

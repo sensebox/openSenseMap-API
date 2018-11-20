@@ -178,7 +178,7 @@ services:
       - "8025:8025"
 
   mqtt-osem-integration:
-    image: sensebox/mqtt-osem-integration:v0.0.4
+    image: sensebox/mqtt-osem-integration:v0.0.5
     depends_on:
       - db
     environment:

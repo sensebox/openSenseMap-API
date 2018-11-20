@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+## v0.0.11-beta.2
+
+## v0.0.11-beta.1
+
+## v0.0.11-beta.0
+
 ## v0.0.10
 - Remove format argument of findBoxById
 - Remove box.updateImage
