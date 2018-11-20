@@ -266,6 +266,18 @@
           },
           {
             "group": "Parameter",
+            "type": "Boolean",
+            "allowedValues": [
+              "\"true\"",
+              "\"false\""
+            ],
+            "optional": true,
+            "field": "minimal",
+            "defaultValue": "false",
+            "description": "<p>if specified, the api will only return a minimal set of box metadata consisting of [_id, updatedAt, currentLocation, exposure, name] for a fast response.</p>"
+          },
+          {
+            "group": "Parameter",
             "type": "String",
             "allowedValues": [
               "\"indoor\"",
@@ -276,6 +288,13 @@
             "optional": true,
             "field": "exposure",
             "description": "<p>only include boxes with this exposure. Allows to specify multiple exposures separated by comma (Example: <code>indoor,mobile</code>)</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": false,
+            "field": "bbox",
+            "description": "<p>A bounding box containing 4 WGS84 coordinates separated by comata (,). Order is: longitude southwest, latitude southwest, longitude northeast, latitude northeast. Minimal and maximal values are: -180, 180 for longitude and -90, 90 for latitude.</p>"
           }
         ]
       }
@@ -399,6 +418,7 @@
             "group": "RequestBody",
             "type": "String",
             "allowedValues": [
+              "\"homeV2Lora\"",
               "\"homeV2Ethernet\"",
               "\"homeV2Wifi\"",
               "\"homeEthernet\"",
@@ -409,7 +429,8 @@
               "\"luftdaten_sds011_dht11\"",
               "\"luftdaten_sds011_dht22\"",
               "\"luftdaten_sds011_bmp180\"",
-              "\"luftdaten_sds011_bme280\""
+              "\"luftdaten_sds011_bme280\"",
+              "\"hackair_home_v2\""
             ],
             "optional": true,
             "field": "model",
@@ -430,7 +451,7 @@
               "\"bmp280\"",
               "\"tsl45315\"",
               "\"veml6070\"",
-              "\"sds 011\""
+              "\"sds011\""
             ],
             "optional": true,
             "field": "sensorTemplates",
@@ -676,7 +697,7 @@
     "type": "put",
     "url": "/boxes/:senseBoxId",
     "title": "Update a senseBox",
-    "description": "<p>Modify the specified senseBox.</p>",
+    "description": "<p>Modify the properties of a senseBox. Almost every aspect of a senseBox can be modified through this endpoint.</p> <h3>Creating, updating or deleting sensors:</h3> <p>Your request should contain a <code>sensors</code> array with at least one <code>sensor</code> object. You'll need to specify at least one of these properties:</p> <ul> <li><code>sensor</code> object has <code>&quot;edited&quot;</code> key present: Tell the API to replace all keys of the sensor with the specified <code>_id</code> with the supllied keys. (Specify all properties! <code>{ _id, title, unit, sensorType, icon }</code>)</li> <li><code>sensor</code> object has <code>&quot;edited&quot;</code> and <code>&quot;new&quot;</code> keys: Tell the API this sensor is new and should be added to the senseBox. (Specify all properties! <code>{ title, unit, sensorType }</code>)</li> <li><code>sensor</code> object has <code>&quot;deleted&quot;</code> key: Tell the API to delete this sensor from the senseBox. <strong>Also deletes all measurements of this sensor!!</strong> Needs the <code>_id</code> property.</li> </ul> <p><code>sensor</code> objects without <code>edited</code>, <code>new</code>, or <code>deleted</code> keys will be ignored!</p>",
     "parameter": {
       "fields": {
         "RequestBody": [
@@ -745,6 +766,27 @@
           }
         ],
         "A single sensor for the nested Sensor parameter": [
+          {
+            "group": "Sensor",
+            "type": "String",
+            "optional": false,
+            "field": "edited",
+            "description": "<p><em>Value is ignored. Presence alone is enough</em> Tell the API to consider this sensor for changing or deleting. Specify all properties, even if not changed!</p>"
+          },
+          {
+            "group": "Sensor",
+            "type": "String",
+            "optional": false,
+            "field": "new",
+            "description": "<p><em>Value is ignored. Presence alone is enough</em> Tell the API to add this new sensor to the senseBox.</p>"
+          },
+          {
+            "group": "Sensor",
+            "type": "String",
+            "optional": false,
+            "field": "deleted",
+            "description": "<p><em>Value is ignored. Presence alone is enough</em> Tell the API to delete this sensor from the senseBox. <em>Warning: This will also delete all measurements of this sensor</em></p>"
+          },
           {
             "group": "Sensor",
             "type": "String",
@@ -902,7 +944,7 @@
       "examples": [
         {
           "title": "Request-Example:",
-          "content": "{\n \"_id\": \"56e741ff933e450c0fe2f705\",\n \"name\": \"my senseBox\",\n \"description\": \"this is just a description\",\n \"weblink\": \"https://opensensemap.org/explore/561ce8acb3de1fe005d3d7bf\",\n \"grouptag\": \"senseBoxes99\",\n \"exposure\": \"indoor\",\n \"sensors\": [\n   {\n     \"_id\": \"56e741ff933e450c0fe2f707\",\n     \"title\": \"UV-Intensität\",\n     \"unit\": \"μW/cm²\",\n     \"sensorType\": \"VEML6070\",\n     \"icon\": \"osem-sprinkles\"\n   }\n ],\n \"location\": {\n   \"lng\": 8.6956,\n   \"lat\": 50.0430\n },\n \"image\": \"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAIVBMVEUAAABKrkMGteh0wW5Ixu931vKy3bO46fj/7hr/+J36/vyFw5EiAAAAAXRSTlMAQObYZgAAAF5JREFUeAFdjdECgzAIA1kIUvP/HzyhdrPe210L2GLYzhjj7VvRefmpn1MKFbdHUOzA9qRQEhIw3xMzEVeJDqkOrC9IJqWE7hFDLZ0Q6+zh7odsoU/j9qeDPXDf/cEX1xsDKIqAkK8AAAAASUVORK5CYII=\",\n \"mqtt\": {\n   \"url\": \"some url\",\n   \"topic\": \"some topic\",\n   \"messageFormat\": \"json\",\n   \"decodeOptions\": \"{\\\"jsonPath\\\":\\\"$.bla\\\"}\"\n }\n \"ttn\": {\n   \"app_id\": \"my-app-id-from-ttn\",\n   \"dev_id\": \"my-dev-id-from-ttn\",\n   \"profile\": \"sensebox/home\",\n   \"decodeOptions\": \"{\\\"jsonPath\\\":\\\"$.bla\\\"}\"\n },\n \"addons\": { \"add\": \"feinstaub\" }\n}",
+          "content": "{\n \"_id\": \"56e741ff933e450c0fe2f705\",\n \"name\": \"my senseBox\",\n \"description\": \"this is just a description\",\n \"weblink\": \"https://opensensemap.org/explore/561ce8acb3de1fe005d3d7bf\",\n \"grouptag\": \"senseBoxes99\",\n \"exposure\": \"indoor\",\n \"sensors\": [\n   {\n     \"_id\": \"56e741ff933e450c0fe2f707\",\n     \"title\": \"UV-Intensität\",\n     \"unit\": \"μW/cm²\",\n     \"sensorType\": \"VEML6070\",\n     \"icon\": \"osem-sprinkles\",\n     \"edited\": \"true\"\n   }\n ],\n \"location\": {\n   \"lng\": 8.6956,\n   \"lat\": 50.0430\n },\n \"image\": \"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAIVBMVEUAAABKrkMGteh0wW5Ixu931vKy3bO46fj/7hr/+J36/vyFw5EiAAAAAXRSTlMAQObYZgAAAF5JREFUeAFdjdECgzAIA1kIUvP/HzyhdrPe210L2GLYzhjj7VvRefmpn1MKFbdHUOzA9qRQEhIw3xMzEVeJDqkOrC9IJqWE7hFDLZ0Q6+zh7odsoU/j9qeDPXDf/cEX1xsDKIqAkK8AAAAASUVORK5CYII=\",\n \"mqtt\": {\n   \"url\": \"some url\",\n   \"topic\": \"some topic\",\n   \"messageFormat\": \"json\",\n   \"decodeOptions\": \"{\\\"jsonPath\\\":\\\"$.bla\\\"}\"\n }\n \"ttn\": {\n   \"app_id\": \"my-app-id-from-ttn\",\n   \"dev_id\": \"my-dev-id-from-ttn\",\n   \"profile\": \"sensebox/home\",\n   \"decodeOptions\": \"{\\\"jsonPath\\\":\\\"$.bla\\\"}\"\n },\n \"addons\": { \"add\": \"feinstaub\" }\n}",
           "type": "json"
         },
         {
@@ -1593,7 +1635,7 @@
     "type": "post",
     "url": "/boxes/:senseBoxId/data",
     "title": "Post multiple new measurements",
-    "description": "<p>Post multiple new measurements in multiple formats to a box. Allows the use of csv, json array and json object notation.</p> <p><strong>CSV:</strong><br/> For data in csv format, first use <code>content-type: text/csv</code> as header, then submit multiple values as lines in <code>sensorId,value,[createdAt]</code> form. Timestamp is optional. Do not submit a header.</p> <p><strong>JSON Array:</strong><br/> You can submit your data as array. Your measurements should be objects with the keys <code>sensor</code>, <code>value</code> and optionally <code>createdAt</code> and <code>location</code>. Specify the header <code>content-type: application/json</code>.</p> <p><strong>JSON Object:</strong><br/> The third form is to encode your measurements in an object. Here, the keys of the object are the sensorIds, the values of the object are either just the <code>value</code> of your measurement or an array of the form <code>[value, createdAt, location]</code>, where the latter two values are optional.</p> <p><strong>Luftdaten Format</strong><br/> Decoding of luftdaten.info json format. Activate by specifying <code>luftdaten=true</code> in the query string. The API now tries to convert the objects in the <code>sensordatavalues</code> key to the openSenseMap JSON Array format. Sensors are matched by the key <code>value_type</code> against the <code>title</code> of the sensors of this box. <code>SDS_P1</code> matches sensors with title <code>PM10</code>, <code>SDS_P2</code> matches sensors with title <code>PM2.5</code>. You can find all matchings in the source code of the openSenseMap-API (<code>lib/decoding/luftdatenHandler.js</code>)</p> <p><strong>senseBox Bytes Format</strong><br/> Submit measurements as raw bytes. Set the &quot;content-type&quot; header to <code>application/snsbx-bytes</code>. Send measurements as 12 byte sensor Id with most significant byte first followed by 4 byte float measurement in little endian (least significant byte first) notation. A valid measurement could look like this:<br />[ 0x59, 0x5f, 0x9a, 0x28, 0x2d, 0xcb, 0xee, 0x77, 0xac, 0x0e, 0x5d, 0xc4, 0x9a, 0x99, 0x89, 0x40 ] but encoded as raw bytes. Multiple measurements are just multiple tuples of id and value. The number of bytes should be a multiple of 16.</p> <p><strong>senseBox Bytes with Timestamp Format</strong><br/> Submit measurements with timestamp as raw bytes. Set the &quot;content-type&quot; header to <code>application/snsbx-bytes-ts</code>. Send measurements as 12 byte sensor Id with most significant byte first followed by 4 byte float measurement in little endian (least significant byte first) notation followed by a 4 byte uint32_t unix timestamp in little endian (least significant byte first) notation. A valid measurement could look like this:<br />[ 0x59, 0x5f, 0x9a, 0x28, 0x2d, 0xcb, 0xee, 0x77, 0xac, 0x0e, 0x5d, 0xc4, 0x9a, 0x99, 0x89, 0x40, 0x34, 0x0c, 0x60, 0x59 ] but encoded as raw bytes. Multiple measurements are just multiple tuples of id, value and timestamp. The number of bytes should be a multiple of 20.</p> <p>For all encodings, the maximum count of values in one request is 2500.</p>",
+    "description": "<p>Post multiple new measurements in multiple formats to a box. Allows the use of csv, json array and json object notation.</p> <p><strong>CSV:</strong><br/> For data in csv format, first use <code>content-type: text/csv</code> as header, then submit multiple values as lines in <code>sensorId,value,[createdAt]</code> form. Timestamp is optional. Do not submit a header.</p> <p><strong>JSON Array:</strong><br/> You can submit your data as array. Your measurements should be objects with the keys <code>sensor</code>, <code>value</code> and optionally <code>createdAt</code> and <code>location</code>. Specify the header <code>content-type: application/json</code>.</p> <p><strong>JSON Object:</strong><br/> The third form is to encode your measurements in an object. Here, the keys of the object are the sensorIds, the values of the object are either just the <code>value</code> of your measurement or an array of the form <code>[value, createdAt, location]</code>, where the latter two values are optional.</p> <p><strong>Luftdaten Format</strong><br/> Decoding of luftdaten.info json format. Activate by specifying <code>luftdaten=true</code> in the query string. The API now tries to convert the objects in the <code>sensordatavalues</code> key to the openSenseMap JSON Array format. Sensors are matched by the key <code>value_type</code> against the <code>title</code> of the sensors of this box. <code>SDS_P1</code> matches sensors with title <code>PM10</code>, <code>SDS_P2</code> matches sensors with title <code>PM2.5</code>. You can find all matchings in the source code of the openSenseMap-API (<code>lib/decoding/luftdatenHandler.js</code>)</p> <p><strong>hackAIR Format</strong><br/> Decoding of hackAIR json format. Activate by specifying <code>hackair=true</code> in the query string. The API now tries to convert the values in the <code>reading</code> key to the openSenseMap JSON Array format. Sensors are matched by the key <code>sensor_description</code> against the <code>title</code> of the sensors of this box. <code>PM2.5_AirPollutantValue</code> matches sensors with title <code>PM2.5</code>, <code>PM10_AirPollutantValue</code> matches sensors with title <code>PM10</code>. You can find all matchings in the source code of the openSenseMap-API (<code>lib/decoding/hackAirHandler.js</code>)</p> <p><strong>senseBox Bytes Format</strong><br/> Submit measurements as raw bytes. Set the &quot;content-type&quot; header to <code>application/snsbx-bytes</code>. Send measurements as 12 byte sensor Id with most significant byte first followed by 4 byte float measurement in little endian (least significant byte first) notation. A valid measurement could look like this:<br />[ 0x59, 0x5f, 0x9a, 0x28, 0x2d, 0xcb, 0xee, 0x77, 0xac, 0x0e, 0x5d, 0xc4, 0x9a, 0x99, 0x89, 0x40 ] but encoded as raw bytes. Multiple measurements are just multiple tuples of id and value. The number of bytes should be a multiple of 16.</p> <p><strong>senseBox Bytes with Timestamp Format</strong><br/> Submit measurements with timestamp as raw bytes. Set the &quot;content-type&quot; header to <code>application/snsbx-bytes-ts</code>. Send measurements as 12 byte sensor Id with most significant byte first followed by 4 byte float measurement in little endian (least significant byte first) notation followed by a 4 byte uint32_t unix timestamp in little endian (least significant byte first) notation. A valid measurement could look like this:<br />[ 0x59, 0x5f, 0x9a, 0x28, 0x2d, 0xcb, 0xee, 0x77, 0xac, 0x0e, 0x5d, 0xc4, 0x9a, 0x99, 0x89, 0x40, 0x34, 0x0c, 0x60, 0x59 ] but encoded as raw bytes. Multiple measurements are just multiple tuples of id, value and timestamp. The number of bytes should be a multiple of 20.</p> <p>For all encodings, the maximum count of values in one request is 2500.</p>",
     "group": "Measurements",
     "name": "postNewMeasurements",
     "parameter": {
@@ -1605,6 +1647,13 @@
             "optional": true,
             "field": "luftdaten",
             "description": "<p>Specify whatever you want (like <code>luftdaten=1</code>. Signals the api to treat the incoming data as luftdaten.info formatted json.</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": true,
+            "field": "hackair",
+            "description": "<p>Specify whatever you want (like <code>hackair=1</code>. Signals the api to treat the incoming data as hackair formatted json.</p>"
           },
           {
             "group": "Parameter",
@@ -1657,6 +1706,11 @@
         {
           "title": "Luftdaten Format:",
           "content": "{\n  \"sensordatavalues\": [\n    {\n      \"value_type\": \"SDS_P1\",\n      \"value\": \"5.38\"\n    },\n    {\n      \"value_type\": \"SDS_P2\",\n      \"value\": \"4.98\"\n    }\n  ]\n}",
+          "type": "application/json"
+        },
+        {
+          "title": "hackAIR Format:",
+          "content": "{\n  \"reading\": {\n    \"PM2.5_AirPollutantValue\": \"7.93\",\n    \"PM10_AirPollutantValue\": \"32.63\"\n   },\n   \"battery\": \"5.99\",\n   \"tamper\": \"0\",\n   \"error\": \"4\"\n}",
           "type": "application/json"
         },
         {
