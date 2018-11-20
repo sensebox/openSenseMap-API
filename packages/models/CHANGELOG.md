@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+## v0.0.11
+- **BREAKING CHANGE**: `/boxes` sensor does not contain `lastMeasurement` anymore
+- introduce `minimal` parameter to reduce payload on `/boxes` #164
+- introduce `lastMeasurementAt` in box schema and update field every time new measurement is stored to avoid additional databse lookup. Fixes #148
+- Uploading a single measurement with a specified time. Fixes #169
+- Update @sensebox/node-sketch-templater to 1.3.0
+- Add new LoRa model (`homeV2Lora`). Fixes #165
+- add `bbox` parameter to `/boxes` route
+- add `hackAir` decoding handler
+
 ## v0.0.11-beta.2
 
 ## v0.0.11-beta.1
