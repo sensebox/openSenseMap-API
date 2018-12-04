@@ -469,6 +469,7 @@ boxSchema.methods.saveMeasurement = function saveMeasurement (measurement) {
       // only update lastMeasurement, if timestamp is actually the newest.
       if (!sensor.lastMeasurement || m.createdAt.valueOf() > sensor.lastMeasurement.createdAt.getTime()) {
         sensor.lastMeasurement = m;
+        box.lastMeasurementAt = m.createdAt;
 
         return box.save();
       }
@@ -589,6 +590,7 @@ boxSchema.methods.saveMeasurementsArray = function saveMeasurementsArray (measur
 
           // compare send measurements with actual lastMeasurements if each sensor
           if (
+            !box.sensors[i].lastMeasurement ||
             box.sensors[i].lastMeasurement === undefined ||
             box.sensors[i].lastMeasurement !== undefined &&
             lastMeasurements[box.sensors[i]._id].createdAt.isAfter(box.sensors[i].lastMeasurement.createdAt)
