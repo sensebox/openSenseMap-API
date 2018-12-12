@@ -6,7 +6,7 @@
   "license": "MIT",
   "dependencies": {
     "@sensebox/osem-protos": "^1.1.0",
-    "@sensebox/sketch-templater": "^1.4.0-beta.3",
+    "@sensebox/sketch-templater": "^1.4.0-beta.4",
     "bcrypt": "^1.0.2",
     "bunyan": "^1.8.12",
     "config": "^1.29.2",
