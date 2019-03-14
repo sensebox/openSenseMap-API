@@ -379,6 +379,9 @@ const retrieveParametersPredefs = {
   },
   'password' () {
     return { name: 'password', required: true, dataType: 'as-is' };
+  },
+  'notificationRuleId' () {
+    return { name: 'notificationRuleId', dataType: 'id' };
   }
 };
 
@@ -513,10 +516,15 @@ const checkPrivilege = function checkPrivilege (req, res, next) {
   return next(new ForbiddenError('Not signed in or not authorized to access.'));
 };
 
+const checkPrivilegeNotification = function checkPrivilegeNotification (req, res, next) {
+  //CHECK FOR NOTIFICATION PRIVILEGE HERE
+};
+
 module.exports = {
   validateFromToTimeParams,
   retrieveParameters,
   initUserParams,
   parseAndValidateTimeParamsForFindAllBoxes,
-  checkPrivilege
+  checkPrivilege,
+  checkPrivilegeNotification
 };

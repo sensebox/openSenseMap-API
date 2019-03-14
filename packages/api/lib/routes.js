@@ -67,7 +67,7 @@ const printRoutes = function printRoutes (req, res) {
   res.end(lines.join('\n'));
 };
 
-const { boxes: boxesPath, users: usersPath, statistics: statisticsPath, management: managementPath } = config.get('routes');
+const { boxes: boxesPath, users: usersPath, statistics: statisticsPath, management: managementPath, notification: notificationPath } = config.get('routes');
 // the ones matching first are used
 // case is ignored
 const routes = {
@@ -110,12 +110,21 @@ const routes = {
     { path: `${managementPath}/boxes/:boxId`, method: 'get', handler: managementController.getBox, reference: 'api-Admin-getBox' },
     { path: `${managementPath}/boxes/:boxId`, method: 'put', handler: managementController.updateBox, reference: 'api-Admin-updateBox' },
     { path: `${managementPath}/boxes/delete`, method: 'post', handler: managementController.deleteBoxes, reference: 'api-Admin-deleteBoxes' },
-
+    
     { path: `${managementPath}/users`, method: 'get', handler: managementController.listUsers, reference: 'api-Admin-listUsers' },
     { path: `${managementPath}/users/:userId`, method: 'get', handler: managementController.getUser, reference: 'api-Admin-getUser' },
     { path: `${managementPath}/users/:userId`, method: 'put', handler: managementController.updateUser, reference: 'api-Admin-updateUser' },
     { path: `${managementPath}/users/delete`, method: 'post', handler: managementController.deleteUsers, reference: 'api-Admin-deleteUsers' },
     { path: `${managementPath}/users/:userId/exec`, method: 'post', handler: managementController.execUserAction, reference: 'api-Admin-execUserAction' },
+    
+  ],
+  'notifications': [
+    { path: `${notificationPath}/notifications`, method: 'get', handler: notificationController.listNotifications, reference: 'api-Notification-listNotifications' },
+   
+    { path: `${notificationPath}/notificationRule`, method: 'post', handler: notificationController.createRule, reference: 'api-Notification-createRule' },
+    { path: `${notificationPath}/notificationRule/:notificationRuleId`, method: 'get', handler: notificationController.getRule, reference: 'api-Notification-getRule' },
+    { path: `${notificationPath}/notificationRule/:notificationRuleId`, method: 'put', handler: notificationController.updateRule, reference: 'api-Notification-updateRule' },
+    { path: `${notificationPath}/notificationRule/:notificationRuleId`, method: 'delete', handler: notificationController.deleteRule, reference: 'api-Notification-deleteRule' },
 
   ]
 };
@@ -133,6 +142,10 @@ const initRoutes = function initRoutes (server) {
   server.use(verifyJwt);
 
   for (const route of routes.auth) {
+    server[route.method]({ path: route.path }, route.handler);
+  }
+
+  for (const route of routes.notifications) {
     server[route.method]({ path: route.path }, route.handler);
   }
 

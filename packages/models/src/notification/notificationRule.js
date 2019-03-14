@@ -41,7 +41,6 @@ const notificationRuleSchema = new mongoose.Schema({
 });
 
 
-
 const notificationRuleModel = mongoose.model('NotificationRule', notificationRuleSchema);
 
 module.exports = {
