@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## v7
+- Use @sensebox/opensensemap-api-models v0.0.12
+- fix some bugs check CHANGELOG of models
+
 ## v6
 - Use @sensebox/opensensemap-api-models v0.0.11
 - Support for `hackAIR` devices
