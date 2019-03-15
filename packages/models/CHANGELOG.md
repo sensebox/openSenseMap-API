@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## v0.0.12
+- Update @sensebox/node-sketch-templater to 1.4.0
+- set lastMeasurementAt on single measruement upload fixes #177
+
 ## v0.0.11
 - **BREAKING CHANGE**: `/boxes` sensor does not contain `lastMeasurement` anymore
 - introduce `minimal` parameter to reduce payload on `/boxes` #164
