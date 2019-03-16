@@ -5,7 +5,8 @@ const { usersController,
     boxesController,
     sensorsController,
     measurementsController,
-    managementController } = require('./controllers'),
+    managementController,
+    notificationController } = require('./controllers'),
   config = require('config'),
   { getVersion } = require('./helpers/apiUtils'),
   { verifyJwt } = require('./helpers/jwtHelpers'),
@@ -124,7 +125,7 @@ const routes = {
     { path: `${notificationPath}/notificationRule`, method: 'post', handler: notificationController.createRule, reference: 'api-Notification-createRule' },
     { path: `${notificationPath}/notificationRule/:notificationRuleId`, method: 'get', handler: notificationController.getRule, reference: 'api-Notification-getRule' },
     { path: `${notificationPath}/notificationRule/:notificationRuleId`, method: 'put', handler: notificationController.updateRule, reference: 'api-Notification-updateRule' },
-    { path: `${notificationPath}/notificationRule/:notificationRuleId`, method: 'delete', handler: notificationController.deleteRule, reference: 'api-Notification-deleteRule' },
+    { path: `${notificationPath}/notificationRule/:notificationRuleId`, method: 'post', handler: notificationController.deleteRule, reference: 'api-Notification-deleteRule' },
 
   ]
 };

@@ -17,6 +17,9 @@ const listNotifications = function listNotifications (req, res, next) {
 const createRule = function createRule (req, res, next) {
 }
 
+const getRule = function getRule (req, res, next) {
+}
+
 const updateRule = function updateRule (req, res, next) {
 }
 
@@ -32,7 +35,6 @@ module.exports = {
     createRule: [
         checkContentType,
         retrieveParameters([
-            { preDef: 'notificationRuleId', required: true },
             { name: 'sensorIds', required: true },
             { name: 'activationThreshold', required: true },
             { name: 'activatitonOperator', required: true },
@@ -42,6 +44,13 @@ module.exports = {
         ]),
         checkPrivilegeNotification,
         createRule
+    ],
+    getRule: [
+        retrieveParameters([
+            { preDef: 'notificationRuleId', required: true },
+        ]),
+        checkPrivilegeNotification,
+        getRule
     ],
     updateRule: [
         checkContentType,
