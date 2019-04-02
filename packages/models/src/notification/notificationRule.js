@@ -14,7 +14,7 @@ const notificationRuleSchema = new mongoose.Schema({
     type: Number,
     required: true
   },
-  activatitonOperator: {
+  activationOperator: {
     type: String,
     enum: ['over', 'under', 'equal'],
     required: true
