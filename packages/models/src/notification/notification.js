@@ -5,11 +5,6 @@ const { mongoose } = require('../db');
 
 //Sensor schema
 const notificationSchema = new mongoose.Schema({
-  notificationRule: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'NotificationRule',
-    required: true 
-  },
   notificationTime: {
     type: Date,
     required: true

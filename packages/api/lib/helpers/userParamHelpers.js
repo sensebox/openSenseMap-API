@@ -380,8 +380,11 @@ const retrieveParametersPredefs = {
   'password' () {
     return { name: 'password', required: true, dataType: 'as-is' };
   },
-  'notificationRuleId' () {
-    return { name: 'notificationRuleId', dataType: 'id' };
+  // 'notificationRuleId' () {
+  //   return { name: 'notificationRuleId', dataType: 'id' };
+  // },
+  'sensors' () {
+    return { name: 'sensors', dataType: ['id'] };
   }
 };
 
@@ -516,8 +519,24 @@ const checkPrivilege = function checkPrivilege (req, res, next) {
   return next(new ForbiddenError('Not signed in or not authorized to access.'));
 };
 
+//PRIVILEGE HECK FOR NOW BECAUSE ONLY OWN BOXES ALLOWED
 const checkPrivilegeNotification = function checkPrivilegeNotification (req, res, next) {
-  //CHECK FOR NOTIFICATION PRIVILEGE HERE
+
+  if (req.user && req.user.role === config.get('management_role')) {
+    return next();
+  }
+
+  if (req._userParams.boxId) {
+    try {
+      req.user.checkBoxOwner(req._userParams.boxId);
+
+      return next();
+    } catch (err) {
+      return handleModelError(err, next);
+    }
+  }
+
+  return next(new ForbiddenError('Not signed in or not authorized to access.'));
 };
 
 module.exports = {

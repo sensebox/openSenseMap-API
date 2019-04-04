@@ -1,14 +1,22 @@
 'use strict';
 
 const { mongoose } = require('../db'),
+  { schema: NotificationChannelSchema, model: NotificationChannel } = require('./notificationChannel'),
+  { schema: NotificationSchema } = require('./notification'),
   { schema: sensorSchema, model: Sensor } = require('../sensor/sensor');
 
 
 //Sensor schema
 const notificationRuleSchema = new mongoose.Schema({
-  sensors: {
-    type: [sensorSchema],
-    required: [true, 'at least one sensor required.'],
+  sensors: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Sensor',
+    required: true
+  }],
+  box: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Box',
+    required: true
   },
   activationThreshold: {
     type: Number,
@@ -22,21 +30,53 @@ const notificationRuleSchema = new mongoose.Schema({
   activationTrigger: {
     type: String,
     enum: ['any', 'all'],
-    required: true
+    required: true,
+    default: 'any'
   },
-  notificationChannel: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'NotificationChannel',
-    required: true
-  }],
+  notificationChannel: [NotificationChannelSchema],
   active: {
     type: Boolean,
     required: true,
-    default: true
+    default: false,
+    // validate: {
+    //   validator: function(v, cb) {
+    //     console.log(cb);
+    //     notificationRuleModel.find({active: true, user: v.user}, function(err,docs){
+    //        cb(docs.length == 0);
+    //     });
+    //   },
+    //   message: 'Only one active notification rule allowed!'
+    // }
   },
   user: {
     ref: 'User',
     type: mongoose.Schema.Types.ObjectId
+  },
+  notifications: [NotificationSchema]
+});
+
+
+notificationRuleSchema.statics.initNew = function(user, params){
+
+  return this.create({
+   ...params,
+    user: user
+  })
+}
+
+
+notificationRuleSchema.pre('validate', function(next) {
+  if (this.active) {
+      notificationRuleModel.find({active: this.active, user: this.user}, function(err,docs){
+        if(docs.length < 1) {
+          next();
+        } else {
+          next(new Error('Only one active notification rule allowed'));
+        }
+    });
+    // next(new Error('Only one active notification rule allowed'));
+  } else {
+      next();
   }
 });
 
@@ -47,3 +87,7 @@ module.exports = {
   schema: notificationRuleSchema,
   model: notificationRuleModel
 };
+
+
+
+

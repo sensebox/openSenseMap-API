@@ -7,39 +7,91 @@ const
     checkPrivilegeNotification
   } = require('../helpers/userParamHelpers'),
   handleError = require('../helpers/errorHandler'),
+  {model: NotificationRule} = require('../../../models/src/notification/notificationRule'),
+  {schema: NotificationChannelSchema} = require('../../../models/src/notification/notificationChannel'),
+
   jsonstringify = require('stringify-stream');
 
 
-const listNotifications = function listNotifications (req, res, next) {
+const listNotificationRules = async function listNotificationRules (req, res, next) {
+
+    try {
+        let personalRules  = await NotificationRule.find({user: req.user}).populate({
+            path: 'notifications',
+            options: {
+                limit: 10,
+                sort: { 'notificationTime': -1},
+                skip: req.params.pageIndex*10
+            }}).exec();
+        res.send(201, { message: 'Rules retrieved', data: personalRules });
+    } catch (err) {
+        handleError(err, next);
+    }
 }
 
 
-const createRule = function createRule (req, res, next) {
+const createRule = async function createRule (req, res, next) {
+    try {
+        req._userParams = {
+            ...req._userParams, 
+            notificationChannel: [{ channel: 'email', email: req.user.email }]
+        }
+        var newRule = await NotificationRule.initNew(req.user, req._userParams);
+        console.log(req.user.email);
+        res.send(201, { message: 'Rule successfully created', data: newRule });
+        // clearCache(['getBoxes', 'getStats']);
+        // postToSlack(`New NotificationRule: ${req.user.name} (${redactEmail(req.user.email)}) just registered "${newBox.name}" (${newBox.model}): <https://opensensemap.org/explore/${newBox._id}|link>`);
+    } catch (err) {
+        handleError(err, next);
+    }
 }
 
-const getRule = function getRule (req, res, next) {
+const getRule = async function getRule (req, res, next) {
+    try {
+        console.log(req._userParams);
+        let rule = await NotificationRule.findById(req._userParams.notificationRuleId).exec();
+        res.send(201, { message: 'Rule successfully retrieved', data: rule } );
+
+    } catch (err) {
+        handleError(err, next);
+    }
+
+
 }
 
-const updateRule = function updateRule (req, res, next) {
+const updateRule = async function updateRule (req, res, next) {
+
+    try {
+        let notificationRule = await NotificationRule.findByIdAndUpdate(req._userParams.notificationRuleId, req._userParams).exec();
+        // box = await notificationRule.update(req._userParams);
+        res.send({code: 'Ok', data: notificationRule});
+
+    } catch (err) {
+        handleError(err, next);
+    }
 }
 
-const deleteRule = function deleteRule (req, res, next) {
+const deleteRule = async function deleteRule (req, res, next) {
+
+    let deleted = await NotificationRule.remove({_id: req._userParams.notificationRuleId}).exec();
+    console.log(deleted);
 }
 
 
 
 module.exports = {
-    listNotifications: [
-        listNotifications     
+    listNotificationRules: [
+        listNotificationRules     
     ],
     createRule: [
         checkContentType,
         retrieveParameters([
-            { name: 'sensorIds', required: true },
+            { predef: 'sensors', required: true },
+            { name: 'box', required: true },
             { name: 'activationThreshold', required: true },
-            { name: 'activatitonOperator', required: true },
+            { name: 'activationOperator', required: true },
             { name: 'activationTrigger', required: true },
-            { name: 'notificationChannel', required: true },
+            { name: 'notificationChannel', required: true, dataType: [NotificationChannelSchema] },
             { name: 'active', required: true },
         ]),
         checkPrivilegeNotification,
@@ -47,7 +99,7 @@ module.exports = {
     ],
     getRule: [
         retrieveParameters([
-            { preDef: 'notificationRuleId', required: true },
+            { name: 'notificationRuleId', required: true },
         ]),
         checkPrivilegeNotification,
         getRule
@@ -55,12 +107,13 @@ module.exports = {
     updateRule: [
         checkContentType,
         retrieveParameters([
-            { preDef: 'notificationRuleId', required: true },
-            { name: 'sensorIds', required: true },
+            { predef: 'sensors', required: true },
+            { name: 'box', required: true },
+            { name: 'notificationRuleId', required: true },
             { name: 'activationThreshold', required: true },
-            { name: 'activatitonOperator', required: true },
+            { name: 'activationOperator', required: true },
             { name: 'activationTrigger', required: true },
-            { name: 'notificationChannel', required: true },
+            { name: 'notificationChannel', required: true , dataType: [NotificationChannelSchema]},
             { name: 'active', required: true },
         ]),
         checkPrivilegeNotification,
@@ -68,7 +121,7 @@ module.exports = {
     ],
     deleteRule: [
         retrieveParameters([
-            { preDef: 'notificationRuleId', required: true }
+            { name: 'notificationRuleId', required: true }
         ]),
         checkPrivilegeNotification,
         deleteRule
