@@ -1,4 +1,4 @@
-FROM node:8-alpine
+FROM node:10-alpine
 
 # YARN_PRODUCTION=false is a workaround for https://github.com/yarnpkg/yarn/issues/4557
 ENV NODE_ENV=production \
@@ -15,7 +15,6 @@ COPY . /usr/src/app
 # remove when https://github.com/kelektiv/node.bcrypt.js/issues/528 is resolved
 RUN apk --no-cache --virtual .build add build-base python git \
   && yarn install --pure-lockfile --production=false \
-  && npm rebuild bcrypt --build-from-source \
   && apk del .build
 COPY . /usr/src/app
 
