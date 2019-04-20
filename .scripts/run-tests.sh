@@ -21,16 +21,6 @@ show_logs=${show_logs:-}
 only_models_tests=${only_models_tests:-}
 git_branch=$(git rev-parse --abbrev-ref HEAD)
 
-# Decide which mailer tag to use
-# on branch master, use the latest tag
-# on all other branches, use the development tag
-if [[ $git_branch == "master" ]]; then
-  export SENSEBOX_MAILER_TAG="latest"
-else
-  export SENSEBOX_MAILER_TAG="development"
-fi
-echo "Using sensebox/sensebox-mailer:${SENSEBOX_MAILER_TAG}"
-
 function runComposeCommand() {
   docker-compose -p osemapitest -f ./tests/docker-compose.yml "$@"
 }
@@ -46,7 +36,7 @@ function cleanup() {
 
   if [[ -z $dont_clean_up ]]; then
     echo 'cleanup!'
-    runComposeCommand down -v
+    runComposeCommand down -v --remove-orphans
   fi
 }
 trap cleanup EXIT

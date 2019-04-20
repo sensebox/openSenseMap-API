@@ -1,4 +1,4 @@
-version: "2"
+version: "2.1"
 volumes:
   userimages:
 services:
@@ -48,7 +48,7 @@ services:
       - db
 
   mailer:
-    image: sensebox/sensebox-mailer:${SENSEBOX_MAILER_TAG}
+    image: sensebox/sensebox-mailer:${SENSEBOX_MAILER_TAG:-v0.0.1}
     environment:
       SENSEBOX_MAILER_SERVER_CERT: |-
         -----BEGIN CERTIFICATE-----
@@ -199,7 +199,7 @@ services:
         }
 
   mosquitto:
-   image: eclipse-mosquitto:1.4.12
+    image: eclipse-mosquitto:1.4.12
 
   db:
     image: mongo:3.2
