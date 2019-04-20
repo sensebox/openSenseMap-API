@@ -202,4 +202,4 @@ services:
     image: eclipse-mosquitto:1.4.12
 
   db:
-    image: mongo:3.2
+    image: mongo:${MONGO-TAG:-3.2}
