@@ -35,7 +35,7 @@ const measurementSchema = new mongoose.Schema({
       }, '{PATH} has not length 2 or 3']
     }
   }
-});
+}, { usePushEach: true });
 
 measurementSchema.index({ sensor_id: 1, createdAt: -1 });
 

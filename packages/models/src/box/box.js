@@ -39,7 +39,8 @@ const locationSchema = new Schema({
     type: Date,
   }
 }, {
-  _id: false
+  _id: false,
+  usePushEach: true
 });
 
 //senseBox schema
@@ -126,7 +127,7 @@ const boxSchema = new Schema({
     type: String,
     required: false
   }
-});
+}, { usePushEach: true });
 boxSchema.plugin(timestamp);
 
 const BOX_PROPS_FOR_POPULATION = {
