@@ -3,16 +3,16 @@
 const Transform = require('stream').Transform,
   inherits = require('util').inherits,
   point = require('@turf/helpers').point,
-  distance = require('@turf/distance'),
+  distance = require('@turf/distance').default,
   /* eslint-disable global-require */
   grids = {
-    'hex': require('@turf/hex-grid'),
-    'square': require('@turf/square-grid'),
-    'triangle': require('@turf/triangle-grid'),
+    'hex': require('@turf/hex-grid').default,
+    'square': require('@turf/square-grid').default,
+    'triangle': require('@turf/triangle-grid').default,
   },
   /* eslint-enable global-require */
-  centroid = require('@turf/centroid'),
-  bbox = require('@turf/bbox');
+  centroid = require('@turf/centroid').default,
+  bbox = require('@turf/bbox').default;
 
 const idwTransformer = function (idwTransformerOptions, streamOptions) {
   if (!(this instanceof idwTransformer)) {

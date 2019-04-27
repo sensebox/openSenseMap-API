@@ -122,7 +122,7 @@ const postToSlack = function postToSlack (text) {
     got(config.get('slack_url'), {
       json: true,
       body: { text },
-      retries: 0
+      retry: 0
     })
       // swallow errors, we don't care
       .catch(() => { });
@@ -185,7 +185,7 @@ const computeTimestampTruncationLength = function computeTimestampTruncationLeng
 
 const csvStringifier = function csvStringifier (columns, delimiter) {
   return csvstringify({
-    columns, delimiter, header: 1, formatters: {
+    columns, delimiter, header: 1, cast: {
       date: d => d.toISOString()
     }
   });
