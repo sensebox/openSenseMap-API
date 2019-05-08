@@ -48,7 +48,6 @@ const createRule = async function createRule (req, res, next) {
 
 const getRule = async function getRule (req, res, next) {
     try {
-        console.log(req._userParams);
         let rule = await NotificationRule.findById(req._userParams.notificationRuleId).exec();
         res.send(201, { message: 'Rule successfully retrieved', data: rule } );
 
@@ -61,8 +60,11 @@ const getRule = async function getRule (req, res, next) {
 
 const updateRule = async function updateRule (req, res, next) {
 
+
     try {
-        let notificationRule = await NotificationRule.findByIdAndUpdate(req._userParams.notificationRuleId, req._userParams).exec();
+
+        //CHECK THIS! NOT WORKING ATM
+        let notificationRule = await NotificationRule.findByIdAndUpdate(req._userParams.notificationRuleId, req._userParams, {runValidators: true, new: true}).exec();
         // box = await notificationRule.update(req._userParams);
         res.send({code: 'Ok', data: notificationRule});
 
@@ -100,6 +102,7 @@ module.exports = {
     getRule: [
         retrieveParameters([
             { name: 'notificationRuleId', required: true },
+            { name: 'box', required: true}
         ]),
         checkPrivilegeNotification,
         getRule
