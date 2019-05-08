@@ -51,8 +51,7 @@ const notificationRuleSchema = new mongoose.Schema({
   user: {
     ref: 'User',
     type: mongoose.Schema.Types.ObjectId
-  },
-  notifications: [NotificationSchema]
+  }
 });
 
 
@@ -67,6 +66,7 @@ notificationRuleSchema.statics.initNew = function(user, params){
 
 notificationRuleSchema.pre('validate', function(next) {
   if (this.active) {
+
       notificationRuleModel.find({active: this.active, user: this.user}, function(err,docs){
         if(docs.length < 1) {
           next();
