@@ -179,7 +179,7 @@ const getDataMulti = async function getDataMulti (req, res, next) {
  * @apiUse LocationBody
  * @apiUse ContentTypeJSON
  * @apiParam (RequestBody) {String} value the measured value of the sensor. Also accepts JSON float numbers.
- * @apiParam (RequestBody) {RFC3339Date} [createdAt] the timestamp of the measurement. Should conform to RFC 3339.
+ * @apiParam (RequestBody) {RFC3339Date} [createdAt] the timestamp of the measurement. Should conform to RFC 3339. Is needed when posting with Location Values!
  * @apiParam (RequestBody) {Location} [location] the WGS84-coordinates of the measurement.
  */
 const postNewMeasurement = async function postNewMeasurement (req, res, next) {
@@ -209,7 +209,7 @@ const postNewMeasurement = async function postNewMeasurement (req, res, next) {
  * Timestamp is optional. Do not submit a header.
  *
  * **JSON Array:**<br/>
- * You can submit your data as array. Your measurements should be objects with the keys `sensor`, `value` and optionally `createdAt` and `location`. Specify the header `content-type: application/json`.
+ * You can submit your data as array. Your measurements should be objects with the keys `sensor`, `value` and optionally `createdAt` and `location`. Specify the header `content-type: application/json`. If Location Values are posted, the Timestamp becomes obligatory.
  *
  * **JSON Object:**<br/>
  * The third form is to encode your measurements in an object. Here, the keys of the object are the sensorIds, the values of the object are either just the `value` of your measurement or an array of the form `[value, createdAt, location]`, where the latter two values are optional.
