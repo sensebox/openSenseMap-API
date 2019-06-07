@@ -800,13 +800,14 @@ boxSchema.methods.updateSensors = function updateSensors (sensors) {
   }
 };
 
-boxSchema.methods.getSketch = function getSketch ({ encoding, serialPort, ssid, password } = {}) {
+boxSchema.methods.getSketch = function getSketch ({ encoding, serialPort, ssid, password, postingInterval } = {}) {
   if (serialPort) {
     this.serialPort = serialPort;
   }
 
   this.ssid = ssid;
   this.password = password;
+  this.postingInterval = postingInterval;
 
   return templateSketcher.generateSketch(this, { encoding });
 };

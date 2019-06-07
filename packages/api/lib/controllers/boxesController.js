@@ -414,7 +414,7 @@ const getSketch = async function getSketch (req, res, next) {
   res.header('Content-Type', 'text/plain; charset=utf-8');
   try {
     const box = await Box.findBoxById(req._userParams.boxId, { populate: false, lean: false });
-    res.send(box.getSketch({ serialPort: req._userParams.serialPort, ssid: req._userParams.ssid, password: req._userParams.password }));
+    res.send(box.getSketch({ serialPort: req._userParams.serialPort, ssid: req._userParams.ssid, password: req._userParams.password, postingInterval: req._userParams.postingInterval }));
   } catch (err) {
     handleError(err, next);
   }
