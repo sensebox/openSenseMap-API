@@ -525,11 +525,16 @@ const checkPrivilegeNotification = function checkPrivilegeNotification (req, res
   if (req.user && req.user.role === config.get('management_role')) {
     return next();
   }
-  
+  var boxId;
   if (req._userParams.box) {
+    boxId = req._userParams.box;
+  } else {
+    boxId = NotificationRule.findOne({_id: req._userParams.notificationRuleId}).exec().box;
+  }
+  if( boxId) {
     try {
-      req.user.checkBoxOwner(req._userParams.box);
-
+      req.user.checkBoxOwner(boxId);
+  
       return next();
     } catch (err) {
       return handleModelError(err, next);

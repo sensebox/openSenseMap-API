@@ -10,9 +10,9 @@ config.util.setModuleDefaults('openSenseMap-API-models', {
   'db': {
     'host': 'localhost',
     'port': 27017,
-    'user': 'admin',
-    'userpass': 'admin',
-    'authsource': 'OSeM-api',
+    'user': 'mongodbOSeMUser',
+    'userpass': 'securePaSs',
+    'authsource': 'admin',
     'db': 'OSeM-api',
     'mongo_uri': ''
   },

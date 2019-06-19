@@ -13,6 +13,11 @@ const notificationRuleSchema = new mongoose.Schema({
     ref: 'Sensor',
     required: true
   }],
+  name: {
+    type: String,
+    required: true,
+    maxLength: 40
+  },
   box: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Box',
@@ -40,7 +45,6 @@ const notificationRuleSchema = new mongoose.Schema({
     default: false,
     // validate: {
     //   validator: function(v, cb) {
-    //     console.log(cb);
     //     notificationRuleModel.find({active: true, user: v.user}, function(err,docs){
     //        cb(docs.length == 0);
     //     });
