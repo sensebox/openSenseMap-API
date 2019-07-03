@@ -461,7 +461,8 @@ module.exports = {
       { predef: 'boxId', required: true },
       { name: 'serialPort', dataType: 'String', allowedValues: ['Serial1', 'Serial2'] },
       { name: 'ssid', dataType: 'StringWithEmpty' },
-      { name: 'password', dataType: 'StringWithEmpty' }
+      { name: 'password', dataType: 'StringWithEmpty' },
+      { name: 'postingInterval', dataType: 'Number', defaultValue: 60000 }
     ]),
     checkPrivilege,
     getSketch
