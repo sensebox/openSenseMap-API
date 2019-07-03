@@ -407,6 +407,11 @@ const postNewBox = async function postNewBox (req, res, next) {
  * @api {get} /boxes/:senseBoxId/script Download the Arduino script for your senseBox
  * @apiName getSketch
  * @apiGroup Boxes
+ * @apiParam (RequestBody) {String} [boxId] the id of the senseBox 
+ * @apiParam (RequestBody) {String="Serial1","Serial2"} [serialPort] the serialPort of the particulate matter sensor 
+ * @apiParam (RequestBody) {String} [ssid] the ssid of your wifi 
+ * @apiParam (RequestBody) {String} [password] the password of your wifi
+ * @apiParam (RequestBody) {Number} [postingInterval] the interval in ms your senseBox should send measurements
  * @apiUse JWTokenAuth
  * @apiUse BoxIdParam
  */
