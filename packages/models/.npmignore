@@ -1,0 +1,10 @@
+test
+.eslintrc*
+.travis.yml
+.gitignore
+.scripts
+.npmignore
+*.log
+README.md
+CHANGELOG.md
+migrations

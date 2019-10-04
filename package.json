@@ -1,39 +1,31 @@
 {
-  "name": "OpenSenseMapAPI",
-  "version": "0.0.1",
-  "description": "API for opensensemap.org",
-  "main": "app.js",
-  "dependencies": {
-    "bunyan": "^1.3.3",
-    "geojson": "^0.2.0",
-    "lodash": "^3.1.0",
-    "mongoose": "~4.1.0",
-    "mongoose-timestamp": "^0.2.1",
-    "restify": "^2.6.1",
-    "json2csv": "~2.2.1",
-    "nodemailer": "~1.4.0",
-    "nodemailer-smtp-transport": "~1.0.3",
-    "nodemailer-html-to-text": "~1.0.2"
-  },
-  "devDependencies": {},
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node packages/api/app.js",
+    "start-dev-db": "docker-compose up -d db",
+    "stop-dev-db": "docker-compose down db",
+    "build-test-env": "./.scripts/run-tests.sh build",
+    "test": "./.scripts/run-tests.sh",
+    "NOTpretest": "node tests/waitForHttp",
+    "tag-container": "./.scripts/npm_tag-container.sh",
+    "lint": "eslint --ignore-pattern node_modules --fix \"{tests,packages}/**/*.js\"",
+    "deploy-docs": "./.scripts/deploy-docs.sh",
+    "create-version-file": "node .scripts/create-version.js"
   },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/mpfeil/OpenSenseMap-API.git"
-  },
-  "author": "Matthias Pfeil",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/mpfeil/OpenSenseMap-API/issues"
-  },
-  "homepage": "https://github.com/mpfeil/OpenSenseMap-API",
-  "apidoc": {
-    "name": "OpenSenseMap API documentation",
-    "version": "0.0.1",
-    "description": "Documentation for OpenSenseMap to register and administer SenseBoxes",
-    "title": "OpenSenseMap API docs title",
-    "url": "http://opensensemap.org:8000"
+  "devDependencies": {
+    "@sensebox/eslint-config-sensebox": "^1.1.0",
+    "@turf/invariant": "^4.6.0",
+    "chai": "^4.1.2",
+    "chakram": "^1.5.0",
+    "cheerio": "^1.0.0-rc.2",
+    "csv-parse": "^1.2.1",
+    "eslint": "4.16.0",
+    "mimelib": "^0.3.1",
+    "mocha": "^5.0.0",
+    "mqtt": "^2.15.1",
+    "randomgeojson": "^1.0.0"
   }
 }

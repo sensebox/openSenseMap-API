@@ -1,0 +1,41 @@
+{
+  "name": "@sensebox/opensensemap-api",
+  "version": "0.0.0",
+  "description": "openSenseMap HTTP REST API",
+  "license": "MIT",
+  "author": "Matthias Pfeil",
+  "contributors": [
+    "Christoph Kisfeld",
+    "Gerald Pape",
+    "Norwin Roosen"
+  ],
+  "dependencies": {
+    "@sensebox/opensensemap-api-models": "^0.0.12",
+    "@turf/area": "^4.6.0",
+    "@turf/bbox": "^4.6.0",
+    "@turf/centroid": "^4.6.1",
+    "@turf/distance": "^4.6.0",
+    "@turf/helpers": "^4.6.0",
+    "@turf/hex-grid": "^4.6.1",
+    "@turf/square-grid": "^4.6.0",
+    "@turf/triangle-grid": "^4.6.0",
+    "apicache": "^0.10.0",
+    "bunyan": "^1.8.12",
+    "config": "^1.29.2",
+    "csv-stringify": "^1.0.4",
+    "dashify": "^1.0.0",
+    "got": "^8.0.3",
+    "honeybadger": "^1.2.1",
+    "isemail": "^3.0.0",
+    "jsonwebtoken": "^8.1.0",
+    "millify": "^2.0.1",
+    "moment": "^2.18.1",
+    "ms": "^2.1.1",
+    "restify": "^5.2.0",
+    "restify-errors": "^5.0.0",
+    "simple-statistics": "^5.2.1",
+    "stringify-stream": "^1.0.5",
+    "uuid": "^3.2.1"
+  },
+  "private": true
+}
