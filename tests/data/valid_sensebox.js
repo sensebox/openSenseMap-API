@@ -1,7 +1,7 @@
 'use strict';
 
 const randomGeojson = require('randomgeojson');
-module.exports = function ({ bbox, model, sensors, lonlat, name = '' } = {}) {
+module.exports = function ({ bbox, model, sensors, lonlat, name = '', sensorTemplates } = {}) {
   const randomGeojsonOptions = { featureTypes: ['Point'] };
   let loc;
   if (lonlat) {
@@ -38,6 +38,10 @@ module.exports = function ({ bbox, model, sensors, lonlat, name = '' } = {}) {
 
   if (sensors) {
     box.sensors = sensors;
+  }
+
+  if (sensorTemplates) {
+    box.sensorTemplates = sensorTemplates;
   }
 
   return box;

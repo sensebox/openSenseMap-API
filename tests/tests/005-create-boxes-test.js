@@ -605,7 +605,7 @@ describe('openSenseMap API Routes: /boxes', function () {
         expect(response).to.have.status(200);
         expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
         expect(Array.isArray(response.body)).to.be.true;
-        expect(response.body.length).to.be.equal(3);
+        expect(response.body.length).to.be.equal(boxCount);
         for (const box of response.body) {
           expect(Object.keys(box))
             .to.not.include('loc')
