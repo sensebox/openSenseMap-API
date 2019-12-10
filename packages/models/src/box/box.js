@@ -814,8 +814,6 @@ boxSchema.methods.getSketch = function getSketch ({ encoding, serialPort, soilDi
   this.ssid = ssid;
   this.password = password;
 
-  console.log(this);
-
   return templateSketcher.generateSketch(this, { encoding });
 };
 
