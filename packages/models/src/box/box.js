@@ -800,13 +800,21 @@ boxSchema.methods.updateSensors = function updateSensors (sensors) {
   }
 };
 
-boxSchema.methods.getSketch = function getSketch ({ encoding, serialPort, ssid, password } = {}) {
+boxSchema.methods.getSketch = function getSketch ({ encoding, serialPort, soilDigitalPort, soundMeterPort, ssid, password } = {}) {
   if (serialPort) {
     this.serialPort = serialPort;
+  }
+  if (soilDigitalPort) {
+    this.soilDigitalPort = soilDigitalPort;
+  }
+  if (soundMeterPort) {
+    this.soundMeterPort = soundMeterPort;
   }
 
   this.ssid = ssid;
   this.password = password;
+
+  console.log(this);
 
   return templateSketcher.generateSketch(this, { encoding });
 };

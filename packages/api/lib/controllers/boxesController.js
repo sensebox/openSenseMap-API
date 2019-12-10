@@ -414,7 +414,13 @@ const getSketch = async function getSketch (req, res, next) {
   res.header('Content-Type', 'text/plain; charset=utf-8');
   try {
     const box = await Box.findBoxById(req._userParams.boxId, { populate: false, lean: false });
-    res.send(box.getSketch({ serialPort: req._userParams.serialPort, ssid: req._userParams.ssid, password: req._userParams.password }));
+    res.send(box.getSketch({
+      serialPort: req._userParams.serialPort,
+      soilDigitalPort: req._userParams.soilDigitalPort,
+      soundMeterPort: req._userParams.soundMeterPort,
+      ssid: req._userParams.ssid,
+      password: req._userParams.password
+    }));
   } catch (err) {
     handleError(err, next);
   }
@@ -460,6 +466,8 @@ module.exports = {
     retrieveParameters([
       { predef: 'boxId', required: true },
       { name: 'serialPort', dataType: 'String', allowedValues: ['Serial1', 'Serial2'] },
+      { name: 'soilDigitalPort', dataType: 'String', allowedValues: ['A', 'B', 'C'] },
+      { name: 'soundMeterPort', dataType: 'String', allowedValues: ['A', 'B', 'C'] },
       { name: 'ssid', dataType: 'StringWithEmpty' },
       { name: 'password', dataType: 'StringWithEmpty' }
     ]),
@@ -506,6 +514,8 @@ module.exports = {
       { name: 'sensors', dataType: ['object'] },
       { name: 'sensorTemplates', dataType: ['String'], allowedValues: ['hdc1080', 'bmp280', 'sds 011', 'tsl45315', 'veml6070', 'bme680', 'smt50', 'soundlevelmeter'] },
       { name: 'serialPort', dataType: 'String', defaultValue: 'Serial1', allowedValues: ['Serial1', 'Serial2'] },
+      { name: 'soilDigitalPort', dataType: 'String', defaultValue: 'A', allowedValues: ['A', 'B', 'C'] },
+      { name: 'soundMeterPort', dataType: 'String', defaultValue: 'B', allowedValues: ['A', 'B', 'C'] },
       { name: 'mqtt', dataType: 'object' },
       { name: 'ttn', dataType: 'object' },
       { predef: 'location', required: true }
