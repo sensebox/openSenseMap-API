@@ -1,7 +1,7 @@
 'use strict';
 
 module.exports = {
-  title: 'Temperatur',
+  title: 'Lufttemperatur',
   unit: '°C',
   sensorType: 'BME680',
   icon: 'osem-thermometer'
