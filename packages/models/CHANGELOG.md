@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## v0.0.13
+
 ## v0.0.12
 - Add BME680 Sensor
 - Update @sensebox/node-sketch-templater to v1.5.1
