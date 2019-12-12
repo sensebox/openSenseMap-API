@@ -11,7 +11,9 @@ const { transformAndValidateMeasurements } = require('./validators');
  *    {
  *      "reading": {
  *        "PM2.5_AirPollutantValue": "7.93",
- *        "PM10_AirPollutantValue": "32.63"
+ *        "PM10_AirPollutantValue": "32.63",
+ *        "Temperature_Value": "21.60",
+ *        "Humidity_Value":"80.10"
  *      },
  *      "battery": "5.99",
  *      "tamper": "0",
@@ -28,7 +30,9 @@ const { transformAndValidateMeasurements } = require('./validators');
 
 const matchings = {
   pm10: ['pm10', 'p10', 'p1'],
-  pm25: ['pm2.5', 'pm25', 'p2.5', 'p25', 'p2']
+  pm25: ['pm2.5', 'pm25', 'p2.5', 'p25', 'p2'],
+  temperature: ['temperatur'],
+  humidity: ['rel. luftfeuchte', 'luftfeuchtigkeit', 'luftfeuchte']
 };
 
 const findSensorId = function findSensorId (sensors, reading) {

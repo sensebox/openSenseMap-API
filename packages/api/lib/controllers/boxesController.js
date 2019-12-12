@@ -380,7 +380,7 @@ const getBox = async function getBox (req, res, next) {
  * @apiParam (RequestBody) {Location} location the coordinates of this senseBox.
  * @apiParam (RequestBody) {String="homeV2Lora","homeV2Ethernet","homeV2Wifi","homeEthernet","homeWifi","homeEthernetFeinstaub","homeWifiFeinstaub","luftdaten_sds011","luftdaten_sds011_dht11","luftdaten_sds011_dht22","luftdaten_sds011_bmp180","luftdaten_sds011_bme280","hackair_home_v2"} [model] specify the model if you want to use a predefined senseBox model, autocreating sensor definitions.
  * @apiParam (RequestBody) {Sensor[]} [sensors] an array containing the sensors of this senseBox. Only use if `model` is unspecified.
- * @apiParam (RequestBody) {String="hdc1080","bmp280","tsl45315","veml6070","sds011"} [sensorTemplates] Specify which sensors should be included.
+ * @apiParam (RequestBody) {String="hdc1080","bmp280","tsl45315","veml6070","sds011","bme680","smt50","soundlevelmeter"} [sensorTemplates] Specify which sensors should be included.
  * @apiParam (RequestBody) {Object} [mqtt] specify parameters of the MQTT integration for external measurement upload. Please see below for the accepted parameters
  * @apiParam (RequestBody) {Object} [ttn] specify parameters for the TTN integration for measurement from TheThingsNetwork.org upload. Please see below for the accepted parameters
  *
@@ -407,6 +407,11 @@ const postNewBox = async function postNewBox (req, res, next) {
  * @api {get} /boxes/:senseBoxId/script Download the Arduino script for your senseBox
  * @apiName getSketch
  * @apiGroup Boxes
+ * @apiParam {String="Serial1","Serial2"} serialPort the serial port the SDS011 sensor is connected to
+ * @apiParam {String="A","B","C"} soilDigitalPort the digital port the SMT50 sensor is connected to
+ * @apiParam {String="A","B","C"} soundMeterPort the digital port the soundlevelmeter sensor is connected to
+ * @apiParam {String} ssid the ssid of your wifi network
+ * @apiParam {String} password the password of your wifi network
  * @apiUse JWTokenAuth
  * @apiUse BoxIdParam
  */
@@ -414,7 +419,13 @@ const getSketch = async function getSketch (req, res, next) {
   res.header('Content-Type', 'text/plain; charset=utf-8');
   try {
     const box = await Box.findBoxById(req._userParams.boxId, { populate: false, lean: false });
-    res.send(box.getSketch({ serialPort: req._userParams.serialPort, ssid: req._userParams.ssid, password: req._userParams.password }));
+    res.send(box.getSketch({
+      serialPort: req._userParams.serialPort,
+      soilDigitalPort: req._userParams.soilDigitalPort,
+      soundMeterPort: req._userParams.soundMeterPort,
+      ssid: req._userParams.ssid,
+      password: req._userParams.password
+    }));
   } catch (err) {
     handleError(err, next);
   }
@@ -460,6 +471,8 @@ module.exports = {
     retrieveParameters([
       { predef: 'boxId', required: true },
       { name: 'serialPort', dataType: 'String', allowedValues: ['Serial1', 'Serial2'] },
+      { name: 'soilDigitalPort', dataType: 'String', allowedValues: ['A', 'B', 'C'] },
+      { name: 'soundMeterPort', dataType: 'String', allowedValues: ['A', 'B', 'C'] },
       { name: 'ssid', dataType: 'StringWithEmpty' },
       { name: 'password', dataType: 'StringWithEmpty' }
     ]),
@@ -504,8 +517,10 @@ module.exports = {
       { name: 'exposure', allowedValues: Box.BOX_VALID_EXPOSURES },
       { name: 'model', allowedValues: Box.BOX_VALID_MODELS },
       { name: 'sensors', dataType: ['object'] },
-      { name: 'sensorTemplates', dataType: ['String'], allowedValues: ['hdc1080', 'bmp280', 'sds 011', 'tsl45315', 'veml6070'] },
+      { name: 'sensorTemplates', dataType: ['String'], allowedValues: ['hdc1080', 'bmp280', 'sds 011', 'tsl45315', 'veml6070', 'bme680', 'smt50', 'soundlevelmeter'] },
       { name: 'serialPort', dataType: 'String', defaultValue: 'Serial1', allowedValues: ['Serial1', 'Serial2'] },
+      { name: 'soilDigitalPort', dataType: 'String', defaultValue: 'A', allowedValues: ['A', 'B', 'C'] },
+      { name: 'soundMeterPort', dataType: 'String', defaultValue: 'B', allowedValues: ['A', 'B', 'C'] },
       { name: 'mqtt', dataType: 'object' },
       { name: 'ttn', dataType: 'object' },
       { predef: 'location', required: true }
