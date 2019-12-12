@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## v0.0.12
+- Add BME680 Sensor
+- Update @sensebox/node-sketch-templater to v1.5.1
+
 ## v0.0.11
 - **BREAKING CHANGE**: `/boxes` sensor does not contain `lastMeasurement` anymore
 - introduce `minimal` parameter to reduce payload on `/boxes` #164
