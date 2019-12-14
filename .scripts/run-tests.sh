@@ -22,7 +22,7 @@ only_models_tests=${only_models_tests:-}
 git_branch=$(git rev-parse --abbrev-ref HEAD)
 
 function runComposeCommand() {
-  docker-compose -p osemapitest -f ./tests/docker-compose.yml "$@"
+  sudo docker-compose -p osemapitest -f ./tests/docker-compose.yml "$@"
 }
 
 function cleanup() {

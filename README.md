@@ -25,8 +25,7 @@ See also: [CONTRIBUTING](CONTRIBUTING.md)
 You can run the tests in containers using Docker and docker-compose.
 ```
 # Run this the first time or every time you change dependencies in package.json
-yarn install
-yarn test build
+yarn build-test-env
 
 yarn test
 ```
