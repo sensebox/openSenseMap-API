@@ -24,7 +24,7 @@ RUN yarn create-version-file \
   && rm -rf .git .scripts
 
 # Final stage
-FROM node:8-alpine
+FROM node:8.15.1-alpine
 
 WORKDIR /usr/src/app
 COPY --from=build /usr/src/app /usr/src/app
