@@ -1,4 +1,4 @@
-FROM node:8-alpine as build
+FROM node:8.15.1-alpine as build
 
 RUN apk --no-cache --virtual .build add build-base python git
 
