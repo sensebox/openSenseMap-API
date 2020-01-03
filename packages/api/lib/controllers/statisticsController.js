@@ -38,7 +38,7 @@ const getStatistics = async function getStatistics (req, res, next) {
       })
     ]);
     if (human === 'true') {
-      results = results.map(r => millify(r).toString());
+      results = results.map(r => millify.default(r).toString());
     }
     res.send(200, results);
 
