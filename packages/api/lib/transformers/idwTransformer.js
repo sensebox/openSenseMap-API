@@ -73,20 +73,6 @@ idwTransformer.prototype.calculateNextTimeStepLimit = function calculateNextTime
   this._currTimeStepStart.add(this._diffTimeSteps);
 };
 
-/**
- * Object.values polyfill REMOVE ME when we switch to a higher node version
- */
-
-if (!Object.values) {
-  const reduce = Function.bind.call(Function.call, Array.prototype.reduce);
-  const isEnumerable = Function.bind.call(Function.call, Object.prototype.propertyIsEnumerable);
-  const concat = Function.bind.call(Function.call, Array.prototype.concat);
-  const keys = Reflect.ownKeys;
-  Object.values = function values (O) {
-    return reduce(keys(O), (v, k) => concat(v, typeof k === 'string' && isEnumerable(O, k) ? [O[k]] : []), []);
-  };
-}
-
 idwTransformer.prototype.resetAverageAndReturnControlPoints = function resetAverageAndReturnControlPoints () {
   const controlPoints = Object.values(this._averages).map(a => a.geom);
 
