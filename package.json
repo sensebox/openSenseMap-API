@@ -22,7 +22,7 @@
     "chakram": "^1.5.0",
     "cheerio": "^1.0.0-rc.2",
     "csv-parse": "^4.4.1",
-    "eslint": "4.16.0",
+    "eslint": "6.8.0",
     "mimelib": "^0.3.1",
     "mocha": "^6.1.4",
     "mqtt": "^3.0.0",
