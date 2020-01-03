@@ -119,9 +119,8 @@ if (config.get('honeybadger_apikey')) {
 const postToSlack = function postToSlack (text) {
   if (config.get('slack_url')) {
     text = `[${hostname}]: ${text}`;
-    got(config.get('slack_url'), {
-      json: true,
-      body: { text },
+    got.post(config.get('slack_url'), {
+      json: { text },
       retry: 0
     })
       // swallow errors, we don't care

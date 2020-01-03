@@ -10,7 +10,7 @@ if (!process.env.OSEM_TEST_BASE_URL) {
 const connectWithRetry = function () {
   return got(`${process.env.OSEM_TEST_BASE_URL}/boxes`, {
     retry: {
-        retries: () => {
+        limit: () => {
         process.stdout.write('.');
 
         return 500;

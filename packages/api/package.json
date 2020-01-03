@@ -24,7 +24,7 @@
     "config": "^3.1.0",
     "csv-stringify": "^5.3.0",
     "dashify": "^2.0.0",
-    "got": "^9.6.0",
+    "got": "^10.2.1",
     "honeybadger": "^1.2.1",
     "isemail": "^3.0.0",
     "jsonwebtoken": "^8.1.0",
