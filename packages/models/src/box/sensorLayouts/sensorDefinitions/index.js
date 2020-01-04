@@ -31,7 +31,14 @@ const veml6070_uvintensity = require('./veml6070_uvintensity'),
   bme280_temperature = require('./bme280_temperature'),
   bme280_humidity = require('./bme280_humidity'),
   bme280_pressure_pa = require('./bme280_pressure_pa'),
-  bme280_pressure_hpa = require('./bme280_pressure_hpa');
+  bme280_pressure_hpa = require('./bme280_pressure_hpa'),
+  bme680_humidity = require('./bme680_humidity'),
+  bme680_pressure = require('./bme680_pressure'),
+  bme680_temperature = require('./bme680_temperature'),
+  bme680_voc = require('./bme680_voc'),
+  smt50_soilmoisture = require('./smt50_soilmoisture'),
+  smt50_soiltemperature = require('./smt50_soiltemperature'),
+  soundlevelmeter = require('./soundlevelmeter');
 
 module.exports = {
   hdc1008_temperature,
@@ -65,5 +72,12 @@ module.exports = {
   bme280_temperature,
   bme280_humidity,
   bme280_pressure_pa,
-  bme280_pressure_hpa
+  bme280_pressure_hpa,
+  bme680_humidity,
+  bme680_pressure,
+  bme680_temperature,
+  bme680_voc,
+  smt50_soilmoisture,
+  smt50_soiltemperature,
+  soundlevelmeter
 };

@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## v0.0.13
+- Add BME680 Sensor
+- Update @sensebox/node-sketch-templater to v1.5.1
+
 ## v0.0.12
 - Update @sensebox/node-sketch-templater to 1.4.0
 - set lastMeasurementAt on single measruement upload fixes #177

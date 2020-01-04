@@ -1,12 +1,12 @@
 {
   "name": "@sensebox/opensensemap-api-models",
   "description": "openSenseMap data models and database connection",
-  "version": "0.0.12",
+  "version": "0.0.13",
   "main": "index.js",
   "license": "MIT",
   "dependencies": {
     "@sensebox/osem-protos": "^1.1.0",
-    "@sensebox/sketch-templater": "^1.4.0",
+    "@sensebox/sketch-templater": "^1.5.1",
     "bcrypt": "^1.0.2",
     "bunyan": "^1.8.12",
     "config": "^1.29.2",
