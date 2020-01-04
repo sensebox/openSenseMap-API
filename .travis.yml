@@ -12,7 +12,7 @@ node_js:
 
 install: true
 script:
-- yarn test && yarn deploy-docs
+- yarn test logs osem-api && yarn deploy-docs
 
 env:
   global:
