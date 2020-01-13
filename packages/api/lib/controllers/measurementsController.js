@@ -365,4 +365,3 @@ module.exports = {
     getLatestMeasurements
   ]
 };
-

@@ -8,11 +8,11 @@ git:
 
 language: node_js
 node_js:
-  - "8"
+  - "12"
 
 install: true
 script:
-- yarn test && yarn deploy-docs
+- yarn test logs osem-api && yarn deploy-docs
 
 env:
   global:

@@ -12,7 +12,7 @@ const mqttSchema = new mongoose.Schema({
   messageFormat: { type: String, trim: true, enum: ['json', 'csv', 'application/json', 'text/csv', 'debug_plain', ''] },
   decodeOptions: { type: String, trim: true, validate: isJSONParseableValidation },
   connectionOptions: { type: String, trim: true, validate: isJSONParseableValidation }
-}, { _id: false });
+}, { _id: false, usePushEach: true });
 
 const ttnSchema = new mongoose.Schema({
   dev_id: { type: String, trim: true, required: true },
@@ -20,7 +20,7 @@ const ttnSchema = new mongoose.Schema({
   port: { type: Number, min: 0 },
   profile: { type: String, trim: true, enum: ['json', 'debug', 'sensebox/home', 'lora-serialization'], required: true },
   decodeOptions: [{}]
-}, { _id: false });
+}, { _id: false, usePushEach: true });
 
 const integrationSchema = new mongoose.Schema({
   mqtt: {
@@ -57,7 +57,7 @@ const integrationSchema = new mongoose.Schema({
       msg: 'this profile requires an array \'decodeOptions\''
     }]
   }
-}, { _id: false });
+}, { _id: false, usePushEach: true });
 
 
 const addIntegrationsToSchema = function addIntegrationsToSchema (schema) {

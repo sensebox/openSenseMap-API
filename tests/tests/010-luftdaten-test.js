@@ -8,7 +8,8 @@ const chakram = require('chakram'),
 
 const BASE_URL = process.env.OSEM_TEST_BASE_URL,
   valid_sensebox = require('../data/valid_sensebox'),
-  luftdaten_example_data = require('../data/luftdaten_example_data');
+  luftdaten_example_data = require('../data/luftdaten_example_data'),
+  luftdaten_example_data_NRZ_2018_121 = require('../data/luftdaten_example_data_NRZ-2018-121');
 
 describe('openSenseMap API luftdaten.info devices', function () {
   let jwt, dht11_id, dht22_id, bmp180_id, bme280_id, custom_id;
@@ -198,6 +199,32 @@ describe('openSenseMap API luftdaten.info devices', function () {
     let submitTime;
 
     return chakram.post(`${BASE_URL}/boxes/${dht11_id}/data?luftdaten=true`, luftdaten_example_data)
+      .then(function (response) {
+        submitTime = moment.utc(response.response.headers.date, 'ddd, DD MMM YYYY HH:mm:ss GMT');
+        expect(response).to.have.status(201);
+
+        return chakram.get(`${BASE_URL}/boxes/${dht11_id}`);
+      })
+      .then(function (response) {
+        expect(response).to.have.json('sensors', function (sensors) {
+          sensors.forEach(function (sensor) {
+            if (['PM10', 'PM2.5'].includes(sensor.title)) {
+              expect(sensor.lastMeasurement).not.to.be.null;
+              expect(sensor.lastMeasurement.createdAt).to.exist;
+              const createdAt = moment.utc(sensor.lastMeasurement.createdAt);
+              expect(submitTime.diff(createdAt, 'seconds')).to.be.below(10);
+            }
+          });
+        });
+
+        return chakram.wait();
+      });
+  });
+
+  it('should accept measurements from luftdaten.info devices (NRZ_2018_121)', function () {
+    let submitTime;
+
+    return chakram.post(`${BASE_URL}/boxes/${dht11_id}/data?luftdaten=true`, luftdaten_example_data_NRZ_2018_121)
       .then(function (response) {
         submitTime = moment.utc(response.response.headers.date, 'ddd, DD MMM YYYY HH:mm:ss GMT');
         expect(response).to.have.status(201);

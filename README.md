@@ -2,7 +2,7 @@
 
 This repository contains the code of the openSenseMap API, which is the HTTP REST API used by [https://opensensemap.org](https://opensensemap.org) running at [https://api.opensensemap.org](https://api.opensensemap.org). To get more information about openSenseMap and senseBox visit the before mentioned links or have a look at this [video](https://www.youtube.com/watch?v=uTOWYa42_rI), read the [API docs](https://docs.opensensemap.org) or the [openSenseMap](https://osem.books.sensebox.de/) chapter in our [books](https://books.sensebox.de/). openSenseMap is part of the [senseBox] project.
 
-Originally, this API has been built as part of the bachelor thesis of [@mpfeil](https://github.com/mpfeil) at the ifgi (Institute for Geoinformatics, WWU Münster) and is currently maintained by [@ubergesundheit](https://github.com/ubergesundheit).
+Originally, this API has been built as part of the bachelor thesis of [@mpfeil](https://github.com/mpfeil) at the ifgi (Institute for Geoinformatics, WWU Münster). Developers and previous maintainer include [@umut0](https://github.com/umut0), [@felixerdy](https://github.com/felixerdy), [@noerw](https://github.com/noerw), [@chk1](https://github.com/chk1) and [@ubergesundheit](https://github.com/ubergesundheit).
 
 You'll find that the repostiory uses yarn workspaces to separate the [API](packages/api) and the [database models](packages/models) for reuse in other projects. While the API is not published on npm, the package [`@sensebox/opensensemap-api-models`](https://www.npmjs.com/package/@sensebox/opensensemap-api-models) is published from [packages/models](packages/models) folder.
 
@@ -11,7 +11,7 @@ You'll find that the repostiory uses yarn workspaces to separate the [API](packa
 Configuration of both the api and the models is done using mechanisms provided by [lorenwest/node-config](https://github.com/lorenwest/node-config). You can find an annotated example configuration with all keys in [`config/config.example.json`](config/config.example.json).
 
 ## Development
-- Have [Node.js] v8, [yarn](https://yarnpkg.com/), [Docker](https://docs.docker.com/engine/installation/) and [docker-compose](https://docs.docker.com/compose/install/) installed
+- Have [Node.js] v12, [yarn](https://yarnpkg.com/), [Docker](https://docs.docker.com/engine/installation/) and [docker-compose](https://docs.docker.com/compose/install/) installed
 - Start your development database (`docker-compose up -d db`)
 - Check out `development` branch (`git checkout development`)
 - Run `yarn install`
@@ -25,8 +25,7 @@ See also: [CONTRIBUTING](CONTRIBUTING.md)
 You can run the tests in containers using Docker and docker-compose.
 ```
 # Run this the first time or every time you change dependencies in package.json
-yarn install
-yarn test build
+yarn build-test-env
 
 yarn test
 ```
