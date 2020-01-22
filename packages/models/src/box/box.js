@@ -946,10 +946,17 @@ boxSchema.statics.findBoxesMinimal = function findBoxesMinimal (opts = {}) {
 
 boxSchema.statics.findBoxesLastMeasurements = function findBoxesLastMeasurements (opts = {}) {
   const schema = this;
-  const { fromDate, toDate } = opts;
+  const { fromDate, toDate, full } = opts;
   const query = buildFindBoxesQuery(opts);
 
   if (!fromDate && !toDate) {
+    if (full === 'true') {
+      return Promise.resolve(schema.find(query, BOX_PROPS_FOR_POPULATION)
+        .populate(BOX_SUB_PROPS_FOR_POPULATION)
+        .cursor({ lean: true })
+      );
+    }
+
     return Promise.resolve(schema.find(query, BOX_PROPS_FOR_POPULATION)
       .cursor({ lean: true })
     );
