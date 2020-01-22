@@ -948,17 +948,18 @@ boxSchema.statics.findBoxesLastMeasurements = function findBoxesLastMeasurements
   const schema = this;
   const { fromDate, toDate, full } = opts;
   const query = buildFindBoxesQuery(opts);
-  
+
   if (!fromDate && !toDate) {
-    if(full) {
-      return Promise.resolve(schema.find(query, BOX_PROPS_FOR_POPULATION).populate(BOX_SUB_PROPS_FOR_POPULATION)
-        .cursor({ lean: true })
-      );
-    } else {
+    if (full === 'true') {
       return Promise.resolve(schema.find(query, BOX_PROPS_FOR_POPULATION)
+        .populate(BOX_SUB_PROPS_FOR_POPULATION)
         .cursor({ lean: true })
       );
     }
+
+    return Promise.resolve(schema.find(query, BOX_PROPS_FOR_POPULATION)
+      .cursor({ lean: true })
+    );
   }
 
   return Measurement.findLatestMeasurementsForSensors(fromDate, toDate)
