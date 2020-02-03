@@ -9,7 +9,7 @@
     "@sensebox/sketch-templater": "^1.5.2",
     "bcrypt": "^3.0.5",
     "bunyan": "^1.8.12",
-    "config": "^3.1.0",
+    "config": "^3.2.5",
     "got": "^10.2.1",
     "grpc": "^1.19.0",
     "isemail": "^3.0.0",
