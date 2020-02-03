@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## v0.0.14
+- Update @sensebox/node-sketch-templater to v1.5.2
+- Add SoundLevelMeter
+
 ## v0.0.13
 - Add BME680 Sensor
 - Update @sensebox/node-sketch-templater to v1.5.1
