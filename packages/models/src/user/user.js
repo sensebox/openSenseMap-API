@@ -94,7 +94,7 @@ const userSchema = new mongoose.Schema({
   emailIsConfirmed: { type: Boolean, default: false, required: true },
   refreshToken: { type: String },
   refreshTokenExpires: { type: Date }
-});
+}, { usePushEach: true });
 userSchema.plugin(timestamp);
 
 const toJSONProps = ['name', 'email', 'role', 'language', 'boxes', 'emailIsConfirmed'],

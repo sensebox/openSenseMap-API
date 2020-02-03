@@ -3,16 +3,16 @@
 const Transform = require('stream').Transform,
   inherits = require('util').inherits,
   point = require('@turf/helpers').point,
-  distance = require('@turf/distance'),
+  distance = require('@turf/distance').default,
   /* eslint-disable global-require */
   grids = {
-    'hex': require('@turf/hex-grid'),
-    'square': require('@turf/square-grid'),
-    'triangle': require('@turf/triangle-grid'),
+    'hex': require('@turf/hex-grid').default,
+    'square': require('@turf/square-grid').default,
+    'triangle': require('@turf/triangle-grid').default,
   },
   /* eslint-enable global-require */
-  centroid = require('@turf/centroid'),
-  bbox = require('@turf/bbox');
+  centroid = require('@turf/centroid').default,
+  bbox = require('@turf/bbox').default;
 
 const idwTransformer = function (idwTransformerOptions, streamOptions) {
   if (!(this instanceof idwTransformer)) {
@@ -72,20 +72,6 @@ idwTransformer.prototype.calculateNextTimeStepLimit = function calculateNextTime
   this._currTimeStepEnd.add(this._diffTimeSteps);
   this._currTimeStepStart.add(this._diffTimeSteps);
 };
-
-/**
- * Object.values polyfill REMOVE ME when we switch to a higher node version
- */
-
-if (!Object.values) {
-  const reduce = Function.bind.call(Function.call, Array.prototype.reduce);
-  const isEnumerable = Function.bind.call(Function.call, Object.prototype.propertyIsEnumerable);
-  const concat = Function.bind.call(Function.call, Array.prototype.concat);
-  const keys = Reflect.ownKeys;
-  Object.values = function values (O) {
-    return reduce(keys(O), (v, k) => concat(v, typeof k === 'string' && isEnumerable(O, k) ? [O[k]] : []), []);
-  };
-}
 
 idwTransformer.prototype.resetAverageAndReturnControlPoints = function resetAverageAndReturnControlPoints () {
   const controlPoints = Object.values(this._averages).map(a => a.geom);

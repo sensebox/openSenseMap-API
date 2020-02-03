@@ -45,7 +45,10 @@ module.exports = {
               'type': 'string'
             },
             'lastMeasurement': {
-              'type': 'string',
+              'anyOf': [
+                { 'type': 'string' },
+                { 'type': 'object' }
+              ]
             }
           },
           'required': [

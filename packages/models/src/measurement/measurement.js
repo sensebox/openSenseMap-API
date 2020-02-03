@@ -35,7 +35,7 @@ const measurementSchema = new mongoose.Schema({
       }, '{PATH} has not length 2 or 3']
     }
   }
-});
+}, { usePushEach: true });
 
 measurementSchema.index({ sensor_id: 1, createdAt: -1 });
 
@@ -99,7 +99,7 @@ measurementSchema.statics.getMeasurementsStream = function getMeasurementsStream
 
   return this
     .find(qry, { 'createdAt': 1, 'value': 1, 'location': 1, '_id': 0 })
-    .cursor({ lean: true, limit: queryLimit });
+    .cursor({ lean: true, limit: queryLimit, sort: { createdAt: -1 } });
 };
 
 const measurementModel = mongoose.model('Measurement', measurementSchema);

@@ -39,7 +39,8 @@ const locationSchema = new Schema({
     type: Date,
   }
 }, {
-  _id: false
+  _id: false,
+  usePushEach: true
 });
 
 //senseBox schema
@@ -126,7 +127,7 @@ const boxSchema = new Schema({
     type: String,
     required: false
   }
-});
+}, { usePushEach: true });
 boxSchema.plugin(timestamp);
 
 const BOX_PROPS_FOR_POPULATION = {
@@ -299,7 +300,7 @@ boxSchema.statics.findBoxById = function findBoxById (id, { lean = true, populat
 
   let findPromise = this.findById(id, projection);
 
-  if (fullBox === true || onlyLastMeasurements === true || projection.hasOwnProperty('sensors')) {
+  if (fullBox === true || onlyLastMeasurements === true || Object.prototype.hasOwnProperty.call(projection, 'sensors')) {
     findPromise = findPromise
       .populate(BOX_SUB_PROPS_FOR_POPULATION);
   }
@@ -945,10 +946,17 @@ boxSchema.statics.findBoxesMinimal = function findBoxesMinimal (opts = {}) {
 
 boxSchema.statics.findBoxesLastMeasurements = function findBoxesLastMeasurements (opts = {}) {
   const schema = this;
-  const { fromDate, toDate } = opts;
+  const { fromDate, toDate, full } = opts;
   const query = buildFindBoxesQuery(opts);
 
   if (!fromDate && !toDate) {
+    if (full === 'true') {
+      return Promise.resolve(schema.find(query, BOX_PROPS_FOR_POPULATION)
+        .populate(BOX_SUB_PROPS_FOR_POPULATION)
+        .cursor({ lean: true })
+      );
+    }
+
     return Promise.resolve(schema.find(query, BOX_PROPS_FOR_POPULATION)
       .cursor({ lean: true })
     );

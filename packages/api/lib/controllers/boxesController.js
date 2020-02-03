@@ -199,6 +199,7 @@ const geoJsonStringifyReplacer = function geoJsonStringifyReplacer (key, box) {
  * @apiParam {String="homeEthernet","homeWifi","homeEthernetFeinstaub","homeWifiFeinstaub","luftdaten_sds011","luftdaten_sds011_dht11","luftdaten_sds011_dht22","luftdaten_sds011_bmp180","luftdaten_sds011_bme280"} [model] only return boxes with this model, allows to specify multiple separated with a comma
  * @apiParam {Boolean="true","false"} [classify=false] if specified, the api will classify the boxes accordingly to their last measurements.
  * @apiParam {Boolean="true","false"} [minimal=false] if specified, the api will only return a minimal set of box metadata consisting of [_id, updatedAt, currentLocation, exposure, name] for a fast response.
+ * @apiParam {Boolean="true","false"} [full=false] if true the API will return populated lastMeasurements (use this with caution for now, expensive on the database)
  * @apiUse ExposureFilterParam
  * @apiUse BBoxParam
  * @apiSampleRequest https://api.opensensemap.org/boxes
@@ -544,6 +545,7 @@ module.exports = {
       { name: 'format', defaultValue: 'json', allowedValues: ['json', 'geojson'] },
       { name: 'classify', defaultValue: 'false', allowedValues: ['true', 'false'] },
       { name: 'minimal', defaultValue: 'false', allowedValues: ['true', 'false'] },
+      { name: 'full', defaultValue: 'false', allowedValues: ['true', 'false'] },
       { predef: 'bbox' },
     ]),
     parseAndValidateTimeParamsForFindAllBoxes,

@@ -5,7 +5,7 @@ const { Box, Measurement } = require('@sensebox/opensensemap-api-models'),
   idwTransformer = require('../transformers/idwTransformer'),
   { addCache, createDownloadFilename, computeTimestampTruncationLength, csvStringifier } = require('../helpers/apiUtils'),
   { retrieveParameters, validateFromToTimeParams } = require('../helpers/userParamHelpers'),
-  area = require('@turf/area'),
+  area = require('@turf/area').default,
   millify = require('millify'),
   handleError = require('../helpers/errorHandler'),
   ms = require('ms'),
@@ -38,7 +38,7 @@ const getStatistics = async function getStatistics (req, res, next) {
       })
     ]);
     if (human === 'true') {
-      results = results.map(r => millify(r).toString());
+      results = results.map(r => millify.default(r).toString());
     }
     res.send(200, results);
 

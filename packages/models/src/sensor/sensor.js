@@ -30,7 +30,7 @@ const sensorSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Measurement'
   }
-});
+}, { usePushEach: true });
 
 sensorSchema.methods.equals = function equals ({ unit, sensorType, title, _id }) {
   if (_id) {

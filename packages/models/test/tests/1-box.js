@@ -321,9 +321,8 @@ describe('Box model', function () {
 
       return Box.findBoxesMinimal().then(function (queryCursor) {
         queryCursor.on('data', (box) => {
-          expect(Object.keys(box)).members([
+          expect(Object.keys(box)).to.include.members([
             '_id',
-            'lastMeasurementAt',
             'currentLocation',
             'exposure',
             'name',

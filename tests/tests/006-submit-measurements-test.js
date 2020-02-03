@@ -309,7 +309,8 @@ describe('submitting measurements', function () {
           expect(response).to.have.status(200);
           expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
 
-          payload.sort((a, b) => { return new Date(a.createdAt) < new Date(b.createdAt); });
+          payload.sort((a, b) => { return new Date(b.createdAt).toISOString()
+            .localeCompare(new Date(a.createdAt).toISOString()); });
 
           expect(response.body).lengthOf(payload.length);
           for (let i = 0; i < payload.length; i++) {

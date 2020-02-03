@@ -66,7 +66,7 @@ const transformHackairJson = function transformHackairJson (json, sensors) {
   const outArray = [];
 
   for (const rd in json.reading) {
-    if (json.reading.hasOwnProperty(rd)) {
+    if (Object.prototype.hasOwnProperty.call(json.reading, rd)) {
       const value = json.reading[rd];
       const sensor_id = findSensorId(sensors, rd);
       if (sensor_id) {
