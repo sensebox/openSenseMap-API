@@ -1,6 +1,6 @@
 # openSenseMap API Changelog
 
-## Unreleased
+## v9
 - Use Node 12
 - Bump dependencies
 - Bump sketch-templater for sound level meter
