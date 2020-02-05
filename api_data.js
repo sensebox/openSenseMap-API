@@ -278,6 +278,18 @@ define({ "api": [
           },
           {
             "group": "Parameter",
+            "type": "Boolean",
+            "allowedValues": [
+              "\"true\"",
+              "\"false\""
+            ],
+            "optional": true,
+            "field": "full",
+            "defaultValue": "false",
+            "description": "<p>if true the API will return populated lastMeasurements (use this with caution for now, expensive on the database)</p>"
+          },
+          {
+            "group": "Parameter",
             "type": "String",
             "allowedValues": [
               "\"indoor\"",
