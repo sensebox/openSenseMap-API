@@ -9,13 +9,8 @@
     "@sensebox/sketch-templater": "^1.8.2",
     "bcrypt": "^4.0.1",
     "bunyan": "^1.8.12",
-<<<<<<< HEAD
     "config": "^3.3.1",
     "got": "^11.0.2",
-=======
-    "config": "^3.2.5",
-    "got": "^10.5.4",
->>>>>>> Bump got from 10.5.3 to 10.5.4 (#226)
     "grpc": "^1.19.0",
     "isemail": "^3.0.0",
     "jsonpath": "^1.0.0",
