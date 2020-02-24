@@ -2,7 +2,7 @@
 'use strict';
 
 const models = require('../../lib/models'),
-  uuid = require('uuid'),
+  { v4: uuidv4 } = require('uuid'),
   moment = require('moment'),
   { mongoose, connect } = require('../../lib/db');
 
@@ -106,8 +106,8 @@ const migrate = function migrate () {
               }
 
               user.set('boxes', oid_boxes);
-              user.set('password', uuid());
-              user.set('resetPasswordToken', uuid());
+              user.set('password', uuidv4());
+              user.set('resetPasswordToken', uuidv4());
               user.set('resetPasswordExpires', moment.utc()
                 .add(6, 'months')
                 .toDate());

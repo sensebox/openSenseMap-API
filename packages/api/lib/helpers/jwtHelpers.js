@@ -4,7 +4,7 @@ const config = require('config'),
   jwt = require('jsonwebtoken'),
   hashJWT = require('./jwtRefreshTokenHasher'),
   { addTokenToBlacklist, addTokenHashToBlacklist, isTokenBlacklisted } = require('./tokenBlacklist'),
-  uuid = require('uuid'),
+  { v4: uuidv4 } = require('uuid'),
   moment = require('moment'),
   { User } = require('@sensebox/opensensemap-api-models'),
   { ForbiddenError } = require('restify-errors');
@@ -25,7 +25,7 @@ const jwtVerifyOptions = {
 
 const createToken = function createToken (user) {
   const payload = { role: user.role },
-    signOptions = Object.assign({ subject: user.email, jwtid: uuid() }, jwtSignOptions);
+    signOptions = Object.assign({ subject: user.email, jwtid: uuidv4() }, jwtSignOptions);
 
   return new Promise(function (resolve, reject) {
     jwt.sign(payload, jwt_secret, signOptions, async (err, token) => {
