@@ -37,10 +37,10 @@
   resolved "https://registry.yarnpkg.com/@sensebox/osem-protos/-/osem-protos-1.1.0.tgz#a7de8bc6be867953f1309181a012063c23299e79"
   integrity sha512-H+nUVcWlT0dvIqfJnYHuX9JBcCkP1ZKGE5YTRNWPbAEdZ11h+srpQsmeI58wK5hJcdukaZAjc4Dy96IeGM77aA==
 
-"@sensebox/sketch-templater@^1.5.2":
-  version "1.5.2"
-  resolved "https://registry.yarnpkg.com/@sensebox/sketch-templater/-/sketch-templater-1.5.2.tgz#70d4f062842691ff4e1c961b9b1d065cb7c1f45e"
-  integrity sha512-b040rGrFNLSbETE5J32uAliLy/y0qrA784hqeUVZha0NqFSkxAJ0YXarEEbib+E4UnebY4TRR20EZngj12Fypg==
+"@sensebox/sketch-templater@^1.5.4":
+  version "1.5.4"
+  resolved "https://registry.yarnpkg.com/@sensebox/sketch-templater/-/sketch-templater-1.5.4.tgz#8f9bb772126a7fef7a7621bcbe6b33c42a3b9dea"
+  integrity sha512-XVV4fTYjqS1fzhqhEUD45Nd84an+RPpqJTS6WbfTAq8+hpPi59FVBrO6iWnBSIzeYugXZ+2/Cdn6/JBFTgekrg==
   dependencies:
     config "^1.29.2"
     dedent "^0.7.0"
@@ -3768,10 +3768,15 @@ util-deprecate@^1.0.1, util-deprecate@~1.0.1:
   resolved "https://registry.yarnpkg.com/util-deprecate/-/util-deprecate-1.0.2.tgz#450d4dc9fa70de732762fbd2d4a28981419a0ccf"
   integrity sha1-RQ1Nyfpw3nMnYvvS1KKJgUGaDM8=
 
-uuid@^3.0.0, uuid@^3.1.0, uuid@^3.3.2, uuid@^3.4.0:
+uuid@^3.0.0, uuid@^3.1.0, uuid@^3.3.2:
   version "3.4.0"
   resolved "https://registry.yarnpkg.com/uuid/-/uuid-3.4.0.tgz#b23e4358afa8a202fe7a100af1f5f883f02007ee"
   integrity sha512-HjSDRw6gZE5JMggctHBcjVak08+KEVhSIiDzFnT9S9aegmp85S/bReBVTb4QTFaRNptJ9kuYaNhnbNEOkbKb/A==
+
+uuid@^7.0.0:
+  version "7.0.0"
+  resolved "https://registry.yarnpkg.com/uuid/-/uuid-7.0.0.tgz#1833d4b9ce50b732bfaa271f9cb74e974d303c79"
+  integrity sha512-LNUrNsXdI/fUsypJbWM8Jt4DgQdFAZh41p9C7WE9Cn+CULOEkoG2lgQyH68v3wnIy5K3fN4jdSt270K6IFA3MQ==
 
 v8-compile-cache@^2.0.3:
   version "2.1.0"
