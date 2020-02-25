@@ -37,6 +37,26 @@
   resolved "https://registry.yarnpkg.com/@sensebox/eslint-config-sensebox/-/eslint-config-sensebox-1.1.0.tgz#2fec4ec7945f34e7296c619fabd589d722ecd984"
   integrity sha512-MhwFHGmt7X/Wb/aISS/pJvBuO8HqpkVfB8GsUKOosWEfvug4cTN7N/pXBOxINukG34LcKDLp1xdyxuEo64CMSw==
 
+"@sensebox/opensensemap-api-models@^0.0.16":
+  version "0.0.16"
+  resolved "https://registry.yarnpkg.com/@sensebox/opensensemap-api-models/-/opensensemap-api-models-0.0.16.tgz#7a6677bd242ab404520949908a51f8f6affa6118"
+  integrity sha512-KNzaaTNSjIaQZXOFFyX5FuB02axjiwSrmhwp1LhD4gNJVN7ASWur80dGGqSl1asmzQ45sS+Oj7rLG0dVOq1aPw==
+  dependencies:
+    "@sensebox/osem-protos" "^1.1.0"
+    "@sensebox/sketch-templater" "^1.5.5"
+    bcrypt "^3.0.8"
+    bunyan "^1.8.12"
+    config "^3.2.6"
+    got "^10.6.0"
+    grpc "^1.19.0"
+    isemail "^3.0.0"
+    jsonpath "^1.0.0"
+    lodash.isequal "^4.5.0"
+    moment "^2.18.1"
+    mongoose "^4.13.6"
+    mongoose-timestamp "^0.6"
+    uuid "^7.0.0"
+
 "@sensebox/osem-protos@^1.1.0":
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/@sensebox/osem-protos/-/osem-protos-1.1.0.tgz#a7de8bc6be867953f1309181a012063c23299e79"
