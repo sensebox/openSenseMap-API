@@ -1,16 +1,16 @@
 {
   "name": "@sensebox/opensensemap-api-models",
   "description": "openSenseMap data models and database connection",
-  "version": "0.0.14",
+  "version": "0.0.15",
   "main": "index.js",
   "license": "MIT",
   "dependencies": {
     "@sensebox/osem-protos": "^1.1.0",
-    "@sensebox/sketch-templater": "^1.5.2",
-    "bcrypt": "^3.0.5",
+    "@sensebox/sketch-templater": "^1.5.5",
+    "bcrypt": "^3.0.8",
     "bunyan": "^1.8.12",
-    "config": "^3.2.5",
-    "got": "^10.4.0",
+    "config": "^3.3.0",
+    "got": "^10.6.0",
     "grpc": "^1.19.0",
     "isemail": "^3.0.0",
     "jsonpath": "^1.0.0",
@@ -18,7 +18,7 @@
     "moment": "^2.18.1",
     "mongoose": "^4.13.6",
     "mongoose-timestamp": "^0.6",
-    "uuid": "^3.4.0"
+    "uuid": "^7.0.1"
   },
   "scripts": {
     "version": "node .scripts/npm_version-update_changelog.js && git add CHANGELOG.md",

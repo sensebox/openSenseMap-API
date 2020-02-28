@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+## v0.0.15
+- Update @sensebox/node-sketch-templater to v1.5.4
+
 ## v0.0.14
 - Update @sensebox/node-sketch-templater to v1.5.2
 - Add SoundLevelMeter

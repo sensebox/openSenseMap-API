@@ -12,7 +12,7 @@ const { mongoose } = require('../db'),
   bcrypt = require('bcrypt'),
   crypto = require('crypto'),
   { min_length: password_min_length, salt_factor: password_salt_factor } = require('config').get('openSenseMap-API-models.password'),
-  uuid = require('uuid'),
+  { v4: uuidv4 } = require('uuid'),
   { model: Box } = require('../box/box'),
   mails = require('./mails'),
   moment = require('moment'),
@@ -90,7 +90,7 @@ const userSchema = new mongoose.Schema({
     required: true,
     default: 'System'
   },
-  emailConfirmationToken: { type: String, default: uuid },
+  emailConfirmationToken: { type: String, default: uuidv4 },
   emailIsConfirmed: { type: Boolean, default: false, required: true },
   refreshToken: { type: String },
   refreshTokenExpires: { type: Date }
@@ -262,7 +262,7 @@ userSchema.statics.initPasswordReset = function initPasswordReset ({ email }) {
 
 userSchema.methods.passwordReset = function passwordReset () {
   const user = this;
-  user.resetPasswordToken = uuid();
+  user.resetPasswordToken = uuidv4();
   user.resetPasswordExpires = moment.utc()
     .add(12, 'hours')
     .toDate();
@@ -376,7 +376,7 @@ userSchema.methods.resendEmailConfirmation = function resendEmailConfirmation ()
     return Promise.reject(new ModelError(`Email address ${user.email} is already confirmed.`, { type: 'UnprocessableEntityError' }));
   }
 
-  user.set('emailConfirmationToken', uuid());
+  user.set('emailConfirmationToken', uuidv4());
 
   return user.save()
     .then(function (savedUser) {
