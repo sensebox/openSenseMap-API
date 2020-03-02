@@ -864,10 +864,10 @@ csv-parse@^1.3.3:
   resolved "https://registry.yarnpkg.com/csv-parse/-/csv-parse-1.3.3.tgz#d1cfd8743c2f849a0abb2fd544db56695d19a490"
   integrity sha1-0c/YdDwvhJoKuy/VRNtWaV0ZpJA=
 
-csv-parse@^4.8.6:
-  version "4.8.6"
-  resolved "https://registry.yarnpkg.com/csv-parse/-/csv-parse-4.8.6.tgz#e3e01c2c9593194f1b7aae6291c65304b35022c8"
-  integrity sha512-rSJlpgAjrB6pmlPaqiBAp3qVtQHN07VxI+ozs+knMsNvgh4bDQgENKLFYLFMvT+jn/wr/zvqsd7IVZ7Txdkr7w==
+csv-parse@^4.8.7:
+  version "4.8.7"
+  resolved "https://registry.yarnpkg.com/csv-parse/-/csv-parse-4.8.7.tgz#8c93994b6460e3b4f4b8e816e9e168ec870391df"
+  integrity sha512-Kgip6VA+sUvd1lYqZ1n8PpJdv2BKnoYV/YP0by7LTMgNSs2FD3Y16fKyMdQcLfcBgSLnjkix/3BNnVxkw5NmpQ==
 
 csv-stringify@^1.1.2:
   version "1.1.2"
