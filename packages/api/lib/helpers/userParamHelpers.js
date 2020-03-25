@@ -189,7 +189,7 @@ const castParam = function castParam (param, paramDataType, dataTypeIsArray) {
     for (let i = 0, len = param.length; i < len; i++) {
       // also use parser for mapping
       if(!param[i]){
-        log.error("PARAM NOT DEFINED", param, i)
+        console.log("PARAM NOT DEFINED", param, i)
       }
       param[i] = parser(param[i]);
       const checkResult = check(param[i]);
