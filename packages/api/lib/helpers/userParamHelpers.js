@@ -54,7 +54,7 @@ const stringParser = function stringParser (s) {
   try {
     return s ? s.toString().trim() : s; 
   } catch (err){
-    log.info("toString", err);
+    console.log("toString", err);
   }
 };
 
