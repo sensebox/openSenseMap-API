@@ -18,7 +18,7 @@
     "moment": "^2.18.1",
     "mongoose": "^4.13.6",
     "mongoose-timestamp": "^0.6",
-    "uuid": "^7.0.2"
+    "uuid": "^7.0.3"
   },
   "scripts": {
     "version": "node .scripts/npm_version-update_changelog.js && git add CHANGELOG.md",
