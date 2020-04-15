@@ -65,6 +65,14 @@
     config "^1.29.2"
     dedent "^0.7.0"
 
+"@sensebox/sketch-templater@^1.6.0":
+  version "1.6.0"
+  resolved "https://registry.yarnpkg.com/@sensebox/sketch-templater/-/sketch-templater-1.6.0.tgz#daeba0f594104da68fa3b019a091a7cd42d3b87d"
+  integrity sha512-VUs5NzXGXN/IMQpAcZN3XBS5vMDh07d9ppWzknLW7/4Y3GPj457lM92DQ0BNbgecH0GtMh5TDrzGj+gOkrHZtA==
+  dependencies:
+    config "^1.29.2"
+    dedent "^0.7.0"
+
 "@sindresorhus/is@^2.0.0":
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/@sindresorhus/is/-/is-2.0.0.tgz#1a7d0e05905877a61440d4f15520a5f5b4fedfbf"
