@@ -32,38 +32,10 @@
   resolved "https://registry.yarnpkg.com/@sensebox/eslint-config-sensebox/-/eslint-config-sensebox-1.1.0.tgz#2fec4ec7945f34e7296c619fabd589d722ecd984"
   integrity sha512-MhwFHGmt7X/Wb/aISS/pJvBuO8HqpkVfB8GsUKOosWEfvug4cTN7N/pXBOxINukG34LcKDLp1xdyxuEo64CMSw==
 
-"@sensebox/opensensemap-api-models@^0.0.16":
-  version "0.0.16"
-  resolved "https://registry.yarnpkg.com/@sensebox/opensensemap-api-models/-/opensensemap-api-models-0.0.16.tgz#7a6677bd242ab404520949908a51f8f6affa6118"
-  integrity sha512-KNzaaTNSjIaQZXOFFyX5FuB02axjiwSrmhwp1LhD4gNJVN7ASWur80dGGqSl1asmzQ45sS+Oj7rLG0dVOq1aPw==
-  dependencies:
-    "@sensebox/osem-protos" "^1.1.0"
-    "@sensebox/sketch-templater" "^1.5.5"
-    bcrypt "^3.0.8"
-    bunyan "^1.8.12"
-    config "^3.2.6"
-    got "^10.6.0"
-    grpc "^1.19.0"
-    isemail "^3.0.0"
-    jsonpath "^1.0.0"
-    lodash.isequal "^4.5.0"
-    moment "^2.18.1"
-    mongoose "^4.13.6"
-    mongoose-timestamp "^0.6"
-    uuid "^7.0.0"
-
 "@sensebox/osem-protos@^1.1.0":
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/@sensebox/osem-protos/-/osem-protos-1.1.0.tgz#a7de8bc6be867953f1309181a012063c23299e79"
   integrity sha512-H+nUVcWlT0dvIqfJnYHuX9JBcCkP1ZKGE5YTRNWPbAEdZ11h+srpQsmeI58wK5hJcdukaZAjc4Dy96IeGM77aA==
-
-"@sensebox/sketch-templater@^1.5.5":
-  version "1.5.5"
-  resolved "https://registry.yarnpkg.com/@sensebox/sketch-templater/-/sketch-templater-1.5.5.tgz#54c517976ef9936cd39ddcb8d911ccb5e5efc596"
-  integrity sha512-RQtf9cTGZaCNphLW1Uyvy0kW5bgCEQOzzGpIevAJD41sIL/r7f9f9aEvzbM33sc/QGwRk6jzZd1UNRu6WxPGgQ==
-  dependencies:
-    config "^1.29.2"
-    dedent "^0.7.0"
 
 "@sensebox/sketch-templater@^1.6.0":
   version "1.6.0"
@@ -454,14 +426,6 @@ bcrypt-pbkdf@^1.0.0:
   dependencies:
     tweetnacl "^0.14.3"
 
-bcrypt@^3.0.8:
-  version "3.0.8"
-  resolved "https://registry.yarnpkg.com/bcrypt/-/bcrypt-3.0.8.tgz#fe437b7569faffc1105c3c3f6e7d2913e3d3bea5"
-  integrity sha512-jKV6RvLhI36TQnPDvUFqBEnGX9c8dRRygKxCZu7E+MgLfKZbmmXL8a7/SFFOyHoPNX9nV81cKRC5tbQfvEQtpw==
-  dependencies:
-    nan "2.14.0"
-    node-pre-gyp "0.14.0"
-
 bcrypt@^4.0.1:
   version "4.0.1"
   resolved "https://registry.yarnpkg.com/bcrypt/-/bcrypt-4.0.1.tgz#06e21e749a061020e4ff1283c1faa93187ac57fe"
@@ -812,7 +776,7 @@ config@^1.29.2:
   dependencies:
     json5 "^1.0.1"
 
-config@^3.2.6, config@^3.3.1:
+config@^3.3.1:
   version "3.3.1"
   resolved "https://registry.yarnpkg.com/config/-/config-3.3.1.tgz#b6a70e2908a43b98ed20be7e367edf0cc8ed5a19"
   integrity sha512-+2/KaaaAzdwUBE3jgZON11L1ggLLhpf2FsGrfqYFHZW22ySGv/HqYIXrBwKKvn+XZh1UBUjHwAcrfsSkSygT+Q==
@@ -1646,7 +1610,7 @@ globals@^12.1.0:
   dependencies:
     type-fest "^0.8.1"
 
-got@^10.6.0, got@^10.7.0:
+got@^10.7.0:
   version "10.7.0"
   resolved "https://registry.yarnpkg.com/got/-/got-10.7.0.tgz#62889dbcd6cca32cd6a154cc2d0c6895121d091f"
   integrity sha512-aWTDeNw9g+XqEZNcTjMMZSy7B7yE9toWOFYip7ofFTLleJhvZwUxxTxkTpKvF+p1SAA4VHmuEy7PiHTHyq8tJg==
@@ -2523,7 +2487,7 @@ mv@~2:
     ncp "~2.0.0"
     rimraf "~2.4.0"
 
-nan@2.14.0, nan@^2.13.2, nan@^2.14.0:
+nan@^2.13.2, nan@^2.14.0:
   version "2.14.0"
   resolved "https://registry.yarnpkg.com/nan/-/nan-2.14.0.tgz#7818f722027b2459a86f0295d434d1fc2336c52c"
   integrity sha512-INOFj37C7k3AfaNTtX8RhsTw7qRy7eLET14cROi9+5HAVbbHuIWUHEauBv5qT4Av2tWasiTY1Jw6puUNqRJXQg==
@@ -3740,7 +3704,7 @@ uuid@^3.0.0, uuid@^3.3.2:
   resolved "https://registry.yarnpkg.com/uuid/-/uuid-3.4.0.tgz#b23e4358afa8a202fe7a100af1f5f883f02007ee"
   integrity sha512-HjSDRw6gZE5JMggctHBcjVak08+KEVhSIiDzFnT9S9aegmp85S/bReBVTb4QTFaRNptJ9kuYaNhnbNEOkbKb/A==
 
-uuid@^7.0.0, uuid@^7.0.3:
+uuid@^7.0.3:
   version "7.0.3"
   resolved "https://registry.yarnpkg.com/uuid/-/uuid-7.0.3.tgz#c5c9f2c8cf25dc0a372c4df1441c41f5bd0c680b"
   integrity sha512-DPSke0pXhTZgoF/d+WSt2QaKMCFSfx7QegxEWT+JOuHF5aWrKEn0G+ztjuJg/gG8/ItK+rbPCD/yNv8yyih6Cg==
