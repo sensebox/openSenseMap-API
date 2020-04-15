@@ -1,8 +1,8 @@
 'use strict';
 
 module.exports = {
-  title: 'Atemluft VOC Äquivalent',
-  unit: 'ppm',
+  title: 'Innenraumluftqualität (IAQ)',
+  unit: '_',
   sensorType: 'BME680',
   icon: 'osem-dashboard'
 };
