@@ -1,7 +1,7 @@
 'use strict';
 
 module.exports = {
-  title: 'Atemluft VOC Äquivalent',
+  title: 'CO2 Äquivalent',
   unit: 'ppm',
   sensorType: 'BME680',
   icon: 'osem-dashboard'
