@@ -21,10 +21,10 @@
     "@turf/triangle-grid": "^6.0.1",
     "apicache": "^1.4.0",
     "bunyan": "^1.8.12",
-    "config": "^3.3.0",
+    "config": "^3.3.1",
     "csv-stringify": "^5.3.0",
     "dashify": "^2.0.0",
-    "got": "^10.6.0",
+    "got": "^10.7.0",
     "honeybadger": "^1.4.0",
     "isemail": "^3.0.0",
     "jsonwebtoken": "^8.1.0",
@@ -35,7 +35,7 @@
     "restify-errors": "^8.0.2",
     "simple-statistics": "^7.0.8",
     "stringify-stream": "^1.0.5",
-    "uuid": "^7.0.2"
+    "uuid": "^7.0.3"
   },
   "private": true
 }
