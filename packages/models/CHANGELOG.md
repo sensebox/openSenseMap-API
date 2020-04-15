@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+## v0.0.19
+- Update @sensebox/node-sketch-templater to v1.6.1
+
 ## v0.0.18
 - Fix spelling mistake
 
