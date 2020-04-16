@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+## v0.0.19
+- Update @sensebox/node-sketch-templater to v1.6.1
+
+## v0.0.18
+- Fix spelling mistake
+
 ## v0.0.17
 - Update @sensebox/node-sketch-templater to v1.6.0
 - Update BME680 phenomenon
