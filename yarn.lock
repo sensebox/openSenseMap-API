@@ -3239,10 +3239,10 @@ signal-exit@^3.0.0, signal-exit@^3.0.2:
   resolved "https://registry.yarnpkg.com/signal-exit/-/signal-exit-3.0.2.tgz#b5fdc08f1287ea1178628e415e25132b73646c6d"
   integrity sha1-tf3AjxKH6hF4Yo5BXiUTK3NkbG0=
 
-simple-statistics@^7.0.8:
-  version "7.0.8"
-  resolved "https://registry.yarnpkg.com/simple-statistics/-/simple-statistics-7.0.8.tgz#662c56769945812237891adaec690f6da90fe372"
-  integrity sha512-cKK4U1ciuG7NG2P/FfbYtfoZYvn6VkIHxurRGuqW1bBOrKY0WK1Zr9C3EFjh8RAOldIRznm5kQvWTa3bsvkMIA==
+simple-statistics@^7.0.9:
+  version "7.0.9"
+  resolved "https://registry.yarnpkg.com/simple-statistics/-/simple-statistics-7.0.9.tgz#786b41009bf07c9b84d4b40f859af8d73c007ef6"
+  integrity sha512-9p55iB9WiuurOkKDNFTvEfr5C4ov3voBo0vri64eC44QSLE6JfOmHMnnyUkS8Os5p9UFfOyhXpEaBJ81EpV6fA==
 
 slice-ansi@^2.1.0:
   version "2.1.0"
