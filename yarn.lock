@@ -1603,10 +1603,10 @@ globals@^12.1.0:
   dependencies:
     type-fest "^0.8.1"
 
-got@^11.0.0:
-  version "11.0.0"
-  resolved "https://registry.yarnpkg.com/got/-/got-11.0.0.tgz#a5a131a55752309157bb32e1365a6a7f2a8c15b8"
-  integrity sha512-6PjDdCa2yPMuxhoBp6TIdHUm5gv8rBEfr055vJG9CqznZBw4rFEwNifI5JxfLhu41xVHRrFsVtseFOjrcIy1/w==
+got@^11.0.1:
+  version "11.0.1"
+  resolved "https://registry.yarnpkg.com/got/-/got-11.0.1.tgz#515ed43867a2b49d2dfa7b920092fd9299188f28"
+  integrity sha512-yxoJ0Mo8IV0bcrDaT9OaQ3dB514e26r+0V16TK7cqbcotbAwuOq5IIr2WJl75CvZ3oIRtpHVftYAQLF1lqrC5A==
   dependencies:
     "@sindresorhus/is" "^2.1.0"
     "@szmarczak/http-timer" "^4.0.0"
