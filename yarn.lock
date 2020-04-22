@@ -839,10 +839,10 @@ csv-stringify@^1.1.2:
   dependencies:
     lodash.get "~4.4.2"
 
-csv-stringify@^5.4.2:
-  version "5.4.2"
-  resolved "https://registry.yarnpkg.com/csv-stringify/-/csv-stringify-5.4.2.tgz#c85dc508fec661e8056e3ef120e8ddbf2402a213"
-  integrity sha512-E30lNUlBvONUfALt+h4hAQ+EWYxI5gLZcxAZtxEYr7VAYdkUjPgdDGJNyZAcaECzZyczs16zpUveREVSUoh0sw==
+csv-stringify@^5.4.3:
+  version "5.4.3"
+  resolved "https://registry.yarnpkg.com/csv-stringify/-/csv-stringify-5.4.3.tgz#68f2e59652af7bb27bb06fe05a8237ff95bd13f9"
+  integrity sha512-WJLgRJQcVjPK45jXS1xfnkwVbw9bOjg2F2BQRa9OkG7Di2W/geclPZNlcQTwxbzn1nEDI2ane2AubTdTd6gCvw==
 
 csv@^1.1.0:
   version "1.2.1"
