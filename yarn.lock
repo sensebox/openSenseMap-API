@@ -65,18 +65,10 @@
     config "^1.29.2"
     dedent "^0.7.0"
 
-"@sensebox/sketch-templater@^1.6.0":
-  version "1.6.0"
-  resolved "https://registry.yarnpkg.com/@sensebox/sketch-templater/-/sketch-templater-1.6.0.tgz#daeba0f594104da68fa3b019a091a7cd42d3b87d"
-  integrity sha512-VUs5NzXGXN/IMQpAcZN3XBS5vMDh07d9ppWzknLW7/4Y3GPj457lM92DQ0BNbgecH0GtMh5TDrzGj+gOkrHZtA==
-  dependencies:
-    config "^1.29.2"
-    dedent "^0.7.0"
-
-"@sindresorhus/is@^2.1.0":
-  version "2.1.1"
-  resolved "https://registry.yarnpkg.com/@sindresorhus/is/-/is-2.1.1.tgz#ceff6a28a5b4867c2dd4a1ba513de278ccbe8bb1"
-  integrity sha512-/aPsuoj/1Dw/kzhkgz+ES6TxG0zfTMGLwuK2ZG00k/iJzYHTLCE8mVU8EPqEOp/lmxPoq1C1C9RYToRKb2KEfg==
+"@sindresorhus/is@^2.0.0":
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/@sindresorhus/is/-/is-2.0.0.tgz#1a7d0e05905877a61440d4f15520a5f5b4fedfbf"
+  integrity sha512-bX03FiS5dr3cc01hhymlqDAjO5c5WcRPwY4BrghFFhUWI/3vsVlaq8GiSFsrcA3O07mPedlS6Mnr/whaJ44ubA==
 
 "@szmarczak/http-timer@^4.0.0":
   version "4.0.0"
