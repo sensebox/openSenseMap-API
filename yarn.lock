@@ -37,10 +37,10 @@
   resolved "https://registry.yarnpkg.com/@sensebox/osem-protos/-/osem-protos-1.1.0.tgz#a7de8bc6be867953f1309181a012063c23299e79"
   integrity sha512-H+nUVcWlT0dvIqfJnYHuX9JBcCkP1ZKGE5YTRNWPbAEdZ11h+srpQsmeI58wK5hJcdukaZAjc4Dy96IeGM77aA==
 
-"@sensebox/sketch-templater@^1.7.0-beta":
-  version "1.7.0-beta"
-  resolved "https://registry.yarnpkg.com/@sensebox/sketch-templater/-/sketch-templater-1.7.0-beta.tgz#81c6929c878cf47be2321f093acf504e6cf54493"
-  integrity sha512-q1ce/gMfxS0uMj8yikMZ8Tg1B4VjXZjhqrpYoxgSJ+laKW8MT3U3fZKUv8hGRDamXfc2Dwir9PNL8abzaX7Q4A==
+"@sensebox/sketch-templater@^1.7.0-beta2":
+  version "1.7.0-beta2"
+  resolved "https://registry.yarnpkg.com/@sensebox/sketch-templater/-/sketch-templater-1.7.0-beta2.tgz#e1c2bc87b39c1ba2958fbb7ee580ac4392fdf8e2"
+  integrity sha512-1rox4mZU5fvUIDOdXYwtuh2qK+lBhPdjNgci1vIHRGWXX3P/GQCd2sGYxFTZF2Cv0bleaMY6kHSAvI+rTnOpTA==
   dependencies:
     config "^1.29.2"
     dedent "^0.7.0"

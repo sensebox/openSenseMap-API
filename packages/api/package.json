@@ -1,6 +1,5 @@
 {
   "name": "@sensebox/opensensemap-api",
-  "version": "0.0.0",
   "description": "openSenseMap HTTP REST API",
   "license": "MIT",
   "author": "Matthias Pfeil",
@@ -10,7 +9,7 @@
     "Norwin Roosen"
   ],
   "dependencies": {
-    "@sensebox/opensensemap-api-models": "^0.0.16-beta",
+    "@sensebox/opensensemap-api-models": "^0.0.16-beta.2",
     "@turf/area": "^6.0.1",
     "@turf/bbox": "^6.0.1",
     "@turf/centroid": "^6.0.2",
