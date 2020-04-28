@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## v0.0.16-beta
+- Update @sensebox/node-sketch-templater to v1.7.0-beta
+- Add TTN IDs / Key to getSketch params
+
 ## v0.0.15
 - Update @sensebox/node-sketch-templater to v1.5.4
 
