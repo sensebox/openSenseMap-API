@@ -1,5 +1,6 @@
 {
   "name": "@sensebox/opensensemap-api",
+  "version": "0.0.0",
   "description": "openSenseMap HTTP REST API",
   "license": "MIT",
   "author": "Matthias Pfeil",
