@@ -1,7 +1,7 @@
 {
   "name": "@sensebox/opensensemap-api-models",
   "description": "openSenseMap data models and database connection",
-  "version": "0.0.16-beta",
+  "version": "0.0.16-beta.2",
   "main": "index.js",
   "license": "MIT",
   "dependencies": {
