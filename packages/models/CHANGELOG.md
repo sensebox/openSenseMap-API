@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+## v0.0.16-beta.3
+- Merge fix-userParamError branch
+
 ## v0.0.16-beta.2
 - Update @sensebox/node-sketch-templater to v1.7.0-beta2
 
