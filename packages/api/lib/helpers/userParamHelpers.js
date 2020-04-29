@@ -50,7 +50,13 @@ const checkParamAllowed = function checkParamAllowed (param, allowedValues) {
   return true;
 };
 
-const stringParser = function stringParser (s) { return s.toString().trim(); };
+const stringParser = function stringParser (s) { 
+  try {
+    return s ? s.toString().trim() : s; 
+  } catch (err){
+    console.log("toString", err);
+  }
+};
 
 /**
  * @apiDefine BoxIdParam
@@ -182,6 +188,9 @@ const castParam = function castParam (param, paramDataType, dataTypeIsArray) {
 
     for (let i = 0, len = param.length; i < len; i++) {
       // also use parser for mapping
+      if(!param[i]){
+        console.log("PARAM NOT DEFINED", param, i)
+      }
       param[i] = parser(param[i]);
       const checkResult = check(param[i]);
       if (typeof checkResult === 'boolean' && checkResult === failOnCheckResultEquals) {

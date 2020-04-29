@@ -24,7 +24,17 @@ if (config.get('mailer.url')) {
         },
         attachment: {
           filename: 'senseBox.ino',
-          contents: box.getSketch({ encoding: 'base64', serialPort: box.serialPort, ssid: '', password: '' })
+          contents: box.getSketch({
+            encoding: 'base64',
+            ssid: '',
+            password: '',
+            serialPort: box.serialPort,
+            soilDigitalPort: box.soilDigitalPort,
+            soundMeterPort: box.soundMeterPort,
+            devEUI: '',
+            appEUI: '',
+            appKey: ''
+          })
         }
       };
     },

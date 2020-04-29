@@ -413,6 +413,9 @@ const postNewBox = async function postNewBox (req, res, next) {
  * @apiParam {String="A","B","C"} soundMeterPort the digital port the soundlevelmeter sensor is connected to
  * @apiParam {String} ssid the ssid of your wifi network
  * @apiParam {String} password the password of your wifi network
+ * @apiParam {String} devEUI the devEUI of TTN device
+ * @apiParam {String} appEUI the appEUI of TTN application
+ * @apiParam {String} appKey the appKey of TTN application
  * @apiUse JWTokenAuth
  * @apiUse BoxIdParam
  */
@@ -425,7 +428,10 @@ const getSketch = async function getSketch (req, res, next) {
       soilDigitalPort: req._userParams.soilDigitalPort,
       soundMeterPort: req._userParams.soundMeterPort,
       ssid: req._userParams.ssid,
-      password: req._userParams.password
+      password: req._userParams.password,
+      devEUI: req._userParams.devEUI,
+      appEUI: req._userParams.appEUI,
+      appKey: req._userParams.appKey
     }));
   } catch (err) {
     handleError(err, next);
@@ -475,7 +481,10 @@ module.exports = {
       { name: 'soilDigitalPort', dataType: 'String', allowedValues: ['A', 'B', 'C'] },
       { name: 'soundMeterPort', dataType: 'String', allowedValues: ['A', 'B', 'C'] },
       { name: 'ssid', dataType: 'StringWithEmpty' },
-      { name: 'password', dataType: 'StringWithEmpty' }
+      { name: 'password', dataType: 'StringWithEmpty' },
+      { name: 'devEUI', dataType: 'StringWithEmpty' },
+      { name: 'appEUI', dataType: 'StringWithEmpty' },
+      { name: 'appKey', dataType: 'StringWithEmpty' },
     ]),
     checkPrivilege,
     getSketch
