@@ -1,5 +1,8 @@
 # openSenseMap API Changelog
 
+## v9.2
+- Include TTN EUIs and Key in LoRaWAN sketch
+
 ## v9
 - Use Node 12
 - Bump dependencies
