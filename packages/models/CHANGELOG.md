@@ -2,6 +2,25 @@
 
 ## Unreleased
 
+## v0.0.20
+- Update @sensebox/node-sketch-templater to v1.7.0
+
+## v0.0.19
+
+## v0.0.18
+
+## v0.0.17
+
+## v0.0.16-beta.3
+- Merge fix-userParamError branch
+
+## v0.0.16-beta.2
+- Update @sensebox/node-sketch-templater to v1.7.0-beta2
+
+## v0.0.16-beta
+- Update @sensebox/node-sketch-templater to v1.7.0-beta
+- Add TTN IDs / Key to getSketch params
+
 ## v0.0.15
 - Update @sensebox/node-sketch-templater to v1.5.4
 
