@@ -29,7 +29,7 @@
     "isemail": "^3.0.0",
     "jsonwebtoken": "^8.1.0",
     "millify": "^3.0.2",
-    "moment": "^2.18.1",
+    "moment": "^2.25.2",
     "ms": "^2.1.1",
     "restify": "^5.2.0",
     "restify-errors": "^8.0.2",
