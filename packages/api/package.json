@@ -28,7 +28,7 @@
     "honeybadger": "^1.4.0",
     "isemail": "^3.0.0",
     "jsonwebtoken": "^8.1.0",
-    "millify": "^3.0.2",
+    "millify": "^3.2.1",
     "moment": "^2.25.3",
     "ms": "^2.1.1",
     "restify": "^5.2.0",
