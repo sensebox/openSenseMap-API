@@ -1,4 +1,5 @@
 # openSenseMap API Changelog
+- Add windspeed sensor
 
 ## v9.3.1
 - Add windspeed sensor
