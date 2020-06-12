@@ -16,7 +16,8 @@ const {
   bme680_voc,
   smt50_soilmoisture,
   smt50_soiltemperature,
-  soundlevelmeter
+  soundlevelmeter,
+  windspeed
 } = sensorDefinitions;
 
 module.exports = [
@@ -33,5 +34,6 @@ module.exports = [
   bme680_voc,
   smt50_soilmoisture,
   smt50_soiltemperature,
-  soundlevelmeter
+  soundlevelmeter,
+  windspeed
 ];

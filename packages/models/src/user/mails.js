@@ -31,6 +31,7 @@ if (config.get('mailer.url')) {
             serialPort: box.serialPort,
             soilDigitalPort: box.soilDigitalPort,
             soundMeterPort: box.soundMeterPort,
+            windSpeedPort: box.windSpeedPort,
             devEUI: '',
             appEUI: '',
             appKey: ''

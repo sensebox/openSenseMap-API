@@ -411,6 +411,7 @@ const postNewBox = async function postNewBox (req, res, next) {
  * @apiParam {String="Serial1","Serial2"} serialPort the serial port the SDS011 sensor is connected to
  * @apiParam {String="A","B","C"} soilDigitalPort the digital port the SMT50 sensor is connected to
  * @apiParam {String="A","B","C"} soundMeterPort the digital port the soundlevelmeter sensor is connected to
+ * @apiParam {String="A","B","C"} windSpeedPort the digital port the windspeed sensor is connected to
  * @apiParam {String} ssid the ssid of your wifi network
  * @apiParam {String} password the password of your wifi network
  * @apiParam {String} devEUI the devEUI of TTN device
@@ -427,6 +428,7 @@ const getSketch = async function getSketch (req, res, next) {
       serialPort: req._userParams.serialPort,
       soilDigitalPort: req._userParams.soilDigitalPort,
       soundMeterPort: req._userParams.soundMeterPort,
+      windSpeedPort: req._userParams.windSpeedPort,
       ssid: req._userParams.ssid,
       password: req._userParams.password,
       devEUI: req._userParams.devEUI,
@@ -480,6 +482,7 @@ module.exports = {
       { name: 'serialPort', dataType: 'String', allowedValues: ['Serial1', 'Serial2'] },
       { name: 'soilDigitalPort', dataType: 'String', allowedValues: ['A', 'B', 'C'] },
       { name: 'soundMeterPort', dataType: 'String', allowedValues: ['A', 'B', 'C'] },
+      { name: 'windSpeedPort', dataType: 'String', allowedValues: ['A', 'B', 'C'] },
       { name: 'ssid', dataType: 'StringWithEmpty' },
       { name: 'password', dataType: 'StringWithEmpty' },
       { name: 'devEUI', dataType: 'StringWithEmpty' },
@@ -531,6 +534,7 @@ module.exports = {
       { name: 'serialPort', dataType: 'String', defaultValue: 'Serial1', allowedValues: ['Serial1', 'Serial2'] },
       { name: 'soilDigitalPort', dataType: 'String', defaultValue: 'A', allowedValues: ['A', 'B', 'C'] },
       { name: 'soundMeterPort', dataType: 'String', defaultValue: 'B', allowedValues: ['A', 'B', 'C'] },
+      { name: 'windSpeedPort', dataType: 'String', defaultValue: 'C', allowedValues: ['A', 'B', 'C'] },
       { name: 'mqtt', dataType: 'object' },
       { name: 'ttn', dataType: 'object' },
       { predef: 'location', required: true }
