@@ -1,6 +1,9 @@
 # openSenseMap API Changelog
 - Add windspeed sensor
 
+## v9.3.1
+- Add windspeed sensor
+
 ## v9.2
 - Include TTN EUIs and Key in LoRaWAN sketch
 
