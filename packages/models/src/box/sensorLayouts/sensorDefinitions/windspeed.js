@@ -3,6 +3,6 @@
 module.exports = {
   title: 'Windgeschwindigkeit',
   unit: 'm/s',
-  sensorType: 'WINDSENSOR',
+  sensorType: 'WINDSPEED',
   icon: 'osem-particulate-matter'
 };
