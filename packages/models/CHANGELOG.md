@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## v0.0.23
+
+## v0.0.22
+
 ## v0.0.21
 - Update @sensebox/node-sketch-templater to v1.8.0
 - Add windspeed sensor
