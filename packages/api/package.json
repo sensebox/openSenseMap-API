@@ -20,7 +20,7 @@
     "@turf/square-grid": "^6.0.2",
     "@turf/triangle-grid": "^6.0.1",
     "apicache": "^1.4.0",
-    "bunyan": "^1.8.13",
+    "bunyan": "^1.8.14",
     "config": "^3.3.1",
     "csv-stringify": "^5.4.3",
     "dashify": "^2.0.0",
