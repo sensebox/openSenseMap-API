@@ -8,7 +8,7 @@
     "@sensebox/osem-protos": "^1.1.0",
     "@sensebox/sketch-templater": "^1.8.2",
     "bcrypt": "^5.0.0",
-    "bunyan": "^1.8.13",
+    "bunyan": "^1.8.14",
     "config": "^3.3.1",
     "got": "^11.6.0",
     "grpc": "^1.24.3",
