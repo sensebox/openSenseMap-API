@@ -65,14 +65,16 @@ const getData = function getData (req, res, next) {
   let stringifier;
 
   // IDEA: add geojson point featurecollection format
-  if (format === 'csv' || (download === 'true')) {
+  if (format === 'csv') {
     res.header('Content-Type', 'text/csv');
-    res.header('Content-Disposition', `attachment; filename=${sensorId}.${format}`);
     stringifier = csvStringifier(['createdAt', 'value'], delimiter);
   } else if (format === 'json') {
     res.header('Content-Type', 'application/json; charset=utf-8');
     // IDEA: add geojson point featurecollection format
     stringifier = jsonstringify({ open: '[', close: ']' }, jsonLocationReplacer);
+  }
+  if (download === 'true') {
+    res.header('Content-Disposition', `attachment; filename=${sensorId}.${format}`);
   }
 
   let measurementsStream = Measurement.getMeasurementsStream(req._userParams)
