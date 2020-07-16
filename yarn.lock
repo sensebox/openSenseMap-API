@@ -42,10 +42,10 @@
   resolved "https://registry.yarnpkg.com/@sensebox/osem-protos/-/osem-protos-1.1.0.tgz#a7de8bc6be867953f1309181a012063c23299e79"
   integrity sha512-H+nUVcWlT0dvIqfJnYHuX9JBcCkP1ZKGE5YTRNWPbAEdZ11h+srpQsmeI58wK5hJcdukaZAjc4Dy96IeGM77aA==
 
-"@sensebox/sketch-templater@^1.8.1":
-  version "1.8.1"
-  resolved "https://registry.yarnpkg.com/@sensebox/sketch-templater/-/sketch-templater-1.8.1.tgz#f9935d407aad59e9d414fea4de283903a3c22173"
-  integrity sha512-Eemm+JGUWnrMDbTG3E5/LOmWBjSLqBsQ9ujnBgunsBwo6+RgbGhnraJIRR6s4Dvr4k5zzLHSleprs3+IcI6hSA==
+"@sensebox/sketch-templater@^1.8.2":
+  version "1.8.2"
+  resolved "https://registry.yarnpkg.com/@sensebox/sketch-templater/-/sketch-templater-1.8.2.tgz#70ee33479b6ee03402e6e9575b19b9388b7e947f"
+  integrity sha512-gqW8ltzu/CYLVtiC7FnpU775LMPr8lO05TcZfQfFoLVg7JRsAX0xicFTc03NW7C3e813w16tyxqZInzPYf6RaQ==
   dependencies:
     config "^1.29.2"
     dedent "^0.7.0"
@@ -2223,9 +2223,9 @@ lodash.once@^4.0.0:
   integrity sha1-DdOXEhPHxW34gJd9UEyI+0cal6w=
 
 lodash@^4.14.0, lodash@^4.15.0, lodash@^4.17.14, lodash@^4.17.15, lodash@^4.17.4, lodash@^4.2.1:
-  version "4.17.15"
-  resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.15.tgz#b447f6670a0455bbfeedd11392eff330ea097548"
-  integrity sha512-8xOcRHvCjnocdS5cpwXQXVzmmh5e5+saE2QGoeQmbKmRS6J3VQppPOIt0MnmE+4xlZoumy0GPG0D0MVIQbNA1A==
+  version "4.17.19"
+  resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.19.tgz#e48ddedbe30b3321783c5b4301fbd353bc1e4a4b"
+  integrity sha512-JNvd8XER9GQX0v2qJgsaN/mzFCNA5BRe/j8JN9d+tWyGLSodKQHKFicdwNYzWwI3wjRnaKPsGj1XkBjx/F96DQ==
 
 log-symbols@3.0.0:
   version "3.0.0"
