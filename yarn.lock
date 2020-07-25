@@ -2283,10 +2283,10 @@ martinez-polygon-clipping@^0.4.3:
     splaytree "^0.1.4"
     tinyqueue "^1.2.0"
 
-millify@^3.2.1:
-  version "3.2.1"
-  resolved "https://registry.yarnpkg.com/millify/-/millify-3.2.1.tgz#18e364c20e70b75998760ce03ffdab29c999d44f"
-  integrity sha512-U7zp14drz+j2hqBfikQV1FjO+cdj9W+bg2rzmaXG43aAPLEXw17YOQsf7AnTVPC/u1WYkVP2Dg5BFi8VUuUrRg==
+millify@^3.3.0:
+  version "3.3.0"
+  resolved "https://registry.yarnpkg.com/millify/-/millify-3.3.0.tgz#8e0f5554b6413ef2f0f4be2f69dbc2067717eb4a"
+  integrity sha512-j+IUePjjIYgFjaqZdpwAKM3YotVpu44FqeJbWNfx3o1USo9MugVX/hxGihOoCk6LrD+t01voxGLb0gGAZcuuxQ==
   dependencies:
     yargs "^15.3.1"
 
