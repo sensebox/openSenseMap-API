@@ -1,5 +1,8 @@
 # openSenseMap API Changelog
 
+## v9.4
+- Add Cayenne LPP Decoding
+
 ## v9.3.5
 - fix windspeed sensor
 
