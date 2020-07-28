@@ -31,7 +31,7 @@
  *
  * @apiParam (TTNOption) {String} dev_id The device ID recieved from TTN
  * @apiParam (TTNOption) {String} app_id The application ID recieved from TTN
- * @apiParam (TTNOption) {String="lora-serialization","sensebox/home","json","debug"} profile A decoding profile matching the payload format. For details and configuration see https://github.com/sensebox/ttn-osem-integration#decoding-profiles
+ * @apiParam (TTNOption) {String="lora-serialization","sensebox/home","json","debug", "cayenne-lpp"} profile A decoding profile matching the payload format. For details and configuration see https://github.com/sensebox/ttn-osem-integration#decoding-profiles
  * @apiParam (TTNOption) {Array}  [decodeOptions] A JSON Array containing decoder configuration, needed for some profiles.
  * @apiParam (TTNOption) {Number} [port] The TTN port to listen for messages. Optional, if not provided, all ports are used.
  */

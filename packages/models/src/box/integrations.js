@@ -18,7 +18,7 @@ const ttnSchema = new mongoose.Schema({
   dev_id: { type: String, trim: true, required: true },
   app_id: { type: String, trim: true, required: true },
   port: { type: Number, min: 0 },
-  profile: { type: String, trim: true, enum: ['json', 'debug', 'sensebox/home', 'lora-serialization'], required: true },
+  profile: { type: String, trim: true, enum: ['json', 'debug', 'sensebox/home', 'lora-serialization', 'cayenne-lpp'], required: true },
   decodeOptions: [{}]
 }, { _id: false, usePushEach: true });
 
@@ -50,7 +50,7 @@ const integrationSchema = new mongoose.Schema({
       /* eslint-disable func-name-matching */
       validator: function validTTNDecodeOptions (ttn) {
         /* eslint-enable func-name-matching */
-        if (['debug', 'lora-serialization'].indexOf(ttn.profile) !== -1) {
+        if (['debug', 'lora-serialization', 'cayenne-lpp'].indexOf(ttn.profile) !== -1) {
           return (ttn.decodeOptions && ttn.decodeOptions.constructor === Array);
         }
       },
