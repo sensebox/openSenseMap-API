@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+## v0.0.25
+- Add Cayenne LPP Decoder
+
 ## v0.0.24
 
 ## v0.0.23
