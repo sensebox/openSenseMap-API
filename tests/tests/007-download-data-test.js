@@ -10,7 +10,9 @@ const BASE_URL = process.env.OSEM_TEST_BASE_URL,
   findAllSchema = require('../data/findAllSchema'),
   findAllSchemaBoxes = require('../data/findAllSchemaBoxes'),
   measurementsSchema = require('../data/measurementsSchema'),
-  getUserBoxesSchema = require('../data/getUserBoxesSchema');
+  getUserBoxesSchema = require('../data/getUserBoxesSchema'),
+  boxSensorsSchema = require('../data/boxSensorsSchema'),
+  sensorSchema = require('../data/sensorSchema');
 
 describe('downloading data', function () {
   let jwt;
@@ -172,6 +174,32 @@ describe('downloading data', function () {
           expect(response.body.length).to.be.equal(1);
           expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
           expect(response).to.have.schema(findAllSchema);
+
+          return chakram.wait();
+        });
+    });
+
+  });
+
+  describe('/boxes/:boxid/sensors', function () {
+
+    it('should return the sensors of a box for /boxes/:boxid/sensors GET', function () {
+      return chakram.get(`${BASE_URL}/boxes/${boxIds[0]}/sensors`)
+        .then(function (response) {
+          expect(response).to.have.status(200);
+          expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
+          expect(response).to.have.schema(boxSensorsSchema);
+
+          return chakram.wait();
+        });
+    });
+
+    it('should return a single sensor of a box for /boxes/:boxid/sensors/:sensorId GET', function () {
+      return chakram.get(`${BASE_URL}/boxes/${boxes[0]._id}/sensors/${boxes[0].sensors[0]._id}`)
+        .then(function (response) {
+          expect(response).to.have.status(200);
+          expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
+          expect(response).to.have.schema(sensorSchema);
 
           return chakram.wait();
         });

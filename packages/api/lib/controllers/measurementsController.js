@@ -11,7 +11,7 @@ const
   handleError = require('../helpers/errorHandler'),
   OutlierTransformer = require('../transformers/outlierTransformer'),
   jsonstringify = require('stringify-stream'),
-  { UnauthorizedError } = require('restify-errors');
+  { UnauthorizedError, NotFoundError } = require('restify-errors');
 
 /**
  * @api {get} /boxes/:senseBoxId/sensors Get latest measurements of a senseBox
@@ -20,11 +20,38 @@ const
  * @apiName getLatestMeasurements
  * @apiUse BoxIdParam
  */
+/**
+ * @api {get} /boxes/:senseBoxId/sensors/:sensorId Get latest measurements of a sensor
+ * @apiDescription Get the latest measurements of a sensor.
+ * @apiGroup Measurements
+ * @apiName getLatestMeasurementOfSensor
+ * @apiUse BoxIdParam
+ * @apiUse SensorIdParam
+ */
 const getLatestMeasurements = async function getLatestMeasurements (req, res, next) {
+  const { _userParams: params } = req;
+
+  let box;
+
   try {
-    res.send(await Box.findBoxById(req._userParams.boxId, { onlyLastMeasurements: true }));
+    box = await Box.findBoxById(req._userParams.boxId, { onlyLastMeasurements: true });
   } catch (err) {
     handleError(err, next);
+
+    return;
+  }
+
+  if (params.sensorId) {
+    const sensor = box.sensors.find(s => s._id.equals(params.sensorId));
+    if (sensor) {
+      res.send(sensor);
+
+      return;
+    }
+
+    res.send(new NotFoundError(`Sensor with id ${params.sensorId} does not exist`));
+  } else {
+    res.send(box);
   }
 };
 
@@ -360,7 +387,8 @@ module.exports = {
   ],
   getLatestMeasurements: [
     retrieveParameters([
-      { predef: 'boxId', required: true }
+      { predef: 'boxId', required: true },
+      { predef: 'sensorId' },
     ]),
     getLatestMeasurements
   ]
