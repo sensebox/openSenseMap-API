@@ -7,10 +7,10 @@
   "dependencies": {
     "@sensebox/osem-protos": "^1.1.0",
     "@sensebox/sketch-templater": "^1.8.2",
-    "bcrypt": "^4.0.1",
+    "bcrypt": "^5.0.0",
     "bunyan": "^1.8.12",
     "config": "^3.3.1",
-    "got": "^11.5.1",
+    "got": "^11.5.2",
     "grpc": "^1.24.3",
     "isemail": "^3.0.0",
     "jsonpath": "^1.0.0",
