@@ -226,7 +226,7 @@ describe('downloading data', function () {
     });
 
     it('should allow download data through /boxes/:boxid/data/:sensorid as csv', function () {
-      return chakram.get(`${BASE_URL}/boxes/${boxIds[0]}/data/${boxes[0].sensors[1]._id}?format=csv`)
+      return chakram.get(`${BASE_URL}/boxes/${boxIds[0]}/data/${boxes[0].sensors[1]._id}?format=csv&download=true`)
         .then(function (response) {
           expect(response).to.have.status(200);
           expect(response.body).not.to.be.empty;
