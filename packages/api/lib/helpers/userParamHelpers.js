@@ -54,6 +54,7 @@ const stringParser = function stringParser (s) {
   try {
     return s ? s.toString().trim() : s;
   } catch (err) {
+    // eslint-disable-next-line no-console
     console.log('toString', err);
   }
 };
@@ -189,6 +190,7 @@ const castParam = function castParam (param, paramDataType, dataTypeIsArray) {
     for (let i = 0, len = param.length; i < len; i++) {
       // also use parser for mapping
       if (!param[i]) {
+        // eslint-disable-next-line no-console
         console.log('PARAM NOT DEFINED', param, i);
       }
       param[i] = parser(param[i]);

@@ -80,6 +80,7 @@ const routes = {
     { path: `${boxesPath}/data`, method: 'get', handler: measurementsController.getDataMulti, reference: 'api-Measurements-getDataMulti' },
     { path: `${boxesPath}/:boxId`, method: 'get', handler: boxesController.getBox, reference: 'api-Boxes-getBox' },
     { path: `${boxesPath}/:boxId/sensors`, method: 'get', handler: measurementsController.getLatestMeasurements, reference: 'api-Measurements-getLatestMeasurements' },
+    { path: `${boxesPath}/:boxId/sensors/:sensorId`, method: 'get', handler: measurementsController.getLatestMeasurements, reference: 'api-Measurements-getLatestMeasurementOfSensor' },
     { path: `${boxesPath}/:boxId/data/:sensorId`, method: 'get', handler: measurementsController.getData, reference: 'api-Measurements-getData' },
     { path: `${boxesPath}/:boxId/locations`, method: 'get', handler: boxesController.getBoxLocations, reference: 'api-Measurements-getLocations' },
     { path: `${boxesPath}/data`, method: 'post', handler: measurementsController.getDataMulti, reference: 'api-Measurements-getDataMulti' },
