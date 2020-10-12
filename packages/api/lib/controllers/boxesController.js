@@ -443,7 +443,7 @@ const getSketch = async function getSketch (req, res, next) {
 
 /**
  * @api {delete} /boxes/:senseBoxId Mark a senseBox and its measurements for deletion
- * @apiDescription This will delete all the measurements of the senseBox. Please not that the deletion isn't happening immediately.
+ * @apiDescription This will delete all the measurements of the senseBox. Please note that the deletion isn't happening immediately.
  * @apiName deleteBox
  * @apiGroup Boxes
  * @apiUse ContentTypeJSON
