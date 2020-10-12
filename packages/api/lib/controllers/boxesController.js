@@ -508,7 +508,8 @@ module.exports = {
       { name: 'sensors', dataType: ['object'] },
       { name: 'addons', dataType: 'object' },
       { predef: 'location' },
-      { name: 'useAuth', allowedValues: ['true', 'false'] }
+      { name: 'useAuth', allowedValues: ['true', 'false'] },
+      { name: 'generate_access_token', allowedValues: ['true', 'false'] }
     ]),
     checkPrivilege,
     updateBox

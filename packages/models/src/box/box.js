@@ -873,6 +873,15 @@ boxSchema.methods.updateBox = function updateBox (args) {
     }
   }
 
+  // if user wants a new access_token
+  if (typeof args['generate_access_token'] !== 'undefined') {
+    if (args['generate_access_token'] == 'true') {
+      // Create new acces token for box
+      const access_token = crypto.randomBytes(32).toString('hex');
+      box.set('access_token', access_token);
+    }
+  }
+
   if (sensors) {
     box.updateSensors(sensors);
   } else if (addonToAdd) {
