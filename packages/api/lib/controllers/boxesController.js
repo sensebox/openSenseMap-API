@@ -384,6 +384,7 @@ const getBox = async function getBox (req, res, next) {
  * @apiParam (RequestBody) {String="hdc1080","bmp280","tsl45315","veml6070","sds011","bme680","smt50","soundlevelmeter", "windspeed"} [sensorTemplates] Specify which sensors should be included.
  * @apiParam (RequestBody) {Object} [mqtt] specify parameters of the MQTT integration for external measurement upload. Please see below for the accepted parameters
  * @apiParam (RequestBody) {Object} [ttn] specify parameters for the TTN integration for measurement from TheThingsNetwork.org upload. Please see below for the accepted parameters
+ * @apiParam (RequestBody) {Boolean="true","false"} [useAuth] whether to use access_token or not for authentication (default: true)
  *
  * @apiUse LocationBody
  * @apiUse SensorBody
@@ -537,6 +538,7 @@ module.exports = {
       { name: 'windSpeedPort', dataType: 'String', defaultValue: 'C', allowedValues: ['A', 'B', 'C'] },
       { name: 'mqtt', dataType: 'object' },
       { name: 'ttn', dataType: 'object' },
+      { name: 'useAuth', defaultValue: 'true', allowedValues: ['true', 'false'] },
       { predef: 'location', required: true }
     ]),
     postNewBox

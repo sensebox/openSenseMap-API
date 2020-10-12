@@ -325,6 +325,11 @@ const postNewMeasurements = async function postNewMeasurements (req, res, next) 
         throw new UnauthorizedError('Access token not valid!');
       }
 
+      // authorization for all boxes
+      if (box.access_token && box.access_token !== req.headers.authorization) {
+        throw new UnauthorizedError('Access token not valid!');
+      }
+
       const measurements = await Measurement.decodeMeasurements(req.body, { contentType, sensors: box.sensors });
       await box.saveMeasurementsArray(measurements);
       res.send(201, 'Measurements saved in box');

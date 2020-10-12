@@ -125,7 +125,12 @@ const boxSchema = new Schema({
   },
   access_token: {
     type: String,
-    required: false
+    required: true
+  },
+  useAuth: {
+    type: Boolean,
+    required: true,
+    default: true,
   }
 }, { usePushEach: true });
 boxSchema.plugin(timestamp);
@@ -225,7 +230,8 @@ boxSchema.statics.initNew = function ({
   } = { enabled: false },
   ttn: {
     app_id, dev_id, port, profile, decodeOptions: ttnDecodeOptions
-  } = {}
+  } = {},
+  useAuth
 }) {
   // if model is not empty, get sensor definitions from products
   // otherwise, sensors should not be empty
@@ -271,7 +277,8 @@ boxSchema.statics.initNew = function ({
     model,
     sensors,
     integrations,
-    access_token
+    access_token,
+    useAuth
   });
 
 };
