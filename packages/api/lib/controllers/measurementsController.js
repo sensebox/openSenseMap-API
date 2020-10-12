@@ -319,14 +319,14 @@ const postNewMeasurements = async function postNewMeasurements (req, res, next) 
 
   if (Measurement.hasDecoder(contentType)) {
     try {
-      const box = await Box.findBoxById(boxId, { populate: false, lean: false, projection: { sensors: 1, locations: 1, lastMeasurementAt: 1, currentLocation: 1, model: 1, access_token: 1 } });
+      const box = await Box.findBoxById(boxId, { populate: false, lean: false, projection: { sensors: 1, locations: 1, lastMeasurementAt: 1, currentLocation: 1, model: 1, access_token: 1, useAuth: 1 } });
 
       if (contentType === 'hackair' && box.access_token !== req.headers.authorization) {
         throw new UnauthorizedError('Access token not valid!');
       }
 
-      // authorization for all boxes
-      if (box.access_token && box.access_token !== req.headers.authorization) {
+      // authorization for all boxes that have not opt out
+      if (box.useAuth && box.access_token && box.access_token !== req.headers.authorization) {
         throw new UnauthorizedError('Access token not valid!');
       }
 
