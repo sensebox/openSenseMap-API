@@ -17,6 +17,8 @@ const
   config = require('config'),
   { preRequest, preCors, Honeybadger, getVersion, postToSlack } = require('./lib/helpers/apiUtils'),
   routes = require('./lib/routes'),
+  cron = require('node-cron'),
+  GeoJsonController = require('./lib/controllers/geojson-controller'),
   bunyan = require('bunyan');
 
 const log = bunyan.createLogger({ name: 'opensensemap-api', serializers: bunyan.stdSerializers });
@@ -50,6 +52,12 @@ db.connect()
       log.info(`${server.name} listening at ${server.url}`);
       postToSlack(`openSenseMap API started. Version: ${getVersion}`);
     });
+    // GeoJsonController.generateGeojson();
+
+    //start the cronjob to generate geojson layers
+    // cron.schedule('1 * * * * *', () => {
+    //   console.log('running a task every min');
+    // });
   })
   .catch(function (err) {
     log.fatal(err, `Couldn't connect to MongoDB.
