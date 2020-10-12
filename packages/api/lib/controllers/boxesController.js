@@ -507,7 +507,8 @@ module.exports = {
       { name: 'ttn', dataType: 'object' },
       { name: 'sensors', dataType: ['object'] },
       { name: 'addons', dataType: 'object' },
-      { predef: 'location' }
+      { predef: 'location' },
+      { name: 'useAuth', allowedValues: ['true', 'false'] }
     ]),
     checkPrivilege,
     updateBox
