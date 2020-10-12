@@ -425,7 +425,8 @@ const getSketch = async function getSketch (req, res, next) {
   res.header('Content-Type', 'text/plain; charset=utf-8');
   try {
     const box = await Box.findBoxById(req._userParams.boxId, { populate: false, lean: false });
-    res.send(box.getSketch({
+
+    const params = {
       serialPort: req._userParams.serialPort,
       soilDigitalPort: req._userParams.soilDigitalPort,
       soundMeterPort: req._userParams.soundMeterPort,
@@ -435,7 +436,14 @@ const getSketch = async function getSketch (req, res, next) {
       devEUI: req._userParams.devEUI,
       appEUI: req._userParams.appEUI,
       appKey: req._userParams.appKey
-    }));
+    };
+
+    // pass access token only if useAuth is true and access_token is available
+    if (box.useAuth && box.access_token) {
+      params.access_token = box.access_token;
+    }
+
+    res.send(box.getSketch(params));
   } catch (err) {
     handleError(err, next);
   }
