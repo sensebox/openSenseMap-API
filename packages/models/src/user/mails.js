@@ -31,10 +31,10 @@ if (config.get('mailer.url')) {
         appKey: ''
       }
 
-      if(box.useAuth && box.access_token) {
+      if(box.access_token) {
         sketchParams.access_token = box.access_token
       } 
-      
+
       return {
         payload: {
           box

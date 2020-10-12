@@ -439,7 +439,7 @@ const getSketch = async function getSketch (req, res, next) {
     };
 
     // pass access token only if useAuth is true and access_token is available
-    if (box.useAuth && box.access_token) {
+    if (box.access_token) {
       params.access_token = box.access_token;
     }
 
