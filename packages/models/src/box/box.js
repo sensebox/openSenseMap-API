@@ -956,7 +956,7 @@ boxSchema.statics.findBoxesLastMeasurements = function findBoxesLastMeasurements
   const query = buildFindBoxesQuery(opts);
 
   if (!fromDate && !toDate) {
-    if (full === 'true') {
+    if (full === true || full === 'true') {
       return Promise.resolve(schema.find(query, BOX_PROPS_FOR_POPULATION)
         .populate(BOX_SUB_PROPS_FOR_POPULATION)
         .cursor({ lean: true })

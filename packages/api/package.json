@@ -31,6 +31,7 @@
     "millify": "^3.3.0",
     "moment": "^2.27.0",
     "ms": "^2.1.1",
+    "node-cron": "^2.0.3",
     "restify": "^5.2.0",
     "restify-errors": "^8.0.2",
     "simple-statistics": "^7.1.0",
