@@ -130,7 +130,7 @@ const boxSchema = new Schema({
   useAuth: {
     type: Boolean,
     required: true,
-    default: true,
+    default: false,
   }
 }, { usePushEach: true });
 boxSchema.plugin(timestamp);
@@ -232,7 +232,7 @@ boxSchema.statics.initNew = function ({
   ttn: {
     app_id, dev_id, port, profile, decodeOptions: ttnDecodeOptions
   } = {},
-  useAuth
+  useAuth = true
 }) {
   // if model is not empty, get sensor definitions from products
   // otherwise, sensors should not be empty
