@@ -172,6 +172,7 @@ boxSchema.set('toJSON', {
     if (options && options.includeSecrets) {
       box.integrations = ret.integrations;
       box.access_token = ret.access_token;
+      box.useAuth = ret.useAuth;
     }
 
     return box;
