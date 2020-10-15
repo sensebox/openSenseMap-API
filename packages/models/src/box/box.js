@@ -232,7 +232,7 @@ boxSchema.statics.initNew = function ({
   ttn: {
     app_id, dev_id, port, profile, decodeOptions: ttnDecodeOptions
   } = {},
-  useAuth = true
+  useAuth
 }) {
   // if model is not empty, get sensor definitions from products
   // otherwise, sensors should not be empty
@@ -249,6 +249,14 @@ boxSchema.statics.initNew = function ({
       }
     } else {
       sensors = sensorLayouts.getSensorsForModel(model);
+    }
+  }
+  if(model){
+    //activate useAuth only for certain models until all sketches are updated
+    if(['homeV2Lora' , 'homeV2Ethernet' , 'homeV2EthernetFeinstaub' , 'homeV2Wifi' , 'homeV2WifiFeinstaub' , 'homeEthernet' , 'homeWifi' , 'homeEthernetFeinstaub' , 'homeWifiFeinstaub' , 'hackair_home_v2' , 'custom'].indexOf(model) != -1){ 
+      useAuth = true
+    } else {
+      useAuth = false
     }
   }
 

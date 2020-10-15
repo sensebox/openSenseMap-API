@@ -216,6 +216,10 @@ const postNewMeasurement = async function postNewMeasurement (req, res, next) {
 
   try {
     const box = await Box.findBoxById(boxId, { populate: false, lean: false });
+    if (box.useAuth && box.access_token && box.access_token !== req.headers.authorization) {
+      throw new UnauthorizedError('Box access token not valid!');
+    }
+
     const [measurement] = await Measurement.decodeMeasurements([{
       sensor_id: sensorId,
       value,
@@ -321,13 +325,13 @@ const postNewMeasurements = async function postNewMeasurements (req, res, next) 
     try {
       const box = await Box.findBoxById(boxId, { populate: false, lean: false, projection: { sensors: 1, locations: 1, lastMeasurementAt: 1, currentLocation: 1, model: 1, access_token: 1, useAuth: 1 } });
 
-      if (contentType === 'hackair' && box.access_token !== req.headers.authorization) {
-        throw new UnauthorizedError('Access token not valid!');
-      }
+      // if (contentType === 'hackair' && box.access_token !== req.headers.authorization) {
+      //   throw new UnauthorizedError('Box access token not valid!');
+      // }
 
       // authorization for all boxes that have not opt out
-      if (box.useAuth && box.access_token && box.access_token !== req.headers.authorization) {
-        throw new UnauthorizedError('Access token not valid!');
+      if ((box.useAuth || contentType === 'hackair') && box.access_token && box.access_token !== req.headers.authorization) {
+        throw new UnauthorizedError('Box access token not valid!');
       }
 
       const measurements = await Measurement.decodeMeasurements(req.body, { contentType, sensors: box.sensors });
