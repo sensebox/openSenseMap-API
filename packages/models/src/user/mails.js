@@ -118,7 +118,7 @@ if (config.get('mailer.url')) {
         },
         attachment: {
           filename: 'senseBox.ino',
-          contents: box.getSketch({ encoding: 'base64' })
+          contents: box.getSketch({ encoding: 'base64', access_token: box.access_token })
         }
       };
     },
