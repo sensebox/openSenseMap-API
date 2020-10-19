@@ -27,6 +27,7 @@ const
  * @apiName getLatestMeasurementOfSensor
  * @apiUse BoxIdParam
  * @apiUse SensorIdParam
+ * @apiParam {Boolean="true","false"} [onlyValue] If set to true only returns the measured value without information about the sensor. Requires a sensorId.
  */
 const getLatestMeasurements = async function getLatestMeasurements (req, res, next) {
   const { _userParams: params } = req;
@@ -44,6 +45,14 @@ const getLatestMeasurements = async function getLatestMeasurements (req, res, ne
   if (params.sensorId) {
     const sensor = box.sensors.find(s => s._id.equals(params.sensorId));
     if (sensor) {
+      if(params.onlyValue){
+        if(!sensor.lastMeasurement){
+          res.send(undefined);
+          return;
+        }
+        res.send(sensor.lastMeasurement.value);
+        return;
+      }
       res.send(sensor);
 
       return;
@@ -400,6 +409,7 @@ module.exports = {
     retrieveParameters([
       { predef: 'boxId', required: true },
       { predef: 'sensorId' },
+      { name: 'onlyValue', required: false }
     ]),
     getLatestMeasurements
   ]
