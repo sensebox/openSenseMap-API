@@ -35,7 +35,6 @@ module.exports = function ({ bbox, model, sensors, lonlat, name = '', sensorTemp
       'connectionOptions': ''
     }
   };
-
   if (sensors) {
     box.sensors = sensors;
   }

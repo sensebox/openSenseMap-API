@@ -125,7 +125,12 @@ const boxSchema = new Schema({
   },
   access_token: {
     type: String,
-    required: false
+    required: true
+  },
+  useAuth: {
+    type: Boolean,
+    required: true,
+    default: false,
   }
 }, { usePushEach: true });
 boxSchema.plugin(timestamp);
@@ -167,6 +172,7 @@ boxSchema.set('toJSON', {
     if (options && options.includeSecrets) {
       box.integrations = ret.integrations;
       box.access_token = ret.access_token;
+      box.useAuth = ret.useAuth;
     }
 
     return box;
@@ -225,7 +231,8 @@ boxSchema.statics.initNew = function ({
   } = { enabled: false },
   ttn: {
     app_id, dev_id, port, profile, decodeOptions: ttnDecodeOptions
-  } = {}
+  } = {},
+  useAuth
 }) {
   // if model is not empty, get sensor definitions from products
   // otherwise, sensors should not be empty
@@ -242,6 +249,14 @@ boxSchema.statics.initNew = function ({
       }
     } else {
       sensors = sensorLayouts.getSensorsForModel(model);
+    }
+  }
+  if(model){
+    //activate useAuth only for certain models until all sketches are updated
+    if(['homeV2Lora' , 'homeV2Ethernet' , 'homeV2EthernetFeinstaub' , 'homeV2Wifi' , 'homeV2WifiFeinstaub' , 'homeEthernet' , 'homeWifi' , 'homeEthernetFeinstaub' , 'homeWifiFeinstaub' , 'hackair_home_v2'].indexOf(model) != -1){ 
+      useAuth = true
+    } else {
+      useAuth = false
     }
   }
 
@@ -271,7 +286,8 @@ boxSchema.statics.initNew = function ({
     model,
     sensors,
     integrations,
-    access_token
+    access_token,
+    useAuth
   });
 
 };
@@ -801,7 +817,7 @@ boxSchema.methods.updateSensors = function updateSensors (sensors) {
   }
 };
 
-boxSchema.methods.getSketch = function getSketch ({ encoding, serialPort, soilDigitalPort, soundMeterPort, windSpeedPort, ssid, password, devEUI, appEUI, appKey } = {}) {
+boxSchema.methods.getSketch = function getSketch ({ encoding, serialPort, soilDigitalPort, soundMeterPort, windSpeedPort, ssid, password, devEUI, appEUI, appKey, access_token } = {}) {
   if (serialPort) {
     this.serialPort = serialPort;
   }
@@ -820,6 +836,7 @@ boxSchema.methods.getSketch = function getSketch ({ encoding, serialPort, soilDi
   this.devEUI = devEUI;
   this.appEUI = appEUI,
   this.appKey = appKey;
+  this.access_token = access_token;
 
   return templateSketcher.generateSketch(this, { encoding });
 };
@@ -860,9 +877,18 @@ boxSchema.methods.updateBox = function updateBox (args) {
   const box = this;
 
   // only grouptag, description and weblink can removed through setting them to empty string ('')
-  for (const prop of ['name', 'exposure', 'grouptag', 'description', 'weblink', 'image', 'integrations.mqtt', 'integrations.ttn', 'model']) {
+  for (const prop of ['name', 'exposure', 'grouptag', 'description', 'weblink', 'image', 'integrations.mqtt', 'integrations.ttn', 'model', 'useAuth']) {
     if (typeof args[prop] !== 'undefined') {
       box.set(prop, (args[prop] === '' ? undefined : args[prop]));
+    }
+  }
+
+  // if user wants a new access_token
+  if (typeof args['generate_access_token'] !== 'undefined') {
+    if (args['generate_access_token'] == 'true') {
+      // Create new acces token for box
+      const access_token = crypto.randomBytes(32).toString('hex');
+      box.set('access_token', access_token);
     }
   }
 

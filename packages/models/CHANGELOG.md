@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+## v0.0.26-beta.0
+- Authorization
+
 ## v0.0.25
 - Add Cayenne LPP Decoder
 
