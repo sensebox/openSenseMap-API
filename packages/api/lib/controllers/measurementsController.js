@@ -27,6 +27,7 @@ const
  * @apiName getLatestMeasurementOfSensor
  * @apiUse BoxIdParam
  * @apiUse SensorIdParam
+ * @apiParam {Boolean="true","false"} [onlyValue] If set to true only returns the measured value without information about the sensor. Requires a sensorId.
  */
 const getLatestMeasurements = async function getLatestMeasurements (req, res, next) {
   const { _userParams: params } = req;
@@ -44,6 +45,14 @@ const getLatestMeasurements = async function getLatestMeasurements (req, res, ne
   if (params.sensorId) {
     const sensor = box.sensors.find(s => s._id.equals(params.sensorId));
     if (sensor) {
+      if(params.onlyValue){
+        if(!sensor.lastMeasurement){
+          res.send(undefined);
+          return;
+        }
+        res.send(sensor.lastMeasurement.value);
+        return;
+      }
       res.send(sensor);
 
       return;
@@ -210,12 +219,17 @@ const getDataMulti = async function getDataMulti (req, res, next) {
  * @apiParam (RequestBody) {String} value the measured value of the sensor. Also accepts JSON float numbers.
  * @apiParam (RequestBody) {RFC3339Date} [createdAt] the timestamp of the measurement. Should conform to RFC 3339. Is needed when posting with Location Values!
  * @apiParam (RequestBody) {Location} [location] the WGS84-coordinates of the measurement.
+ * @apiHeader {String} access_token Box' unique access_token. Will be used as authorization token if box has auth enabled (e.g. useAuth: true)
  */
 const postNewMeasurement = async function postNewMeasurement (req, res, next) {
   const { boxId, sensorId, value, createdAt, location } = req._userParams;
 
   try {
     const box = await Box.findBoxById(boxId, { populate: false, lean: false });
+    if (box.useAuth && box.access_token && box.access_token !== req.headers.authorization) {
+      throw new UnauthorizedError('Box access token not valid!');
+    }
+
     const [measurement] = await Measurement.decodeMeasurements([{
       sensor_id: sensorId,
       value,
@@ -263,6 +277,7 @@ const postNewMeasurement = async function postNewMeasurement (req, res, next) {
  * @apiUse LocationBody
  * @apiParam {String} [luftdaten] Specify whatever you want (like `luftdaten=1`. Signals the api to treat the incoming data as luftdaten.info formatted json.
  * * @apiParam {String} [hackair] Specify whatever you want (like `hackair=1`. Signals the api to treat the incoming data as hackair formatted json.
+ * @apiHeader {String} access_token Box' unique access_token. Will be used as authorization token if box has auth enabled (e.g. useAuth: true)
  * @apiParamExample {application/json} JSON-Object:
  * {
  *   "sensorID": "value",
@@ -319,10 +334,15 @@ const postNewMeasurements = async function postNewMeasurements (req, res, next) 
 
   if (Measurement.hasDecoder(contentType)) {
     try {
-      const box = await Box.findBoxById(boxId, { populate: false, lean: false, projection: { sensors: 1, locations: 1, lastMeasurementAt: 1, currentLocation: 1, model: 1, access_token: 1 } });
+      const box = await Box.findBoxById(boxId, { populate: false, lean: false, projection: { sensors: 1, locations: 1, lastMeasurementAt: 1, currentLocation: 1, model: 1, access_token: 1, useAuth: 1 } });
 
-      if (contentType === 'hackair' && box.access_token !== req.headers.authorization) {
-        throw new UnauthorizedError('Access token not valid!');
+      // if (contentType === 'hackair' && box.access_token !== req.headers.authorization) {
+      //   throw new UnauthorizedError('Box access token not valid!');
+      // }
+
+      // authorization for all boxes that have not opt out
+      if ((box.useAuth || contentType === 'hackair') && box.access_token && box.access_token !== req.headers.authorization) {
+        throw new UnauthorizedError('Box access token not valid!');
       }
 
       const measurements = await Measurement.decodeMeasurements(req.body, { contentType, sensors: box.sensors });
@@ -391,6 +411,7 @@ module.exports = {
     retrieveParameters([
       { predef: 'boxId', required: true },
       { predef: 'sensorId' },
+      { name: 'onlyValue', required: false }
     ]),
     getLatestMeasurements
   ]

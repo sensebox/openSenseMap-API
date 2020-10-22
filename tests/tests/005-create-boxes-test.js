@@ -83,7 +83,6 @@ describe('openSenseMap API Routes: /boxes', function () {
       .then(function (response) {
         expect(response).to.have.status(201);
         expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
-
         boxId = response.body.data._id;
         boxCount = boxCount + 1;
         boxIds.push(boxId);

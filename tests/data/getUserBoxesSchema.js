@@ -30,6 +30,12 @@ module.exports = {
               'updatedAt': {
                 'type': 'string'
               },
+              'useAuth': {
+                'type': 'boolean'
+              },
+              'access_token': {
+                'type': 'string'
+              },
               'currentLocation': {
                 'type': 'object',
                 'properties': {

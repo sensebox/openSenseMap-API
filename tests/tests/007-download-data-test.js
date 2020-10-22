@@ -205,6 +205,18 @@ describe('downloading data', function () {
         });
     });
 
+    it('should return only value of a single sensor of a box for /boxes/:boxid/sensors/:sensorId?onlyValue=true GET', function () {
+      return chakram.get(`${BASE_URL}/boxes/${boxes[0]._id}/sensors/${boxes[0].sensors[0]._id}?onlyValue=true`)
+        .then(function (response) {
+          expect(response).to.have.status(200);
+          expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
+          expect(parseFloat(response.body)).to.be.a('number');
+
+          return chakram.wait();
+        });
+    });
+
+
   });
 
   describe('/boxes/:boxid/data/:sensorid', function () {

@@ -25,7 +25,7 @@ describe('openSenseMap API Routes: getBoxes Classification', function () {
         ]);
       })
       .then(function (responses) {
-        const boxes = responses.map(r => { return { _id: r.body.data._id, sensorid: r.body.data.sensors[0]._id, name: r.body.data.name }; });
+        const boxes = responses.map(r => { return { _id: r.body.data._id, sensorid: r.body.data.sensors[0]._id, name: r.body.data.name, access_token: r.body.data.access_token }; });
 
         for (const [i, box] of boxes.entries()) {
           box.measurements = [];
@@ -54,9 +54,9 @@ describe('openSenseMap API Routes: getBoxes Classification', function () {
         const [first, second, third] = boxes;
 
         return chakram.all([
-          chakram.post(`${process.env.OSEM_TEST_BASE_URL}/boxes/${first._id}/data`, first.measurements, { headers: { 'content-type': 'application/json' } }),
-          chakram.post(`${process.env.OSEM_TEST_BASE_URL}/boxes/${second._id}/data`, second.measurements, { headers: { 'content-type': 'application/json' } }),
-          chakram.post(`${process.env.OSEM_TEST_BASE_URL}/boxes/${third._id}/data`, third.measurements, { headers: { 'content-type': 'application/json' } }),
+          chakram.post(`${process.env.OSEM_TEST_BASE_URL}/boxes/${first._id}/data`, first.measurements, { headers: { 'content-type': 'application/json', 'Authorization': first.access_token } }),
+          chakram.post(`${process.env.OSEM_TEST_BASE_URL}/boxes/${second._id}/data`, second.measurements, { headers: { 'content-type': 'application/json', 'Authorization': second.access_token } }),
+          chakram.post(`${process.env.OSEM_TEST_BASE_URL}/boxes/${third._id}/data`, third.measurements, { headers: { 'content-type': 'application/json', 'Authorization': third.access_token } }),
         ]);
       });
   });

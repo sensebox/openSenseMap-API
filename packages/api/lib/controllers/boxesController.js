@@ -384,6 +384,7 @@ const getBox = async function getBox (req, res, next) {
  * @apiParam (RequestBody) {String="hdc1080","bmp280","tsl45315","veml6070","sds011","bme680","smt50","soundlevelmeter", "windspeed"} [sensorTemplates] Specify which sensors should be included.
  * @apiParam (RequestBody) {Object} [mqtt] specify parameters of the MQTT integration for external measurement upload. Please see below for the accepted parameters
  * @apiParam (RequestBody) {Object} [ttn] specify parameters for the TTN integration for measurement from TheThingsNetwork.org upload. Please see below for the accepted parameters
+ * @apiParam (RequestBody) {Boolean="true","false"} [useAuth] whether to use access_token or not for authentication
  *
  * @apiUse LocationBody
  * @apiUse SensorBody
@@ -424,7 +425,8 @@ const getSketch = async function getSketch (req, res, next) {
   res.header('Content-Type', 'text/plain; charset=utf-8');
   try {
     const box = await Box.findBoxById(req._userParams.boxId, { populate: false, lean: false });
-    res.send(box.getSketch({
+
+    const params = {
       serialPort: req._userParams.serialPort,
       soilDigitalPort: req._userParams.soilDigitalPort,
       soundMeterPort: req._userParams.soundMeterPort,
@@ -434,7 +436,14 @@ const getSketch = async function getSketch (req, res, next) {
       devEUI: req._userParams.devEUI,
       appEUI: req._userParams.appEUI,
       appKey: req._userParams.appKey
-    }));
+    };
+
+    // pass access token only if useAuth is true and access_token is available
+    if (box.access_token) {
+      params.access_token = box.access_token;
+    }
+
+    res.send(box.getSketch(params));
   } catch (err) {
     handleError(err, next);
   }
@@ -442,7 +451,7 @@ const getSketch = async function getSketch (req, res, next) {
 
 /**
  * @api {delete} /boxes/:senseBoxId Mark a senseBox and its measurements for deletion
- * @apiDescription This will delete all the measurements of the senseBox. Please not that the deletion isn't happening immediately.
+ * @apiDescription This will delete all the measurements of the senseBox. Please note that the deletion isn't happening immediately.
  * @apiName deleteBox
  * @apiGroup Boxes
  * @apiUse ContentTypeJSON
@@ -506,7 +515,9 @@ module.exports = {
       { name: 'ttn', dataType: 'object' },
       { name: 'sensors', dataType: ['object'] },
       { name: 'addons', dataType: 'object' },
-      { predef: 'location' }
+      { predef: 'location' },
+      { name: 'useAuth', allowedValues: ['true', 'false'] },
+      { name: 'generate_access_token', allowedValues: ['true', 'false'] }
     ]),
     checkPrivilege,
     updateBox
@@ -537,6 +548,7 @@ module.exports = {
       { name: 'windSpeedPort', dataType: 'String', defaultValue: 'C', allowedValues: ['A', 'B', 'C'] },
       { name: 'mqtt', dataType: 'object' },
       { name: 'ttn', dataType: 'object' },
+      { name: 'useAuth', allowedValues: ['true', 'false'] },
       { predef: 'location', required: true }
     ]),
     postNewBox
