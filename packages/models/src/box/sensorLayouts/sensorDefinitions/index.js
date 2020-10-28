@@ -1,5 +1,6 @@
 'use strict';
 
+const scd30_co2 = require('./scd30_co2');
 const veml6070_uvintensity = require('./veml6070_uvintensity'),
   tsl45315_lightintensity = require('./tsl45315_lightintensity'),
   bmp280_pressure = require('./bmp280_pressure'),
@@ -40,6 +41,7 @@ const veml6070_uvintensity = require('./veml6070_uvintensity'),
   smt50_soiltemperature = require('./smt50_soiltemperature'),
   soundlevelmeter = require('./soundlevelmeter'),
   windspeed = require('./windspeed');
+  scd30_co2 = require('./scd30_co2');
 
 module.exports = {
   hdc1008_temperature,
@@ -81,5 +83,6 @@ module.exports = {
   smt50_soilmoisture,
   smt50_soiltemperature,
   soundlevelmeter,
-  windspeed
+  windspeed,
+  scd30_co2
 };
