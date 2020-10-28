@@ -1,7 +1,7 @@
 'use strict';
 
 module.exports = {
-  title: 'CO2',
+  title: 'CO₂',
   unit: 'ppm',
   sensorType: 'SCD30',
   icon: 'osem-co2'
