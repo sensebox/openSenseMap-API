@@ -42,10 +42,10 @@
   resolved "https://registry.yarnpkg.com/@sensebox/osem-protos/-/osem-protos-1.1.0.tgz#a7de8bc6be867953f1309181a012063c23299e79"
   integrity sha512-H+nUVcWlT0dvIqfJnYHuX9JBcCkP1ZKGE5YTRNWPbAEdZ11h+srpQsmeI58wK5hJcdukaZAjc4Dy96IeGM77aA==
 
-"@sensebox/sketch-templater@^1.8.3-beta.0":
-  version "1.8.3-beta.0"
-  resolved "https://registry.yarnpkg.com/@sensebox/sketch-templater/-/sketch-templater-1.8.3-beta.0.tgz#7eccf67469725741dc4a55fcf43f872dd37e1409"
-  integrity sha512-nsVkMmqr6tDJ4x48qiLyFOAJL1LLhavtg5dksqJa7qeFXQ2AHMmUC8uiU9r2PstANFDDRUDqFZ2rN69rl+NYog==
+"@sensebox/sketch-templater@^1.8.3":
+  version "1.8.3"
+  resolved "https://registry.yarnpkg.com/@sensebox/sketch-templater/-/sketch-templater-1.8.3.tgz#16fe48afdd2e472ab443e5d21890b59ec8701cd9"
+  integrity sha512-oKKgv6foFzoiTcyCeZEnycOshyE5owh8Xsjk3a0YuhfG+pLwd9EN4maV7jW6IPcmtSXtaTEICoB+H9K7DiAyLQ==
   dependencies:
     config "^1.29.2"
     dedent "^0.7.0"
@@ -3270,11 +3270,11 @@ signal-exit@^3.0.0, signal-exit@^3.0.2:
   resolved "https://registry.yarnpkg.com/signal-exit/-/signal-exit-3.0.3.tgz#a1410c2edd8f077b08b4e253c8eacfcaf057461c"
   integrity sha512-VUJ49FC8U1OxwZLxIbTTrDvLnf/6TDgxZcK8wxR8zs13xpx7xbG60ndBlhNrFi2EMuFRoeDoJO7wthSLq42EjA==
 
-simple-statistics@^7.3.0:
-  version "7.3.0"
-  resolved "https://registry.yarnpkg.com/simple-statistics/-/simple-statistics-7.3.0.tgz#e2835b17ada3a217886fad1ebc6f8175088bd501"
-  integrity sha512-eGZFLeolvspUYdGeDX7xN8eZONps4Os2W/l+7t7usgHTqc4M2sWIBx95hr4ZNlK6rQATypo8MfsORc/o56roQg==
-
+simple-statistics@^7.3.1:
+  version "7.3.1"
+  resolved "https://registry.yarnpkg.com/simple-statistics/-/simple-statistics-7.3.1.tgz#12cac547a075ed718662eabf427894ec6a3a0396"
+  integrity sha512-8RktUtizYSzj8vRIvEF8jpHiUcRz3MW/2pppzm0emrEQ3JaV10Kp0DCn4zj4QOCLL4pe/QQ03g88Oy+UbyNSqQ==
+  
 slice-ansi@^2.1.0:
   version "2.1.0"
   resolved "https://registry.yarnpkg.com/slice-ansi/-/slice-ansi-2.1.0.tgz#cacd7693461a637a5788d92a7dd4fba068e81636"

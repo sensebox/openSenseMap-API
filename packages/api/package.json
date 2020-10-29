@@ -10,7 +10,7 @@
     "Norwin Roosen"
   ],
   "dependencies": {
-    "@sensebox/opensensemap-api-models": "^0.0.26-beta.0",
+    "@sensebox/opensensemap-api-models": "^0.0.26",
     "@turf/area": "^6.0.1",
     "@turf/bbox": "^6.0.1",
     "@turf/centroid": "^6.0.2",
@@ -33,7 +33,7 @@
     "ms": "^2.1.1",
     "restify": "^5.2.0",
     "restify-errors": "^8.0.2",
-    "simple-statistics": "^7.3.0",
+    "simple-statistics": "^7.3.1",
     "stringify-stream": "^1.0.5",
     "uuid": "^7.0.3"
   },
