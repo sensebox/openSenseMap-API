@@ -3270,11 +3270,11 @@ signal-exit@^3.0.0, signal-exit@^3.0.2:
   resolved "https://registry.yarnpkg.com/signal-exit/-/signal-exit-3.0.3.tgz#a1410c2edd8f077b08b4e253c8eacfcaf057461c"
   integrity sha512-VUJ49FC8U1OxwZLxIbTTrDvLnf/6TDgxZcK8wxR8zs13xpx7xbG60ndBlhNrFi2EMuFRoeDoJO7wthSLq42EjA==
 
-simple-statistics@^7.3.1:
-  version "7.3.1"
-  resolved "https://registry.yarnpkg.com/simple-statistics/-/simple-statistics-7.3.1.tgz#12cac547a075ed718662eabf427894ec6a3a0396"
-  integrity sha512-8RktUtizYSzj8vRIvEF8jpHiUcRz3MW/2pppzm0emrEQ3JaV10Kp0DCn4zj4QOCLL4pe/QQ03g88Oy+UbyNSqQ==
-  
+simple-statistics@^7.3.2:
+  version "7.3.2"
+  resolved "https://registry.yarnpkg.com/simple-statistics/-/simple-statistics-7.3.2.tgz#e6c43765127b6d753c97d7fd23c3392750dbe80d"
+  integrity sha512-yZSbePxMmyYsWmOzqP/qd1DtAASLBNOs55YeTDx9N3xE6T5CRHe92TWdZQHPRstY2NhJJxh/tbex9wvwEBXQtw==
+
 slice-ansi@^2.1.0:
   version "2.1.0"
   resolved "https://registry.yarnpkg.com/slice-ansi/-/slice-ansi-2.1.0.tgz#cacd7693461a637a5788d92a7dd4fba068e81636"
