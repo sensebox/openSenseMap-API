@@ -21,7 +21,7 @@
     "chai": "^4.1.2",
     "chakram": "^1.5.0",
     "cheerio": "^1.0.0-rc.2",
-    "csv-parse": "^4.13.0",
+    "csv-parse": "^4.14.0",
     "eslint": "6.8.0",
     "mimelib": "^0.3.1",
     "mocha": "^7.1.2",
