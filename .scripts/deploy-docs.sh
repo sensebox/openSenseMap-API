@@ -16,7 +16,7 @@ sed -i "1 s|$| ${TRAVIS_TAG}|" apidoc/introduction.md
 apidoc -i . -f js -e node_modules
 
 # should contain the current api tag or nothing
-isApiTag=$(echo "${TRAVIS_TAG}" | grep -E '^v[0-9]+$' || true)
+isApiTag=$(echo "${TRAVIS_TAG}" | grep -E '^v[0-9.]+$' || true)
 if [[ -z "$isApiTag" ]]; then
   echo "Docs can only be built from api version tags"
   exit 0
