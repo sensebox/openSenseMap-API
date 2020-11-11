@@ -3,7 +3,7 @@
     "type": "delete",
     "url": "/boxes/:senseBoxId",
     "title": "Mark a senseBox and its measurements for deletion",
-    "description": "<p>This will delete all the measurements of the senseBox. Please not that the deletion isn't happening immediately.</p>",
+    "description": "<p>This will delete all the measurements of the senseBox. Please note that the deletion isn't happening immediately.</p>",
     "name": "deleteBox",
     "group": "Boxes",
     "parameter": {
@@ -373,6 +373,18 @@
           {
             "group": "Parameter",
             "type": "String",
+            "allowedValues": [
+              "\"A\"",
+              "\"B\"",
+              "\"C\""
+            ],
+            "optional": false,
+            "field": "windSpeedPort",
+            "description": "<p>the digital port the windspeed sensor is connected to</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "String",
             "optional": false,
             "field": "ssid",
             "description": "<p>the ssid of your wifi network</p>"
@@ -383,6 +395,27 @@
             "optional": false,
             "field": "password",
             "description": "<p>the password of your wifi network</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": false,
+            "field": "devEUI",
+            "description": "<p>the devEUI of TTN device</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": false,
+            "field": "appEUI",
+            "description": "<p>the appEUI of TTN application</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": false,
+            "field": "appKey",
+            "description": "<p>the appKey of TTN application</p>"
           },
           {
             "group": "Parameter",
@@ -515,7 +548,9 @@
               "\"sds011\"",
               "\"bme680\"",
               "\"smt50\"",
-              "\"soundlevelmeter\""
+              "\"soundlevelmeter\"",
+              "\"windspeed\"",
+              "\"scd30\""
             ],
             "optional": true,
             "field": "sensorTemplates",
@@ -534,6 +569,17 @@
             "optional": true,
             "field": "ttn",
             "description": "<p>specify parameters for the TTN integration for measurement from TheThingsNetwork.org upload. Please see below for the accepted parameters</p>"
+          },
+          {
+            "group": "RequestBody",
+            "type": "Boolean",
+            "allowedValues": [
+              "\"true\"",
+              "\"false\""
+            ],
+            "optional": true,
+            "field": "useAuth",
+            "description": "<p>whether to use access_token or not for authentication</p>"
           }
         ],
         "Formats accepted for the location field": [
@@ -660,7 +706,8 @@
               "\"lora-serialization\"",
               "\"sensebox/home\"",
               "\"json\"",
-              "\"debug\""
+              "\"debug\"",
+              "\"cayenne-lpp\""
             ],
             "optional": false,
             "field": "profile",
@@ -974,7 +1021,8 @@
               "\"lora-serialization\"",
               "\"sensebox/home\"",
               "\"json\"",
-              "\"debug\""
+              "\"debug\"",
+              "\"cayenne-lpp\""
             ],
             "optional": false,
             "field": "profile",
@@ -1547,6 +1595,48 @@
   },
   {
     "type": "get",
+    "url": "/boxes/:senseBoxId/sensors/:sensorId",
+    "title": "Get latest measurements of a sensor",
+    "description": "<p>Get the latest measurements of a sensor.</p>",
+    "group": "Measurements",
+    "name": "getLatestMeasurementOfSensor",
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "Boolean",
+            "allowedValues": [
+              "\"true\"",
+              "\"false\""
+            ],
+            "optional": true,
+            "field": "onlyValue",
+            "description": "<p>If set to true only returns the measured value without information about the sensor. Requires a sensorId.</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": false,
+            "field": "senseBoxId",
+            "description": "<p>the ID of the senseBox you are referring to.</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": false,
+            "field": "sensorId",
+            "description": "<p>the ID of the sensor you are referring to.</p>"
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "./packages/api/lib/controllers/measurementsController.js",
+    "groupTitle": "Measurements"
+  },
+  {
+    "type": "get",
     "url": "/boxes/:senseBoxId/sensors",
     "title": "Get latest measurements of a senseBox",
     "description": "<p>Get the latest measurements of all sensors of the specified senseBox.</p>",
@@ -1654,12 +1744,16 @@
         }
       ]
     },
-    "version": "0.0.0",
-    "filename": "./packages/api/lib/controllers/measurementsController.js",
-    "groupTitle": "Measurements",
     "header": {
       "fields": {
         "Header": [
+          {
+            "group": "Header",
+            "type": "String",
+            "optional": false,
+            "field": "access_token",
+            "description": "<p>Box' unique access_token. Will be used as authorization token if box has auth enabled (e.g. useAuth: true)</p>"
+          },
           {
             "group": "Header",
             "type": "String",
@@ -1674,6 +1768,9 @@
         ]
       }
     },
+    "version": "0.0.0",
+    "filename": "./packages/api/lib/controllers/measurementsController.js",
+    "groupTitle": "Measurements",
     "error": {
       "fields": {
         "Error 4xx": [
@@ -1788,6 +1885,19 @@
           "type": "application/json"
         }
       ]
+    },
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "String",
+            "optional": false,
+            "field": "access_token",
+            "description": "<p>Box' unique access_token. Will be used as authorization token if box has auth enabled (e.g. useAuth: true)</p>"
+          }
+        ]
+      }
     },
     "version": "0.0.0",
     "filename": "./packages/api/lib/controllers/measurementsController.js",
