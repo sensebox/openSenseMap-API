@@ -22,7 +22,7 @@
     "apicache": "^1.4.0",
     "bunyan": "^1.8.14",
     "config": "^3.3.2",
-    "csv-stringify": "^5.5.1",
+    "csv-stringify": "^5.5.2",
     "dashify": "^2.0.0",
     "got": "^11.7.0",
     "honeybadger": "^1.4.0",
