@@ -20,7 +20,7 @@
     "@turf/invariant": "^6.1.2",
     "chai": "^4.1.2",
     "chakram": "^1.5.0",
-    "cheerio": "^1.0.0-rc.2",
+    "cheerio": "^1.0.0-rc.4",
     "csv-parse": "^4.14.2",
     "eslint": "6.8.0",
     "mimelib": "^0.3.1",
