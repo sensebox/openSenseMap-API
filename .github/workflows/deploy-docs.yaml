@@ -30,7 +30,7 @@ jobs:
 
           echo "We're running on version ${version}"
 
-      - name: Install apidoc@0.17.6:
+      - name: Install apidoc@0.17.6
         run: |
           npm install -g apidoc@0.17.6
 
