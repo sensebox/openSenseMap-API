@@ -17,10 +17,6 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Debug
-        run: |
-          echo "this is a: '${{ github.event_name }}' '${{ github.event }}'"
-
       - name: Gather branch information
         id: version_info
         continue-on-error: true
@@ -29,10 +25,6 @@ jobs:
           echo "##[set-output name=version;]${version}"
 
           echo "We're running on version ${version}"
-
-      # - name: Install apidoc@0.17.6
-      #   run: |
-      #     npm install apidoc@0.17.6
 
       - name: Append the current version to the introduction document
         run: |
@@ -43,7 +35,7 @@ jobs:
           npx apidoc@0.17.6 -i . -f js -e node_modules
 
       - name: Deploy apidocs for git tags
-        # if: steps.branch_info.outputs.changes != '0'
+        if: ${{ github.event_name == 'release' && github.event.action == 'published' }}
         run: |
           set -e
           # reset the changes to please git
@@ -78,53 +70,3 @@ jobs:
 
           # push to github
           git push "https://${{ github.token }}@github.com/${{ github.repository }}.git" gh-pages
-
-
-
-# # run apidoc
-# apidoc -i . -f js -e node_modules
-
-# # should contain the current api tag or nothing
-# isApiTag=$(echo "${TRAVIS_TAG}" | grep -E '^v[0-9.]+$' || true)
-# if [[ -z "$isApiTag" ]]; then
-#   echo "Docs can only be built from api version tags"
-#   exit 0
-# fi
-
-# # reset the changes to please git
-# git checkout -- apidoc/introduction.md
-
-# # checkout gh-pages branch
-# git remote set-branches --add origin gh-pages
-# git fetch
-# git checkout -t origin/gh-pages
-
-# # delete everything except for the doc folder
-# find . ! \( -path './.git' -prune \) ! \( -path './doc' -prune \) ! -name '.' ! -name '..' -print0 |  xargs -0 rm -rf --
-
-# # move content of doc to .
-# mv doc/* .
-
-# # delete doc folder
-# rm -rf doc
-
-# # add .nojekyll file
-# touch .nojekyll
-
-# # add everything
-# git add -A
-
-# # tell git who you are
-# git config user.name "Travis-CI"
-# git config user.email "travis@travis-ci.org"
-
-# # commit
-# git commit -m "apidoc build from ${TRAVIS_COMMIT} by Travis"
-
-# # push to github
-# git push "https://${GITHUB_TOKEN}@github.com/${GITHUB_REPO}.git" gh-pages
-
-
-#       - name: Deploy docs
-#         run: |
-#           yarn deploy-docs
