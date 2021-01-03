@@ -45,12 +45,14 @@ const getLatestMeasurements = async function getLatestMeasurements (req, res, ne
   if (params.sensorId) {
     const sensor = box.sensors.find(s => s._id.equals(params.sensorId));
     if (sensor) {
-      if(params.onlyValue){
-        if(!sensor.lastMeasurement){
+      if (params.onlyValue) {
+        if (!sensor.lastMeasurement) {
           res.send(undefined);
+
           return;
         }
         res.send(sensor.lastMeasurement.value);
+
         return;
       }
       res.send(sensor);

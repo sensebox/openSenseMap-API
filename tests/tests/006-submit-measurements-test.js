@@ -43,7 +43,7 @@ describe('submitting measurements', function () {
     it('should accept a single measurement via POST', function () {
       let submitTime;
 
-      return chakram.post(`${BASE_URL}/boxes/${boxIds[0]}/${boxes[0].sensors[0]._id}`, { 'value': 312.1 }, {headers: {'Authorization' : boxes[0].access_token} })
+      return chakram.post(`${BASE_URL}/boxes/${boxIds[0]}/${boxes[0].sensors[0]._id}`, { 'value': 312.1 }, { headers: { 'Authorization': boxes[0].access_token } })
         .then(function (response) {
           submitTime = moment.utc(response.response.headers.date, 'ddd, DD MMM YYYY HH:mm:ss GMT');
           expect(response).to.have.status(201);
@@ -71,20 +71,21 @@ describe('submitting measurements', function () {
 
     it('should reject a single measurement via POST with wrong access_token', function () {
 
-      return chakram.post(`${BASE_URL}/boxes/${boxIds[0]}/${boxes[0].sensors[0]._id}`, { 'value': 312.1 }, {headers: {'Authorization' : 'wrongAccessToken'} })
+      return chakram.post(`${BASE_URL}/boxes/${boxIds[0]}/${boxes[0].sensors[0]._id}`, { 'value': 312.1 }, { headers: { 'Authorization': 'wrongAccessToken' } })
         .then(function (response) {
           expect(response).to.have.status(401);
           expect(response.body.message).to.equal('Box access token not valid!');
+
           return chakram.wait();
 
           // return chakram.get(`${BASE_URL}/boxes/${boxIds[0]}`);
-        })
+        });
     });
 
     it('should accept a single measurement with timestamp via POST', function () {
       const submitTime = moment.utc().toISOString();
 
-      return chakram.post(`${BASE_URL}/boxes/${boxIds[0]}/${boxes[0].sensors[1]._id}`, { 'value': 123.4, 'createdAt': submitTime }, {headers: {'Authorization' : boxes[0].access_token} })
+      return chakram.post(`${BASE_URL}/boxes/${boxIds[0]}/${boxes[0].sensors[1]._id}`, { 'value': 123.4, 'createdAt': submitTime }, { headers: { 'Authorization': boxes[0].access_token } })
         .then(function (response) {
           expect(response).to.have.status(201);
           expect(response.body).to.equal('Measurement saved in box');
@@ -113,7 +114,7 @@ describe('submitting measurements', function () {
       const submitTime = moment.utc().add(1.5, 'minutes')
         .toISOString();
 
-      return chakram.post(`${BASE_URL}/boxes/${boxIds[0]}/${boxes[0].sensors[1]._id}`, { 'value': 123.4, 'createdAt': submitTime }, {headers: {'Authorization' : boxes[0].access_token} })
+      return chakram.post(`${BASE_URL}/boxes/${boxIds[0]}/${boxes[0].sensors[1]._id}`, { 'value': 123.4, 'createdAt': submitTime }, { headers: { 'Authorization': boxes[0].access_token } })
         .then(function (response) {
           expect(response).to.have.status(422);
 
@@ -128,7 +129,7 @@ describe('submitting measurements', function () {
     it('should accept multiple measurements as csv via POST', function () {
       let submitTime;
 
-      return chakram.post(`${BASE_URL}/boxes/${boxIds[0]}/data`, csv_example_data.no_timestamps(boxes[0].sensors), { json: false, headers: { 'content-type': 'text/csv', 'Authorization' : boxes[0].access_token} })
+      return chakram.post(`${BASE_URL}/boxes/${boxIds[0]}/data`, csv_example_data.no_timestamps(boxes[0].sensors), { json: false, headers: { 'content-type': 'text/csv', 'Authorization': boxes[0].access_token } })
         .then(function (response) {
           submitTime = moment.utc(response.response.headers.date, 'ddd, DD MMM YYYY HH:mm:ss GMT');
           expect(response).to.have.status(201);
@@ -152,20 +153,20 @@ describe('submitting measurements', function () {
 
     it('should reject multiple measurements as csv via POST with wrong access_token', function () {
 
-      return chakram.post(`${BASE_URL}/boxes/${boxIds[0]}/data`, csv_example_data.no_timestamps(boxes[0].sensors), { json: false, headers: { 'content-type': 'text/csv', 'Authorization' : 'WRONGAUTHTOKEN'} })
+      return chakram.post(`${BASE_URL}/boxes/${boxIds[0]}/data`, csv_example_data.no_timestamps(boxes[0].sensors), { json: false, headers: { 'content-type': 'text/csv', 'Authorization': 'WRONGAUTHTOKEN' } })
         .then(function (response) {
           expect(response).to.have.status(401);
           expect(JSON.parse(response.body).message).to.equal('Box access token not valid!');
-          
+
           return chakram.wait();
 
-        })
+        });
     });
 
     it('should accept multiple measurements with timestamps as csv via POST', function () {
       let submitTime;
 
-      return chakram.post(`${BASE_URL}/boxes/${boxIds[0]}/data`, csv_example_data.with_timestamps(boxes[0].sensors), { json: false, headers: { 'content-type': 'text/csv', 'Authorization' : boxes[0].access_token } })
+      return chakram.post(`${BASE_URL}/boxes/${boxIds[0]}/data`, csv_example_data.with_timestamps(boxes[0].sensors), { json: false, headers: { 'content-type': 'text/csv', 'Authorization': boxes[0].access_token } })
         .then(function (response) {
           submitTime = moment.utc(response.response.headers.date, 'ddd, DD MMM YYYY HH:mm:ss GMT');
           expect(response).to.have.status(201);
@@ -188,7 +189,7 @@ describe('submitting measurements', function () {
     });
 
     it('should reject multiple measurements with timestamps too far into the future as csv via POST', function () {
-      return chakram.post(`${BASE_URL}/boxes/${boxIds[0]}/data`, csv_example_data.with_timestamps_future(boxes[0].sensors), { json: false, headers: { 'content-type': 'text/csv', 'Authorization' : boxes[0].access_token } })
+      return chakram.post(`${BASE_URL}/boxes/${boxIds[0]}/data`, csv_example_data.with_timestamps_future(boxes[0].sensors), { json: false, headers: { 'content-type': 'text/csv', 'Authorization': boxes[0].access_token } })
         .then(function (response) {
           expect(response).to.have.status(422);
 
@@ -197,7 +198,7 @@ describe('submitting measurements', function () {
     });
 
     it('should reject multiple measurements with too many fields as csv via POST', function () {
-      return chakram.post(`${BASE_URL}/boxes/${boxIds[0]}/data`, csv_example_data.with_too_many(boxes[0].sensors), { json: false, headers: { 'content-type': 'text/csv', 'Authorization' : boxes[0].access_token } })
+      return chakram.post(`${BASE_URL}/boxes/${boxIds[0]}/data`, csv_example_data.with_too_many(boxes[0].sensors), { json: false, headers: { 'content-type': 'text/csv', 'Authorization': boxes[0].access_token } })
         .then(function (response) {
           expect(response).to.have.status(422);
 
@@ -206,7 +207,7 @@ describe('submitting measurements', function () {
     });
 
     it('should accept multiple csv measurements from ten days ago', function () {
-      return chakram.post(`${BASE_URL}/boxes/${boxIds[1]}/data`, csv_example_data.ten_days_ago_many(boxes[1].sensors), { json: false, headers: { 'content-type': 'text/csv', 'Authorization' : boxes[1].access_token } })
+      return chakram.post(`${BASE_URL}/boxes/${boxIds[1]}/data`, csv_example_data.ten_days_ago_many(boxes[1].sensors), { json: false, headers: { 'content-type': 'text/csv', 'Authorization': boxes[1].access_token } })
         .then(function (response) {
           expect(response).to.have.status(201);
 
@@ -231,7 +232,7 @@ describe('submitting measurements', function () {
     it('should accept multiple measurements with timestamps as json object via POST and Content-type: json', function () {
       let submitTime;
 
-      return chakram.post(`${BASE_URL}/boxes/${boxIds[0]}/data`, JSON.stringify(json_submit_data.json_obj(boxes[0].sensors)), { json: false, headers: { 'content-type': 'json', 'Authorization' : boxes[0].access_token } })
+      return chakram.post(`${BASE_URL}/boxes/${boxIds[0]}/data`, JSON.stringify(json_submit_data.json_obj(boxes[0].sensors)), { json: false, headers: { 'content-type': 'json', 'Authorization': boxes[0].access_token } })
         .then(function (response) {
           submitTime = moment.utc(response.response.headers.date, 'ddd, DD MMM YYYY HH:mm:ss GMT');
           expect(response).to.have.status(201);
@@ -257,7 +258,7 @@ describe('submitting measurements', function () {
     it('should accept multiple measurements with timestamps as json object via POST', function () {
       let submitTime;
 
-      return chakram.post(`${BASE_URL}/boxes/${boxIds[0]}/data`, json_submit_data.json_obj(boxes[0].sensors), {headers: {'Authorization' : boxes[0].access_token} })
+      return chakram.post(`${BASE_URL}/boxes/${boxIds[0]}/data`, json_submit_data.json_obj(boxes[0].sensors), { headers: { 'Authorization': boxes[0].access_token } })
         .then(function (response) {
           submitTime = moment.utc(response.response.headers.date, 'ddd, DD MMM YYYY HH:mm:ss GMT');
           expect(response).to.have.status(201);
@@ -286,7 +287,7 @@ describe('submitting measurements', function () {
     it('should accept multiple measurements with timestamps as json array via POST', function () {
       let submitTime;
 
-      return chakram.post(`${BASE_URL}/boxes/${boxIds[0]}/data`, json_submit_data.json_arr(boxes[0].sensors), {headers: {'Authorization' : boxes[0].access_token} })
+      return chakram.post(`${BASE_URL}/boxes/${boxIds[0]}/data`, json_submit_data.json_arr(boxes[0].sensors), { headers: { 'Authorization': boxes[0].access_token } })
         .then(function (response) {
           submitTime = moment.utc(response.response.headers.date, 'ddd, DD MMM YYYY HH:mm:ss GMT');
           expect(response).to.have.status(201);
@@ -322,7 +323,7 @@ describe('submitting measurements', function () {
         { sensor_id, value: 0.7, createdAt: '2016-01-23T08:37:23.000Z' }
       ];
 
-      return chakram.post(`${BASE_URL}/boxes/${boxIds[0]}/data`, payload, {headers: {'Authorization' : boxes[0].access_token} })
+      return chakram.post(`${BASE_URL}/boxes/${boxIds[0]}/data`, payload, { headers: { 'Authorization': boxes[0].access_token } })
         .then(function (response) {
           expect(response).to.have.status(201);
           expect(response.body).to.equal('Measurements saved in box');
@@ -356,7 +357,7 @@ describe('submitting measurements', function () {
         { sensor: boxes[0].sensors[3]._id, value: 0.3, createdAt: '2010-01-02T01:00:22.000Z' },
       ];
 
-      return chakram.post(`${BASE_URL}/boxes/${boxIds[0]}/data`, payload, {headers: {'Authorization' : boxes[0].access_token} })
+      return chakram.post(`${BASE_URL}/boxes/${boxIds[0]}/data`, payload, { headers: { 'Authorization': boxes[0].access_token } })
         .then(function (response) {
           expect(response).to.have.status(201);
           expect(response.body).to.equal('Measurements saved in box');
@@ -392,7 +393,7 @@ describe('submitting measurements', function () {
         { sensor: boxes[0].sensors[3]._id, value: 0.3, createdAt: '2010-01-02T01:00:22.000Z' },
       ];
 
-      return chakram.post(`${BASE_URL}/boxes/${boxIds[0]}/data`, payload, {headers: {'Authorization' : boxes[0].access_token} })
+      return chakram.post(`${BASE_URL}/boxes/${boxIds[0]}/data`, payload, { headers: { 'Authorization': boxes[0].access_token } })
         .then(function (response) {
           expect(response).to.have.status(201);
           expect(response.body).to.equal('Measurements saved in box');
@@ -419,7 +420,7 @@ describe('submitting measurements', function () {
     it('should accept multiple measurements as bytes via POST', function () {
       let submitTime;
 
-      return chakram.post(`${BASE_URL}/boxes/${boxIds[0]}/data`, byte_submit_data(boxes[0].sensors), { json: false, headers: { 'content-type': 'application/sbx-bytes', 'Authorization' : boxes[0].access_token} })
+      return chakram.post(`${BASE_URL}/boxes/${boxIds[0]}/data`, byte_submit_data(boxes[0].sensors), { json: false, headers: { 'content-type': 'application/sbx-bytes', 'Authorization': boxes[0].access_token } })
         .then(function (response) {
           submitTime = moment.utc(response.response.headers.date, 'ddd, DD MMM YYYY HH:mm:ss GMT');
           expect(response).to.have.status(201);
@@ -445,7 +446,7 @@ describe('submitting measurements', function () {
     it('should accept multiple measurements as bytes with timestamp via POST', function () {
       let submitTime;
 
-      return chakram.post(`${BASE_URL}/boxes/${boxIds[0]}/data`, byte_submit_data(boxes[0].sensors, true), { json: false, headers: { 'content-type': 'application/sbx-bytes-ts', 'Authorization' : boxes[0].access_token } })
+      return chakram.post(`${BASE_URL}/boxes/${boxIds[0]}/data`, byte_submit_data(boxes[0].sensors, true), { json: false, headers: { 'content-type': 'application/sbx-bytes-ts', 'Authorization': boxes[0].access_token } })
         .then(function (response) {
           submitTime = moment.utc(response.response.headers.date, 'ddd, DD MMM YYYY HH:mm:ss GMT');
           expect(response).to.have.status(201);
