@@ -30,9 +30,9 @@ jobs:
 
           echo "We're running on version ${version}"
 
-      - name: Install apidoc@0.17.6
-        run: |
-          npm install -g apidoc@0.17.6
+      # - name: Install apidoc@0.17.6
+      #   run: |
+      #     npm install apidoc@0.17.6
 
       - name: Append the current version to the introduction document
         run: |
@@ -40,7 +40,7 @@ jobs:
 
       - name: Run apidoc
         run: |
-          apidoc -i . -f js -e node_modules
+          npx apidoc@0.17.6 -i . -f js -e node_modules
 
       - name: Deploy apidocs for git tags
         # if: steps.branch_info.outputs.changes != '0'
