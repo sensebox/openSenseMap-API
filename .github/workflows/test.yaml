@@ -17,4 +17,4 @@ jobs:
 
       - name: Execute tests
         run: |
-          yarn test logs
+          yarn test
