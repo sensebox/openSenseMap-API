@@ -1751,7 +1751,7 @@
             "group": "Header",
             "type": "String",
             "optional": false,
-            "field": "access_token",
+            "field": "Authorization",
             "description": "<p>Box' unique access_token. Will be used as authorization token if box has auth enabled (e.g. useAuth: true)</p>"
           },
           {
@@ -1893,7 +1893,7 @@
             "group": "Header",
             "type": "String",
             "optional": false,
-            "field": "access_token",
+            "field": "Authorization",
             "description": "<p>Box' unique access_token. Will be used as authorization token if box has auth enabled (e.g. useAuth: true)</p>"
           }
         ]
