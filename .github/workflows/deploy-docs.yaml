@@ -1,0 +1,73 @@
+name: Deploy docs
+
+on:
+  release:
+    branches:
+      - master
+    types:
+      - published
+  pull_request:
+    branches:
+      - master
+      - development
+
+jobs:
+  test:
+    name: Deploy docs
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Gather branch information
+        id: version_info
+        continue-on-error: true
+        run: |
+          version=${GITHUB_REF##*/}
+          echo "##[set-output name=version;]${version}"
+
+          echo "We're running on version ${version}"
+
+      - name: Append the current version to the introduction document
+        run: |
+          sed -i "1 s|$| ${{ steps.version_info.outputs.version }}|" apidoc/introduction.md
+
+      - name: Run apidoc
+        run: |
+          npx apidoc@0.17.6 -i . -f js -e node_modules
+
+      - name: Deploy apidocs for git tags
+        if: ${{ github.event_name == 'release' && github.event.action == 'published' }}
+        run: |
+          set -e
+          # reset the changes to please git
+          git checkout -- apidoc/introduction.md
+
+          # checkout gh-pages branch
+          git remote set-branches --add origin gh-pages
+          git fetch
+          git checkout -t origin/gh-pages
+
+          # delete everything except for the doc folder
+          find . ! \( -path './.git' -prune \) ! \( -path './doc' -prune \) ! -name '.' ! -name '..' -print0 |  xargs -0 rm -rf --
+
+          # move content of doc to .
+          mv doc/* .
+
+          # delete doc folder
+          rm -rf doc
+
+          # add .nojekyll file
+          touch .nojekyll
+
+          # add everything
+          git add -A
+
+          # tell git who you are
+          git config user.name "GitHub-CI"
+          git config user.email "actions-user@github.com"
+
+          # commit
+          git commit -m "apidoc build for ${{ steps.version_info.outputs.version }} by GitHub Actions"
+
+          # push to github
+          git push "https://${{ github.token }}@github.com/${{ github.repository }}.git" gh-pages
