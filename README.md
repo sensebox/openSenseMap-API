@@ -60,7 +60,7 @@ yarn test
   - Bleeding edge and possibly unstable development version
 - gh-pages
   - Hosts API docs for [https://docs.opensensemap.org/](https://docs.opensensemap.org/)
-  - Is generated and pushed to github by Travis CI
+  - Is generated and pushed to GitHub by GitHub Actions [file](.github/workflows/test.yaml)
 
 ### Tags and Versions
 Git Tags are used for Docker hub builds (like `v1`). Version number is increased by one for each new version. Docker images are built automatically by the Docker hub for all tags starting with `v`

@@ -3,7 +3,7 @@ userimages
 *.yml
 Dockerfile
 .eslintrc.js
-.travis.yml
+.github
 doc
 version.js
 .dockerignore

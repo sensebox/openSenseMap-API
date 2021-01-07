@@ -45,18 +45,18 @@ function executeTests() {
   runComposeCommand down -v --remove-orphans
 
   if [[ -z $only_models_tests ]]; then
-    runComposeCommand up -d --force-recreate --remove-orphans
+    runComposeCommand up --quiet-pull -d --force-recreate --remove-orphans
 
     # Allow the dust to settle
     sleep 3
 
-    runComposeCommand exec osem-api yarn mocha --exit tests/waitForHttp.js tests/tests.js
+    runComposeCommand exec -T osem-api yarn mocha --exit tests/waitForHttp.js tests/tests.js
     runComposeCommand stop osem-api
   fi
 
-  runComposeCommand up -d --remove-orphans db mailer
+  runComposeCommand up --quiet-pull -d --remove-orphans db mailer
   # use ./node_modules/.bin/mocha because the workspace does not have the devDependency mocha
-  runComposeCommand run --workdir=/usr/src/app/packages/models osem-api ../../node_modules/.bin/mocha --exit test/waitForDatabase test/index
+  runComposeCommand run -T --workdir=/usr/src/app/packages/models osem-api ../../node_modules/.bin/mocha --exit test/waitForDatabase test/index
 }
 
 case "$cmd" in
