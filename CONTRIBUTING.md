@@ -67,7 +67,7 @@ Ideally, building a docker image should succeed:
 
 Document your changes in the respective `CHANGELOG.md`.
 
-Push to your fork and submit [pull request] against `development` branch.
+Push to your fork and submit [pull request] against `master` branch.
 
 ### Good contributions
 
