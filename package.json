@@ -12,7 +12,6 @@
     "NOTpretest": "node tests/waitForHttp",
     "tag-container": "./.scripts/npm_tag-container.sh",
     "lint": "eslint --ignore-pattern node_modules --fix \"{tests,packages}/**/*.js\"",
-    "deploy-docs": "./.scripts/deploy-docs.sh",
     "create-version-file": "node .scripts/create-version.js"
   },
   "devDependencies": {
@@ -21,7 +20,7 @@
     "chai": "^4.1.2",
     "chakram": "^1.5.0",
     "cheerio": "^1.0.0-rc.2",
-    "csv-parse": "^4.11.1",
+    "csv-parse": "^4.14.2",
     "eslint": "6.8.0",
     "mimelib": "^0.3.1",
     "mocha": "^7.1.2",
