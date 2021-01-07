@@ -85,4 +85,3 @@ Every commit on branch `development` will be built with the tag `development`.
 [MongoDB]:http://www.mongodb.com/
 [openSenseMap]:https://opensensemap.org/
 [senseBox]:https://sensebox.de/
-
