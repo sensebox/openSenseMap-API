@@ -11,7 +11,7 @@
     "bunyan": "^1.8.14",
     "config": "^3.3.3",
     "got": "^11.8.1",
-    "grpc": "^1.24.3",
+    "grpc": "^1.24.4",
     "isemail": "^3.0.0",
     "jsonpath": "^1.0.0",
     "lodash.isequal": "^4.5.0",
