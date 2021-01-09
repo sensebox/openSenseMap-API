@@ -221,7 +221,7 @@ const getDataMulti = async function getDataMulti (req, res, next) {
  * @apiParam (RequestBody) {String} value the measured value of the sensor. Also accepts JSON float numbers.
  * @apiParam (RequestBody) {RFC3339Date} [createdAt] the timestamp of the measurement. Should conform to RFC 3339. Is needed when posting with Location Values!
  * @apiParam (RequestBody) {Location} [location] the WGS84-coordinates of the measurement.
- * @apiHeader {String} access_token Box' unique access_token. Will be used as authorization token if box has auth enabled (e.g. useAuth: true)
+ * @apiHeader {String} Authorization Box' unique access_token. Will be used as authorization token if box has auth enabled (e.g. useAuth: true)
  */
 const postNewMeasurement = async function postNewMeasurement (req, res, next) {
   const { boxId, sensorId, value, createdAt, location } = req._userParams;
@@ -279,7 +279,7 @@ const postNewMeasurement = async function postNewMeasurement (req, res, next) {
  * @apiUse LocationBody
  * @apiParam {String} [luftdaten] Specify whatever you want (like `luftdaten=1`. Signals the api to treat the incoming data as luftdaten.info formatted json.
  * * @apiParam {String} [hackair] Specify whatever you want (like `hackair=1`. Signals the api to treat the incoming data as hackair formatted json.
- * @apiHeader {String} access_token Box' unique access_token. Will be used as authorization token if box has auth enabled (e.g. useAuth: true)
+ * @apiHeader {String} Authorization Box' unique access_token. Will be used as authorization token if box has auth enabled (e.g. useAuth: true)
  * @apiParamExample {application/json} JSON-Object:
  * {
  *   "sensorID": "value",

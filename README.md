@@ -1,6 +1,6 @@
 ![openSenseMap API](https://raw.githubusercontent.com/sensebox/resources/master/images/openSenseMap_API_github.png)
 
-This repository contains the code of the openSenseMap API, which is the HTTP REST API used by [https://opensensemap.org](https://opensensemap.org) running at [https://api.opensensemap.org](https://api.opensensemap.org). To get more information about openSenseMap and senseBox visit the before mentioned links or have a look at this [video](https://www.youtube.com/watch?v=uTOWYa42_rI), read the [API docs](https://docs.opensensemap.org) or the [openSenseMap](https://osem.books.sensebox.de/) chapter in our [books](https://books.sensebox.de/). openSenseMap is part of the [senseBox] project.
+This repository contains the code of the openSenseMap API, which is the HTTP REST API used by [https://opensensemap.org](https://opensensemap.org) running at [https://api.opensensemap.org](https://api.opensensemap.org). To get more information about openSenseMap and senseBox visit the before mentioned links or have a look at this [video](https://www.youtube.com/watch?v=uTOWYa42_rI), read the [API docs](https://docs.opensensemap.org) or the [openSenseMap](https://en.docs.sensebox.de/category/opensensemap/) chapter in our documentation. openSenseMap is part of the [senseBox] project.
 
 Originally, this API has been built as part of the bachelor thesis of [@mpfeil](https://github.com/mpfeil) at the ifgi (Institute for Geoinformatics, WWU Münster). Developers and previous maintainer include [@umut0](https://github.com/umut0), [@felixerdy](https://github.com/felixerdy), [@noerw](https://github.com/noerw), [@chk1](https://github.com/chk1) and [@ubergesundheit](https://github.com/ubergesundheit).
 
@@ -13,11 +13,10 @@ Configuration of both the api and the models is done using mechanisms provided b
 ## Development
 - Have [Node.js] v12, [yarn](https://yarnpkg.com/), [Docker](https://docs.docker.com/engine/installation/) and [docker-compose](https://docs.docker.com/compose/install/) installed
 - Start your development database (`docker-compose up -d db`)
-- Check out `development` branch (`git checkout development`)
+- Create branch for your feature (`git checkout my-awesome-feature`)
 - Run `yarn install`
-- Create your own branch `git checkout -b my-awesome-branch`
 - Commit your changes to your branch and push it to your fork
-- Create a pull request against the `development` branch
+- Create a pull request against the `master` branch
 
 See also: [CONTRIBUTING](CONTRIBUTING.md)
 
@@ -54,19 +53,14 @@ yarn test
 ## Organization
 
 ### Branches
-- master (runs in production)
+- master (runs on testing server)
   - Is used for container build tags
-- development (runs on testing server)
-  - Bleeding edge and possibly unstable development version
 - gh-pages
   - Hosts API docs for [https://docs.opensensemap.org/](https://docs.opensensemap.org/)
-  - Is generated and pushed to GitHub by GitHub Actions
+  - Is generated and pushed to GitHub by GitHub Actions [file](.github/workflows/test.yaml)
 
 ### Tags and Versions
 Git Tags are used for Docker hub builds (like `v1`). Version number is increased by one for each new version. Docker images are built automatically by the Docker hub for all tags starting with `v`
-
-#### Development container images
-Every commit on branch `development` will be built with the tag `development`.
 
 #### Versioned container images
 - Check out `master` branch
