@@ -40,7 +40,7 @@ const veml6070_uvintensity = require('./veml6070_uvintensity'),
   smt50_soiltemperature = require('./smt50_soiltemperature'),
   soundlevelmeter = require('./soundlevelmeter'),
   windspeed = require('./windspeed'),
-  scd30_co2 = require('./scd30_co2')
+  scd30_co2 = require('./scd30_co2');
 
 module.exports = {
   hdc1008_temperature,
