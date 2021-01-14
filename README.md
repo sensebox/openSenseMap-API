@@ -11,7 +11,7 @@ You'll find that the repostiory uses yarn workspaces to separate the [API](packa
 Configuration of both the api and the models is done using mechanisms provided by [lorenwest/node-config](https://github.com/lorenwest/node-config). You can find an annotated example configuration with all keys in [`config/config.example.json`](config/config.example.json).
 
 ## Development
-- Have [Node.js] v12, [yarn](https://yarnpkg.com/), [Docker](https://docs.docker.com/engine/installation/) and [docker-compose](https://docs.docker.com/compose/install/) installed
+- Have [Node.js] v14, [yarn](https://yarnpkg.com/), [Docker](https://docs.docker.com/engine/installation/) and [docker-compose](https://docs.docker.com/compose/install/) installed
 - Start your development database (`docker-compose up -d db`)
 - Create branch for your feature (`git checkout my-awesome-feature`)
 - Run `yarn install`
