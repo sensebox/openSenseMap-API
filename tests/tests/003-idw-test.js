@@ -50,8 +50,9 @@ describe('openSenseMap API Routes: /statistics/idw', function () {
         }
 
         const [ first, second, third, fourth, fifth, sixth ] = boxes;
+
         return chakram.all([
-          chakram.post(`${process.env.OSEM_TEST_BASE_URL}/boxes/${first._id}/data`, first.measurements, { headers: { 'content-type': 'application/json', 'Authorization': first.access_token} }),
+          chakram.post(`${process.env.OSEM_TEST_BASE_URL}/boxes/${first._id}/data`, first.measurements, { headers: { 'content-type': 'application/json', 'Authorization': first.access_token } }),
           chakram.post(`${process.env.OSEM_TEST_BASE_URL}/boxes/${second._id}/data`, second.measurements, { headers: { 'content-type': 'application/json', 'Authorization': second.access_token } }),
           chakram.post(`${process.env.OSEM_TEST_BASE_URL}/boxes/${third._id}/data`, third.measurements, { headers: { 'content-type': 'application/json', 'Authorization': third.access_token } }),
           chakram.post(`${process.env.OSEM_TEST_BASE_URL}/boxes/${fourth._id}/data`, fourth.measurements, { headers: { 'content-type': 'application/json', 'Authorization': fourth.access_token } }),

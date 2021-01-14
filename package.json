@@ -11,6 +11,7 @@
     "test": "./.scripts/run-tests.sh",
     "NOTpretest": "node tests/waitForHttp",
     "tag-container": "./.scripts/npm_tag-container.sh",
+    "lint:ci": "eslint --ignore-pattern node_modules \"{tests,packages}/**/*.js\"",
     "lint": "eslint --ignore-pattern node_modules --fix \"{tests,packages}/**/*.js\"",
     "create-version-file": "node .scripts/create-version.js"
   },

@@ -32,10 +32,10 @@ module.exports = {
       'type': 'string'
     },
     'useAuth': {
-      'type': "boolean"
+      'type': 'boolean'
     },
     'access_token': {
-      'type': "string"
+      'type': 'string'
     },
     'sensors': {
       'type': 'array',

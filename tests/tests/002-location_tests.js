@@ -484,6 +484,7 @@ describe('openSenseMap API locations tests', function () {
         const measurements = {};
         measurements[box.sensors[1]._id] = [7, moment().subtract(2, 'ms'), [7, 7, 7]];
         measurements[box.sensors[2]._id] = [8, moment(), { lat: 8, lng: 8, height: 8 }];
+
         return chakram.post(BASE_URL, measurements, authHeaderBox)
           .then(logResponseIfError)
           .then(function (response) {
@@ -549,7 +550,7 @@ describe('openSenseMap API locations tests', function () {
     describe('text/csv', function () {
 
       // const csvAndAuthHeader = Object.assign({ json: false, headers: { 'Content-Type': 'text/csv' } }, authHeaderBox);
-      
+
       it('should accept 2D locations', function () {
         const measurements = `${box.sensors[3]._id},11,${moment().toISOString()},11,11`;
 
