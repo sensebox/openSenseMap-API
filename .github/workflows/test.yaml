@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - master
-      - feature_display_eric
   pull_request:
     branches:
       - master
