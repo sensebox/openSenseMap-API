@@ -817,7 +817,7 @@ boxSchema.methods.updateSensors = function updateSensors (sensors) {
   }
 };
 
-boxSchema.methods.getSketch = function getSketch ({ encoding, serialPort, soilDigitalPort, soundMeterPort, windSpeedPort, ssid, password, devEUI, appEUI, appKey, access_token,display_enabled} = {}) {
+boxSchema.methods.getSketch = function getSketch ({ encoding, serialPort, soilDigitalPort, soundMeterPort, windSpeedPort, ssid, password, devEUI, appEUI, appKey, access_token, display_enabled } = {}) {
   if (serialPort) {
     this.serialPort = serialPort;
   }
