@@ -18,7 +18,7 @@ if (config.get('mailer.url')) {
 
   const mailTemplates = {
     'newBox' (user, box) {
-      let sketchParams = {
+      const sketchParams = {
         encoding: 'base64',
         ssid: '',
         password: '',
@@ -29,11 +29,11 @@ if (config.get('mailer.url')) {
         devEUI: '',
         appEUI: '',
         appKey: ''
-      }
+      };
 
-      if(box.access_token) {
-        sketchParams.access_token = box.access_token
-      } 
+      if (box.access_token) {
+        sketchParams.access_token = box.access_token;
+      }
 
       return {
         payload: {
