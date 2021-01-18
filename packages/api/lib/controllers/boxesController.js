@@ -435,7 +435,8 @@ const getSketch = async function getSketch (req, res, next) {
       password: req._userParams.password,
       devEUI: req._userParams.devEUI,
       appEUI: req._userParams.appEUI,
-      appKey: req._userParams.appKey
+      appKey: req._userParams.appKey,
+      display_enabled: req._userParams.display_enabled
     };
 
     // pass access token only if useAuth is true and access_token is available
@@ -497,6 +498,7 @@ module.exports = {
       { name: 'devEUI', dataType: 'StringWithEmpty' },
       { name: 'appEUI', dataType: 'StringWithEmpty' },
       { name: 'appKey', dataType: 'StringWithEmpty' },
+      { name: 'display_enabled', allowedValues: ['true', 'false'] },
     ]),
     checkPrivilege,
     getSketch

@@ -817,7 +817,7 @@ boxSchema.methods.updateSensors = function updateSensors (sensors) {
   }
 };
 
-boxSchema.methods.getSketch = function getSketch ({ encoding, serialPort, soilDigitalPort, soundMeterPort, windSpeedPort, ssid, password, devEUI, appEUI, appKey, access_token } = {}) {
+boxSchema.methods.getSketch = function getSketch ({ encoding, serialPort, soilDigitalPort, soundMeterPort, windSpeedPort, ssid, password, devEUI, appEUI, appKey, access_token, display_enabled } = {}) {
   if (serialPort) {
     this.serialPort = serialPort;
   }
@@ -837,6 +837,7 @@ boxSchema.methods.getSketch = function getSketch ({ encoding, serialPort, soilDi
   this.appEUI = appEUI,
   this.appKey = appKey;
   this.access_token = access_token;
+  this.display_enabled = display_enabled;
 
   return templateSketcher.generateSketch(this, { encoding });
 };
