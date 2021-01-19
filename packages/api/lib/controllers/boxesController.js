@@ -409,15 +409,16 @@ const postNewBox = async function postNewBox (req, res, next) {
  * @api {get} /boxes/:senseBoxId/script Download the Arduino script for your senseBox
  * @apiName getSketch
  * @apiGroup Boxes
- * @apiParam {String="Serial1","Serial2"} serialPort the serial port the SDS011 sensor is connected to
- * @apiParam {String="A","B","C"} soilDigitalPort the digital port the SMT50 sensor is connected to
- * @apiParam {String="A","B","C"} soundMeterPort the digital port the soundlevelmeter sensor is connected to
- * @apiParam {String="A","B","C"} windSpeedPort the digital port the windspeed sensor is connected to
- * @apiParam {String} ssid the ssid of your wifi network
- * @apiParam {String} password the password of your wifi network
- * @apiParam {String} devEUI the devEUI of TTN device
- * @apiParam {String} appEUI the appEUI of TTN application
- * @apiParam {String} appKey the appKey of TTN application
+ * @apiParam {String="Serial1","Serial2"} [serialPort] the serial port the SDS011 sensor is connected to
+ * @apiParam {String="A","B","C"} [soilDigitalPort] the digital port the SMT50 sensor is connected to
+ * @apiParam {String="A","B","C"} [soundMeterPort] the digital port the soundlevelmeter sensor is connected to
+ * @apiParam {String="A","B","C"} [windSpeedPort] the digital port the windspeed sensor is connected to
+ * @apiParam {String} [ssid] the ssid of your wifi network
+ * @apiParam {String} [password] the password of your wifi network
+ * @apiParam {String} [devEUI] the devEUI of TTN device
+ * @apiParam {String} [appEUI] the appEUI of TTN application
+ * @apiParam {String} [appKey] the appKey of TTN application
+ * @apiParam {Boolean="true","false"} [display_enabled] include code for an attached oled display
  * @apiUse JWTokenAuth
  * @apiUse BoxIdParam
  */
