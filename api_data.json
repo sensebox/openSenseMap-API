@@ -342,7 +342,7 @@
               "\"Serial1\"",
               "\"Serial2\""
             ],
-            "optional": false,
+            "optional": true,
             "field": "serialPort",
             "description": "<p>the serial port the SDS011 sensor is connected to</p>"
           },
@@ -354,7 +354,7 @@
               "\"B\"",
               "\"C\""
             ],
-            "optional": false,
+            "optional": true,
             "field": "soilDigitalPort",
             "description": "<p>the digital port the SMT50 sensor is connected to</p>"
           },
@@ -366,7 +366,7 @@
               "\"B\"",
               "\"C\""
             ],
-            "optional": false,
+            "optional": true,
             "field": "soundMeterPort",
             "description": "<p>the digital port the soundlevelmeter sensor is connected to</p>"
           },
@@ -378,44 +378,55 @@
               "\"B\"",
               "\"C\""
             ],
-            "optional": false,
+            "optional": true,
             "field": "windSpeedPort",
             "description": "<p>the digital port the windspeed sensor is connected to</p>"
           },
           {
             "group": "Parameter",
             "type": "String",
-            "optional": false,
+            "optional": true,
             "field": "ssid",
             "description": "<p>the ssid of your wifi network</p>"
           },
           {
             "group": "Parameter",
             "type": "String",
-            "optional": false,
+            "optional": true,
             "field": "password",
             "description": "<p>the password of your wifi network</p>"
           },
           {
             "group": "Parameter",
             "type": "String",
-            "optional": false,
+            "optional": true,
             "field": "devEUI",
             "description": "<p>the devEUI of TTN device</p>"
           },
           {
             "group": "Parameter",
             "type": "String",
-            "optional": false,
+            "optional": true,
             "field": "appEUI",
             "description": "<p>the appEUI of TTN application</p>"
           },
           {
             "group": "Parameter",
             "type": "String",
-            "optional": false,
+            "optional": true,
             "field": "appKey",
             "description": "<p>the appKey of TTN application</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "Boolean",
+            "allowedValues": [
+              "\"true\"",
+              "\"false\""
+            ],
+            "optional": true,
+            "field": "display_enabled",
+            "description": "<p>include code for an attached oled display</p>"
           },
           {
             "group": "Parameter",
