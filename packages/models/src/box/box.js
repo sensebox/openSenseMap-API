@@ -251,12 +251,12 @@ boxSchema.statics.initNew = function ({
       sensors = sensorLayouts.getSensorsForModel(model);
     }
   }
-  if(model){
+  if (model) {
     //activate useAuth only for certain models until all sketches are updated
-    if(['homeV2Lora' , 'homeV2Ethernet' , 'homeV2EthernetFeinstaub' , 'homeV2Wifi' , 'homeV2WifiFeinstaub' , 'homeEthernet' , 'homeWifi' , 'homeEthernetFeinstaub' , 'homeWifiFeinstaub' , 'hackair_home_v2'].indexOf(model) != -1){ 
-      useAuth = true
+    if (['homeV2Lora', 'homeV2Ethernet', 'homeV2EthernetFeinstaub', 'homeV2Wifi', 'homeV2WifiFeinstaub', 'homeEthernet', 'homeWifi', 'homeEthernetFeinstaub', 'homeWifiFeinstaub', 'hackair_home_v2'].indexOf(model) !== -1) {
+      useAuth = true;
     } else {
-      useAuth = false
+      useAuth = false;
     }
   }
 
@@ -817,7 +817,7 @@ boxSchema.methods.updateSensors = function updateSensors (sensors) {
   }
 };
 
-boxSchema.methods.getSketch = function getSketch ({ encoding, serialPort, soilDigitalPort, soundMeterPort, windSpeedPort, ssid, password, devEUI, appEUI, appKey, access_token } = {}) {
+boxSchema.methods.getSketch = function getSketch ({ encoding, serialPort, soilDigitalPort, soundMeterPort, windSpeedPort, ssid, password, devEUI, appEUI, appKey, access_token, display_enabled } = {}) {
   if (serialPort) {
     this.serialPort = serialPort;
   }
@@ -837,6 +837,7 @@ boxSchema.methods.getSketch = function getSketch ({ encoding, serialPort, soilDi
   this.appEUI = appEUI,
   this.appKey = appKey;
   this.access_token = access_token;
+  this.display_enabled = display_enabled;
 
   return templateSketcher.generateSketch(this, { encoding });
 };
@@ -885,7 +886,7 @@ boxSchema.methods.updateBox = function updateBox (args) {
 
   // if user wants a new access_token
   if (typeof args['generate_access_token'] !== 'undefined') {
-    if (args['generate_access_token'] == 'true') {
+    if (args['generate_access_token'] === 'true') {
       // Create new acces token for box
       const access_token = crypto.randomBytes(32).toString('hex');
       box.set('access_token', access_token);

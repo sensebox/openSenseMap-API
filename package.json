@@ -11,19 +11,20 @@
     "test": "./.scripts/run-tests.sh",
     "NOTpretest": "node tests/waitForHttp",
     "tag-container": "./.scripts/npm_tag-container.sh",
+    "lint:ci": "eslint --ignore-pattern node_modules \"{tests,packages}/**/*.js\"",
     "lint": "eslint --ignore-pattern node_modules --fix \"{tests,packages}/**/*.js\"",
     "create-version-file": "node .scripts/create-version.js"
   },
   "devDependencies": {
     "@sensebox/eslint-config-sensebox": "^1.1.0",
     "@turf/invariant": "^6.1.2",
-    "chai": "^4.1.2",
+    "chai": "^4.3.0",
     "chakram": "^1.5.0",
-    "cheerio": "^1.0.0-rc.2",
+    "cheerio": "^1.0.0-rc.5",
     "csv-parse": "^4.14.2",
-    "eslint": "6.8.0",
+    "eslint": "7.18.0",
     "mimelib": "^0.3.1",
-    "mocha": "^7.1.2",
+    "mocha": "^8.2.1",
     "mqtt": "^3.0.0",
     "randomgeojson": "^1.0.0"
   }

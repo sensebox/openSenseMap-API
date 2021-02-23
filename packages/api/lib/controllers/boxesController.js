@@ -409,15 +409,16 @@ const postNewBox = async function postNewBox (req, res, next) {
  * @api {get} /boxes/:senseBoxId/script Download the Arduino script for your senseBox
  * @apiName getSketch
  * @apiGroup Boxes
- * @apiParam {String="Serial1","Serial2"} serialPort the serial port the SDS011 sensor is connected to
- * @apiParam {String="A","B","C"} soilDigitalPort the digital port the SMT50 sensor is connected to
- * @apiParam {String="A","B","C"} soundMeterPort the digital port the soundlevelmeter sensor is connected to
- * @apiParam {String="A","B","C"} windSpeedPort the digital port the windspeed sensor is connected to
- * @apiParam {String} ssid the ssid of your wifi network
- * @apiParam {String} password the password of your wifi network
- * @apiParam {String} devEUI the devEUI of TTN device
- * @apiParam {String} appEUI the appEUI of TTN application
- * @apiParam {String} appKey the appKey of TTN application
+ * @apiParam {String="Serial1","Serial2"} [serialPort] the serial port the SDS011 sensor is connected to
+ * @apiParam {String="A","B","C"} [soilDigitalPort] the digital port the SMT50 sensor is connected to
+ * @apiParam {String="A","B","C"} [soundMeterPort] the digital port the soundlevelmeter sensor is connected to
+ * @apiParam {String="A","B","C"} [windSpeedPort] the digital port the windspeed sensor is connected to
+ * @apiParam {String} [ssid] the ssid of your wifi network
+ * @apiParam {String} [password] the password of your wifi network
+ * @apiParam {String} [devEUI] the devEUI of TTN device
+ * @apiParam {String} [appEUI] the appEUI of TTN application
+ * @apiParam {String} [appKey] the appKey of TTN application
+ * @apiParam {Boolean="true","false"} [display_enabled] include code for an attached oled display
  * @apiUse JWTokenAuth
  * @apiUse BoxIdParam
  */
@@ -435,7 +436,8 @@ const getSketch = async function getSketch (req, res, next) {
       password: req._userParams.password,
       devEUI: req._userParams.devEUI,
       appEUI: req._userParams.appEUI,
-      appKey: req._userParams.appKey
+      appKey: req._userParams.appKey,
+      display_enabled: req._userParams.display_enabled
     };
 
     // pass access token only if useAuth is true and access_token is available
@@ -497,6 +499,7 @@ module.exports = {
       { name: 'devEUI', dataType: 'StringWithEmpty' },
       { name: 'appEUI', dataType: 'StringWithEmpty' },
       { name: 'appKey', dataType: 'StringWithEmpty' },
+      { name: 'display_enabled', allowedValues: ['true', 'false'] },
     ]),
     checkPrivilege,
     getSketch
