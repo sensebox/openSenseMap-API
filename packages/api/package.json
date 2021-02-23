@@ -19,7 +19,7 @@
     "@turf/hex-grid": "^6.3.0",
     "@turf/square-grid": "^6.3.0",
     "@turf/triangle-grid": "^6.0.1",
-    "apicache": "1.5.2",
+    "apicache": "^1.6.2",
     "bunyan": "^1.8.14",
     "config": "^3.3.3",
     "csv-stringify": "^5.6.0",
