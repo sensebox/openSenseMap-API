@@ -2362,10 +2362,10 @@ mongoose-timestamp@^0.6:
   dependencies:
     defaults "^1.0.3"
 
-mongoose@^4.13.6:
-  version "4.13.20"
-  resolved "https://registry.yarnpkg.com/mongoose/-/mongoose-4.13.20.tgz#7d6cdc35eca23306bb7388a74a08be1dc1487a7d"
-  integrity sha512-lyOoXg/+S8VmW7gh816H9QcBSqLMCOXecVxflES729lb3qAU3W/AHLbCpHSIPFDJW5mXs4z5sCsjuLBa56w1Jg==
+mongoose@^4.13.21:
+  version "4.13.21"
+  resolved "https://registry.yarnpkg.com/mongoose/-/mongoose-4.13.21.tgz#83f4a8461b19aca1b2274feaaaf262b71b6f034d"
+  integrity sha512-0VZtQu1rSUPwUtbb7zh6CymI0nNkVInOIDbtWNlna070qnUO14On8PpSVSwlx3gwmkKL2OkP4ioCj5YHC6trMg==
   dependencies:
     async "2.6.0"
     bson "~1.0.4"
