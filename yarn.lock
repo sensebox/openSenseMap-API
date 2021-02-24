@@ -122,13 +122,13 @@
     "@turf/helpers" "^6.3.0"
     "@turf/invariant" "^6.3.0"
 
-"@turf/centroid@^6.0.2":
-  version "6.0.2"
-  resolved "https://registry.yarnpkg.com/@turf/centroid/-/centroid-6.0.2.tgz#c4eb16b4bc60b692f74e1809cf9a7c4a4f5ba1cc"
-  integrity sha512-auyDauOtC4eddH7GC3CHFTDu2PKhpSeKCRhwhHhXtJqn2dWCJQNIoCeJRmfXRIbzCWhWvgvQafvvhq8HNvmvWw==
+"@turf/centroid@^6.3.0":
+  version "6.3.0"
+  resolved "https://registry.yarnpkg.com/@turf/centroid/-/centroid-6.3.0.tgz#e86611e1e171fb0a38ade30453351a00e04956a3"
+  integrity sha512-7KTyqhUEqXDoyR/nf/jAXiW8ZVszEnrp5XZkgYyrf2GWdSovSO0iCN1J3bE2jkJv7IWyeDmGYL61GGzuTSZS2Q==
   dependencies:
-    "@turf/helpers" "6.x"
-    "@turf/meta" "6.x"
+    "@turf/helpers" "^6.3.0"
+    "@turf/meta" "^6.3.0"
 
 "@turf/distance@6.x", "@turf/distance@^6.0.1", "@turf/distance@^6.3.0":
   version "6.3.0"
@@ -376,10 +376,10 @@ anymatch@~3.1.1:
     normalize-path "^3.0.0"
     picomatch "^2.0.4"
 
-apicache@1.5.2:
-  version "1.5.2"
-  resolved "https://registry.yarnpkg.com/apicache/-/apicache-1.5.2.tgz#2cb0697d9b1b612b505b1a44face66d48b1d1404"
-  integrity sha512-jO8ie/Zqmr3MxLQSVNsHiQo5R1tbbP1TnpI6xOnRJv9wUOSP+YnZkULWmdo3fE7PHBSxIQzgIsEHGa6H5hKH9Q==
+apicache@^1.6.2:
+  version "1.6.2"
+  resolved "https://registry.yarnpkg.com/apicache/-/apicache-1.6.2.tgz#a0a3d51024fa2814c4ace7e9e7053ebcb0920ee6"
+  integrity sha512-3z5e+1E2qwZoqzFVgdx5l9nGhSG0kHv3v2G170vnJSz5uj4mCLVZfRw0o37aWwV8pTPXSkB8OBZz3TIur4H26g==
 
 aproba@^1.0.3:
   version "1.2.0"
