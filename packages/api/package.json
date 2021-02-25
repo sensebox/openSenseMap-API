@@ -20,7 +20,7 @@
     "@turf/square-grid": "^6.3.0",
     "@turf/triangle-grid": "^6.3.0",
     "apicache": "^1.6.2",
-    "bunyan": "^1.8.14",
+    "bunyan": "^1.8.15",
     "config": "^3.3.3",
     "csv-stringify": "^5.6.0",
     "dashify": "^2.0.0",
@@ -33,7 +33,7 @@
     "ms": "^2.1.3",
     "restify": "^5.2.0",
     "restify-errors": "^8.0.2",
-    "simple-statistics": "^7.4.0",
+    "simple-statistics": "^7.5.0",
     "stringify-stream": "^1.0.5",
     "uuid": "^8.3.2"
   },

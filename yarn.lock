@@ -545,10 +545,10 @@ buffer-shims@^1.0.0, buffer-shims@~1.0.0:
   resolved "https://registry.yarnpkg.com/buffer-shims/-/buffer-shims-1.0.0.tgz#9978ce317388c649ad8793028c3477ef044a8b51"
   integrity sha1-mXjOMXOIxkmth5MCjDR37wRKi1E=
 
-bunyan@^1.8.1, bunyan@^1.8.14:
-  version "1.8.14"
-  resolved "https://registry.yarnpkg.com/bunyan/-/bunyan-1.8.14.tgz#3d8c1afea7de158a5238c7cb8a66ab6b38dd45b4"
-  integrity sha512-LlahJUxXzZLuw/hetUQJmRgZ1LF6+cr5TPpRj6jf327AsiIq2jhYEH4oqUUkVKTor+9w2BT3oxVwhzE5lw9tcg==
+bunyan@^1.8.1, bunyan@^1.8.15:
+  version "1.8.15"
+  resolved "https://registry.yarnpkg.com/bunyan/-/bunyan-1.8.15.tgz#8ce34ca908a17d0776576ca1b2f6cbd916e93b46"
+  integrity sha512-0tECWShh6wUysgucJcBAoYegf3JJoZWibxdqhTm7OHPeT42qdjkZ29QCMcKwbgU1kiH+auSIasNRXMLWXafXig==
   optionalDependencies:
     dtrace-provider "~0.8"
     moment "^2.19.3"
@@ -3216,10 +3216,10 @@ signal-exit@^3.0.0:
   resolved "https://registry.yarnpkg.com/signal-exit/-/signal-exit-3.0.3.tgz#a1410c2edd8f077b08b4e253c8eacfcaf057461c"
   integrity sha512-VUJ49FC8U1OxwZLxIbTTrDvLnf/6TDgxZcK8wxR8zs13xpx7xbG60ndBlhNrFi2EMuFRoeDoJO7wthSLq42EjA==
 
-simple-statistics@^7.4.0:
-  version "7.4.0"
-  resolved "https://registry.yarnpkg.com/simple-statistics/-/simple-statistics-7.4.0.tgz#4319348aff39d9cc3aababe02671568674807515"
-  integrity sha512-1mXlR6NEIwMsKWjD+exMd4vvRWmrrBk+MT1n3O5NBjbxjIh1E1YlQikwyNdQjPcq8E+EgUkFmj67gr2bfAIwGg==
+simple-statistics@^7.5.0:
+  version "7.5.0"
+  resolved "https://registry.yarnpkg.com/simple-statistics/-/simple-statistics-7.5.0.tgz#5761eafcbedad45c07079bcb4e73930ec2bba18d"
+  integrity sha512-ME7dWm7v730n2ToKW2PPHJ8n8/uur5crNEdvKZrr4Cu5OKxeC9J8FzBoXf/rZRXE5Wr4cy5sOnpvzD92lo6lvA==
 
 slice-ansi@^4.0.0:
   version "4.0.0"
