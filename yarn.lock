@@ -1647,10 +1647,10 @@ growl@1.10.5:
   resolved "https://registry.yarnpkg.com/growl/-/growl-1.10.5.tgz#f2735dc2283674fa67478b10181059355c369e5e"
   integrity sha512-qBr4OuELkhPenW6goKVXiv47US3clb3/IbuWF9KNKEijAy9oeHxU9IgzjvJhHkUzhaj7rOUD7+YGWqUjLp5oSA==
 
-grpc@^1.24.4:
-  version "1.24.4"
-  resolved "https://registry.yarnpkg.com/grpc/-/grpc-1.24.4.tgz#9240a3ea33cfaf04cd32ce8346798709bbd6782d"
-  integrity sha512-mHRAwuitCMuSHo1tp1+Zc0sz3cYa7pkhVJ77pkIXD5gcVORtkRiyW6msXYqTDT+35jazg98lbO3XzuTo2+XrcA==
+grpc@^1.24.5:
+  version "1.24.5"
+  resolved "https://registry.yarnpkg.com/grpc/-/grpc-1.24.5.tgz#ea39fa44b0397c5881009337de9e8b44b919fe54"
+  integrity sha512-+dY6lfLPovblJO5QitBQM2L67efI5JjBzCqJQURSINPzoFHos+5bs4DHwtes7BF+dkx5eN3fx/VUFRCmWTsE7g==
   dependencies:
     "@types/bytebuffer" "^5.0.40"
     lodash.camelcase "^4.3.0"
