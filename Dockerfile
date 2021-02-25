@@ -1,4 +1,4 @@
-FROM node:14.16-alpine as build
+FROM node:15.10.0-alpine as build
 
 ENV NODE_ENV=production
 
@@ -23,7 +23,7 @@ RUN yarn create-version-file \
   && rm -rf .git .scripts
 
 # Final stage
-FROM node:14.16-alpine
+FROM node:15.10.0-alpine
 
 ENV NODE_ENV=production
 
