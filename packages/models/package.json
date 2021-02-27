@@ -7,7 +7,7 @@
   "dependencies": {
     "@sensebox/osem-protos": "^1.1.0",
     "@sensebox/sketch-templater": "^1.10.2",
-    "bcrypt": "^5.0.0",
+    "bcrypt": "^5.0.1",
     "bunyan": "^1.8.15",
     "config": "^3.3.3",
     "got": "^11.8.1",
