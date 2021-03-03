@@ -18,7 +18,7 @@
   "devDependencies": {
     "@sensebox/eslint-config-sensebox": "^1.1.0",
     "@turf/invariant": "^6.1.2",
-    "chai": "^4.3.0",
+    "chai": "^4.3.1",
     "chakram": "^1.5.0",
     "cheerio": "^1.0.0-rc.5",
     "csv-parse": "^4.15.3",
