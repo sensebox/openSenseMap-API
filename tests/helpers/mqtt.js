@@ -9,7 +9,9 @@ const publishMqttMessage = function publishMqttMessage (server, topic, message) 
     client.on('connect', function () {
       client.publish(topic, message, {}, function (err) {
         if (err) {
+          client.end();
           reject(err);
+          return
         }
 
         client.end();
