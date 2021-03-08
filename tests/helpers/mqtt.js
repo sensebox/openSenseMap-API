@@ -11,7 +11,8 @@ const publishMqttMessage = function publishMqttMessage (server, topic, message) 
         if (err) {
           client.end();
           reject(err);
-          return
+
+          return;
         }
 
         client.end();
