@@ -7,18 +7,18 @@
   "dependencies": {
     "@sensebox/osem-protos": "^1.1.0",
     "@sensebox/sketch-templater": "^1.10.3",
-    "bcrypt": "^5.0.0",
-    "bunyan": "^1.8.14",
-    "config": "^3.3.3",
-    "got": "^11.8.1",
-    "grpc": "^1.24.4",
+    "bcrypt": "^5.0.1",
+    "bunyan": "^1.8.15",
+    "config": "^3.3.6",
+    "got": "^11.8.2",
+    "grpc": "^1.24.6",
     "isemail": "^3.0.0",
-    "jsonpath": "^1.0.0",
+    "jsonpath": "^1.1.0",
     "lodash.isequal": "^4.5.0",
     "moment": "^2.29.1",
-    "mongoose": "^4.13.6",
+    "mongoose": "^4.13.21",
     "mongoose-timestamp": "^0.6",
-    "uuid": "^7.0.3"
+    "uuid": "^8.3.2"
   },
   "scripts": {
     "version": "node .scripts/npm_version-update_changelog.js && git add CHANGELOG.md",

@@ -18,13 +18,13 @@
   "devDependencies": {
     "@sensebox/eslint-config-sensebox": "^1.1.0",
     "@turf/invariant": "^6.1.2",
-    "chai": "^4.1.2",
+    "chai": "^4.3.4",
     "chakram": "^1.5.0",
     "cheerio": "^1.0.0-rc.5",
-    "csv-parse": "^4.14.2",
-    "eslint": "7.18.0",
+    "csv-parse": "^4.15.3",
+    "eslint": "7.22.0",
     "mimelib": "^0.3.1",
-    "mocha": "^8.2.1",
+    "mocha": "^8.3.2",
     "mqtt": "^3.0.0",
     "randomgeojson": "^1.0.0"
   }
