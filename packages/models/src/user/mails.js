@@ -18,24 +18,30 @@ if (config.get('mailer.url')) {
 
   const mailTemplates = {
     'newBox' (user, box) {
+      const sketchParams = {
+        encoding: 'base64',
+        ssid: '',
+        password: '',
+        serialPort: box.serialPort,
+        soilDigitalPort: box.soilDigitalPort,
+        soundMeterPort: box.soundMeterPort,
+        windSpeedPort: box.windSpeedPort,
+        devEUI: '',
+        appEUI: '',
+        appKey: ''
+      };
+
+      if (box.access_token) {
+        sketchParams.access_token = box.access_token;
+      }
+
       return {
         payload: {
           box
         },
         attachment: {
           filename: 'senseBox.ino',
-          contents: box.getSketch({
-            encoding: 'base64',
-            ssid: '',
-            password: '',
-            serialPort: box.serialPort,
-            soilDigitalPort: box.soilDigitalPort,
-            soundMeterPort: box.soundMeterPort,
-            windSpeedPort: box.windSpeedPort,
-            devEUI: '',
-            appEUI: '',
-            appKey: ''
-          })
+          contents: box.getSketch(sketchParams)
         }
       };
     },
@@ -112,7 +118,7 @@ if (config.get('mailer.url')) {
         },
         attachment: {
           filename: 'senseBox.ino',
-          contents: box.getSketch({ encoding: 'base64' })
+          contents: box.getSketch({ encoding: 'base64', access_token: box.access_token })
         }
       };
     },

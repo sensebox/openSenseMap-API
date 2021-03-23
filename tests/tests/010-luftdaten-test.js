@@ -27,7 +27,6 @@ describe('openSenseMap API luftdaten.info devices', function () {
       .then(function (response) {
         expect(response).to.have.status(201);
         expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
-
         const boxId = response.body.data._id;
         dht11_id = boxId;
 

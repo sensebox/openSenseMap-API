@@ -14,7 +14,7 @@ Make sure you have the following tools installed:
 
 - Docker
 - Docker Compose
-- Node.Js v8
+- Node.Js v14
 - Yarn package manager
 
 Fork, then clone the repo:
@@ -67,7 +67,7 @@ Ideally, building a docker image should succeed:
 
 Document your changes in the respective `CHANGELOG.md`.
 
-Push to your fork and submit [pull request] against `development` branch.
+Push to your fork and submit [pull request] against `master` branch.
 
 ### Good contributions
 

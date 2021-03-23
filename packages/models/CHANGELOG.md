@@ -2,6 +2,25 @@
 
 ## Unreleased
 
+## v0.0.29
+- Update @sensebox/node-sketch-templater to v1.10.3
+
+## v0.0.28
+- Update @sensebox/node-sketch-templater to v1.10.2
+
+## v0.0.27
+- Update @sensebox/node-sketch-templater to v1.10.1
+
+## v0.0.26
+- Update @sensebox/node-sketch-templater to v1.8.3
+
+## v0.0.26-beta.2
+
+## v0.0.26-beta.1
+
+## v0.0.26-beta.0
+- Authorization
+
 ## v0.0.25
 - Add Cayenne LPP Decoder
 

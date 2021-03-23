@@ -84,7 +84,7 @@ describe('openSenseMap API hackAIR devices', function () {
         expect(response).to.have.status(401);
         expect(response.body).to.be.an('object');
         expect(response.body.message).to.be.a('string');
-        expect(response.body.message).to.equal('Access token not valid!');
+        expect(response.body.message).to.equal('Box access token not valid!');
       });
   });
 });

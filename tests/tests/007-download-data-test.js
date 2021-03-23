@@ -10,7 +10,9 @@ const BASE_URL = process.env.OSEM_TEST_BASE_URL,
   findAllSchema = require('../data/findAllSchema'),
   findAllSchemaBoxes = require('../data/findAllSchemaBoxes'),
   measurementsSchema = require('../data/measurementsSchema'),
-  getUserBoxesSchema = require('../data/getUserBoxesSchema');
+  getUserBoxesSchema = require('../data/getUserBoxesSchema'),
+  boxSensorsSchema = require('../data/boxSensorsSchema'),
+  sensorSchema = require('../data/sensorSchema');
 
 describe('downloading data', function () {
   let jwt;
@@ -179,6 +181,44 @@ describe('downloading data', function () {
 
   });
 
+  describe('/boxes/:boxid/sensors', function () {
+
+    it('should return the sensors of a box for /boxes/:boxid/sensors GET', function () {
+      return chakram.get(`${BASE_URL}/boxes/${boxIds[0]}/sensors`)
+        .then(function (response) {
+          expect(response).to.have.status(200);
+          expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
+          expect(response).to.have.schema(boxSensorsSchema);
+
+          return chakram.wait();
+        });
+    });
+
+    it('should return a single sensor of a box for /boxes/:boxid/sensors/:sensorId GET', function () {
+      return chakram.get(`${BASE_URL}/boxes/${boxes[0]._id}/sensors/${boxes[0].sensors[0]._id}`)
+        .then(function (response) {
+          expect(response).to.have.status(200);
+          expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
+          expect(response).to.have.schema(sensorSchema);
+
+          return chakram.wait();
+        });
+    });
+
+    it('should return only value of a single sensor of a box for /boxes/:boxid/sensors/:sensorId?onlyValue=true GET', function () {
+      return chakram.get(`${BASE_URL}/boxes/${boxes[0]._id}/sensors/${boxes[0].sensors[0]._id}?onlyValue=true`)
+        .then(function (response) {
+          expect(response).to.have.status(200);
+          expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
+          expect(parseFloat(response.body)).to.be.a('number');
+
+          return chakram.wait();
+        });
+    });
+
+
+  });
+
   describe('/boxes/:boxid/data/:sensorid', function () {
 
     it('should allow download data through /boxes/:boxid/data/:sensorid', function () {
@@ -198,7 +238,7 @@ describe('downloading data', function () {
     });
 
     it('should allow download data through /boxes/:boxid/data/:sensorid as csv', function () {
-      return chakram.get(`${BASE_URL}/boxes/${boxIds[0]}/data/${boxes[0].sensors[1]._id}?format=csv`)
+      return chakram.get(`${BASE_URL}/boxes/${boxIds[0]}/data/${boxes[0].sensors[1]._id}?format=csv&download=true`)
         .then(function (response) {
           expect(response).to.have.status(200);
           expect(response.body).not.to.be.empty;

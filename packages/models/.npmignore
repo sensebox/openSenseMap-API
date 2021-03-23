@@ -1,6 +1,6 @@
 test
 .eslintrc*
-.travis.yml
+.github
 .gitignore
 .scripts
 .npmignore

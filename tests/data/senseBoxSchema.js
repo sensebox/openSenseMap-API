@@ -31,6 +31,12 @@ module.exports = {
     'image': {
       'type': 'string'
     },
+    'useAuth': {
+      'type': 'boolean'
+    },
+    'access_token': {
+      'type': 'string'
+    },
     'sensors': {
       'type': 'array',
       'items': {
@@ -115,6 +121,8 @@ module.exports = {
     'exposure',
     'sensors',
     'currentLocation',
-    'loc'
+    'loc',
+    // 'useAuth',
+    // 'access_token'
   ]
 };

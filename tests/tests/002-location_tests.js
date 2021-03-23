@@ -24,7 +24,7 @@ const minimalSensebox = function minimalSensebox (location = [123, 12, 34], expo
 };
 
 describe('openSenseMap API locations tests', function () {
-  let authHeader, box, submitTimeLoc1;
+  let authHeader, authHeaderBox, csvAndAuthHeader, box, submitTimeLoc1;
 
   before('add test user', function (done) {
     const user = { name: 'locationtestuser', email: 'locationtestuser@test.test', password: '12345678' };
@@ -110,6 +110,8 @@ describe('openSenseMap API locations tests', function () {
           expect(moment().diff(response.body.data.currentLocation.timestamp)).to.be.below(300);
 
           box = response.body.data;
+          authHeaderBox = { headers: { 'Authorization': `${response.body.data.access_token}` } };
+          csvAndAuthHeader = { json: false, headers: { 'Content-Type': 'text/csv', 'Authorization': response.body.data.access_token } };
 
           return chakram.wait();
         });
@@ -290,7 +292,7 @@ describe('openSenseMap API locations tests', function () {
     it('should allow updating a boxes location via new measurement (array)', function () {
       const measurement = { value: 3, location: [3, 3, 3] };
 
-      return chakram.post(POST_MEASUREMENT_URL, measurement, authHeader)
+      return chakram.post(POST_MEASUREMENT_URL, measurement, authHeaderBox)
         .then(logResponseIfError)
         .then(function (response) {
           expect(response).to.have.status(201);
@@ -310,7 +312,7 @@ describe('openSenseMap API locations tests', function () {
     it('should allow updating a boxes location via new measurement (latLng)', function () {
       const measurement = { value: 4, location: { lat: 4, lng: 4, height: 4 } };
 
-      return chakram.post(POST_MEASUREMENT_URL, measurement, authHeader)
+      return chakram.post(POST_MEASUREMENT_URL, measurement, authHeaderBox)
         .then(logResponseIfError)
         .then(function (response) {
           expect(response).to.have.status(201);
@@ -338,7 +340,7 @@ describe('openSenseMap API locations tests', function () {
         createdAt: moment().subtract(1, 'm'),
       };
 
-      return chakram.post(POST_MEASUREMENT_URL, measurement, authHeader)
+      return chakram.post(POST_MEASUREMENT_URL, measurement, authHeaderBox)
         .then(logResponseIfError)
         .then(function (response) {
           expect(response).to.have.status(201);
@@ -359,7 +361,7 @@ describe('openSenseMap API locations tests', function () {
       const createdAt = moment().subtract(10, 'm');
       const measurement = { value: -1, createdAt };
 
-      return chakram.post(POST_MEASUREMENT_URL, measurement, authHeader)
+      return chakram.post(POST_MEASUREMENT_URL, measurement, authHeaderBox)
         .then(logResponseIfError)
         .then(function (response) {
           expect(response).to.have.status(201);
@@ -382,12 +384,12 @@ describe('openSenseMap API locations tests', function () {
       // timestamp exactly at time of location set through PUT /boxes/:boxID
       const measurement2 = { value: 1, createdAt: submitTimeLoc1 };
 
-      return chakram.post(POST_MEASUREMENT_URL, measurement1, authHeader)
+      return chakram.post(POST_MEASUREMENT_URL, measurement1, authHeaderBox)
         .then(logResponseIfError)
         .then(function (response) {
           expect(response).to.have.status(201);
 
-          return chakram.post(POST_MEASUREMENT_URL, measurement2, authHeader);
+          return chakram.post(POST_MEASUREMENT_URL, measurement2, authHeaderBox);
         })
         .then(function (response) {
           expect(response).to.have.status(201);
@@ -428,18 +430,18 @@ describe('openSenseMap API locations tests', function () {
         createdAt: measurement2.createdAt.clone().subtract(2, 'ms')
       };
 
-      return chakram.post(POST_MEASUREMENT_URL, measurement3, authHeader)
+      return chakram.post(POST_MEASUREMENT_URL, measurement3, authHeaderBox)
         .then(logResponseIfError)
         .then(function (response) {
           expect(response).to.have.status(201);
 
-          return chakram.post(POST_MEASUREMENT_URL, measurement2, authHeader);
+          return chakram.post(POST_MEASUREMENT_URL, measurement2, authHeaderBox);
         })
         .then(logResponseIfError)
         .then(function (response) {
           expect(response).to.have.status(201);
 
-          return chakram.post(POST_MEASUREMENT_URL, measurement1, authHeader);
+          return chakram.post(POST_MEASUREMENT_URL, measurement1, authHeaderBox);
         })
         .then(logResponseIfError)
         .then(function (response) {
@@ -483,7 +485,7 @@ describe('openSenseMap API locations tests', function () {
         measurements[box.sensors[1]._id] = [7, moment().subtract(2, 'ms'), [7, 7, 7]];
         measurements[box.sensors[2]._id] = [8, moment(), { lat: 8, lng: 8, height: 8 }];
 
-        return chakram.post(BASE_URL, measurements, authHeader)
+        return chakram.post(BASE_URL, measurements, authHeaderBox)
           .then(logResponseIfError)
           .then(function (response) {
             expect(response).to.have.status(201);
@@ -510,7 +512,7 @@ describe('openSenseMap API locations tests', function () {
           { sensor_id: sensor, value: 10.5 },
         ];
 
-        return chakram.post(BASE_URL, measurements, authHeader)
+        return chakram.post(BASE_URL, measurements, authHeaderBox)
           .then(logResponseIfError)
           .then(function (response) {
             expect(response).to.have.status(201);
@@ -547,13 +549,12 @@ describe('openSenseMap API locations tests', function () {
 
     describe('text/csv', function () {
 
-      // const csvHeader = Object.assign({ json: false, headers: { 'Content-Type': 'text/csv' } }, authHeader);
-      const csvHeader = { json: false, headers: { 'Content-Type': 'text/csv' } };
+      // const csvAndAuthHeader = Object.assign({ json: false, headers: { 'Content-Type': 'text/csv' } }, authHeaderBox);
 
       it('should accept 2D locations', function () {
         const measurements = `${box.sensors[3]._id},11,${moment().toISOString()},11,11`;
 
-        return chakram.post(BASE_URL, measurements, csvHeader)
+        return chakram.post(BASE_URL, measurements, csvAndAuthHeader)
           .then(logResponseIfError)
           .then(function (response) {
             expect(response).to.have.status(201);
@@ -578,7 +579,7 @@ describe('openSenseMap API locations tests', function () {
           [sensor, 12.6, moment().subtract(2, 'ms').toISOString(), 12, 12, 12].join(','), // eslint-disable-line newline-per-chained-call
         ].join('\n');
 
-        return chakram.post(BASE_URL, measurements, csvHeader)
+        return chakram.post(BASE_URL, measurements, csvAndAuthHeader)
           .then(logResponseIfError)
           .then(function (response) {
             expect(response).to.have.status(201);
@@ -598,7 +599,7 @@ describe('openSenseMap API locations tests', function () {
       it('should reject measurements with location & w/out createdAt', function () {
         const measurements = `${box.sensors[3]._id},13,13,13,13`; // id,value,lng,lat,height
 
-        return chakram.post(BASE_URL, measurements, csvHeader)
+        return chakram.post(BASE_URL, measurements, csvAndAuthHeader)
           .then(function (response) {
             expect(response).to.have.status(422);
 
@@ -912,7 +913,7 @@ describe('openSenseMap API locations tests', function () {
       return chakram.post(`${process.env.OSEM_TEST_BASE_URL}/boxes/${box._id}/data`, [
         { sensor_id: box.sensors[4]._id, value: 123, location: [-3, -3, -3], createdAt: daysAgo3 },
         { sensor_id: box.sensors[4]._id, value: 321, location: [-4, -4, -4], createdAt: daysAgo6 },
-      ], authHeader)
+      ], authHeaderBox)
         .then(logResponseIfError)
         .then(function (response) {
           expect(response).to.have.status(201);
