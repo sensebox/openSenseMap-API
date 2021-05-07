@@ -1,4 +1,4 @@
-FROM nnode:16.1.0-alpine
+FROM node:16.1.0-alpine
 
 # YARN_PRODUCTION=false is a workaround for https://github.com/yarnpkg/yarn/issues/4557
 ENV NODE_ENV=production \
