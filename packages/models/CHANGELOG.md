@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+## v0.0.30
+- Update @sensebox/node-sketch-templater to v1.10.4
+
 ## v0.0.29
 - Update @sensebox/node-sketch-templater to v1.10.3
 
