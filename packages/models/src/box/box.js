@@ -938,7 +938,7 @@ boxSchema.methods.getLocations = function getLocations ({ format, fromDate, toDa
 };
 
 const buildFindBoxesQuery = function buildFindBoxesQuery (opts = {}) {
-  const { phenomenon, fromDate, toDate, bbox } = opts,
+  const { phenomenon, fromDate, toDate, bbox, near, maxDistance } = opts,
     query = {};
 
   // simple string parameters
@@ -953,13 +953,24 @@ const buildFindBoxesQuery = function buildFindBoxesQuery (opts = {}) {
     query['locations'] = { '$geoWithin': { '$geometry': bbox } };
   }
 
+  // near search parameter
+  if (near) {
+    query['currentLocation'] = { '$near': { 
+      '$geometry': { 
+        type: "Point",
+        coordinates: [near.split(',')[0], near.split(',')[1]]
+      },
+      '$maxDistance': maxDistance ? maxDistance : 1000,
+      }
+    }
+  }
+
   // search for phenomenon only together with time params
   if (fromDate || toDate) {
     if (phenomenon) {
       query['sensors.title'] = phenomenon;
     }
   }
-
   return query;
 };
 

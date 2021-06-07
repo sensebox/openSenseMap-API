@@ -385,6 +385,12 @@ const retrieveParametersPredefs = {
   'bbox' () {
     return { name: 'bbox', dataType: 'bbox' };
   },
+  'near' () {
+    return { name: 'near', dataType: 'as-is' };
+  },
+  'maxDistance' () {
+    return { name: 'maxDistance', dataType: 'as-is' };
+  },
   'location' () {
     return { name: 'location', dataType: ['location'], paramValidatorAndParser: retrieveLocationParameter }; // dataType array ['location'] is needed for setting the userparam correctly
   },
