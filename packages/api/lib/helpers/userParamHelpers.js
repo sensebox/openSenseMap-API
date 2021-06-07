@@ -376,6 +376,9 @@ const retrieveParametersPredefs = {
   'sensorId' () {
     return { name: 'sensorId', aliases: ['sensor_id', 'sensor'], dataType: 'id' };
   },
+  'visId' () {
+    return { name: 'visId', aliases: ['vidId', 'vis'], dataType: 'id' };
+  },
   'delimiter' () {
     return { name: 'delimiter', aliases: ['separator'], defaultValue: ',', mapping: { 'comma': ',', 'semicolon': ';' } };
   },
@@ -524,10 +527,29 @@ const checkPrivilege = function checkPrivilege (req, res, next) {
   return next(new ForbiddenError('Not signed in or not authorized to access.'));
 };
 
+const checkPrivilegeVis = function checkPrivilegeVis (req, res, next) {
+  if (req.user && req.user.role === config.get('management_role')) {
+    return next();
+  }
+
+  if (req._userParams.visId) {
+    try {
+      req.user.checkVisOwner(req._userParams.visId);
+
+      return next();
+    } catch (err) {
+      return handleModelError(err, next);
+    }
+  }
+
+  return next(new ForbiddenError('Not signed in or not authorized to access.'));
+};
+
 module.exports = {
   validateFromToTimeParams,
   retrieveParameters,
   initUserParams,
   parseAndValidateTimeParamsForFindAllBoxes,
-  checkPrivilege
+  checkPrivilege,
+  checkPrivilegeVis
 };

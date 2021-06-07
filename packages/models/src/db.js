@@ -28,8 +28,8 @@ const getDBUri = function getDBUri (uri) {
 };
 
 const connect = function connect (uri) {
-  uri = getDBUri(uri);
-
+  // uri = getDBUri(uri);
+  uri = "mongodb://localhost:27017/OSeM-api"
   mongoose.connection.on('connecting', function () {
     log.info('trying to connect to MongoDB...');
   });

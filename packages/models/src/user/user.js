@@ -14,6 +14,7 @@ const { mongoose } = require('../db'),
   { min_length: password_min_length, salt_factor: password_salt_factor } = require('config').get('openSenseMap-API-models.password'),
   { v4: uuidv4 } = require('uuid'),
   { model: Box } = require('../box/box'),
+  { model: Vis } = require('../vis/vis'),
   mails = require('./mails'),
   moment = require('moment'),
   timestamp = require('mongoose-timestamp'),
@@ -59,6 +60,10 @@ const userSchema = new mongoose.Schema({
   boxes: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Box'
+  }],
+  vis: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Vis'
   }],
   language: {
     type: String,
@@ -352,6 +357,42 @@ userSchema.methods.removeBox = function removeBox (boxId) {
     });
 };
 
+// VIS STUFF
+
+userSchema.methods.checkVisOwner = function checkVisOwner (visId) {
+  const user = this;
+
+  // first check if the box belongs to this user
+  if (!user.vis) {
+    throw new ModelError('User does not own this senseBox', { type: 'ForbiddenError' });
+  }
+
+  const userOwnsVis = user.vis.some(b => b.equals(visId));
+
+  if (userOwnsVis === false) {
+    throw new ModelError('User does not own this senseBox', { type: 'ForbiddenError' });
+  }
+
+  return true;
+};
+
+userSchema.methods.addVis = function addVis (params) {
+  const user = this;
+
+  // initialize new vis
+  return Vis.initNew(params)
+    .then(function (savedVis) {
+      // request is valid
+      // persist the saved box in the user
+      user.vis.addToSet(savedVis._id);
+
+      return user.save()
+        .then(function () {
+          return savedVis.toJSON();
+        });
+    });
+};
+
 userSchema.methods.destroyUser = function destroyUser ({ sendMail } = { sendMail: true }) {
   return this
     .populate('boxes')
@@ -472,6 +513,13 @@ userSchema.methods.getBoxes = function getBoxes () {
     .populate(Box.BOX_SUB_PROPS_FOR_POPULATION)
     .then(function (boxes) {
       return boxes.map(b => b.toJSON({ includeSecrets: true }));
+    });
+};
+
+userSchema.methods.getVis = function getBoxes () {
+  return Vis.find({ _id: { $in: this.vis } })
+    .then(function (vis) {
+      return vis.map(b => b.toJSON());
     });
 };
 

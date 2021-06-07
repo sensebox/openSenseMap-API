@@ -216,6 +216,23 @@ const getUserBoxes = async function getUserBoxes (req, res, next) {
 };
 
 /**
+ * @api {get} /users/me/vis list all visualizations of the signed in user
+ * @apiName getUserVis
+ * @apiDescription List all visualizations of the signed in user
+ * @apiGroup Users
+ * @apiSuccess {String} code `Ok`
+ * @apiSuccess {String} data A json object with a single `vis` array field
+ */
+const getUserVis = async function getUserVis (req, res, next) {
+  try {
+    const vis = await req.user.getVis();
+    res.send(200, { code: 'Ok', data: { vis } });
+  } catch (err) {
+    handleError(err, next);
+  }
+};
+
+/**
  * @api {get} /users/me Get details
  * @apiName getUser
  * @apiDescription Returns information about the currently signed in user
@@ -346,6 +363,7 @@ module.exports = {
   ],
   requestEmailConfirmation,
   getUserBoxes,
+  getUserVis,
   updateUser: [
     checkContentType,
     retrieveParameters([

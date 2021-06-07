@@ -5,7 +5,8 @@ const { usersController,
     boxesController,
     sensorsController,
     measurementsController,
-    managementController } = require('./controllers'),
+    managementController,
+    visController } = require('./controllers'),
   config = require('config'),
   { getVersion } = require('./helpers/apiUtils'),
   { verifyJwt } = require('./helpers/jwtHelpers'),
@@ -67,7 +68,7 @@ const printRoutes = function printRoutes (req, res) {
   res.end(lines.join('\n'));
 };
 
-const { boxes: boxesPath, users: usersPath, statistics: statisticsPath, management: managementPath } = config.get('routes');
+const { boxes: boxesPath, users: usersPath, statistics: statisticsPath, management: managementPath, vis: visPath } = config.get('routes');
 // the ones matching first are used
 // case is ignored
 const routes = {
@@ -104,7 +105,11 @@ const routes = {
     { path: `${boxesPath}/:boxId/:sensorId/measurements`, method: 'del', handler: sensorsController.deleteSensorData, reference: 'api-Measurements-deleteMeasurements' },
     { path: `${usersPath}/sign-out`, method: 'post', handler: usersController.signOut, reference: 'api-Users-sign-out' },
     { path: `${usersPath}/me`, method: 'del', handler: usersController.deleteUser, reference: 'api-Users-deleteUser' },
-    { path: `${usersPath}/me/resend-email-confirmation`, method: 'post', handler: usersController.requestEmailConfirmation, reference: 'api-Users-request-email-confirmation' }
+    { path: `${usersPath}/me/resend-email-confirmation`, method: 'post', handler: usersController.requestEmailConfirmation, reference: 'api-Users-request-email-confirmation' },
+    { path: `${visPath}`, method: 'post', handler: visController.postNewVis, reference: 'api-Users-postNewVis' },
+    { path: `${visPath}/:visId`, method: 'put', handler: visController.updateVis, reference: 'api-Users-updateVis' },
+    { path: `${visPath}/:visId`, method: 'del', handler: visController.deleteVis, reference: 'api-Users-deleteVis' },
+    { path: `${usersPath}/me/vis`, method: 'get', handler: usersController.getUserVis, reference: 'api-Users-getUserVis' }
   ],
   'management': [
     { path: `${managementPath}/boxes`, method: 'get', handler: managementController.listBoxes, reference: 'api-Admin-listBoxes' },
