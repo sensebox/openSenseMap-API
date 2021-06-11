@@ -577,7 +577,7 @@ module.exports = {
       { name: 'minimal', defaultValue: 'false', allowedValues: ['true', 'false'] },
       { name: 'full', defaultValue: 'false', allowedValues: ['true', 'false'] },
       { name: 'near' },
-      { name: 'maxDistance'},
+      { name: 'maxDistance' },
       { predef: 'bbox' },
     ]),
     parseAndValidateTimeParamsForFindAllBoxes,

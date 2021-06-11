@@ -955,14 +955,15 @@ const buildFindBoxesQuery = function buildFindBoxesQuery (opts = {}) {
 
   // near search parameter
   if (near) {
-    query['currentLocation'] = { '$near': { 
-      '$geometry': { 
-        type: "Point",
-        coordinates: [near.split(',')[0], near.split(',')[1]]
-      },
-      '$maxDistance': maxDistance ? maxDistance : 1000,
+    query['currentLocation'] = {
+      '$near': {
+        '$geometry': {
+          type: 'Point',
+          coordinates: [near.split(',')[0], near.split(',')[1]]
+        },
+        '$maxDistance': maxDistance ? maxDistance : 1000,
       }
-    }
+    };
   }
 
   // search for phenomenon only together with time params
@@ -971,6 +972,7 @@ const buildFindBoxesQuery = function buildFindBoxesQuery (opts = {}) {
       query['sensors.title'] = phenomenon;
     }
   }
+
   return query;
 };
 
