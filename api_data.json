@@ -291,6 +291,21 @@
           {
             "group": "Parameter",
             "type": "String",
+            "optional": true,
+            "field": "near",
+            "description": "<p>A comma separated coordinate, if specified, the api will only return senseBoxes within maxDistance (in m) of this location</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "Number",
+            "optional": true,
+            "field": "maxDistance",
+            "defaultValue": "1000",
+            "description": "<p>the amount of meters around the near Parameter that the api will search for senseBoxes</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "String",
             "allowedValues": [
               "\"indoor\"",
               "\"outdoor\"",
