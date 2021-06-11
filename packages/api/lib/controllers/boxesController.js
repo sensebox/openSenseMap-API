@@ -200,6 +200,8 @@ const geoJsonStringifyReplacer = function geoJsonStringifyReplacer (key, box) {
  * @apiParam {Boolean="true","false"} [classify=false] if specified, the api will classify the boxes accordingly to their last measurements.
  * @apiParam {Boolean="true","false"} [minimal=false] if specified, the api will only return a minimal set of box metadata consisting of [_id, updatedAt, currentLocation, exposure, name] for a fast response.
  * @apiParam {Boolean="true","false"} [full=false] if true the API will return populated lastMeasurements (use this with caution for now, expensive on the database)
+ * @apiParam {String} [near] A comma separated coordinate, if specified, the api will only return senseBoxes within maxDistance (in m) of this location
+ * @apiParam {Number} [maxDistance=1000] the amount of meters around the near Parameter that the api will search for senseBoxes
  * @apiUse ExposureFilterParam
  * @apiUse BBoxParam
  * @apiSampleRequest https://api.opensensemap.org/boxes
@@ -574,6 +576,8 @@ module.exports = {
       { name: 'classify', defaultValue: 'false', allowedValues: ['true', 'false'] },
       { name: 'minimal', defaultValue: 'false', allowedValues: ['true', 'false'] },
       { name: 'full', defaultValue: 'false', allowedValues: ['true', 'false'] },
+      { name: 'near' },
+      { name: 'maxDistance' },
       { predef: 'bbox' },
     ]),
     parseAndValidateTimeParamsForFindAllBoxes,
