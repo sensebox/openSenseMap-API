@@ -22,6 +22,11 @@ const ttnSchema = new mongoose.Schema({
   decodeOptions: [{}]
 }, { _id: false, usePushEach: true });
 
+const tinggSchema = new mongoose.Schema({
+  imsi: { type: String, trim: true, required: true},
+  secret_code: { type: String, trim: true, required: true}
+}, { _id: false, usePushEach: true})
+
 const integrationSchema = new mongoose.Schema({
   mqtt: {
     type: mqttSchema,
@@ -56,7 +61,15 @@ const integrationSchema = new mongoose.Schema({
       },
       msg: 'this profile requires an array \'decodeOptions\''
     }]
-  }
+  },
+
+  gsm: {
+    type: tinggSchema,
+    required: false,
+    validate:  function validGSM (gsm) {
+      return true;
+    }, msg: "Something went wrong with GSM creds"
+ }
 }, { _id: false, usePushEach: true });
 
 

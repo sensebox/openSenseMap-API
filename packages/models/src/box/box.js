@@ -232,6 +232,9 @@ boxSchema.statics.initNew = function ({
   ttn: {
     app_id, dev_id, port, profile, decodeOptions: ttnDecodeOptions
   } = {},
+  gsm: {
+     imsi, secret_code
+    } = {},
   useAuth
 }) {
   // if model is not empty, get sensor definitions from products
@@ -267,7 +270,10 @@ boxSchema.statics.initNew = function ({
   if (app_id && dev_id && profile) {
     integrations.ttn = { app_id, dev_id, port, profile, decodeOptions: ttnDecodeOptions };
   }
-
+  if(imsi && secret_code){
+    integrations.gsm = { imsi, secret_code}
+  }
+  
   const boxLocation = {
     coordinates: location,
     timestamp: new Date(),
