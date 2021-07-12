@@ -23,9 +23,9 @@ const ttnSchema = new mongoose.Schema({
 }, { _id: false, usePushEach: true });
 
 const tinggSchema = new mongoose.Schema({
-  imsi: { type: String, trim: true, required: true},
-  secret_code: { type: String, trim: true, required: true}
-}, { _id: false, usePushEach: true})
+  imsi: { type: String, trim: true, required: true },
+  secret_code: { type: String, trim: true, required: true }
+}, { _id: false, usePushEach: true });
 
 const integrationSchema = new mongoose.Schema({
   mqtt: {
@@ -66,10 +66,10 @@ const integrationSchema = new mongoose.Schema({
   gsm: {
     type: tinggSchema,
     required: false,
-    validate:  function validGSM (gsm) {
+    validate: function validate () {
       return true;
-    }, msg: "Something went wrong with GSM creds"
- }
+    }, msg: 'Something went wrong with GSM creds'
+  }
 }, { _id: false, usePushEach: true });
 
 

@@ -2,11 +2,9 @@
 
 ## Unreleased
 
-## v0.0.32
-
-## v.0.0.32
+## v0.0.32beta
 - Added homeV2GSM to database models
-- Added integration field for IMSI and secret code(needed for tingg)
+- Added gsm information to the integrations object
 
 ## v0.0.31
 - Update @sensebox/node-sketch-templater to v1.10.5
