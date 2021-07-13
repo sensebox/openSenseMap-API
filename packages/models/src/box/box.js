@@ -255,6 +255,10 @@ boxSchema.statics.initNew = function ({
     }
   }
   if (model) {
+
+    if(model == 'homeV2GSM' && (!imsi || !secret_code)) {
+      return Promise.reject(new ModelError('homeV2GSM can not be created without imsi or secret code', { type: 'UnprocessableEntityError' }));
+    }
     //activate useAuth only for certain models until all sketches are updated
     if (['homeV2Lora', 'homeV2Ethernet', 'homeV2EthernetFeinstaub', 'homeV2Wifi', 'homeV2WifiFeinstaub', 'homeEthernet', 'homeWifi', 'homeEthernetFeinstaub', 'homeWifiFeinstaub', 'hackair_home_v2'].indexOf(model) !== -1) {
       useAuth = true;
