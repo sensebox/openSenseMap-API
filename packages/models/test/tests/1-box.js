@@ -59,10 +59,10 @@ describe('Box model', function () {
 
     it('should allow creation of gsm integration with homeV2GSM model', function () {
       const box = senseBox({
-        model:'homeV2GSM',
-        gsm:{
-          imsi:'973498573498563456873',
-          secret_code:'superSecretCodeForTesting'
+        model: 'homeV2GSM',
+        gsm: {
+          imsi: '973498573498563456873',
+          secret_code: 'superSecretCodeForTesting'
         }
       });
 
@@ -72,11 +72,11 @@ describe('Box model', function () {
           return Box.findById(box._id);
         })
         .then(shouldBeABox)
-        .then(function ( {integrations} ){
+        .then(function ({ integrations }) {
           expect(integrations.gsm.imsi).equal('973498573498563456873');
           expect(integrations.gsm.secret_code).equal('superSecretCodeForTesting');
-        })
-    })
+        });
+    });
 
 
     it('should persist integrations and other properties upon creation', function () {
@@ -222,7 +222,7 @@ describe('Box model', function () {
     });
 
     it('should not allow creation of homeV2GSM without gsm credentials', function () {
-      return Box.initNew(senseBox({ model: 'homeV2GSM'}))
+      return Box.initNew(senseBox({ model: 'homeV2GSM' }))
         .then(shouldNotHappenThenner)
         .catch(function (err) {
           expect(err.name).equal('ModelError');

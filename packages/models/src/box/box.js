@@ -256,7 +256,7 @@ boxSchema.statics.initNew = function ({
   }
   if (model) {
 
-    if(model == 'homeV2GSM' && (!imsi || !secret_code)) {
+    if (model === 'homeV2GSM' && (!imsi || !secret_code)) {
       return Promise.reject(new ModelError('homeV2GSM can not be created without imsi or secret code', { type: 'UnprocessableEntityError' }));
     }
     //activate useAuth only for certain models until all sketches are updated
