@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## v0.0.32a
+
 ## v0.0.32beta
 - Added homeV2GSM to database models
 - Added gsm information to the integrations object
