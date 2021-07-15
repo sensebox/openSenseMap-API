@@ -577,7 +577,7 @@ module.exports = {
   getBoxes: [
     retrieveParameters([
       { name: 'name', dataType: 'String' },
-      { name: 'limit', dataType: 'Number', defaultValue: 5, min: 1, max: 20},
+      { name: 'limit', dataType: 'Number', defaultValue: 5, min: 1, max: 20 },
       { name: 'exposure', allowedValues: Box.BOX_VALID_EXPOSURES, dataType: ['String'] },
       { name: 'model', dataType: ['StringWithEmpty'] },
       { name: 'grouptag', dataType: ['StringWithEmpty'] },
