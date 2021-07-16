@@ -984,7 +984,8 @@ boxSchema.statics.findBoxes = function findBoxes (opts = {}) {
   };
   const projection = {
     _id: 1,
-    name: 1
+    name: 1,
+    currentLocation: 1
   };
 
   return Promise.resolve(this.find(filter, projection).limit(limit)
