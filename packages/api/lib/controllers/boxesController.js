@@ -192,6 +192,8 @@ const geoJsonStringifyReplacer = function geoJsonStringifyReplacer (key, box) {
  * @apiDescription With the optional `date` and `phenomenon` parameters you can find senseBoxes that have submitted data around that time, +/- 4 hours, or specify two dates separated by a comma.
  * @apiName getBoxes
  * @apiGroup Boxes
+ * @apiParam {String} [name] Search string to find boxes by name, if specified all other parameters are ignored.
+ * @apiParam {Number} [limit=5] Limit the search results.
  * @apiParam {RFC3339Date} [date] One or two RFC 3339 timestamps at which boxes should provide measurements. Use in combination with `phenomenon`.
  * @apiParam {String} [phenomenon] A sensor phenomenon (determined by sensor name) such as temperature, humidity or UV intensity. Use in combination with `date`.
  * @apiParam {String=json,geojson} [format=json] the format the sensor data is returned in.
@@ -221,18 +223,25 @@ const getBoxes = async function getBoxes (req, res, next) {
 
   try {
     let stream;
-    if (req._userParams.minimal === 'true') {
-      stream = await Box.findBoxesMinimal(req._userParams);
-    } else {
-      stream = await Box.findBoxesLastMeasurements(req._userParams);
-    }
 
-    if (req._userParams.classify === 'true') {
-      stream = stream
-        .pipe(new classifyTransformer())
-        .on('error', function (err) {
-          res.end(`Error: ${err.message}`);
-        });
+    // Search boxes by name
+    // Directly return results and do nothing else
+    if (req._userParams.name) {
+      stream = await Box.findBoxes(req._userParams);
+    } else {
+      if (req._userParams.minimal === 'true') {
+        stream = await Box.findBoxesMinimal(req._userParams);
+      } else {
+        stream = await Box.findBoxesLastMeasurements(req._userParams);
+      }
+
+      if (req._userParams.classify === 'true') {
+        stream = stream
+          .pipe(new classifyTransformer())
+          .on('error', function (err) {
+            res.end(`Error: ${err.message}`);
+          });
+      }
     }
 
     stream
@@ -567,6 +576,8 @@ module.exports = {
   ],
   getBoxes: [
     retrieveParameters([
+      { name: 'name', dataType: 'String' },
+      { name: 'limit', dataType: 'Number', defaultValue: 5, min: 1, max: 20 },
       { name: 'exposure', allowedValues: Box.BOX_VALID_EXPOSURES, dataType: ['String'] },
       { name: 'model', dataType: ['StringWithEmpty'] },
       { name: 'grouptag', dataType: ['StringWithEmpty'] },

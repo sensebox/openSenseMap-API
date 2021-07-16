@@ -234,6 +234,61 @@ describe('openSenseMap API Routes: /boxes', function () {
       });
   });
 
+  it('should serach for boxes with a specific name', function () {
+    return chakram.get(`${BASE_URL}/boxes?name=sensebox`)
+      .then(function (response) {
+        expect(response).to.have.status(200);
+        expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
+        expect(response.body.length).to.be.equal(3);
+
+        return chakram.wait();
+      });
+  });
+
+  it('should serach for boxes with a specific name and limit the results', function () {
+    return chakram.get(`${BASE_URL}/boxes?name=sensebox&limit=2`)
+      .then(function (response) {
+        expect(response).to.have.status(200);
+        expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
+
+        expect(response.body.length).to.be.equal(2);
+
+        return chakram.wait();
+      });
+  });
+
+  it('should deny searching for a name if limit is greater than max value', function () {
+    return chakram.get(`${BASE_URL}/boxes?name=sensebox&limit=21`)
+      .then(function (response) {
+        expect(response).to.have.status(422);
+        expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
+        expect(response).json({ code: 'UnprocessableEntity', message: 'Illegal value for parameter limit. Supplied value 21 is outside of allowed range (> 20)' });
+
+        return chakram.wait();
+      });
+  });
+
+  it('should deny searching for a name if limit is lower than min value', function () {
+    return chakram.get(`${BASE_URL}/boxes?name=sensebox&limit=0`)
+      .then(function (response) {
+        expect(response).to.have.status(422);
+        expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
+        expect(response).json({ code: 'UnprocessableEntity', message: 'Illegal value for parameter limit. Supplied value 0 is outside of allowed range (< 1)' });
+
+        return chakram.wait();
+      });
+  });
+
+  it('should return empty array if there are no results', function () {
+    return chakram.get(`${BASE_URL}/boxes?name=asdf&limit=5`)
+      .then(function (response) {
+        expect(response).to.have.status(200);
+        expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
+        expect(response).to.comprise.of.json([]);
+
+        return chakram.wait();
+      });
+  });
 
   it('should allow to create new sensors via PUT', function () {
     return chakram.put(`${BASE_URL}/boxes/${custombox_id}`, { 'sensors': [{ 'title': 'PM10', 'unit': 'µg/m³', 'sensorType': 'SDS 011', 'edited': 'true', 'new': 'true' }, { 'title': 'PM2.5', 'unit': 'µg/m³', 'sensorType': 'SDS 011', 'edited': 'true', 'new': 'true' }] }, { headers: { 'Authorization': `Bearer ${jwt2}` } })
