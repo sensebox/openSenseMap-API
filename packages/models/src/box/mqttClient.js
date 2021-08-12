@@ -1,6 +1,7 @@
 'use strict';
 
-const grpc = require('grpc'),
+const protoLoader = require('@grpc/proto-loader'),
+  grpcLibrary = require('@grpc/grpc-js'),
   { mqttProto } = require('@sensebox/osem-protos'),
   log = require('../log'),
   config = require('config').get('openSenseMap-API-models');
@@ -22,9 +23,13 @@ module.exports = {
       return;
     }
 
-    const { MqttService } = grpc.load(mqttProto);
+    const { MqttService } = protoLoader.loadSync(mqttProto);
 
-    const credentials = grpc.credentials.createSsl(Buffer.from(ca_cert), Buffer.from(key), Buffer.from(cert));
+    const credentials = grpcLibrary.credentials.createSsl(
+      Buffer.from(ca_cert),
+      Buffer.from(key),
+      Buffer.from(cert)
+    );
 
     const client = new MqttService(url, credentials);
     log.info({ mqttClient: 'connected GRPC client' });
