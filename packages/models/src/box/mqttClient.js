@@ -23,7 +23,8 @@ module.exports = {
       return;
     }
 
-    const { MqttService } = protoLoader.loadSync(mqttProto);
+    const packageDefinition = protoLoader.loadSync(mqttProto);
+    const MqttService = grpcLibrary.loadPackageDefinition(packageDefinition).MqttService;
 
     const credentials = grpcLibrary.credentials.createSsl(
       Buffer.from(ca_cert),
