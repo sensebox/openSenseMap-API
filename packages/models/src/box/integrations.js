@@ -11,8 +11,9 @@ const mqttSchema = new mongoose.Schema({
     url === '' ||
     url.startsWith('mqtt://') ||
     url.startsWith('mqtts://') ||
-    url.startsWith('ws://')
-  ); }, '{PATH} must be either empty or start with mqtt(s):// or ws://'] },
+    url.startsWith('ws://') ||
+    url.startsWith('wss://')
+  ); }, '{PATH} must be either empty or start with mqtt(s):// or ws(s)://'] },
   topic: { type: String, trim: true },
   messageFormat: { type: String, trim: true, enum: ['json', 'csv', 'application/json', 'text/csv', 'debug_plain', ''] },
   decodeOptions: { type: String, trim: true, validate: isJSONParseableValidation },
