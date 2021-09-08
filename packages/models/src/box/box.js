@@ -976,6 +976,22 @@ const buildFindBoxesQuery = function buildFindBoxesQuery (opts = {}) {
   return query;
 };
 
+// return boxes that match the name paramter
+boxSchema.statics.findBoxes = function findBoxes (opts = {}) {
+  const { name, limit } = opts;
+  const filter = {
+    name: { '$regex': name, '$options': 'i' }
+  };
+  const projection = {
+    _id: 1,
+    name: 1,
+    currentLocation: 1
+  };
+
+  return Promise.resolve(this.find(filter, projection).limit(limit)
+    .cursor({ lean: true }));
+};
+
 // returns a minimal subset of the box documents for speed
 boxSchema.statics.findBoxesMinimal = function findBoxesMinimal (opts = {}) {
   const query = buildFindBoxesQuery(opts);
