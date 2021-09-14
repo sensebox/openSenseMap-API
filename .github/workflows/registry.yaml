@@ -1,8 +1,12 @@
-name: "Docker: Github Registry"
+name: Build and publish to Github Container Registry
 
 on:
   push:
-    branches: [ feat-mqtts ]
+    branches: [ master ]
+    tags: [ 'v*.*.*' ]
+  pull_request:
+    branches:
+      - master
 
 env:
   REGISTRY: ghcr.io
@@ -32,7 +36,7 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           flavor: |
-            latest=true
+            latest=auto
             prefix=
             suffix=
 
