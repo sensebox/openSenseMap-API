@@ -396,6 +396,9 @@ const retrieveParametersPredefs = {
   },
   'password' () {
     return { name: 'password', required: true, dataType: 'as-is' };
+  },
+  'sensors' () {
+    return { name: 'sensors', dataType: ['id'] };
   }
 };
 
@@ -530,10 +533,37 @@ const checkPrivilege = function checkPrivilege (req, res, next) {
   return next(new ForbiddenError('Not signed in or not authorized to access.'));
 };
 
+//PRIVILEGE HECK FOR NOW BECAUSE ONLY OWN BOXES ALLOWED
+//TODO: needed?
+const checkPrivilegeNotification = function checkPrivilegeNotification (req, res, next) {
+
+  if (req.user && req.user.role === config.get('management_role')) {
+    return next();
+  }
+  var boxId;
+  if (req._userParams.box) {
+    boxId = req._userParams.box;
+  } else {
+    boxId = NotificationRule.findOne({_id: req._userParams.notificationRuleId}).exec().box;
+  }
+  if( boxId) {
+    try {
+      req.user.checkBoxOwner(boxId);
+  
+      return next();
+    } catch (err) {
+      return handleModelError(err, next);
+    }
+  }
+
+  return next(new ForbiddenError('Not signed in or not authorized to access.'));
+};
+
 module.exports = {
   validateFromToTimeParams,
   retrieveParameters,
   initUserParams,
   parseAndValidateTimeParamsForFindAllBoxes,
-  checkPrivilege
+  checkPrivilege,
+  checkPrivilegeNotification
 };
