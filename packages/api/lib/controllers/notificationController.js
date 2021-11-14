@@ -4,7 +4,6 @@ const
   { checkContentType } = require('../helpers/apiUtils'),
   {
     retrieveParameters,
-    checkPrivilegeNotification
   } = require('../helpers/userParamHelpers'),
   handleError = require('../helpers/errorHandler'),
   { model: NotificationRule } = require('../../../models/src/notification/notificationRule'),
@@ -33,10 +32,10 @@ const listNotificationRules = async function listNotificationRules(req, res, nex
 
 const createRule = async function createRule(req, res, next) {
   try {
-    req._userParams = {
-      ...req._userParams,
-      notificationChannel: [{ channel: 'email', email: req.user.email }]
-    }
+    // req._userParams = {
+    //   ...req._userParams,
+    //   notificationChannel: [{ channel: 'email', email: req.user.email }]
+    // }
     var newRule = await NotificationRule.initNew(req.user, req._userParams);
     res.send(201, { message: 'Rule successfully created', data: newRule });
     // clearCache(['getBoxes', 'getStats']);
@@ -116,7 +115,6 @@ module.exports = {
       { name: 'notificationChannel', required: true, dataType: [NotificationChannelSchema] },
       { name: 'active', required: true },
     ]),
-    checkPrivilegeNotification,
     createRule
   ],
   getRule: [
@@ -124,7 +122,6 @@ module.exports = {
       { name: 'notificationRuleId', required: true },
       { name: 'box', required: true }
     ]),
-    checkPrivilegeNotification,
     getRule
   ],
   updateRule: [
@@ -140,14 +137,12 @@ module.exports = {
       { name: 'notificationChannel', required: true, dataType: [NotificationChannelSchema] },
       { name: 'active', required: true },
     ]),
-    checkPrivilegeNotification,
     updateRule
   ],
   deleteRule: [
     retrieveParameters([
       { name: 'notificationRuleId', required: true }
     ]),
-    checkPrivilegeNotification,
     deleteRule
   ]
 
