@@ -106,7 +106,7 @@ module.exports = {
   createRule: [
     checkContentType,
     retrieveParameters([
-      { predef: 'sensors', required: true },
+      { predef: 'sensor', required: true },
       { name: 'box', required: true },
       { name: 'name', required: true },
       { name: 'activationThreshold', required: true },
@@ -127,7 +127,7 @@ module.exports = {
   updateRule: [
     checkContentType,
     retrieveParameters([
-      { predef: 'sensors', required: true },
+      { predef: 'sensor', required: true },
       { name: 'box', required: true },
       { name: 'name', required: true },
       { name: 'notificationRuleId', required: true },
