@@ -19,10 +19,11 @@
   // If omitted, the value is generated using base_domain and protocol keys
   // Default: Generated from base_domain and protocol keys
   "api_url": "https://api.my-opensensemap.com",
-  // Honeybadger API key for error reporting
-  // If not specified, Honeybadger integration is disabled
-  // No default
-  "honeybadger_apikey": "a531z298s",
+  // Sentry configuration
+  "sentry": {
+    "dsn": "", // If empty or not specified Sentry API is not enabled
+    "environment": ""
+  },
   // A valid Slack incoming webhook url. Used for sending restart and status messages
   // If not specified, Slack integration is disabled
   // No default

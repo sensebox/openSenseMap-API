@@ -15,7 +15,7 @@ const
   restify = require('restify'),
   { fullResponse, queryParser, jsonBodyParser, pre: { sanitizePath } } = restify.plugins,
   config = require('config'),
-  { preRequest, preCors, Honeybadger, getVersion, postToSlack } = require('./lib/helpers/apiUtils'),
+  { preRequest, preCors, getVersion, postToSlack } = require('./lib/helpers/apiUtils'),
   routes = require('./lib/routes'),
   bunyan = require('bunyan');
 
@@ -56,25 +56,3 @@ db.connect()
     Exiting...`);
     process.exit(1);
   });
-
-// InternalServerError is the only error we want to report to Honeybadger..
-server.on('InternalServer', function (req, res, err, callback) {
-  // set honeybadger context
-  Honeybadger.resetContext({
-    headers: req.headers,
-    method: req.method,
-    url: req.url,
-    httpVersion: req.httpVersion,
-    params: req.params,
-    rawBody: req.rawBody,
-    body: req.body,
-    _body: req._body,
-    query: req.query,
-    _userParams: req._userParams
-  });
-  log.error(err);
-  // and notify
-  Honeybadger.notify(err);
-
-  return callback();
-});
