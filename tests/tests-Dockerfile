@@ -11,7 +11,7 @@ WORKDIR /usr/src/app
 # COPY in dev versions
 COPY . /usr/src/app
 
-RUN apk --no-cache --virtual .build add build-base python git \
+RUN apk --no-cache --virtual .build add build-base python3 git \
   && yarn install --pure-lockfile --production=false \
   && apk del .build
 COPY . /usr/src/app
