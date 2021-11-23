@@ -126,7 +126,8 @@ const routes = {
     { path: `${notificationPath}/notificationRule/:box/:notificationRuleId/`, method: 'get', handler: notificationController.getRule, reference: 'api-Notification-getRule' },
     { path: `${notificationPath}/notificationRule/:notificationRuleId`, method: 'put', handler: notificationController.updateRule, reference: 'api-Notification-updateRule' },
     { path: `${notificationPath}/notificationRule/:notificationRuleId`, method: 'del', handler: notificationController.deleteRule, reference: 'api-Notification-deleteRule' },
-
+   
+    { path: `${notificationPath}`, method: 'get', handler: notificationController.getNotifications, reference: 'api-Notification-listNotifications' }
   ]
 };
 
@@ -138,13 +139,13 @@ const initRoutes = function initRoutes (server) {
   for (const route of routes.noauth) {
     server[route.method]({ path: route.path }, route.handler);
   }
-  
-  for (const route of routes.notifications) {
-    server[route.method]({ path: route.path }, route.handler);
-  }
 
   // Attach secured routes (needs authorization through jwt)
   server.use(verifyJwt);
+
+  for (const route of routes.notifications) {
+    server[route.method]({ path: route.path }, route.handler);
+  }
 
   for (const route of routes.auth) {
     server[route.method]({ path: route.path }, route.handler);

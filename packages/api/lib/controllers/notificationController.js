@@ -96,6 +96,17 @@ const deleteRule = async function deleteRule(req, res, next) {
 
 }
 
+const getNotifications = async function getNotifications(req, res, next) {
+
+  try {
+    // TODO: test if notificationRule belongs to user
+    let personalRules = await Notification.find().exec();
+
+    res.send(201, { message: 'Notifications successfully retrieved', data: personalRules });
+  } catch (err) {
+    handleError(err, next);
+  }
+}
 
 
 
@@ -144,6 +155,12 @@ module.exports = {
       { name: 'notificationRuleId', required: true }
     ]),
     deleteRule
+  ],
+  getNotifications: [
+    retrieveParameters([
+      { name: 'notificationRuleId', required: true }
+    ]),
+    getNotifications
   ]
 
 }
