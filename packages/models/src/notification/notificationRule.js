@@ -71,11 +71,12 @@ notificationRuleSchema.statics.initNew = function(user, params){
 notificationRuleSchema.pre('validate', function(next) {
   if (this.active) {
 
-      notificationRuleModel.find({active: this.active, user: this.user}, function(err,docs){
+      notificationRuleModel.find({sensor: this.sensor, box: this.box, activationThreshold: this.activationThreshold,
+        activationOperator: this.activationOperator, user: this.user, activationTrigger: this.activationTrigger}, function(err,docs){
         if(docs.length < 1) {
           next();
         } else {
-          next(new Error('Only one active notification rule allowed'));
+          next(new Error('Rule already exists'));
         }
     });
     // next(new Error('Only one active notification rule allowed'));
