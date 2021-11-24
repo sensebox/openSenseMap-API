@@ -5,7 +5,8 @@ const { usersController,
     boxesController,
     sensorsController,
     measurementsController,
-    managementController } = require('./controllers'),
+    managementController,
+    notificationController } = require('./controllers'),
   config = require('config'),
   { getVersion } = require('./helpers/apiUtils'),
   { verifyJwt } = require('./helpers/jwtHelpers'),
@@ -67,7 +68,7 @@ const printRoutes = function printRoutes (req, res) {
   res.end(lines.join('\n'));
 };
 
-const { boxes: boxesPath, users: usersPath, statistics: statisticsPath, management: managementPath } = config.get('routes');
+const { boxes: boxesPath, users: usersPath, statistics: statisticsPath, management: managementPath, notification: notificationPath } = config.get('routes');
 // the ones matching first are used
 // case is ignored
 const routes = {
@@ -117,7 +118,16 @@ const routes = {
     { path: `${managementPath}/users/:userId`, method: 'put', handler: managementController.updateUser, reference: 'api-Admin-updateUser' },
     { path: `${managementPath}/users/delete`, method: 'post', handler: managementController.deleteUsers, reference: 'api-Admin-deleteUsers' },
     { path: `${managementPath}/users/:userId/exec`, method: 'post', handler: managementController.execUserAction, reference: 'api-Admin-execUserAction' },
+  ],
 
+  'notifications': [
+    { path: `${notificationPath}/notificationRule`, method: 'get', handler: notificationController.listNotificationRules, reference: 'api-Notification-listNotificationRules' },
+    { path: `${notificationPath}/notificationRule`, method: 'post', handler: notificationController.createRule, reference: 'api-Notification-createRule' },
+    { path: `${notificationPath}/notificationRule/:box/:notificationRuleId/`, method: 'get', handler: notificationController.getRule, reference: 'api-Notification-getRule' },
+    { path: `${notificationPath}/notificationRule/:notificationRuleId`, method: 'put', handler: notificationController.updateRule, reference: 'api-Notification-updateRule' },
+    { path: `${notificationPath}/notificationRule/:notificationRuleId`, method: 'del', handler: notificationController.deleteRule, reference: 'api-Notification-deleteRule' },
+   
+    { path: `${notificationPath}`, method: 'get', handler: notificationController.getNotifications, reference: 'api-Notification-listNotifications' }
   ]
 };
 
@@ -132,6 +142,10 @@ const initRoutes = function initRoutes (server) {
 
   // Attach secured routes (needs authorization through jwt)
   server.use(verifyJwt);
+
+  for (const route of routes.notifications) {
+    server[route.method]({ path: route.path }, route.handler);
+  }
 
   for (const route of routes.auth) {
     server[route.method]({ path: route.path }, route.handler);
