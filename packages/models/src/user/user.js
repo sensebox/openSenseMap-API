@@ -14,6 +14,7 @@ const { mongoose } = require('../db'),
   { min_length: password_min_length, salt_factor: password_salt_factor } = require('config').get('openSenseMap-API-models.password'),
   { v4: uuidv4 } = require('uuid'),
   { model: Box } = require('../box/box'),
+  { model: Claim } = require('../box/claim'),
   mails = require('./mails'),
   moment = require('moment'),
   timestamp = require('mongoose-timestamp'),
@@ -349,6 +350,31 @@ userSchema.methods.removeBox = function removeBox (boxId) {
           return box;
         });
 
+    });
+};
+
+userSchema.methods.transferBox = function transferBox (boxId) {
+  const user = this;
+
+  // checkBoxOwner throws ModelError
+  user.checkBoxOwner(boxId);
+
+  return Claim.initClaim(boxId)
+    .then(function (claim) {
+      return claim;
+    });
+};
+
+userSchema.methods.claimBox = function claimBox (token) {
+  const user = this;
+
+  return Claim.findClaimByToken(token)
+    .exec()
+    .then(function (claim) {
+      return {
+        owner: user.id,
+        boxId: claim.boxId
+      };
     });
 };
 
