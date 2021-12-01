@@ -488,10 +488,12 @@ const deleteBox = async function deleteBox (req, res, next) {
 };
 
 /**
- *
- * @param {*} req
- * @param {*} res
- * @param {*} next
+ * @api {get} /boxes/:senseBoxId/transfer Mark a senseBox for transferring to a different user
+ * @apiDescription This will mark a senseBox for transfering it to a different user account
+ * @apiName transferBox
+ * @apiGroup Boxes
+ * @apiUse JWTokenAuth
+ * @apiUse BoxIdParam
  */
 const transferBox = async function transferBox (req, res, next) {
   const { boxId } = req._userParams;
@@ -504,10 +506,13 @@ const transferBox = async function transferBox (req, res, next) {
 };
 
 /**
- *
- * @param {*} req
- * @param {*} res
- * @param {*} next
+ * @api {post} /boxes/claim Claim a senseBox marked for transfer
+ * @apiDescription This will claim a senseBox marked for transfer
+ * @apiName claimBox
+ * @apiGroup Boxes
+ * @apiUse ContentTypeJSON
+ * @apiParam (RequestBody) {String} token the token to claim a senseBox
+ * @apiUse JWTokenAuth
  */
 const claimBox = async function claimBox (req, res, next) {
   const { token } = req._userParams;
@@ -540,8 +545,7 @@ module.exports = {
   claimBox: [
     checkContentType,
     retrieveParameters([
-      { name: 'token', dataType: 'String' },
-      { name: 'owner', dataType: 'id' },
+      { name: 'token', dataType: 'String' }
     ]),
     claimBox,
   ],

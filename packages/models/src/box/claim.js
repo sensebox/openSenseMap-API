@@ -9,21 +9,26 @@ const claimSchema = new Schema({
   boxId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Box',
-    required: true
+    required: true,
   },
   token: {
-    type: String
+    type: String,
   },
-  expires: {
+  createdAt: {
     type: Date,
-    default: moment.utc().toDate()
-  }
+    default: moment.utc().toDate(),
+  },
+  expiresAt: {
+    type: Date,
+    default: moment.utc().add(1, 'd')
+      .toDate(),
+  },
 });
 
-claimSchema.index({ expires: 1 }, { expireAfterSeconds: 3600 });
+claimSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 
 claimSchema.statics.initClaim = function initClaim (boxId) {
-  const token = crypto.randomBytes(12).toString('hex');
+  const token = crypto.randomBytes(6).toString('hex');
 
   return this.create({
     boxId,
