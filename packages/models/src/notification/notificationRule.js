@@ -8,11 +8,11 @@ const { mongoose } = require('../db'),
 
 //Sensor schema
 const notificationRuleSchema = new mongoose.Schema({
-  sensor: {
+  sensors: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Sensor',
     required: true
-  },
+  }],
   name: {
     type: String,
     required: true,

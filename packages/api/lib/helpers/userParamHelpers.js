@@ -397,8 +397,8 @@ const retrieveParametersPredefs = {
   'password' () {
     return { name: 'password', required: true, dataType: 'as-is' };
   },
-  'sensor' () {
-    return { name: 'sensor', dataType: 'id' };
+  'sensors' () {
+    return { name: 'sensors', dataType: ['id'] };
   }
 };
 
