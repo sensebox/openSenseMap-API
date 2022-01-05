@@ -25,11 +25,17 @@ const notificationRuleSchema = new mongoose.Schema({
   },
   activationThreshold: {
     type: Number,
-    required: true
+    required: true,
+    validate: {
+      validator: function (v) {
+        return (this.activationOperator != 'unusual' || (v < 100 && v > 0));
+      },
+      message: "activationThreshold has to be between 0 and 100 for 'unusual' activationOperator"
+    }
   },
   activationOperator: {
     type: String,
-    enum: ['over', 'under', 'equal'],
+    enum: ['over', 'under', 'equal', 'unusual'],
     required: true
   },
   activationTrigger: {
