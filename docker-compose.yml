@@ -1,7 +1,7 @@
 version: "2"
 services:
   db:
-    image: sensebox/opensensemap-api-mongo
+    image: ghcr.io/sensebox/osem-dev-mongo:v1.0.1
     ports:
       - "27017:27017"
     volumes:
