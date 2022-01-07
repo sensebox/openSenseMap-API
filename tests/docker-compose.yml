@@ -173,7 +173,7 @@ services:
     depends_on:
       - mailhog
   mailhog:
-    image: mailhog/mailhog:v1.0.0
+    image: mailhog/mailhog:v1.0.1
     ports:
       - "8025:8025"
 
@@ -206,4 +206,4 @@ services:
       - ./mosquitto:/mosquitto/config
 
   db:
-    image: mongo:${MONGO_TAG:-3.4}
+    image: mongo:${MONGO_TAG:-5}

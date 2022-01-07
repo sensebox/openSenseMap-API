@@ -1,8 +1,8 @@
-FROM node:14.17-alpine as build
+FROM node:14.18-alpine as build
 
 ENV NODE_ENV=production
 
-RUN apk --no-cache --virtual .build add build-base python git
+RUN apk --no-cache --virtual .build add build-base python2 git
 
 # taken from node:6-onbuild
 #RUN mkdir -p /usr/src/app
@@ -23,7 +23,7 @@ RUN yarn create-version-file \
   && rm -rf .git .scripts
 
 # Final stage
-FROM node:14.17-alpine
+FROM node:14.18-alpine
 
 ENV NODE_ENV=production
 
