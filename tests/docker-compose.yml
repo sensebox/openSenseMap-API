@@ -173,12 +173,12 @@ services:
     depends_on:
       - mailhog
   mailhog:
-    image: mailhog/mailhog:v1.0.0
+    image: mailhog/mailhog:v1.0.1
     ports:
       - "8025:8025"
 
   mqtt-osem-integration:
-    image: sensebox/mqtt-osem-integration:v0.0.7
+    image: ghcr.io/sensebox/mqtt-osem-integration:v0.1.0
     depends_on:
       - db
     environment:
@@ -199,7 +199,7 @@ services:
         }
 
   mosquitto:
-    image: eclipse-mosquitto:1.4.12
+    image: eclipse-mosquitto:1.6.15
 
   db:
-    image: mongo:${MONGO_TAG:-3.4}
+    image: mongo:${MONGO_TAG:-5}
