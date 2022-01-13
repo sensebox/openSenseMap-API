@@ -26,7 +26,7 @@
     "eslint": "7.26.0",
     "mimelib": "^0.3.1",
     "mocha": "^8.3.2",
-    "mqtt": "^4.2.8",
+    "mqtt": "^4.3.4",
     "randomgeojson": "^1.0.0"
   }
 }
