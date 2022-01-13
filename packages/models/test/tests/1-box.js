@@ -88,7 +88,8 @@ describe('Box model', function () {
         .then(function ({ integrations, name, grouptag, exposure }) {
           expect(name).equal('integrationsbox');
 
-          expect(grouptag).equal(['grouptagTest']);
+          // expect(grouptag).equal(['grouptagTest']);
+          expect(grouptag).to.be.an('array').that.include('grouptagTest');
 
           expect(exposure).equal('outdoor');
 
