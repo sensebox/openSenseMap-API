@@ -65,7 +65,7 @@ const boxSchema = new Schema({
     enum: ['unknown', 'indoor', 'outdoor', 'mobile']
   },
   grouptag: {
-    type: String,
+    type: [String],
     trim: true,
     required: false
   },
@@ -880,7 +880,7 @@ boxSchema.methods.updateBox = function updateBox (args) {
   // only grouptag, description and weblink can removed through setting them to empty string ('')
   for (const prop of ['name', 'exposure', 'grouptag', 'description', 'weblink', 'image', 'integrations.mqtt', 'integrations.ttn', 'model', 'useAuth']) {
     if (typeof args[prop] !== 'undefined') {
-      box.set(prop, (args[prop] === '' ? undefined : args[prop]));
+      box.set(prop, ((args[prop] === '' || (Array.isArray(args[prop]) && args[prop].length === 0)) ? undefined : args[prop]));
     }
   }
 
