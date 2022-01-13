@@ -17,4 +17,4 @@ jobs:
           organization: ${{ github.repository_owner}}
           container: ${{ github.event.repository.name }}
           tag-regex: pr-${{github.event.pull_request.number}}$
-          dry-run: true
+          dry-run: false
