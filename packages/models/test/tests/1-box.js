@@ -60,7 +60,7 @@ describe('Box model', function () {
     it('should persist integrations and other properties upon creation', function () {
       const box = senseBox({
         name: 'integrationsbox',
-        grouptag: 'grouptagTest',
+        grouptag: ['grouptagTest'],
         exposure: 'outdoor',
         ttn: {
           dev_id: 'test_devid',
@@ -88,7 +88,7 @@ describe('Box model', function () {
         .then(function ({ integrations, name, grouptag, exposure }) {
           expect(name).equal('integrationsbox');
 
-          expect(grouptag).equal('grouptagTest');
+          expect(grouptag).equal(['grouptagTest']);
 
           expect(exposure).equal('outdoor');
 
@@ -560,7 +560,7 @@ describe('Box model', function () {
         }) {
           expect(name).equal(updatePayload.name);
           expect(exposure).equal(updatePayload.exposure);
-          expect(grouptag).equal(updatePayload.grouptag);
+          expect(grouptag).equal([updatePayload.grouptag]);
           expect(weblink).equal(updatePayload.weblink);
           expect(description).equal(updatePayload.description);
           expect(model).equal(updatePayload.model);
@@ -616,11 +616,11 @@ describe('Box model', function () {
           return Box.findById(box._id);
         })
         .then(function (box) {
-          expect(box.grouptag).equal(updatePayload.grouptag);
+          expect(box.grouptag).equal([updatePayload.grouptag]);
           expect(box.weblink).equal(updatePayload.weblink);
           expect(box.description).equal(updatePayload.description);
 
-          updatePayload.grouptag = '';
+          updatePayload.grouptag = [];
           updatePayload.weblink = '';
           updatePayload.description = '';
 
