@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+## v0.0.32-beta.0
+- Allow mqtts nad wss for mqtt-integration
+
 ## v0.0.31
 - Update @sensebox/node-sketch-templater to v1.10.5
 
