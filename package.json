@@ -13,7 +13,9 @@
     "tag-container": "./.scripts/npm_tag-container.sh",
     "lint:ci": "eslint --ignore-pattern node_modules \"{tests,packages}/**/*.js\"",
     "lint": "eslint --ignore-pattern node_modules --fix \"{tests,packages}/**/*.js\"",
-    "create-version-file": "node .scripts/create-version.js"
+    "create-version-file": "node .scripts/create-version.js",
+    "build-docs": "npx apidoc@0.17.6 -i . -f js -e node_modules",
+    "serve-docs": "npx http-server@14.1.0 ./doc"
   },
   "devDependencies": {
     "@sensebox/eslint-config-sensebox": "^1.1.0",
