@@ -7,7 +7,13 @@ const { mongoose } = require('../db'),
 
 const mqttSchema = new mongoose.Schema({
   enabled: { type: Boolean, default: false, required: true },
-  url: { type: String, trim: true, validate: [function validMqttUri (url) { return url === '' || url.startsWith('mqtt://') || url.startsWith('ws://'); }, '{PATH} must be either empty or start with mqtt:// or ws://'] },
+  url: { type: String, trim: true, validate: [function validMqttUri (url) { return (
+    url === '' ||
+    url.startsWith('mqtt://') ||
+    url.startsWith('mqtts://') ||
+    url.startsWith('ws://') ||
+    url.startsWith('wss://')
+  ); }, '{PATH} must be either empty or start with mqtt(s):// or ws(s)://'] },
   topic: { type: String, trim: true },
   messageFormat: { type: String, trim: true, enum: ['json', 'csv', 'application/json', 'text/csv', 'debug_plain', ''] },
   decodeOptions: { type: String, trim: true, validate: isJSONParseableValidation },
