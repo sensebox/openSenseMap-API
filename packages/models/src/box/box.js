@@ -65,7 +65,7 @@ const boxSchema = new Schema({
     enum: ['unknown', 'indoor', 'outdoor', 'mobile']
   },
   grouptag: {
-    type: [String],
+    type: [String], // Default value for array is [] (empty array)
     trim: true,
     required: false
   },

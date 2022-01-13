@@ -22,7 +22,7 @@ const loc = function loc ({ bbox, loc }) {
 const senseBox = function senseBox ({
   name = 'testSensebox',
   location = {},
-  grouptag = undefined,
+  grouptag,
   exposure = 'indoor',
   model = 'homeEthernet',
   sensors,
