@@ -199,7 +199,11 @@ services:
         }
 
   mosquitto:
-    image: eclipse-mosquitto:1.6.15
+    image: eclipse-mosquitto:2.0.12
+    ports:
+      - "8883:8883"
+    volumes:
+      - ./mosquitto:/mosquitto/config
 
   db:
     image: mongo:${MONGO_TAG:-5}
