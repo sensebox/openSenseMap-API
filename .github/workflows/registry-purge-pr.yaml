@@ -11,10 +11,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Purge Pull Request Image
-        uses: vlaurin/action-ghcr-prune@v0.2.0
+        uses: vlaurin/action-ghcr-prune@v0.3.0
         with:
           token: ${{ secrets.GHCR_TOKEN}}
           organization: ${{ github.repository_owner}}
           container: ${{ github.event.repository.name }}
           tag-regex: pr-${{github.event.pull_request.number}}$
-          dry-run: true
+          dry-run: false
