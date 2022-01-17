@@ -512,7 +512,7 @@ describe('openSenseMap API Routes: /boxes', function () {
   });
 
   it('should allow to enable mqtt via PUT', function () {
-    const update_payload = { mqtt: { enabled: true, url: 'mqtt://mosquitto', topic: 'mytopic', messageFormat: 'json', decodeOptions: '{}', connectionOptions: '{}' } };
+    const update_payload = { mqtt: { enabled: true, url: 'mqtt://mosquitto:8883', topic: 'mytopic', messageFormat: 'json', decodeOptions: '{}', connectionOptions: '{}' } };
 
     return chakram.put(`${BASE_URL}/boxes/${boxIds[1]}`, update_payload, { headers: { 'Authorization': `Bearer ${jwt2}` } })
       .then(function (response) {
