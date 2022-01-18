@@ -23,6 +23,8 @@ const log = bunyan.createLogger({ name: 'opensensemap-api', serializers: bunyan.
 
 const server = restify.createServer({
   name: `opensensemap-api (${getVersion})`,
+  // onceNext: true,
+  strictNext: false,
   log
 });
 
