@@ -8,7 +8,7 @@ const config = require('config');
 
 config.util.setModuleDefaults('openSenseMap-API-models', {
   'db': {
-    'host': 'localhost',
+    'host': '192.168.99.100', // mongo --eval 'db.auth("admin", "admin")' 192.168.99.100:27017/OSeM-api
     'port': 27017,
     'user': 'admin',
     'userpass': 'admin',

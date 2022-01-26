@@ -19,7 +19,13 @@ const notificationSchema = new mongoose.Schema({
   }
 });
 
+notificationSchema.statics.initNew = function(user, params){
 
+  return this.create({
+   ...params,
+    user: user
+  })
+}
 
 const notificationModel = mongoose.model('Notification', notificationSchema);
 

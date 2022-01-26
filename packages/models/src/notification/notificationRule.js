@@ -61,6 +61,11 @@ const notificationRuleSchema = new mongoose.Schema({
   user: {
     ref: 'User',
     type: mongoose.Schema.Types.ObjectId
+  },
+  connected: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'notificationRuleConnector',
+    required: false
   }
 });
 

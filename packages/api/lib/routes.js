@@ -126,7 +126,10 @@ const routes = {
     { path: `${notificationPath}/notificationRule/:box/:notificationRuleId/`, method: 'get', handler: notificationController.getRule, reference: 'api-Notification-getRule' },
     { path: `${notificationPath}/notificationRule/:notificationRuleId`, method: 'put', handler: notificationController.updateRule, reference: 'api-Notification-updateRule' },
     { path: `${notificationPath}/notificationRule/:notificationRuleId`, method: 'del', handler: notificationController.deleteRule, reference: 'api-Notification-deleteRule' },
-   
+    { path: `${notificationPath}/notificationRule/connect`, method: 'post', handler: notificationController.connectRules, reference: 'api-Notification-connect' },
+    { path: `${notificationPath}/notificationRule/connect/:notificationRuleConnectorId`, method: 'del', handler: notificationController.deleteConnector, reference: 'api-Notification-deleteConnector' },
+    { path: `${notificationPath}/notificationRule/connect/:notificationRuleConnectorId`, method: 'put', handler: notificationController.updateConnector, reference: 'api-Notification-updateConnector' },
+    { path: `${notificationPath}/notificationRule/connects`, method: 'get', handler: notificationController.getConnectors, reference: 'api-Notification-getConnects' },
     { path: `${notificationPath}`, method: 'get', handler: notificationController.getNotifications, reference: 'api-Notification-listNotifications' }
   ]
 };
