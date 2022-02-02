@@ -938,14 +938,18 @@ boxSchema.methods.getLocations = function getLocations ({ format, fromDate, toDa
 };
 
 const buildFindBoxesQuery = function buildFindBoxesQuery (opts = {}) {
-  const { phenomenon, fromDate, toDate, bbox, near, maxDistance } = opts,
+  const { phenomenon, fromDate, toDate, bbox, near, maxDistance, grouptag } = opts,
     query = {};
 
   // simple string parameters
-  for (const param of ['exposure', 'model', 'grouptag']) {
+  for (const param of ['exposure', 'model']) {
     if (opts[param]) {
       query[param] = { '$in': opts[param] };
     }
+  }
+
+  if (grouptag) {
+    query['grouptag'] = { '$all': grouptag };
   }
 
   // bbox search parameter
