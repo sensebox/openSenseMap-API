@@ -30,10 +30,8 @@ const migrate = function migrate() {
         const grouptags = [];
         grouptags.push(box.grouptag);
 
-        if (grouptags !== undefined) {
-          box.set("grouptag", grouptags);
-          promises.push(box.save());
-        }
+        box.set("grouptag", grouptags);
+        promises.push(box.save());
       }
 
       return Promise.all(promises).then(function () {
