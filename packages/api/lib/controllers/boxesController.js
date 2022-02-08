@@ -562,6 +562,7 @@ module.exports = {
       { name: 'windSpeedPort', dataType: 'String', defaultValue: 'C', allowedValues: ['A', 'B', 'C'] },
       { name: 'mqtt', dataType: 'object' },
       { name: 'ttn', dataType: 'object' },
+      { name: 'gsm', dataType: 'object' },
       { name: 'useAuth', allowedValues: ['true', 'false'] },
       { predef: 'location', required: true }
     ]),

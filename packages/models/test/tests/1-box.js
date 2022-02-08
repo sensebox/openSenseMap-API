@@ -56,6 +56,26 @@ describe('Box model', function () {
           testBoxes[box._id] = box;
         });
     });
+    it('should allow creation of gsm integration with homeV2GSM model', function () {
+      const box = senseBox({
+        model: 'homeV2GSM',
+        gsm: {
+          imsi: '973498573498563456873',
+          secret_code: 'superSecretCodeForTesting'
+        }
+      });
+
+      return Box.initNew(box)
+        .then(shouldBeABoxWithSecrets)
+        .then(function (box) {
+          return Box.findById(box._id);
+        })
+        .then(shouldBeABox)
+        .then(function ({ integrations }) {
+          expect(integrations.gsm.imsi).equal('973498573498563456873');
+          expect(integrations.gsm.secret_code).equal('superSecretCodeForTesting');
+        });
+    });
 
     it('should persist integrations and other properties upon creation', function () {
       const box = senseBox({
@@ -196,6 +216,15 @@ describe('Box model', function () {
           expect(err.message).equal(
             'Parameters model and sensors cannot be specified at the same time.'
           );
+        });
+    });
+
+    it('should not allow creation of homeV2GSM without gsm credentials', function () {
+      return Box.initNew(senseBox({ model: 'homeV2GSM' }))
+        .then(shouldNotHappenThenner)
+        .catch(function (err) {
+          expect(err.name).equal('ModelError');
+          expect(err.message).equal('homeV2GSM can not be created without imsi or secret code');
         });
     });
 
