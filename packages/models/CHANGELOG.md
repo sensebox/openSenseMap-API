@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+## v0.0.32-beta.1
+
+## v0.0.32-beta.1
+- Added homeV2GSM to database models
+- Added gsm information to the integrations object
+
 ## v0.0.32-beta.0
 - Allow mqtts nad wss for mqtt-integration
 
