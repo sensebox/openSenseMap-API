@@ -144,9 +144,9 @@
   integrity sha512-H+nUVcWlT0dvIqfJnYHuX9JBcCkP1ZKGE5YTRNWPbAEdZ11h+srpQsmeI58wK5hJcdukaZAjc4Dy96IeGM77aA==
 
 "@sensebox/sketch-templater@^1.10.5":
-  version "1.10.5"
-  resolved "https://registry.yarnpkg.com/@sensebox/sketch-templater/-/sketch-templater-1.10.5.tgz#ea4ceefa8ab5f4a7a222b7d8694d7aa51a7313fc"
-  integrity sha512-4SjU3HWsIThsi8M2iUXon95UNyZaXw2qbivsAh4eP7+HsXn1lXhuGOG1Q/wVZU0Ju62cY4jc93G+8Bixsab1Zw==
+  version "1.11.0"
+  resolved "https://registry.yarnpkg.com/@sensebox/sketch-templater/-/sketch-templater-1.11.0.tgz#82cd063ec5c38a240eb7a6d0bd278944908225dc"
+  integrity sha512-Yj1DWSJjI/Jq8i2qwDSNbD/rmpbDn7AZx8ozPx2a2Q3V/5e3ocdtGKPpDn4KPf4wpW9zqPZ5Xf+yE6VCWjGPDw==
   dependencies:
     config "^1.29.2"
     dedent "^0.7.0"
@@ -465,9 +465,9 @@ anymatch@~3.1.1:
     picomatch "^2.0.4"
 
 apicache@^1.6.2:
-  version "1.6.2"
-  resolved "https://registry.yarnpkg.com/apicache/-/apicache-1.6.2.tgz#a0a3d51024fa2814c4ace7e9e7053ebcb0920ee6"
-  integrity sha512-3z5e+1E2qwZoqzFVgdx5l9nGhSG0kHv3v2G170vnJSz5uj4mCLVZfRw0o37aWwV8pTPXSkB8OBZz3TIur4H26g==
+  version "1.6.3"
+  resolved "https://registry.yarnpkg.com/apicache/-/apicache-1.6.3.tgz#4441aa40f2a48c9dd6f11c73be937d563405355b"
+  integrity sha512-jS3VfUFpQ9BesFQZcdd1vVYg3ZsO2kGPmTJHqycIYPAQs54r74CRiyj8DuzJpwzLwIfCBYzh4dy9Jt8xYbo27w==
 
 aproba@^1.0.3:
   version "1.2.0"
