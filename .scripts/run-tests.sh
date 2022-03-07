@@ -50,7 +50,7 @@ function executeTests() {
     # Allow the dust to settle
     sleep 3
 
-    runComposeCommand exec -T osem-api yarn mocha --timeout 15000 --exit tests/waitForHttp.js tests/tests.js
+    runComposeCommand exec -T osem-api yarn mocha --exit tests/waitForHttp.js tests/tests.js
     runComposeCommand stop osem-api
   fi
 
