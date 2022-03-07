@@ -26,7 +26,7 @@ const minimalSensebox = function minimalSensebox (location = [123, 12, 34], expo
 describe('openSenseMap API locations tests', function () {
   let authHeader, authHeaderBox, csvAndAuthHeader, box, submitTimeLoc1;
 
-  before('add test user', function (done) {
+  before('add test user', function () {
     const user = { name: 'locationtestuser', email: 'locationtestuser@test.test', password: '12345678' };
 
     chakram.post(`${process.env.OSEM_TEST_BASE_URL}/users/register`, user)
@@ -36,9 +36,8 @@ describe('openSenseMap API locations tests', function () {
         authHeader = { headers: { 'Authorization': `Bearer ${response.body.token}` } };
         // done();
 
-        // return chakram.wait();
-      })
-      .then(done, done);
+        return chakram.wait();
+      });
   });
 
   after('delete user', function (done) {
