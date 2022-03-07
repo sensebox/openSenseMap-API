@@ -29,21 +29,21 @@ describe('openSenseMap API locations tests', function () {
   before('add test user', function () {
     const user = { name: 'locationtestuser', email: 'locationtestuser@test.test', password: '12345678' };
 
-    chakram.post(`${process.env.OSEM_TEST_BASE_URL}/users/register`, user)
+    return chakram.post(`${process.env.OSEM_TEST_BASE_URL}/users/register`, user)
       .then(logResponseIfError)
       .then(function (response) {
         expect(response.body.token).to.exist;
         authHeader = { headers: { 'Authorization': `Bearer ${response.body.token}` } };
         // done();
 
-        return chakram.wait();
+        // return chakram.wait();
       });
   });
 
-  after('delete user', function (done) {
-    chakram.delete(`${process.env.OSEM_TEST_BASE_URL}/users/me`, { password: '12345678' }, authHeader)
-      .then(logResponseIfError)
-      .then(done, done);
+  after('delete user', function () {
+    return chakram.delete(`${process.env.OSEM_TEST_BASE_URL}/users/me`, { password: '12345678' }, authHeader)
+      .then(logResponseIfError);
+    // .then(done, done);
     // .then(() => done());
     // .then(function () {
     //   return chakram.wait();
