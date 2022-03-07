@@ -99,13 +99,13 @@ describe('openSenseMap API locations tests', function () {
 
   });
 
-  describe('POST /boxes', function () {
+  describe('POST /boxes', function (done) {
     const BASE_URL = `${process.env.OSEM_TEST_BASE_URL}/boxes`;
 
     it('should allow to set the location for a new box as array', function () {
       const loc = [0, 0, 0];
 
-      return chakram.post(BASE_URL, minimalSensebox(loc), authHeader)
+      chakram.post(BASE_URL, minimalSensebox(loc), authHeader)
         .then(logResponseIfError)
         .then(function (response) {
           expect(response).to.have.status(201);
@@ -118,8 +118,9 @@ describe('openSenseMap API locations tests', function () {
           authHeaderBox = { headers: { 'Authorization': `${response.body.data.access_token}` } };
           csvAndAuthHeader = { json: false, headers: { 'Content-Type': 'text/csv', 'Authorization': response.body.data.access_token } };
 
-          return chakram.wait();
-        });
+          // return chakram.wait();
+        })
+        .then(done, done);
     });
 
     it('should allow to set the location for a new box as latLng object', function () {
