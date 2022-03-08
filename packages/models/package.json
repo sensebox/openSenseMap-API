@@ -8,7 +8,7 @@
     "@grpc/grpc-js": "^1.3.7",
     "@grpc/proto-loader": "^0.6.4",
     "@sensebox/osem-protos": "^1.1.0",
-    "@sensebox/sketch-templater": "1.11.1",
+    "@sensebox/sketch-templater": "1.11.2",
     "bcrypt": "^5.0.1",
     "bunyan": "^1.8.15",
     "config": "^3.3.6",
