@@ -143,12 +143,12 @@
   resolved "https://registry.yarnpkg.com/@sensebox/osem-protos/-/osem-protos-1.1.0.tgz#a7de8bc6be867953f1309181a012063c23299e79"
   integrity sha512-H+nUVcWlT0dvIqfJnYHuX9JBcCkP1ZKGE5YTRNWPbAEdZ11h+srpQsmeI58wK5hJcdukaZAjc4Dy96IeGM77aA==
 
-"@sensebox/sketch-templater@1.10.5":
-  version "1.10.5"
-  resolved "https://registry.yarnpkg.com/@sensebox/sketch-templater/-/sketch-templater-1.10.5.tgz#ea4ceefa8ab5f4a7a222b7d8694d7aa51a7313fc"
-  integrity sha512-4SjU3HWsIThsi8M2iUXon95UNyZaXw2qbivsAh4eP7+HsXn1lXhuGOG1Q/wVZU0Ju62cY4jc93G+8Bixsab1Zw==
+"@sensebox/sketch-templater@1.11.1":
+  version "1.11.1"
+  resolved "https://registry.yarnpkg.com/@sensebox/sketch-templater/-/sketch-templater-1.11.1.tgz#9d78133688b5d8879cf3d78f9aefa4f01dd232cd"
+  integrity sha512-F1KhhWg/m6ePOGNbclGeBL4BrvSKwTVT5fcYaki/KP5oytE15M+JLrgS8y0i+QuHzf0zG0zP+LYDzH0c2BNrXg==
   dependencies:
-    config "^1.29.2"
+    config "^3.3.7"
     dedent "^0.7.0"
 
 "@sindresorhus/is@^4.0.0":
@@ -920,17 +920,17 @@ concat-stream@^2.0.0:
     readable-stream "^3.0.2"
     typedarray "^0.0.6"
 
-config@^1.29.2:
-  version "1.31.0"
-  resolved "https://registry.yarnpkg.com/config/-/config-1.31.0.tgz#ab08aeba6536015d220cd0afe14b3e0501082542"
-  integrity sha512-Ep/l9Rd1J9IPueztJfpbOqVzuKHQh4ZODMNt9xqTYdBBNRXbV4oTu34kCkkfdRVcDq0ohtpaeXGgb+c0LQxFRA==
-  dependencies:
-    json5 "^1.0.1"
-
 config@^3.3.6:
   version "3.3.6"
   resolved "https://registry.yarnpkg.com/config/-/config-3.3.6.tgz#b87799db7399cc34988f55379b5f43465b1b065c"
   integrity sha512-Hj5916C5HFawjYJat1epbyY2PlAgLpBtDUlr0MxGLgo3p5+7kylyvnRY18PqJHgnNWXcdd0eWDemT7eYWuFgwg==
+  dependencies:
+    json5 "^2.1.1"
+
+config@^3.3.7:
+  version "3.3.7"
+  resolved "https://registry.yarnpkg.com/config/-/config-3.3.7.tgz#4310410dc2bf4e0effdca21a12a4035860a24ee4"
+  integrity sha512-mX/n7GKDYZMqvvkY6e6oBY49W8wxdmQt+ho/5lhwFDXqQW9gI+Ahp8EKp8VAbISPnmf2+Bv5uZK7lKXZ6pf1aA==
   dependencies:
     json5 "^2.1.1"
 
@@ -1984,13 +1984,6 @@ json-stringify-safe@~5.0.1:
   resolved "https://registry.yarnpkg.com/json-stringify-safe/-/json-stringify-safe-5.0.1.tgz#1296a2d58fd45f19a0f6ce01d65701e2c735b6eb"
   integrity sha1-Epai1Y/UXxmg9s4B1lcB4sc1tus=
 
-json5@^1.0.1:
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/json5/-/json5-1.0.1.tgz#779fb0018604fa854eacbf6252180d83543e3dbe"
-  integrity sha512-aKS4WQjPenRxiQsC93MNfjx+nbF4PAdYzmd/1JIj8HYzqfbu86beTuNgXDzPknWk0n0uARlyewZo4s++ES36Ow==
-  dependencies:
-    minimist "^1.2.0"
-
 json5@^2.1.1:
   version "2.1.3"
   resolved "https://registry.yarnpkg.com/json5/-/json5-2.1.3.tgz#c9b0f7fa9233bfe5807fe66fcf3a5617ed597d43"
@@ -2236,7 +2229,7 @@ minimalistic-assert@^1.0.0:
   dependencies:
     brace-expansion "^1.1.7"
 
-minimist@^1.1.0, minimist@^1.2.0, minimist@^1.2.5:
+minimist@^1.1.0, minimist@^1.2.5:
   version "1.2.5"
   resolved "https://registry.yarnpkg.com/minimist/-/minimist-1.2.5.tgz#67d66014b66a6a8aaa0c083c5fd58df4e4e97602"
   integrity sha512-FM9nNUYrRBAELZQT3xeZQ7fmMOBg6nWNmJKTcgsJeaLstP/UODVpGsr5OhXhhXg6f+qtJ8uiZ+PUxkDWcgIXLw==
