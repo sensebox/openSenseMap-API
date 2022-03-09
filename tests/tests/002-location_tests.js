@@ -26,22 +26,25 @@ const minimalSensebox = function minimalSensebox (location = [123, 12, 34], expo
 describe('openSenseMap API locations tests', function () {
   let authHeader, authHeaderBox, csvAndAuthHeader, box, submitTimeLoc1;
 
-  before('add test user', function (done) {
+  before('add test user', function () {
     const user = { name: 'locationtestuser', email: 'locationtestuser@test.test', password: '12345678' };
 
-    chakram.post(`${process.env.OSEM_TEST_BASE_URL}/users/register`, user)
+    return chakram.post(`${process.env.OSEM_TEST_BASE_URL}/users/register`, user)
       .then(logResponseIfError)
       .then(function (response) {
         expect(response.body.token).to.exist;
         authHeader = { headers: { 'Authorization': `Bearer ${response.body.token}` } };
-        done();
+
+        return chakram.wait();
       });
   });
 
-  after('delete user', function (done) {
-    chakram.delete(`${process.env.OSEM_TEST_BASE_URL}/users/me`, { password: '12345678' }, authHeader)
+  after('delete user', function () {
+    return chakram.delete(`${process.env.OSEM_TEST_BASE_URL}/users/me`, { password: '12345678' }, authHeader)
       .then(logResponseIfError)
-      .then(() => done());
+      .then(() => {
+        return chakram.wait();
+      });
   });
 
   describe('location validation', function () {
@@ -115,6 +118,7 @@ describe('openSenseMap API locations tests', function () {
 
           return chakram.wait();
         });
+      // .then(done, done);
     });
 
     it('should allow to set the location for a new box as latLng object', function () {
@@ -217,15 +221,17 @@ describe('openSenseMap API locations tests', function () {
     let BASE_URL = `${process.env.OSEM_TEST_BASE_URL}/boxes`;
     let result;
 
-    before('get box', function (done) {
+    before('get box', function () {
       BASE_URL = `${BASE_URL}/${box._id}`; // need to append at test runtime, not at parsetime
 
-      chakram.get(BASE_URL)
+      return chakram.get(BASE_URL)
         .then(logResponseIfError)
         .then(function (response) {
           expect(response).to.have.status(200);
           result = response.body;
-          done();
+          // done();
+
+          return chakram.wait();
         });
     });
 
