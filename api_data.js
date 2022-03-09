@@ -203,6 +203,21 @@ define({ "api": [
         "Parameter": [
           {
             "group": "Parameter",
+            "type": "String",
+            "optional": true,
+            "field": "name",
+            "description": "<p>Search string to find boxes by name, if specified all other parameters are ignored.</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "Number",
+            "optional": true,
+            "field": "limit",
+            "defaultValue": "5",
+            "description": "<p>Limit the search results.</p>"
+          },
+          {
+            "group": "Parameter",
             "type": "RFC3339Date",
             "optional": true,
             "field": "date",
@@ -565,7 +580,7 @@ define({ "api": [
           },
           {
             "group": "RequestBody",
-            "type": "String",
+            "type": "String[]",
             "allowedValues": [
               "\"hdc1080\"",
               "\"bmp280\"",
@@ -847,10 +862,10 @@ define({ "api": [
           },
           {
             "group": "RequestBody",
-            "type": "String",
+            "type": "String[]",
             "optional": true,
             "field": "grouptag",
-            "description": "<p>the grouptag of this senseBox. Send '' (empty string) to delete this property.</p>"
+            "description": "<p>the grouptag(s) of this senseBox. Send [] (empty array) to delete this property.</p>"
           },
           {
             "group": "RequestBody",
