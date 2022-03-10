@@ -76,7 +76,7 @@ const
  * @apiUse TTNBody
  *
  * @apiParam (RequestBody) {String} [name] the name of this senseBox.
- * @apiParam (RequestBody) {String} [grouptag] the grouptag of this senseBox. Send '' (empty string) to delete this property.
+ * @apiParam (RequestBody) {String[]} [grouptag] the grouptag(s) of this senseBox. Send [] (empty array) to delete this property.
  * @apiParam (RequestBody) {Location} [location] the new coordinates of this senseBox. Measurements will keep the reference to their correct location
  * @apiParam (RequestBody) {Sensor[]} [sensors] an array containing the sensors of this senseBox. Only use if model is unspecified
  * @apiParam (RequestBody) {MqttOption} [mqtt] settings for the MQTT integration of this senseBox
@@ -520,7 +520,7 @@ module.exports = {
     retrieveParameters([
       { predef: 'boxId', required: true },
       { name: 'name' },
-      { name: 'grouptag', dataType: 'StringWithEmpty' },
+      { name: 'grouptag', dataType: ['String'] },
       { name: 'description', dataType: 'StringWithEmpty' },
       { name: 'weblink', dataType: 'StringWithEmpty' },
       { name: 'image', dataType: 'base64Image' },
@@ -551,7 +551,7 @@ module.exports = {
     checkContentType,
     retrieveParameters([
       { name: 'name', required: true },
-      { name: 'grouptag', aliases: ['tag'] },
+      { name: 'grouptag', dataType: ['String'], aliases: ['tag'] },
       { name: 'exposure', allowedValues: Box.BOX_VALID_EXPOSURES },
       { name: 'model', allowedValues: Box.BOX_VALID_MODELS },
       { name: 'sensors', dataType: ['object'] },

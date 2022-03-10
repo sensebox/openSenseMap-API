@@ -17,7 +17,10 @@ module.exports = {
       'type': 'string'
     },
     'grouptag': {
-      'type': 'string'
+      'type': ['array', 'string'],
+      'items': {
+        'type': 'string'
+      }
     },
     'exposure': {
       'type': 'string'

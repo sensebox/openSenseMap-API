@@ -65,7 +65,7 @@ const boxSchema = new Schema({
     enum: ['unknown', 'indoor', 'outdoor', 'mobile']
   },
   grouptag: {
-    type: String,
+    type: [String], // Default value for array is [] (empty array)
     trim: true,
     required: false
   },
@@ -880,7 +880,7 @@ boxSchema.methods.updateBox = function updateBox (args) {
   // only grouptag, description and weblink can removed through setting them to empty string ('')
   for (const prop of ['name', 'exposure', 'grouptag', 'description', 'weblink', 'image', 'integrations.mqtt', 'integrations.ttn', 'model', 'useAuth']) {
     if (typeof args[prop] !== 'undefined') {
-      box.set(prop, (args[prop] === '' ? undefined : args[prop]));
+      box.set(prop, ((args[prop] === '' || (Array.isArray(args[prop]) && args[prop].length === 0)) ? undefined : args[prop]));
     }
   }
 
@@ -938,14 +938,18 @@ boxSchema.methods.getLocations = function getLocations ({ format, fromDate, toDa
 };
 
 const buildFindBoxesQuery = function buildFindBoxesQuery (opts = {}) {
-  const { phenomenon, fromDate, toDate, bbox, near, maxDistance } = opts,
+  const { phenomenon, fromDate, toDate, bbox, near, maxDistance, grouptag } = opts,
     query = {};
 
   // simple string parameters
-  for (const param of ['exposure', 'model', 'grouptag']) {
+  for (const param of ['exposure', 'model']) {
     if (opts[param]) {
       query[param] = { '$in': opts[param] };
     }
+  }
+
+  if (grouptag) {
+    query['grouptag'] = { '$all': grouptag };
   }
 
   // bbox search parameter

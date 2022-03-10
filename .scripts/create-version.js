@@ -19,7 +19,7 @@ try {
   const longHash = exec('git log --pretty=format:"%H" -n 1');
   const tag = exec(`git tag --contains "${longHash}"`);
 
-  if (/^v[0-9]+$/.test(tag)) {
+  if (/^v[0-9]+.[0-9]+.[0-9]+$/.test(tag)) {
     writeVersionFile(tag);
   } else {
     const shortHash = exec('git log --pretty=format:"%h" -n 1');
