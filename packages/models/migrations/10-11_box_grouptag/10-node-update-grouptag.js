@@ -15,7 +15,7 @@ const migrate = function migrate() {
     .find({})
     .next()
     .then(function (latestVersion) {
-      if (latestVersion.schemaVersion !== 9) {
+      if (latestVersion.schemaVersion !== 10) {
         throw new Error("Unexpected schema version... Exiting!");
       }
 

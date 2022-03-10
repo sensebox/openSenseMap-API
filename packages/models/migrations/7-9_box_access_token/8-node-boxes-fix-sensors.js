@@ -8,7 +8,7 @@ const { Box } = models;
 const migrate = function migrate() {
   const schemaVersion = mongoose.connection.db.collection("schemaVersion");
 
-  console.log('Starting "update useAuth" migration');
+  console.log('Starting "fix corrupt sensors" migration');
 
   return schemaVersion
     .find({})
@@ -18,14 +18,22 @@ const migrate = function migrate() {
         throw new Error("Unexpected schema version... Exiting!");
       }
 
-      return Box.find({useAuth: {$exists: false}}).exec();
+      return Box.find({ "sensors" : {$elemMatch: { title : { $exists: false }}}}).exec();
     })
     .then(function (boxes) {
+      console.log("Found boxes: ", boxes.length)
       const promises = [];
       for (let index = 0; index < boxes.length; index++) {
         const box = boxes[index];
 
-        box.set("useAuth", false);
+        let sensors = box.sensors.filter(sensor => {
+          if(sensor.title && sensor.unit){
+            return true;
+          } else {
+            return false;
+          }
+        })
+        box.set("sensors", sensors);
         promises.push(box.save());
       }
 
