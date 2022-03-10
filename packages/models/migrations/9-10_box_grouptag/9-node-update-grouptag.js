@@ -3,7 +3,6 @@
 
 const models = require("../../../models");
 const { mongoose, connect } = models.db;
-const moment = require("moment");
 
 const { Box } = models;
 
@@ -16,7 +15,7 @@ const migrate = function migrate() {
     .find({})
     .next()
     .then(function (latestVersion) {
-      if (latestVersion.schemaVersion !== 8) {
+      if (latestVersion.schemaVersion !== 9) {
         throw new Error("Unexpected schema version... Exiting!");
       }
 
