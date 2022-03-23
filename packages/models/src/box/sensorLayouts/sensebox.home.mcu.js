@@ -19,8 +19,7 @@ const {
   soundlevelmeter,
   windspeed,
   scd30_co2,
-  dps310_pressure,
-  dps310_temperature
+  dps310_pressure
 } = sensorDefinitions;
 
 module.exports = [
@@ -41,5 +40,4 @@ module.exports = [
   windspeed,
   scd30_co2,
   dps310_pressure,
-  dps310_temperature
 ];
