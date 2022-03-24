@@ -80,10 +80,6 @@
     // Default: 604800000 // 1 Week
     "validity_ms": 302400000
   },
-  "claims_ttl": {
-    "amount": 1,
-    "unit": "d"
-  },
   // Configuration for the @sensebox/opensensemap-api-models package
   "openSenseMap-API-models": {
     // Keys for configuring the mongo db connection
@@ -145,7 +141,7 @@
         // Should be the naked domain and a port
         // No Default
         "url": "mqtt-osem-integration:3925"
-      }
+      },
     },
     "password": {
       // Minimum required password length
@@ -154,6 +150,10 @@
       // Bcrypt password salt factor. Should be between 1 and 31.
       // Default: 13
       "salt_factor": 12
+    },
+    "claims_ttl": {
+      "amount": 1,
+      "unit": "d"
     },
     // Location on the filesystem where images should be saved
     // Should always end with a trailing slash

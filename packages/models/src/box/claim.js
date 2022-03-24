@@ -4,7 +4,7 @@ const { mongoose } = require('../db'),
   Schema = mongoose.Schema,
   moment = require('moment'),
   crypto = require('crypto'),
-  config = require('config');
+  config = require('config').get('openSenseMap-API-models');
 
 const {
   amount,

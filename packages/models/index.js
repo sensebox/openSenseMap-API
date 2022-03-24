@@ -32,6 +32,10 @@ config.util.setModuleDefaults('openSenseMap-API-models', {
     'min_length': 8,
     'salt_factor': 13
   },
+  'claims_ttl': {
+    'amount': 1,
+    'unit': 'd'
+  },
   'image_folder': './userimages/',
 });
 
