@@ -18,6 +18,10 @@ services:
       NODE_CONFIG: |-
         {
           "slack_url": "http://127.0.0.1/bla/bli/blu",
+          "claims_ttl": {
+            "amount": 1,
+            "unit": 'h'
+          },
           "openSenseMap-API-models": {
             "db": {
               "mongo_uri": "mongodb://db/api-test"
