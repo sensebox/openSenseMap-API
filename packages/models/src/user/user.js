@@ -373,8 +373,11 @@ userSchema.methods.claimBox = function claimBox (token) {
     .then(function (claim) {
       return {
         owner: user.id,
-        boxId: claim.boxId
+        claim
       };
+    })
+    .catch(function () {
+      throw new ModelError('Token was not found', token);
     });
 };
 

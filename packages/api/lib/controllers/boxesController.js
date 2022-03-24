@@ -518,9 +518,12 @@ const claimBox = async function claimBox (req, res, next) {
   const { token } = req._userParams;
 
   try {
-    const claim = await req.user.claimBox(token);
-    const transfer = await User.transferOwnershipOfBox(claim.owner, claim.boxId);
-    res.send(transfer);
+    const { owner, claim } = await req.user.claimBox(token);
+    await User.transferOwnershipOfBox(owner, claim.boxId);
+
+    await claim.expireToken();
+
+    res.send(201, { message: 'Device successfully claimed!' });
   } catch (err) {
     handleError(err, next);
   }

@@ -40,6 +40,13 @@ claimSchema.statics.findClaimByToken = function findClaimByToken (token) {
   return this.findOne({ token: token });
 };
 
+claimSchema.methods.expireToken = function expireToken () {
+  const claim = this;
+  claim.set('expiresAt', moment.utc().toDate());
+
+  return claim.save();
+};
+
 const claimModel = mongoose.model('Claim', claimSchema);
 
 module.exports = {
