@@ -512,7 +512,7 @@ describe('openSenseMap API Routes: /boxes', function () {
   });
 
   it('should allow to enable mqtt via PUT', function () {
-    const update_payload = { mqtt: { enabled: true, url: 'mqtt://mosquitto', topic: 'mytopic', messageFormat: 'json', decodeOptions: '{}', connectionOptions: '{}' } };
+    const update_payload = { mqtt: { enabled: true, url: 'mqtt://mosquitto:8883', topic: 'mytopic', messageFormat: 'json', decodeOptions: '{}', connectionOptions: '{}' } };
 
     return chakram.put(`${BASE_URL}/boxes/${boxIds[1]}`, update_payload, { headers: { 'Authorization': `Bearer ${jwt2}` } })
       .then(function (response) {
@@ -538,7 +538,7 @@ describe('openSenseMap API Routes: /boxes', function () {
         expect(response).to.have.status(200);
         expect(response).to.comprise.of.json('data.name', update_payload.name);
         expect(response).to.comprise.of.json('data.exposure', update_payload.exposure);
-        expect(response).to.comprise.of.json('data.grouptag', update_payload.grouptag);
+        expect(response.body.data.grouptag).to.be.an('array').that.include(update_payload.grouptag);
         expect(response).to.comprise.of.json('data.description', update_payload.description);
         expect(response).to.comprise.of.json('data.currentLocation', {
           type: 'Point',
@@ -676,7 +676,7 @@ describe('openSenseMap API Routes: /boxes', function () {
   });
 
   it('should allow to unset the grouptag, description and weblink of the box via PUT', function () {
-    const update_payload = { grouptag: '', description: '', weblink: '' };
+    const update_payload = { grouptag: [], description: '', weblink: '' };
 
     return chakram.put(`${BASE_URL}/boxes/${boxIds[1]}`, update_payload, { headers: { 'Authorization': `Bearer ${jwt2}` } })
       .then(function (response) {

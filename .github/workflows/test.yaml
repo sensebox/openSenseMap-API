@@ -13,12 +13,12 @@ jobs:
     name: Lint code
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
-      - name: Install Node.js 12
-        uses: actions/setup-node@v2.4.0
+      - name: Install Node.js 16
+        uses: actions/setup-node@v3.0.0
         with:
-          node-version: 12
+          node-version: 16
 
       - name: Get yarn cache directory path
         id: yarn-cache-dir-path
@@ -26,7 +26,7 @@ jobs:
           echo "##[set-output name=dir;]$(yarn cache dir)"
 
       - name: Restore yarn cache
-        uses: actions/cache@v2.1.6
+        uses: actions/cache@v2.1.7
         id: yarn-cache
         with:
           path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
@@ -46,13 +46,7 @@ jobs:
     name: Run tests
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v2
-
-      - name: Login to DockerHub
-        uses: docker/login-action@v1
-        with:
-          username: ${{ secrets.DOCKER_HUB_USER }}
-          password: ${{ secrets.DOCKER_HUB_PASS }}
+      - uses: actions/checkout@v3
 
       - name: Execute tests
         run: |

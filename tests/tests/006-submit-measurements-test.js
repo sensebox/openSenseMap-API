@@ -476,7 +476,7 @@ describe('submitting measurements', function () {
 
     const payload = JSON.stringify(json_submit_data.json_arr(boxes[0].sensors));
 
-    return publishMqttMessage('mqtt://mosquitto', 'mytopic', payload)
+    return publishMqttMessage('mqtt://mosquitto:8883', 'mytopic', payload)
       .then(function () {
         return new Promise(function (resolve) {
           setTimeout(resolve, 500);

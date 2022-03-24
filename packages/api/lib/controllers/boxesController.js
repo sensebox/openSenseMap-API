@@ -76,7 +76,7 @@ const
  * @apiUse TTNBody
  *
  * @apiParam (RequestBody) {String} [name] the name of this senseBox.
- * @apiParam (RequestBody) {String} [grouptag] the grouptag of this senseBox. Send '' (empty string) to delete this property.
+ * @apiParam (RequestBody) {String[]} [grouptag] the grouptag(s) of this senseBox. Send [] (empty array) to delete this property.
  * @apiParam (RequestBody) {Location} [location] the new coordinates of this senseBox. Measurements will keep the reference to their correct location
  * @apiParam (RequestBody) {Sensor[]} [sensors] an array containing the sensors of this senseBox. Only use if model is unspecified
  * @apiParam (RequestBody) {MqttOption} [mqtt] settings for the MQTT integration of this senseBox
@@ -392,7 +392,7 @@ const getBox = async function getBox (req, res, next) {
  * @apiParam (RequestBody) {Location} location the coordinates of this senseBox.
  * @apiParam (RequestBody) {String="homeV2Lora","homeV2Ethernet","homeV2Wifi","homeEthernet","homeWifi","homeEthernetFeinstaub","homeWifiFeinstaub","luftdaten_sds011","luftdaten_sds011_dht11","luftdaten_sds011_dht22","luftdaten_sds011_bmp180","luftdaten_sds011_bme280","hackair_home_v2"} [model] specify the model if you want to use a predefined senseBox model, autocreating sensor definitions.
  * @apiParam (RequestBody) {Sensor[]} [sensors] an array containing the sensors of this senseBox. Only use if `model` is unspecified.
- * @apiParam (RequestBody) {String="hdc1080","bmp280","tsl45315","veml6070","sds011","bme680","smt50","soundlevelmeter", "windspeed", "scd30"} [sensorTemplates] Specify which sensors should be included.
+ * @apiParam (RequestBody) {String[]="hdc1080","bmp280","tsl45315","veml6070","sds011","bme680","smt50","soundlevelmeter","windspeed","scd30"} [sensorTemplates] Specify which sensors should be included.
  * @apiParam (RequestBody) {Object} [mqtt] specify parameters of the MQTT integration for external measurement upload. Please see below for the accepted parameters
  * @apiParam (RequestBody) {Object} [ttn] specify parameters for the TTN integration for measurement from TheThingsNetwork.org upload. Please see below for the accepted parameters
  * @apiParam (RequestBody) {Boolean="true","false"} [useAuth] whether to use access_token or not for authentication
@@ -587,7 +587,7 @@ module.exports = {
     retrieveParameters([
       { predef: 'boxId', required: true },
       { name: 'name' },
-      { name: 'grouptag', dataType: 'StringWithEmpty' },
+      { name: 'grouptag', dataType: ['String'] },
       { name: 'description', dataType: 'StringWithEmpty' },
       { name: 'weblink', dataType: 'StringWithEmpty' },
       { name: 'image', dataType: 'base64Image' },
@@ -622,7 +622,7 @@ module.exports = {
     checkContentType,
     retrieveParameters([
       { name: 'name', required: true },
-      { name: 'grouptag', aliases: ['tag'] },
+      { name: 'grouptag', dataType: ['String'], aliases: ['tag'] },
       { name: 'exposure', allowedValues: Box.BOX_VALID_EXPOSURES },
       { name: 'model', allowedValues: Box.BOX_VALID_MODELS },
       { name: 'sensors', dataType: ['object'] },
