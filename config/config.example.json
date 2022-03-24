@@ -80,6 +80,10 @@
     // Default: 604800000 // 1 Week
     "validity_ms": 302400000
   },
+  "claims_ttl": {
+    "amount": 1,
+    "unit": "d"
+  },
   // Configuration for the @sensebox/opensensemap-api-models package
   "openSenseMap-API-models": {
     // Keys for configuring the mongo db connection

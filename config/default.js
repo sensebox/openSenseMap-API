@@ -30,6 +30,10 @@ const defaults = {
     'secret': 'I ALSO WANT TO BE CHANGED',
     'algorithm': 'sha256',
     'validity_ms': 604800000 // 1 week
+  },
+  'claims_ttl': {
+    'amount': 1,
+    'unit': 'd'
   }
 };
 

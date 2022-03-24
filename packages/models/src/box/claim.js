@@ -3,7 +3,13 @@
 const { mongoose } = require('../db'),
   Schema = mongoose.Schema,
   moment = require('moment'),
-  crypto = require('crypto');
+  crypto = require('crypto'),
+  config = require('config');
+
+const {
+  amount,
+  unit
+} = config.get('claims_ttl');
 
 const claimSchema = new Schema({
   boxId: {
@@ -20,7 +26,7 @@ const claimSchema = new Schema({
   },
   expiresAt: {
     type: Date,
-    default: moment.utc().add(1, 'd')
+    default: moment.utc().add(amount, unit)
       .toDate(),
   },
 });
