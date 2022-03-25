@@ -354,6 +354,9 @@ const
 
 // functions which receive req._userparams as parameter
 const retrieveParametersPredefs = {
+  'dateNoDefault' () {
+    return { name: 'date', dataType: 'RFC 3339' };
+  },
   'fromDate' ({ toDate }) {
     if (!toDate) {
       return {};

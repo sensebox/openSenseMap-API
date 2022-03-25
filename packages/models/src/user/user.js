@@ -353,13 +353,13 @@ userSchema.methods.removeBox = function removeBox (boxId) {
     });
 };
 
-userSchema.methods.transferBox = function transferBox (boxId) {
+userSchema.methods.transferBox = function transferBox (boxId, date) {
   const user = this;
 
   // checkBoxOwner throws ModelError
   user.checkBoxOwner(boxId);
 
-  return Claim.initClaim(boxId)
+  return Claim.initClaim(boxId, date)
     .then(function (claim) {
       return claim;
     });

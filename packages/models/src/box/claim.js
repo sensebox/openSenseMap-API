@@ -1,10 +1,10 @@
 'use strict';
 
 const { mongoose } = require('../db'),
+  config = require('config').get('openSenseMap-API-models'),
   Schema = mongoose.Schema,
   moment = require('moment'),
-  crypto = require('crypto'),
-  config = require('config').get('openSenseMap-API-models');
+  crypto = require('crypto');
 
 const {
   amount,
@@ -33,13 +33,19 @@ const claimSchema = new Schema({
 
 claimSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 
-claimSchema.statics.initClaim = function initClaim (boxId) {
+claimSchema.statics.initClaim = function initClaim (boxId, date) {
   const token = crypto.randomBytes(6).toString('hex');
 
-  return this.create({
+  const claim = {
     boxId,
     token
-  });
+  };
+
+  if (date) {
+    claim['expiresAt'] = date;
+  }
+
+  return this.create(claim);
 };
 
 claimSchema.statics.findClaimByToken = function findClaimByToken (token) {

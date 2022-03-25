@@ -496,9 +496,9 @@ const deleteBox = async function deleteBox (req, res, next) {
  * @apiUse BoxIdParam
  */
 const transferBox = async function transferBox (req, res, next) {
-  const { boxId } = req._userParams;
+  const { boxId, date } = req._userParams;
   try {
-    const transferCode = await req.user.transferBox(boxId);
+    const transferCode = await req.user.transferBox(boxId, date);
     res.send(201, { message: 'Box successfully prepared for transfer', data: transferCode });
   } catch (err) {
     handleError(err, next);
@@ -541,15 +541,16 @@ module.exports = {
     deleteBox,
   ],
   transferBox: [
-    retrieveParameters([{ predef: 'boxId', required: true }]),
+    retrieveParameters([
+      { predef: 'boxId', required: true },
+      { predef: 'dateNoDefault' },
+    ]),
     checkPrivilege,
     transferBox,
   ],
   claimBox: [
     checkContentType,
-    retrieveParameters([
-      { name: 'token', dataType: 'String' }
-    ]),
+    retrieveParameters([{ name: 'token', dataType: 'String' }]),
     claimBox,
   ],
   getSketch: [
