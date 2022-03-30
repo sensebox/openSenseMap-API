@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+## v1.1.0
+
+- Add DPS310 sensor
+- Update migrations
+- Update @sensebox/node-sketch-templater to v1.12.0
+
 ## v1.0.0
 
 - Update @sensebox/node-sketch-templater to v1.11.2
