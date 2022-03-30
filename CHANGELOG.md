@@ -1,5 +1,10 @@
 # openSenseMap API Changelog
 
+## Unreleased
+
+- Use @sensebox/opensensemap-api-models v1.1.0
+- Update dependencies
+
 ## v10.0
 
 - Use @sensebox/opensensemap-api-models v1.0.0
