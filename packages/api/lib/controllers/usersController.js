@@ -209,7 +209,8 @@ const confirmEmailAddress = async function confirmEmailAddress (req, res, next) 
 const getUserBoxes = async function getUserBoxes (req, res, next) {
   try {
     const boxes = await req.user.getBoxes();
-    res.send(200, { code: 'Ok', data: { boxes } });
+    const sharedBoxes = await req.user.getSharedBoxes();
+    res.send(200, { code: 'Ok', data: { boxes: boxes, sharedBoxes: sharedBoxes } });
   } catch (err) {
     handleError(err, next);
   }

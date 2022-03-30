@@ -60,6 +60,10 @@ const userSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Box'
   }],
+  sharedBoxes: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Box'
+  }],
   language: {
     type: String,
     trim: true,
@@ -285,6 +289,9 @@ userSchema.methods.addBox = function addBox (params) {
       // persist the saved box in the user
       savedBox.serialPort = serialPort;
       user.boxes.addToSet(savedBox._id);
+      if(params.sharedBox){
+        user.sharedBoxes.addToSet(savedBox._id)
+      }
 
       return user.save()
         .then(function () {
@@ -469,6 +476,14 @@ userSchema.methods.updateUser = function updateUser ({ email, language, name, cu
 
 userSchema.methods.getBoxes = function getBoxes () {
   return Box.find({ _id: { $in: this.boxes } })
+    .populate(Box.BOX_SUB_PROPS_FOR_POPULATION)
+    .then(function (boxes) {
+      return boxes.map(b => b.toJSON({ includeSecrets: true }));
+    });
+};
+
+userSchema.methods.getSharedBoxes = function getSharedBoxes () {
+  return Box.find({ _id: { $in: this.sharedBoxes } })
     .populate(Box.BOX_SUB_PROPS_FOR_POPULATION)
     .then(function (boxes) {
       return boxes.map(b => b.toJSON({ includeSecrets: true }));
