@@ -591,7 +591,8 @@ define({ "api": [
               "\"smt50\"",
               "\"soundlevelmeter\"",
               "\"windspeed\"",
-              "\"scd30\""
+              "\"scd30\"",
+              "\"dps310\""
             ],
             "optional": true,
             "field": "sensorTemplates",
