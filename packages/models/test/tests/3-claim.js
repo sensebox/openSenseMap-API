@@ -10,19 +10,6 @@ const expect = require('chai').expect,
   moment = require('moment'),
   ensureIndexes = require('../helpers/ensureIndexes');
 
-const shouldNotHappenThenner = function (err) {
-  /* eslint-disable no-console */
-  console.log(err);
-  /* eslint-enable no-console */
-  expect(false).true;
-};
-
-const delay = function delay (t, v) {
-  return new Promise(function (resolve) {
-    setTimeout(resolve.bind(null, v), t);
-  });
-};
-
 describe('Claim model', function () {
 
   // Object to save create claims during tests
@@ -38,6 +25,7 @@ describe('Claim model', function () {
     mongoose.disconnect();
   });
 
+  // Create in total 4 claims / tokens in Claims collection
   describe('Claim creation', function () {
     it('should create a new claim / token (Claim.create) for transferring a device', function () {
       return Claim.create({
@@ -54,8 +42,12 @@ describe('Claim model', function () {
           expect(claim.boxId.toString()).equal('6239a584de404f171cbfca42');
           expect(claim.token).equal('asdf1234');
 
-          // TODO: checkout how to compare and evaluate datetimes
-          expect(moment.utc(claim.expiresAt).isAfter(moment.utc())).true;
+          // Difference between NOW and expiresAt should be around 24
+          // Default expiresAt is 1 day in the future
+          const diff = moment
+            .duration(moment.utc(claim.expiresAt).diff(moment.utc()))
+            .asHours();
+          expect(diff).to.be.closeTo(24, 1);
 
           testClaims[claim.boxId] = claim;
         });
@@ -78,8 +70,12 @@ describe('Claim model', function () {
           expect(claim.boxId.toString()).equal('6239a584de404f171cbfca43');
           expect(claim.token).equal('1234asdf');
 
-          // TODO: checkout how to compare and evaluate datetimes
-          expect(moment.utc(claim.expiresAt).isAfter(moment.utc())).true;
+          // Difference between NOW and expiresAt should be around 24
+          // Default expiresAt is 1 day in the future
+          const diff = moment
+            .duration(moment.utc(claim.expiresAt).diff(moment.utc()))
+            .asHours();
+          expect(diff).to.be.closeTo(24, 1);
 
           testClaims[claim.boxId] = claim;
         });
@@ -91,8 +87,12 @@ describe('Claim model', function () {
           expect(claim.token).to.be.a.string;
           expect(claim.token).to.have.lengthOf(12);
 
-          // TODO: checkout how to compare and evaluate datetimes
-          expect(moment.utc(claim.expiresAt).isAfter(moment.utc())).true;
+          // Difference between NOW and expiresAt should be around 24
+          // Default expiresAt is 1 day in the future
+          const diff = moment
+            .duration(moment.utc(claim.expiresAt).diff(moment.utc()))
+            .asHours();
+          expect(diff).to.be.closeTo(24, 1);
 
           testClaims[claim.boxId] = claim;
         });
@@ -103,8 +103,12 @@ describe('Claim model', function () {
         expect(claim.token).to.be.a.string;
         expect(claim.token).to.have.lengthOf(12);
 
-        // TODO: checkout how to compare and evaluate datetimes
-        expect(moment.utc(claim.expiresAt).isAfter(moment.utc())).true;
+        // Difference between NOW and expiresAt should be around 48
+        // because we are adding 2 days to expiresAt
+        const diff = moment
+          .duration(moment.utc(claim.expiresAt).diff(moment.utc()))
+          .asHours();
+        expect(diff).to.be.closeTo(48, 1);
 
         testClaims[claim.boxId] = claim;
       });
