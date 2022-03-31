@@ -1,11 +1,12 @@
 'use strict';
 
-const { User, Box, Measurement } = require('../../index');
+const { User, Box, Measurement, Claim } = require('../../index');
 
 module.exports = function () {
   return Promise.all([
     User.ensureIndexes(),
     Box.ensureIndexes(),
-    Measurement.ensureIndexes()
+    Measurement.ensureIndexes(),
+    Claim.ensureIndexes()
   ]);
 };
