@@ -365,6 +365,47 @@ userSchema.methods.transferBox = function transferBox (boxId, date) {
     });
 };
 
+userSchema.methods.updateTransfer = function updateTransfer (boxId, token, date) {
+  const user = this;
+
+  // checkBoxOwner throws ModelError
+  user.checkBoxOwner(boxId);
+
+  return Claim.findClaimByToken(token)
+    .exec()
+    .then(function (claim) {
+      if (!claim) {
+        return Promise.reject(
+          new ModelError('Coudn\'t update, token not found', {
+            type: 'NotFoundError',
+          })
+        );
+      }
+
+      claim.set('expiresAt', date);
+
+      return claim.save();
+    });
+};
+
+userSchema.methods.removeTransfer = function removeTransfer (boxId, token) {
+  const user = this;
+
+  // checkBoxOwner throws ModelError
+  user.checkBoxOwner(boxId);
+
+  return Claim.findClaimByToken(token)
+    .exec()
+    .then(function (claim) {
+      if (!claim) {
+        return Promise.reject(new ModelError('Coudn\'t remove, token not found', { type: 'NotFoundError' }));
+      }
+
+      // remove token
+      return claim.remove();
+    });
+};
+
 userSchema.methods.claimBox = function claimBox (token) {
   const user = this;
 

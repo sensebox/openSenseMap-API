@@ -37,7 +37,7 @@
  */
 
 const
-  { Box, User } = require('@sensebox/opensensemap-api-models'),
+  { Box, User, Claim } = require('@sensebox/opensensemap-api-models'),
   { addCache, clearCache, checkContentType, redactEmail, postToSlack } = require('../helpers/apiUtils'),
   { point } = require('@turf/helpers'),
   classifyTransformer = require('../transformers/classifyTransformer'),
@@ -488,18 +488,86 @@ const deleteBox = async function deleteBox (req, res, next) {
 };
 
 /**
- * @api {get} /boxes/:senseBoxId/transfer Mark a senseBox for transferring to a different user
- * @apiDescription This will mark a senseBox for transfering it to a different user account
- * @apiName transferBox
+ * @api {get} /boxes/transfer/:senseBoxId Get transfer information for a senseBox
+ * @apiDescription Get transfer information for a senseBox
+ * @apiName getTransfer
  * @apiGroup Boxes
  * @apiUse JWTokenAuth
  * @apiUse BoxIdParam
  */
-const transferBox = async function transferBox (req, res, next) {
+const getTransfer = async function getTransfer (req, res, next) {
+  const { boxId } = req._userParams;
+  try {
+    const transfer = await Claim.findClaimByDeviceID(boxId);
+    res.send(201, {
+      data: transfer,
+    });
+  } catch (err) {
+    handleError(err, next);
+  }
+};
+
+/**
+ * @api {post} /boxes/transfer Mark a senseBox for transferring to a different user
+ * @apiDescription This will mark a senseBox for transfering it to a different user account
+ * @apiName createTransfer
+ * @apiGroup Boxes
+ * @apiParam (RequestBody) {String} boxId ID of the senseBox you want to transfer.
+ * @apiParam (RequestBody) {RFC3339Date} expiresAt Expiration date for transfer token (default: 24 hours from now).
+ * @apiUse JWTokenAuth
+ */
+const createTransfer = async function createTransfer (req, res, next) {
   const { boxId, date } = req._userParams;
   try {
     const transferCode = await req.user.transferBox(boxId, date);
-    res.send(201, { message: 'Box successfully prepared for transfer', data: transferCode });
+    res.send(201, {
+      message: 'Box successfully prepared for transfer',
+      data: transferCode,
+    });
+  } catch (err) {
+    handleError(err, next);
+  }
+};
+
+/**
+ * @api {put} /boxes/transfer/:senseBoxId Update a transfer token
+ * @apiDescription Update the expiration date of a transfer token
+ * @apiName updateTransfer
+ * @apiGroup Boxes
+ * @apiParam (RequestBody) {String} Tranfser token you want to update.
+ * @apiParam (RequestBody) {RFC3339Date} expiresAt Expiration date for transfer token (default: 24 hours from now).
+ * @apiUse JWTokenAuth
+ * @apiUse BoxIdParam
+ */
+const updateTransfer = async function updateTransfer (req, res, next) {
+  const { boxId, token, date } = req._userParams;
+  try {
+    const transfer = await req.user.updateTransfer(boxId, token, date);
+    res.send(201, {
+      message: 'Transfer successfully updated',
+      data: transfer,
+    });
+  } catch (err) {
+    handleError(err, next);
+  }
+};
+
+/**
+ * @api {delete} /boxes/transfer Revoke transfer token and remove senseBox from transfer
+ * @apiDescription This will revoke the transfer token and remove the senseBox from transfer
+ * @apiName removeTransfer
+ * @apiGroup Boxes
+ * @apiParam (RequestBody) {String} boxId ID of the senseBox you want to remove from transfer.
+ * @apiParam (RequestBody) {String} token Tranfser token you want to revoke.
+ * @apiUse JWTokenAuth
+ */
+const removeTransfer = async function removeTransfer (req, res, next) {
+  const { boxId, token } = req._userParams;
+  try {
+    await req.user.removeTransfer(boxId, token);
+    res.send(201, {
+      message: 'Token successfully removed and device removed for transfer',
+    });
   } catch (err) {
     handleError(err, next);
   }
@@ -540,13 +608,35 @@ module.exports = {
     checkPrivilege,
     deleteBox,
   ],
-  transferBox: [
+  getTransfer: [
+    retrieveParameters([{ predef: 'boxId', required: true }]),
+    checkPrivilege,
+    getTransfer,
+  ],
+  createTransfer: [
     retrieveParameters([
       { predef: 'boxId', required: true },
       { predef: 'dateNoDefault' },
     ]),
     checkPrivilege,
-    transferBox,
+    createTransfer,
+  ],
+  updateTransfer: [
+    retrieveParameters([
+      { predef: 'boxId', required: true },
+      { name: 'token', dataType: 'String' },
+      { predef: 'dateNoDefault', required: true },
+    ]),
+    checkPrivilege,
+    updateTransfer,
+  ],
+  removeTransfer: [
+    retrieveParameters([
+      { predef: 'boxId', required: true },
+      { name: 'token', dataType: 'String' },
+    ]),
+    checkPrivilege,
+    removeTransfer,
   ],
   claimBox: [
     checkContentType,
@@ -630,11 +720,47 @@ module.exports = {
       { name: 'exposure', allowedValues: Box.BOX_VALID_EXPOSURES },
       { name: 'model', allowedValues: Box.BOX_VALID_MODELS },
       { name: 'sensors', dataType: ['object'] },
-      { name: 'sensorTemplates', dataType: ['String'], allowedValues: ['hdc1080', 'bmp280', 'sds 011', 'tsl45315', 'veml6070', 'bme680', 'smt50', 'soundlevelmeter', 'windspeed', 'scd30', 'dps310'] },
-      { name: 'serialPort', dataType: 'String', defaultValue: 'Serial1', allowedValues: ['Serial1', 'Serial2'] },
-      { name: 'soilDigitalPort', dataType: 'String', defaultValue: 'A', allowedValues: ['A', 'B', 'C'] },
-      { name: 'soundMeterPort', dataType: 'String', defaultValue: 'B', allowedValues: ['A', 'B', 'C'] },
-      { name: 'windSpeedPort', dataType: 'String', defaultValue: 'C', allowedValues: ['A', 'B', 'C'] },
+      {
+        name: 'sensorTemplates',
+        dataType: ['String'],
+        allowedValues: [
+          'hdc1080',
+          'bmp280',
+          'sds 011',
+          'tsl45315',
+          'veml6070',
+          'bme680',
+          'smt50',
+          'soundlevelmeter',
+          'windspeed',
+          'scd30',
+          'dps310',
+        ],
+      },
+      {
+        name: 'serialPort',
+        dataType: 'String',
+        defaultValue: 'Serial1',
+        allowedValues: ['Serial1', 'Serial2'],
+      },
+      {
+        name: 'soilDigitalPort',
+        dataType: 'String',
+        defaultValue: 'A',
+        allowedValues: ['A', 'B', 'C'],
+      },
+      {
+        name: 'soundMeterPort',
+        dataType: 'String',
+        defaultValue: 'B',
+        allowedValues: ['A', 'B', 'C'],
+      },
+      {
+        name: 'windSpeedPort',
+        dataType: 'String',
+        defaultValue: 'C',
+        allowedValues: ['A', 'B', 'C'],
+      },
       { name: 'mqtt', dataType: 'object' },
       { name: 'ttn', dataType: 'object' },
       { name: 'useAuth', allowedValues: ['true', 'false'] },

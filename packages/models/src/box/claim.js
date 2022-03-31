@@ -52,6 +52,10 @@ claimSchema.statics.findClaimByToken = function findClaimByToken (token) {
   return this.findOne({ token: token });
 };
 
+claimSchema.statics.findClaimByDeviceID = function findClaimByDeviceID (deviceId) {
+  return this.findOne({ boxId: deviceId });
+};
+
 claimSchema.methods.expireToken = function expireToken () {
   const claim = this;
   claim.set('expiresAt', moment.utc().toDate());
