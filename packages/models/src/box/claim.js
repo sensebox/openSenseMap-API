@@ -32,6 +32,7 @@ const claimSchema = new Schema({
 });
 
 claimSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
+claimSchema.index({ boxId: 1 }, { unique: true });
 
 claimSchema.statics.initClaim = function initClaim (boxId, date) {
   const token = crypto.randomBytes(6).toString('hex');
