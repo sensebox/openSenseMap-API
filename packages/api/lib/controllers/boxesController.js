@@ -543,7 +543,7 @@ const updateTransfer = async function updateTransfer (req, res, next) {
   const { boxId, token, date } = req._userParams;
   try {
     const transfer = await req.user.updateTransfer(boxId, token, date);
-    res.send(201, {
+    res.send(200, {
       message: 'Transfer successfully updated',
       data: transfer,
     });
@@ -591,7 +591,7 @@ const claimBox = async function claimBox (req, res, next) {
 
     await claim.expireToken();
 
-    res.send(201, { message: 'Device successfully claimed!' });
+    res.send(200, { message: 'Device successfully claimed!' });
   } catch (err) {
     handleError(err, next);
   }
