@@ -1,5 +1,7 @@
 'use strict';
 
+const ModelError = require('../modelError');
+
 const { mongoose } = require('../db'),
   config = require('config').get('openSenseMap-API-models'),
   Schema = mongoose.Schema,
@@ -63,6 +65,18 @@ claimSchema.methods.expireToken = function expireToken () {
 
   return claim.save();
 };
+
+const handleE11000 = function (error, res, next) {
+  if (error.name === 'MongoError' && error.code === 11000) {
+    return next(new ModelError('Token already exists for device.'));
+  }
+  next();
+};
+
+claimSchema.post('save', handleE11000);
+claimSchema.post('update', handleE11000);
+claimSchema.post('findOneAndUpdate', handleE11000);
+claimSchema.post('insertMany', handleE11000);
 
 const claimModel = mongoose.model('Claim', claimSchema);
 

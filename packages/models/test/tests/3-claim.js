@@ -99,7 +99,7 @@ describe('Claim model', function () {
     });
 
     it('should create a new claim / token with a generated 6 character token and custom expiresAt', function () {
-      return Claim.initClaim('6239a584de404f171cbfca44', moment.utc().add(2, 'd')).then(function (claim) {
+      return Claim.initClaim('6239a584de404f171cbfca45', moment.utc().add(2, 'd')).then(function (claim) {
         expect(claim.token).to.be.a.string;
         expect(claim.token).to.have.lengthOf(12);
 
@@ -111,6 +111,16 @@ describe('Claim model', function () {
         expect(diff).to.be.closeTo(48, 1);
 
         testClaims[claim.boxId] = claim;
+      });
+    });
+
+    it('should fail on creation of token with duplicate device id', function () {
+      return Claim.initClaim(
+        '6239a584de404f171cbfca44',
+        moment.utc().add(2, 'd')
+      ).catch(function (error) {
+        expect(error.name).equal('ModelError');
+        expect(error.message).equal('Token already exists for device.');
       });
     });
   });
