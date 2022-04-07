@@ -766,20 +766,77 @@ describe('openSenseMap API Routes: /boxes', function () {
       });
   });
 
-  // it('should revoke and delete a transfer token', function () {
+  it('should return a token for a device id', function () {
+    return chakram.get(`${BASE_URL}/boxes/transfer/${transferBoxId}`, {
+      headers: { Authorization: `Bearer ${jwt}` },
+    })
+      .then(function (response) {
+        expect(response).to.have.status(200);
+        expect(response.body.data.token).equal(transferToken);
+        expect(response.body.data.boxId).equal(transferBoxId);
+      });
+  });
 
-  // });
+  it('should revoke and delete a transfer token', function () {
+    // We have to raise the timeout here and wait for the TTL!
+    // More information: https://www.mongodb.com/docs/manual/core/index-ttl/#timing-of-the-delete-operation
+    this.timeout(120000);
+
+    const payload = {
+      boxId: transferBoxId,
+      token: transferToken,
+    };
+
+    return chakram
+      .delete(`${BASE_URL}/boxes/transfer`, payload, {
+        headers: { 'Authorization': `Bearer ${jwt}` },
+      })
+      .then(function (response) {
+        expect(response).to.have.status(204);
+      })
+      // .then(() => new Promise((resolve) => setTimeout(resolve, 70000)))
+      .then(function () {
+        return chakram.get(`${BASE_URL}/boxes/transfer/${transferBoxId}`, { headers: { 'Authorization': `Bearer ${jwt}` } });
+      })
+      .then(function (response) {
+        expect(response).to.have.status(200);
+        expect(response.body.data).to.be.null;
+      });
+  });
 
   it('should claim a transferable device and transfer it to the new account and remove it from the old account', function () {
     const payload = {
-      token: transferToken
+      boxId: transferBoxId,
     };
 
-    return chakram.post(`${BASE_URL}/boxes/claim`, payload, { headers: { 'Authorization': `Bearer ${jwt3}` } })
+    // Create new transfer token
+    return chakram.post(`${BASE_URL}/boxes/transfer`, payload, {
+      headers: { Authorization: `Bearer ${jwt}` },
+    })
+      .then(function (response) {
+        expect(response).to.have.status(201);
+        expect(response.body.message).equal(
+          'Box successfully prepared for transfer'
+        );
+        expect(response.body.data).not.to.be.undefined;
+        expect(response.body.data.token).to.be.a.string;
+        expect(response.body.data.token).to.have.lengthOf(12);
+
+        transferToken = response.body.data.token;
+      })
+      .then(function () {
+        // Claim device with a different user
+        return chakram.post(`${BASE_URL}/boxes/claim`, {
+          token: transferToken
+        }, {
+          headers: { Authorization: `Bearer ${jwt3}` },
+        });
+      })
       .then(function (response) {
         expect(response).to.have.status(200);
         expect(response.body.message).equal('Device successfully claimed!');
 
+        // Login with new owner
         return chakram.get(`${BASE_URL}/users/me`, {
           headers: { Authorization: `Bearer ${jwt3}` },
         });
@@ -788,6 +845,7 @@ describe('openSenseMap API Routes: /boxes', function () {
         expect(response).to.have.schema(getUserSchema);
         expect(response.body.data.me.boxes).to.include(transferBoxId);
 
+        // Login with previous owner
         return chakram.get(`${BASE_URL}/users/me`, {
           headers: { Authorization: `Bearer ${jwt}` },
         });

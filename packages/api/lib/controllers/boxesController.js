@@ -499,7 +499,7 @@ const getTransfer = async function getTransfer (req, res, next) {
   const { boxId } = req._userParams;
   try {
     const transfer = await Claim.findClaimByDeviceID(boxId);
-    res.send(201, {
+    res.send(200, {
       data: transfer,
     });
   } catch (err) {
@@ -565,9 +565,7 @@ const removeTransfer = async function removeTransfer (req, res, next) {
   const { boxId, token } = req._userParams;
   try {
     await req.user.removeTransfer(boxId, token);
-    res.send(201, {
-      message: 'Token successfully removed and device removed for transfer',
-    });
+    res.send(204);
   } catch (err) {
     handleError(err, next);
   }
