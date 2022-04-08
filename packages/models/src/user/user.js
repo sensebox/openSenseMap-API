@@ -412,13 +412,18 @@ userSchema.methods.claimBox = function claimBox (token) {
   return Claim.findClaimByToken(token)
     .exec()
     .then(function (claim) {
+
+      if (!claim) {
+        return Promise.reject(new ModelError('Token was not found', { type: 'NotFoundError' }));
+      }
+
       return {
         owner: user.id,
         claim
       };
     })
-    .catch(function () {
-      throw new ModelError('Token was not found', token);
+    .catch(function (error) {
+      throw new ModelError(error.message, token);
     });
 };
 
