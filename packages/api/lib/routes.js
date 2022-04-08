@@ -103,7 +103,7 @@ const routes = {
     { path: `${boxesPath}/transfer`, method: 'post', handler: boxesController.createTransfer, reference: 'api-Boxes-createTransfer' },
     { path: `${boxesPath}/transfer`, method: 'del', handler: boxesController.removeTransfer, reference: 'api-Boxes-removeTransfer' },
     { path: `${boxesPath}/transfer/:boxId`, method: 'get', handler: boxesController.getTransfer, reference: 'api-Boxes-getTransfer' },
-    { path: `${boxesPath}/transfer/:boxId`, method: 'put', handler: boxesController.updateTransfer, reference: 'api-Boxes-getTransfer' },
+    { path: `${boxesPath}/transfer/:boxId`, method: 'put', handler: boxesController.updateTransfer, reference: 'api-Boxes-updateTransfer' },
     { path: `${boxesPath}/:boxId`, method: 'put', handler: boxesController.updateBox, reference: 'api-Boxes-updateBox' },
     { path: `${boxesPath}/:boxId`, method: 'del', handler: boxesController.deleteBox, reference: 'api-Boxes-deleteBox' },
     { path: `${boxesPath}/:boxId/:sensorId/measurements`, method: 'del', handler: sensorsController.deleteSensorData, reference: 'api-Measurements-deleteMeasurements' },

@@ -534,7 +534,7 @@ const createTransfer = async function createTransfer (req, res, next) {
  * @apiDescription Update the expiration date of a transfer token
  * @apiName updateTransfer
  * @apiGroup Boxes
- * @apiParam (RequestBody) {String} Tranfser token you want to update.
+ * @apiParam (RequestBody) {String} Transfer token you want to update.
  * @apiParam (RequestBody) {RFC3339Date} expiresAt Expiration date for transfer token (default: 24 hours from now).
  * @apiUse JWTokenAuth
  * @apiUse BoxIdParam
@@ -558,7 +558,7 @@ const updateTransfer = async function updateTransfer (req, res, next) {
  * @apiName removeTransfer
  * @apiGroup Boxes
  * @apiParam (RequestBody) {String} boxId ID of the senseBox you want to remove from transfer.
- * @apiParam (RequestBody) {String} token Tranfser token you want to revoke.
+ * @apiParam (RequestBody) {String} token Transfer token you want to revoke.
  * @apiUse JWTokenAuth
  */
 const removeTransfer = async function removeTransfer (req, res, next) {
