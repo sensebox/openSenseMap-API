@@ -16,7 +16,7 @@
     "isemail": "^3.0.0",
     "jsonpath": "^1.1.1",
     "lodash.isequal": "^4.5.0",
-    "moment": "^2.29.1",
+    "moment": "^2.29.2",
     "mongoose": "^4.13.21",
     "mongoose-timestamp": "^0.6",
     "uuid": "^8.3.2"
