@@ -24,7 +24,7 @@ const claimSchema = new Schema({
     type: String,
   },
   expiresAt: {
-    type: Date,
+    type: Date
   },
 });
 claimSchema.plugin(timestampsPlugin);
@@ -71,6 +71,14 @@ const handleE11000 = function (error, res, next) {
   }
   next();
 };
+
+claimSchema.pre('save', function claimPreSave (next) {
+  if (!this.expiresAt) {
+    this.expiresAt = moment.utc().add(amount, unit)
+      .toDate();
+  }
+  next();
+});
 
 claimSchema.post('save', handleE11000);
 claimSchema.post('update', handleE11000);
