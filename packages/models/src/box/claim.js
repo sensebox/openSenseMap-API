@@ -1,5 +1,6 @@
 'use strict';
 
+const timestampsPlugin = require('mongoose-timestamp');
 const ModelError = require('../modelError');
 
 const { mongoose } = require('../db'),
@@ -22,16 +23,11 @@ const claimSchema = new Schema({
   token: {
     type: String,
   },
-  createdAt: {
-    type: Date,
-    default: moment.utc().toDate(),
-  },
   expiresAt: {
     type: Date,
-    default: moment.utc().add(amount, unit)
-      .toDate(),
   },
 });
+claimSchema.plugin(timestampsPlugin);
 
 claimSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 claimSchema.index({ boxId: 1 }, { unique: true });
@@ -46,6 +42,9 @@ claimSchema.statics.initClaim = function initClaim (boxId, date) {
 
   if (date) {
     claim['expiresAt'] = date;
+  } else {
+    claim['expiresAt'] = moment.utc().add(amount, unit)
+      .toDate();
   }
 
   return this.create(claim);
