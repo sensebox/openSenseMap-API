@@ -45,7 +45,8 @@ const
     retrieveParameters,
     parseAndValidateTimeParamsForFindAllBoxes,
     validateFromToTimeParams,
-    checkPrivilege
+    checkPrivilege,
+    validateDateNotPast
   } = require('../helpers/userParamHelpers'),
   handleError = require('../helpers/errorHandler'),
   jsonstringify = require('stringify-stream');
@@ -616,6 +617,7 @@ module.exports = {
       { predef: 'boxId', required: true },
       { predef: 'dateNoDefault' },
     ]),
+    validateDateNotPast,
     checkPrivilege,
     createTransfer,
   ],
@@ -625,6 +627,7 @@ module.exports = {
       { name: 'token', dataType: 'String' },
       { predef: 'dateNoDefault', required: true },
     ]),
+    validateDateNotPast,
     checkPrivilege,
     updateTransfer,
   ],
