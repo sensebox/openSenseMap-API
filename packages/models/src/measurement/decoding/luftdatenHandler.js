@@ -63,8 +63,21 @@ const { transformAndValidateMeasurements } = require('./validators');
 
 const matchings = {
   p0: ['pm01', 'pm0', 'p1.0', 'p0'],
+  p01: ['pm0.1', 'p0.1'],
+  p03: ['pm0.3', 'pm03', 'p0.3', 'p03'],
+  p05: ['pm0.5', 'pm05', 'p0.5', 'p05'],
   p1: ['pm10', 'p10', 'p1'],
   p2: ['pm2.5', 'pm25', 'p2.5', 'p25', 'p2'],
+  p4: ['pm4', 'p4'],
+  p5: ['pm5', 'p5'],
+  n1: [],
+  n01: [],
+  n03: [],
+  n05: [],
+  n4: [],
+  n5: [],
+  n10: [],
+  n25: [],
   temperature: ['temperatur'],
   humidity: ['rel. luftfeuchte', 'luftfeuchtigkeit', 'luftfeuchte'],
   pressure: ['luftdruck', 'druck'],
@@ -158,4 +171,3 @@ module.exports = {
     return Promise.reject(new Error('Cannot decode empty message (luftdaten decoder)'));
   }
 };
-
