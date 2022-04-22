@@ -500,7 +500,7 @@ const getAllTags = async function getAllTags (req, res, next) {
         }
       });
     });
-    res.send({code:'Ok', data:output});
+    res.send({ code: 'Ok', data: output });
   } catch (err) {
     handleError(err, next);
   }
