@@ -491,16 +491,16 @@ const getAllTags = async function getAllTags (req, res, next) {
   try {
     const output = [];
     const boxes = await Box.find().exec();
-    boxes.map( box => {
-      const tags = box.grouptag
-      tags.map( tag => {
+    boxes.map(box => {
+      const tags = box.grouptag;
+      tags.map(tag => {
         const includes = output.includes(tag);
         if (tag.length > 1 && !includes) {
           output.push(tag);
         }
-      })
-    })
-    res.send(output);
+      });
+    });
+    res.send({code:'Ok', data:output});
   } catch (err) {
     handleError(err, next);
   }

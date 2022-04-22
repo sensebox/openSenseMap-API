@@ -74,7 +74,7 @@ const routes = {
   'noauth': [
     { path: '/', method: 'get', handler: printRoutes, reference: 'api-Misc-printRoutes' },
     { path: '/stats', method: 'get', handler: statisticsController.getStatistics, reference: 'api-Misc-getStatistics' },
-    { path: `/getAllTags`, method: 'get', handler: boxesController.getAllTags, reference: 'api-Boxes-getAllTags' },
+    { path: '/getAllTags', method: 'get', handler: boxesController.getAllTags, reference: 'api-Boxes-getAllTags' },
     { path: `${statisticsPath}/idw`, method: 'get', handler: statisticsController.getIdw, reference: 'api-Interpolation-calculateIdw' },
     { path: `${statisticsPath}/descriptive`, method: 'get', handler: statisticsController.descriptiveStatisticsHandler, reference: 'api-Statistics-descriptive' },
     { path: `${boxesPath}`, method: 'get', handler: boxesController.getBoxes, reference: 'api-Boxes-getBoxes' },
