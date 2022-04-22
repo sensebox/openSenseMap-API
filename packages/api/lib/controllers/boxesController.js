@@ -228,10 +228,8 @@ const getBoxes = async function getBoxes (req, res, next) {
     // Directly return results and do nothing else
     if (req._userParams.name) {
       stream = await Box.findBoxes(req._userParams);
-      console.log("here1");
     } else {
       if (req._userParams.minimal === 'true') {
-        console.log("here2");
         stream = await Box.findBoxesMinimal(req._userParams);
       } else {
         stream = await Box.findBoxesLastMeasurements(req._userParams);
