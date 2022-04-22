@@ -131,7 +131,7 @@ const
  * @apiUse ContentTypeJSON
  *
  */
-const updateBox = async function updateBox (req, res, next) {
+const updateBox = async function updateBox(req, res, next) {
   try {
     let box = await Box.findBoxById(req._userParams.boxId, { lean: false, populate: false });
     box = await box.updateBox(req._userParams);
@@ -166,7 +166,7 @@ const updateBox = async function updateBox (req, res, next) {
  *   { "coordinates": [7.68323, 51.9423], "type": "Point", "timestamp": "2017-07-27T12:02:00Z"}
  * ]
  */
-const getBoxLocations = async function getBoxLocations (req, res, next) {
+const getBoxLocations = async function getBoxLocations(req, res, next) {
   try {
     const box = await Box.findBoxById(req._userParams.boxId, { onlyLocations: true, lean: false });
     res.send(await box.getLocations(req._userParams));
@@ -175,7 +175,7 @@ const getBoxLocations = async function getBoxLocations (req, res, next) {
   }
 };
 
-const geoJsonStringifyReplacer = function geoJsonStringifyReplacer (key, box) {
+const geoJsonStringifyReplacer = function geoJsonStringifyReplacer(key, box) {
   if (key === '') {
     const coordinates = box.currentLocation.coordinates;
     box.currentLocation = undefined;
@@ -210,7 +210,7 @@ const geoJsonStringifyReplacer = function geoJsonStringifyReplacer (key, box) {
  * @apiSampleRequest https://api.opensensemap.org/boxes?date=2015-03-07T02:50Z&phenomenon=Temperatur
  * @apiSampleRequest https://api.opensensemap.org/boxes?date=2015-03-07T02:50Z,2015-04-07T02:50Z&phenomenon=Temperatur
  */
-const getBoxes = async function getBoxes (req, res, next) {
+const getBoxes = async function getBoxes(req, res, next) {
   // content-type is always application/json for this route
   res.header('Content-Type', 'application/json; charset=utf-8');
 
@@ -228,8 +228,10 @@ const getBoxes = async function getBoxes (req, res, next) {
     // Directly return results and do nothing else
     if (req._userParams.name) {
       stream = await Box.findBoxes(req._userParams);
+      console.log("here1");
     } else {
       if (req._userParams.minimal === 'true') {
+        console.log("here2");
         stream = await Box.findBoxesMinimal(req._userParams);
       } else {
         stream = await Box.findBoxesLastMeasurements(req._userParams);
@@ -356,7 +358,7 @@ const getBoxes = async function getBoxes (req, res, next) {
 }
  */
 
-const getBox = async function getBox (req, res, next) {
+const getBox = async function getBox(req, res, next) {
   const { format, boxId } = req._userParams;
 
   try {
@@ -404,7 +406,7 @@ const getBox = async function getBox (req, res, next) {
  * @apiUse ContentTypeJSON
  * @apiUse JWTokenAuth
  */
-const postNewBox = async function postNewBox (req, res, next) {
+const postNewBox = async function postNewBox(req, res, next) {
   try {
     let newBox = await req.user.addBox(req._userParams);
     newBox = await Box.populate(newBox, Box.BOX_SUB_PROPS_FOR_POPULATION);
@@ -433,7 +435,7 @@ const postNewBox = async function postNewBox (req, res, next) {
  * @apiUse JWTokenAuth
  * @apiUse BoxIdParam
  */
-const getSketch = async function getSketch (req, res, next) {
+const getSketch = async function getSketch(req, res, next) {
   res.header('Content-Type', 'text/plain; charset=utf-8');
   try {
     const box = await Box.findBoxById(req._userParams.boxId, { populate: false, lean: false });
@@ -472,7 +474,7 @@ const getSketch = async function getSketch (req, res, next) {
  * @apiUse JWTokenAuth
  * @apiUse BoxIdParam
  */
-const deleteBox = async function deleteBox (req, res, next) {
+const deleteBox = async function deleteBox(req, res, next) {
   const { password, boxId } = req._userParams;
 
   try {
@@ -486,6 +488,26 @@ const deleteBox = async function deleteBox (req, res, next) {
     handleError(err, next);
   }
 };
+
+const getAllTags = async function getAllTags(req, res, next) {
+  try {
+    let output = [];
+    let boxes = await Box.find().exec();
+    boxes = boxes.map((box)=>{
+      const tags = box.grouptag
+      tags.map((tag)=>{
+        const includes = output.includes(tag);
+        if (tag.length > 1 && !includes ){
+          output.push(tag);
+        }
+      })
+    })
+    res.send(output);
+  } catch (err) {
+    handleError(err, next);
+  }
+};
+
 
 module.exports = {
   // auth required
@@ -594,5 +616,9 @@ module.exports = {
     parseAndValidateTimeParamsForFindAllBoxes,
     addCache('5 minutes', 'getBoxes'),
     getBoxes
+  ],
+  getAllTags: [
+    addCache('5 minutes', 'getAllTags'),
+    getAllTags
   ]
 };
