@@ -8,6 +8,8 @@ services:
       - mongo-data:/data/db
     networks:
       - api-db-network
+    command: --storageEngine wiredTiger
+
 
 volumes:
   mongo-data:

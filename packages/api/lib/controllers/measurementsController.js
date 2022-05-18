@@ -35,7 +35,20 @@ const getLatestMeasurements = async function getLatestMeasurements (req, res, ne
   let box;
 
   try {
-    box = await Box.findBoxById(req._userParams.boxId, { onlyLastMeasurements: true });
+    if (req._userParams.count) {
+      box = await Box.findBoxById(req._userParams.boxId, {
+        populate: false,
+        onlyLastMeasurements: false,
+        count: req._userParams.count,
+      });
+
+      const measurements = await Measurement.findLatestMeasurementsForSensorsWithCount(box, req._userParams.count);
+      box['lastMeasurements'] = measurements;
+    } else {
+      box = await Box.findBoxById(req._userParams.boxId, {
+        onlyLastMeasurements: true
+      });
+    }
   } catch (err) {
     handleError(err, next);
 
@@ -413,6 +426,7 @@ module.exports = {
     retrieveParameters([
       { predef: 'boxId', required: true },
       { predef: 'sensorId' },
+      { name: 'count', dataType: 'Integer', min: 1, max: 100, required: false },
       { name: 'onlyValue', required: false }
     ]),
     getLatestMeasurements
