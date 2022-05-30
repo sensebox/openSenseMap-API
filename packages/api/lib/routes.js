@@ -1,17 +1,19 @@
 'use strict';
 
 const { usersController,
-    statisticsController,
-    boxesController,
-    sensorsController,
-    measurementsController,
-    managementController } = require('./controllers'),
+  statisticsController,
+  boxesController,
+  sensorsController,
+  measurementsController,
+  managementController,
+  notificationController,
+  badgesController } = require('./controllers'),
   config = require('config'),
   { getVersion } = require('./helpers/apiUtils'),
   { verifyJwt } = require('./helpers/jwtHelpers'),
   { initUserParams, checkPrivilege } = require('./helpers/userParamHelpers');
 
-const spaces = function spaces (num) {
+const spaces = function spaces(num) {
   let str = ' ';
   for (let i = 1; i < num; i++) {
     str = `${str} `;
@@ -26,7 +28,7 @@ const spaces = function spaces (num) {
  * @apiDescription Returns all routes of this API in human readable format
  * @apiGroup Misc
  */
-const printRoutes = function printRoutes (req, res) {
+const printRoutes = function printRoutes(req, res) {
   res.header('Content-Type', 'text/plain; charset=utf-8');
 
   const lines = [
@@ -67,7 +69,7 @@ const printRoutes = function printRoutes (req, res) {
   res.end(lines.join('\n'));
 };
 
-const { boxes: boxesPath, users: usersPath, statistics: statisticsPath, management: managementPath } = config.get('routes');
+const { boxes: boxesPath, users: usersPath, statistics: statisticsPath, management: managementPath, notifications: notificationsPath, badges: badgesPath } = config.get('routes');
 // the ones matching first are used
 // case is ignored
 const routes = {
@@ -91,7 +93,8 @@ const routes = {
     { path: `${usersPath}/password-reset`, method: 'post', handler: usersController.resetPassword, reference: 'api-Users-password-reset' },
     { path: `${usersPath}/confirm-email`, method: 'post', handler: usersController.confirmEmailAddress, reference: 'api-Users-confirm-email' },
     { path: `${usersPath}/sign-in`, method: 'post', handler: usersController.signIn, reference: 'api-Users-sign-in' },
-    { path: `${usersPath}/refresh-auth`, method: 'post', handler: usersController.refreshJWT, reference: 'api-Users-refresh-auth' }
+    { path: `${usersPath}/refresh-auth`, method: 'post', handler: usersController.refreshJWT, reference: 'api-Users-refresh-auth' },
+    { path: `${notificationsPath}/notifications`, method: 'get', handler: notificationController.listNotifications, reference: 'api-Notifications-listNotifications' },
   ],
   'auth': [
     { path: `${usersPath}/me`, method: 'get', handler: usersController.getUser, reference: 'api-Users-getUser' },
@@ -118,10 +121,18 @@ const routes = {
     { path: `${managementPath}/users/delete`, method: 'post', handler: managementController.deleteUsers, reference: 'api-Admin-deleteUsers' },
     { path: `${managementPath}/users/:userId/exec`, method: 'post', handler: managementController.execUserAction, reference: 'api-Admin-execUserAction' },
 
+  ],
+  'notifications': [
+    { path: `${notificationsPath}/notification/:notificationId`, method: 'get', handler: notificationController.getNotification, reference: 'api-Notifications-getNotification' },
+  ],
+  'badges': [
+    { path: `${badgesPath}/badges`, method: 'get', handler: badgesController.listBadges, reference: 'api-Badges-listBadges' },
+    { path: `${badgesPath}/badge/:badgeClassEntityId`, method: 'get', handler: badgesController.getBadge, reference: 'api-Badges-getBadge' },
+    { path: `${badgesPath}/grantBadge/:badgeClassEntityId`, method: 'get', handler: badgesController.grantBadge, reference: 'api-Badges-grantBadge' },
   ]
 };
 
-const initRoutes = function initRoutes (server) {
+const initRoutes = function initRoutes(server) {
   // attach a function for user parameters
   server.use(initUserParams);
 
@@ -132,6 +143,14 @@ const initRoutes = function initRoutes (server) {
 
   // Attach secured routes (needs authorization through jwt)
   server.use(verifyJwt);
+
+  for (const route of routes.notifications) {
+    server[route.method]({ path: route.path }, route.handler);
+  }
+
+  for (const route of routes.badges) {
+    server[route.method]({ path: route.path }, route.handler);
+  }
 
   for (const route of routes.auth) {
     server[route.method]({ path: route.path }, route.handler);

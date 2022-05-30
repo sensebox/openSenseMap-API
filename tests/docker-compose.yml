@@ -48,6 +48,7 @@ services:
       - db
 
   mailer:
+    platform: linux/amd64
     image: sensebox/sensebox-mailer:${SENSEBOX_MAILER_TAG:-v0.0.1}
     environment:
       SENSEBOX_MAILER_SERVER_CERT: |-
@@ -173,11 +174,13 @@ services:
     depends_on:
       - mailhog
   mailhog:
+    platform: linux/amd64
     image: mailhog/mailhog:v1.0.1
     ports:
       - "8025:8025"
 
   mqtt-osem-integration:
+    platform: linux/amd64
     image: ghcr.io/sensebox/mqtt-osem-integration:v0.1.0
     depends_on:
       - db
