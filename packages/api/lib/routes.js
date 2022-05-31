@@ -94,7 +94,6 @@ const routes = {
     { path: `${usersPath}/confirm-email`, method: 'post', handler: usersController.confirmEmailAddress, reference: 'api-Users-confirm-email' },
     { path: `${usersPath}/sign-in`, method: 'post', handler: usersController.signIn, reference: 'api-Users-sign-in' },
     { path: `${usersPath}/refresh-auth`, method: 'post', handler: usersController.refreshJWT, reference: 'api-Users-refresh-auth' },
-    { path: `${notificationsPath}/notifications`, method: 'get', handler: notificationController.listNotifications, reference: 'api-Notifications-listNotifications' },
   ],
   'auth': [
     { path: `${usersPath}/me`, method: 'get', handler: usersController.getUser, reference: 'api-Users-getUser' },
@@ -107,7 +106,13 @@ const routes = {
     { path: `${boxesPath}/:boxId/:sensorId/measurements`, method: 'del', handler: sensorsController.deleteSensorData, reference: 'api-Measurements-deleteMeasurements' },
     { path: `${usersPath}/sign-out`, method: 'post', handler: usersController.signOut, reference: 'api-Users-sign-out' },
     { path: `${usersPath}/me`, method: 'del', handler: usersController.deleteUser, reference: 'api-Users-deleteUser' },
-    { path: `${usersPath}/me/resend-email-confirmation`, method: 'post', handler: usersController.requestEmailConfirmation, reference: 'api-Users-request-email-confirmation' }
+    { path: `${usersPath}/me/resend-email-confirmation`, method: 'post', handler: usersController.requestEmailConfirmation, reference: 'api-Users-request-email-confirmation' },
+    { path: `${notificationsPath}/notifications`, method: 'get', handler: notificationController.listNotifications, reference: 'api-Notifications-listNotifications' },
+    { path: `${notificationsPath}/notification/:notificationId`, method: 'get', handler: notificationController.getNotification, reference: 'api-Notifications-getNotification' },
+    { path: `${notificationsPath}/deleteAll`, method: 'get', handler: notificationController.deleteNotifications, reference: 'api-Notifications-deleteNotifications' },
+    { path: `${badgesPath}/badges`, method: 'get', handler: badgesController.listBadges, reference: 'api-Badges-listBadges' },
+    { path: `${badgesPath}/badge/:badgeClassEntityId`, method: 'get', handler: badgesController.getBadge, reference: 'api-Badges-getBadge' },
+    { path: `${badgesPath}/grantBadge/:badgeClassEntityId`, method: 'get', handler: badgesController.grantBadge, reference: 'api-Badges-grantBadge' },
   ],
   'management': [
     { path: `${managementPath}/boxes`, method: 'get', handler: managementController.listBoxes, reference: 'api-Admin-listBoxes' },
@@ -121,14 +126,6 @@ const routes = {
     { path: `${managementPath}/users/delete`, method: 'post', handler: managementController.deleteUsers, reference: 'api-Admin-deleteUsers' },
     { path: `${managementPath}/users/:userId/exec`, method: 'post', handler: managementController.execUserAction, reference: 'api-Admin-execUserAction' },
 
-  ],
-  'notifications': [
-    { path: `${notificationsPath}/notification/:notificationId`, method: 'get', handler: notificationController.getNotification, reference: 'api-Notifications-getNotification' },
-  ],
-  'badges': [
-    { path: `${badgesPath}/badges`, method: 'get', handler: badgesController.listBadges, reference: 'api-Badges-listBadges' },
-    { path: `${badgesPath}/badge/:badgeClassEntityId`, method: 'get', handler: badgesController.getBadge, reference: 'api-Badges-getBadge' },
-    { path: `${badgesPath}/grantBadge/:badgeClassEntityId`, method: 'get', handler: badgesController.grantBadge, reference: 'api-Badges-grantBadge' },
   ]
 };
 
@@ -143,14 +140,6 @@ const initRoutes = function initRoutes(server) {
 
   // Attach secured routes (needs authorization through jwt)
   server.use(verifyJwt);
-
-  for (const route of routes.notifications) {
-    server[route.method]({ path: route.path }, route.handler);
-  }
-
-  for (const route of routes.badges) {
-    server[route.method]({ path: route.path }, route.handler);
-  }
 
   for (const route of routes.auth) {
     server[route.method]({ path: route.path }, route.handler);

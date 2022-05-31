@@ -35,6 +35,8 @@
   "dependencies": {
     "@geobadges/badgr-api-client": "^0.12.0",
     "dotenv": "^16.0.1",
-    "nodemon": "^2.0.16"
+    "mongoose-socket.io": "^1.2.1",
+    "nodemon": "^2.0.16",
+    "socket.io": "^4.5.1"
   }
 }
