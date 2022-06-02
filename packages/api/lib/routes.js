@@ -108,10 +108,10 @@ const routes = {
     { path: `${usersPath}/me`, method: 'del', handler: usersController.deleteUser, reference: 'api-Users-deleteUser' },
     { path: `${usersPath}/me/resend-email-confirmation`, method: 'post', handler: usersController.requestEmailConfirmation, reference: 'api-Users-request-email-confirmation' },
     { path: `${notificationsPath}/notifications`, method: 'get', handler: notificationController.listNotifications, reference: 'api-Notifications-listNotifications' },
-    { path: `${notificationsPath}/notification/:notificationId`, method: 'get', handler: notificationController.getNotification, reference: 'api-Notifications-getNotification' },
+    { path: `${notificationsPath}/getUnread`, method: 'get', handler: notificationController.getUnreadNotifications, reference: 'api-Notifications-getUnread' },
     { path: `${notificationsPath}/deleteAll`, method: 'get', handler: notificationController.deleteNotifications, reference: 'api-Notifications-deleteNotifications' },
+    { path: `${notificationsPath}/setAsRead/:notificationId`, method: 'get', handler: notificationController.setNotificationAsRead, reference: 'api-Notifications-setAsRead' },
     { path: `${badgesPath}/badges`, method: 'get', handler: badgesController.listBadges, reference: 'api-Badges-listBadges' },
-    { path: `${badgesPath}/badge/:badgeClassEntityId`, method: 'get', handler: badgesController.getBadge, reference: 'api-Badges-getBadge' },
     { path: `${badgesPath}/grantBadge/:badgeClassEntityId`, method: 'get', handler: badgesController.grantBadge, reference: 'api-Badges-grantBadge' },
   ],
   'management': [

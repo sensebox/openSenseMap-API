@@ -24,9 +24,9 @@ const listBadges = async function listBadges(req, res, next) {
     try {
         let fields = ['entityId', 'name', 'description', 'image']; // fields to include in return
         let badges = await client.getBadgeClasses({ fields });
-        res.send({ code: 'Ok', badges: badges });
+        res.send(badges);
     } catch (err) {
-        handleError(err, next);
+        console.log(err);
     }
 }
 
@@ -39,9 +39,9 @@ const getBadge = async function getBadge(req, res, next) {
             entityId,
             fields
         });
-        res.send({ code: 'Ok', badge: badge });
+        res.send(badge);
     } catch (err) {
-        handleError(err, next);
+        console.log(err);
     }
 }
 
@@ -50,41 +50,34 @@ const grantBadge = async function grantBadge(req, res, next) {
     try {
         // GET ISSUER
         const issuer = await getIssuer();
-        try {
-            // GET BADGE
-            const entityId = req.params.badgeClassEntityId; // badge id
-            const fields = ['name', 'entityId', 'criteriaNarrative', 'tags', 'image', 'description']; // fields to include in return
-            const badge = await client.getBadge({
-                entityId,
-                fields
-            });
-            try {
-                // GRANT BADGE WITH BADGR API
-                const status = await client.grant({
-                    badgeClassEntityId: badge.entityId,
-                    createNotification: false,
-                    email: req.user.email,
-                    evidence: [],
-                    issuerEntityId: issuer.entityId,
-                    narrative: badge.description
-                })
-                // IF SUCCESSFULLY GRANTED
-                if (status === true) {
-                    // CREATE NEW NOTIFICATION FOR USER
-                    const notification = await Notification.initNew(req.user._id, "You just earned a new badge! Go to mybadges.org to see it or open your mails.", badge.image, badge.entityId);
-                    res.send({ code: 'Badge granted and notification sent', badge: badge, status: status, notification: notification });
-                }
-                else {
-                    res.send({ code: 'Could not grant badge', badge: badge, status: status });
-                }
-            } catch (err) {
-                handleError(err, next);
-            }
-        } catch (err) {
-            handleError(err, next);
+        // GET BADGE
+        const entityId = req.params.badgeClassEntityId; // badge id
+        const fields = ['name', 'entityId', 'criteriaNarrative', 'tags', 'image', 'description']; // fields to include in return
+        const badge = await client.getBadge({
+            entityId,
+            fields
+        });
+        // GRANT BADGE WITH BADGR API
+        const status = await client.grant({
+            badgeClassEntityId: badge.entityId,
+            createNotification: false,
+            email: req.user.email,
+            evidence: [],
+            issuerEntityId: issuer.entityId,
+            narrative: badge.description
+        })
+        // IF SUCCESSFULLY GRANTED
+        if (status === true) {
+            // CREATE NEW NOTIFICATION FOR USER
+            const notification = await Notification.initNew(req.user._id, req.user.email, "You just earned the badge " + badge.name.toUpperCase() + "! Go to mybadges.org to see it or open your mails.", badge.image, badge.entityId);
+            res.send({ code: 'Badge granted and notification sent', badge: badge, status: status, notification: notification });
         }
-    } catch (err) {
-        handleError(err, next);
+        else {
+            res.send({ code: 'Could not grant badge', badge: badge, status: status });
+        }
+    }
+    catch (err) {
+        console.log(err);
     }
 }
 
