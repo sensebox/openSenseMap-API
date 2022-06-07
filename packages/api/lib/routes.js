@@ -94,6 +94,8 @@ const routes = {
     { path: `${usersPath}/confirm-email`, method: 'post', handler: usersController.confirmEmailAddress, reference: 'api-Users-confirm-email' },
     { path: `${usersPath}/sign-in`, method: 'post', handler: usersController.signIn, reference: 'api-Users-sign-in' },
     { path: `${usersPath}/refresh-auth`, method: 'post', handler: usersController.refreshJWT, reference: 'api-Users-refresh-auth' },
+    { path: `${badgesPath}/getbackpackfromuser/:email`, method: 'get', handler: badgesController.getBackpackFromUser, reference: 'api-Users-getBackpackFromUser' },
+    { path: `${badgesPath}/all`, method: 'get', handler: badgesController.listBadges, reference: 'api-Users-listBadges' },
   ],
   'auth': [
     { path: `${usersPath}/me`, method: 'get', handler: usersController.getUser, reference: 'api-Users-getUser' },

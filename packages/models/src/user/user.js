@@ -60,13 +60,16 @@ const userSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Box'
   }],
+  badges: [{
+    type: String
+  }],
   language: {
     type: String,
     trim: true,
     default: 'en_US',
     validate: {
       /* eslint-disable func-name-matching */
-      validator: function validateLanguage (lang) {
+      validator: function validateLanguage(lang) {
         return /^[a-z]{1,3}((-|_)[a-z]{1,3})?$/i.test(lang);
       },
       /* eslint-enable func-name-matching */
@@ -103,7 +106,7 @@ const toJSONProps = ['name', 'email', 'role', 'language', 'boxes', 'emailIsConfi
 // only send out names and email..
 userSchema.set('toJSON', {
   version: false,
-  transform: function transform (doc, ret, options) {
+  transform: function transform(doc, ret, options) {
     const user = {};
 
     let propsToUse = toJSONProps;
@@ -135,7 +138,7 @@ userSchema.virtual('password')
       .toDate();
   });
 
-const preparePasswordHash = function preparePasswordHash (plaintextPassword) {
+const preparePasswordHash = function preparePasswordHash(plaintextPassword) {
   // first round: hash plaintextPassword with sha512
   const hash = crypto.createHash('sha512');
   hash.update(plaintextPassword.toString(), 'utf8');
@@ -144,11 +147,11 @@ const preparePasswordHash = function preparePasswordHash (plaintextPassword) {
   return hashed;
 };
 
-const passwordHasher = function passwordHasher (plaintextPassword) {
+const passwordHasher = function passwordHasher(plaintextPassword) {
   return bcrypt.hash(preparePasswordHash(plaintextPassword), Number(password_salt_factor)); // signature <String, Number> generates a salt and hashes in one step
 };
 
-userSchema.statics.validatePassword = function validatePassword (newPassword) {
+userSchema.statics.validatePassword = function validatePassword(newPassword) {
   return newPassword.length >= Number(password_min_length);
 };
 
@@ -201,13 +204,13 @@ userSchema.path('unconfirmedEmail').validate({
   }
 });
 
-userSchema.pre('save', function userPreSave (next) {
+userSchema.pre('save', function userPreSave(next) {
   this.wasNew = this.isNew;
   next();
 });
 
 // runs after successful save of users
-userSchema.post('save', function userPostSaveSendMails (user) {
+userSchema.post('save', function userPostSaveSendMails(user) {
   if (user.wasNew) {
     user.mail('newUser');
 
@@ -219,7 +222,7 @@ userSchema.post('save', function userPostSaveSendMails (user) {
   }
 });
 
-userSchema.pre('save', function userPreHashPassword (next) {
+userSchema.pre('save', function userPreHashPassword(next) {
   const user = this;
 
   if (!user._password) {
@@ -237,7 +240,7 @@ userSchema.pre('save', function userPreHashPassword (next) {
     });
 });
 
-userSchema.methods.checkPassword = function checkPassword (plaintextPassword) {
+userSchema.methods.checkPassword = function checkPassword(plaintextPassword) {
   return bcrypt.compare(preparePasswordHash(plaintextPassword), this.hashedPassword)
     .then(function (passwordIsCorrect) {
       if (passwordIsCorrect === false) {
@@ -248,7 +251,7 @@ userSchema.methods.checkPassword = function checkPassword (plaintextPassword) {
     });
 };
 
-userSchema.statics.initPasswordReset = function initPasswordReset ({ email }) {
+userSchema.statics.initPasswordReset = function initPasswordReset({ email }) {
   return this.findOne({ email: email.toLowerCase() })
     .exec()
     .then(function (user) {
@@ -260,7 +263,7 @@ userSchema.statics.initPasswordReset = function initPasswordReset ({ email }) {
     });
 };
 
-userSchema.methods.passwordReset = function passwordReset () {
+userSchema.methods.passwordReset = function passwordReset() {
   const user = this;
   user.resetPasswordToken = uuidv4();
   user.resetPasswordExpires = moment.utc()
@@ -274,7 +277,7 @@ userSchema.methods.passwordReset = function passwordReset () {
 };
 // ---- End Password stuff -----
 
-userSchema.methods.addBox = function addBox (params) {
+userSchema.methods.addBox = function addBox(params) {
   const user = this;
   const serialPort = params.serialPort;
 
@@ -304,7 +307,13 @@ userSchema.methods.addBox = function addBox (params) {
     });
 };
 
-userSchema.methods.checkBoxOwner = function checkBoxOwner (boxId) {
+userSchema.methods.addBadge = function addBadge(badgeId) {
+  const user = this;
+  user.badges.addToSet(badgeId);
+  user.save();
+}
+
+userSchema.methods.checkBoxOwner = function checkBoxOwner(boxId) {
   const user = this;
 
   // first check if the box belongs to this user
@@ -321,7 +330,7 @@ userSchema.methods.checkBoxOwner = function checkBoxOwner (boxId) {
   return true;
 };
 
-userSchema.methods.removeBox = function removeBox (boxId) {
+userSchema.methods.removeBox = function removeBox(boxId) {
   const user = this;
 
   // checkBoxOwner throws ModelError
@@ -352,7 +361,7 @@ userSchema.methods.removeBox = function removeBox (boxId) {
     });
 };
 
-userSchema.methods.destroyUser = function destroyUser ({ sendMail } = { sendMail: true }) {
+userSchema.methods.destroyUser = function destroyUser({ sendMail } = { sendMail: true }) {
   return this
     .populate('boxes')
     .execPopulate()
@@ -369,7 +378,7 @@ userSchema.methods.destroyUser = function destroyUser ({ sendMail } = { sendMail
     });
 };
 
-userSchema.methods.resendEmailConfirmation = function resendEmailConfirmation () {
+userSchema.methods.resendEmailConfirmation = function resendEmailConfirmation() {
   const user = this;
 
   if (user.emailIsConfirmed === true) {
@@ -386,7 +395,7 @@ userSchema.methods.resendEmailConfirmation = function resendEmailConfirmation ()
     });
 };
 
-userSchema.methods.updateUser = function updateUser ({ email, language, name, currentPassword, newPassword }) {
+userSchema.methods.updateUser = function updateUser({ email, language, name, currentPassword, newPassword }) {
   const user = this;
 
   // don't allow email and password change in one request
@@ -467,7 +476,7 @@ userSchema.methods.updateUser = function updateUser ({ email, language, name, cu
     });
 };
 
-userSchema.methods.getBoxes = function getBoxes () {
+userSchema.methods.getBoxes = function getBoxes() {
   return Box.find({ _id: { $in: this.boxes } })
     .populate(Box.BOX_SUB_PROPS_FOR_POPULATION)
     .then(function (boxes) {
@@ -475,7 +484,7 @@ userSchema.methods.getBoxes = function getBoxes () {
     });
 };
 
-userSchema.statics.confirmEmail = function confirmEmail ({ token, email }) {
+userSchema.statics.confirmEmail = function confirmEmail({ token, email }) {
   return this.findOne({ $and: [{ $or: [{ email: email }, { unconfirmedEmail: email }] }, { emailConfirmationToken: token }] })
     .exec()
     .then(function (user) {
@@ -495,7 +504,7 @@ userSchema.statics.confirmEmail = function confirmEmail ({ token, email }) {
     });
 };
 
-userSchema.statics.resetPassword = function resetPassword ({ password, token }) {
+userSchema.statics.resetPassword = function resetPassword({ password, token }) {
   return this.findOne({ resetPasswordToken: token })
     .exec()
     .then(function (user) {
@@ -515,7 +524,7 @@ userSchema.statics.resetPassword = function resetPassword ({ password, token }) 
     });
 };
 
-userSchema.statics.findUserOfBox = function findUserOfBox (boxId) {
+userSchema.statics.findUserOfBox = function findUserOfBox(boxId) {
   if (boxId._id) {
     boxId = boxId._id;
   }
@@ -524,7 +533,7 @@ userSchema.statics.findUserOfBox = function findUserOfBox (boxId) {
     .exec();
 };
 
-userSchema.statics.transferOwnershipOfBox = function transferOwnershipOfBox (newOwnerId, boxId) {
+userSchema.statics.transferOwnershipOfBox = function transferOwnershipOfBox(newOwnerId, boxId) {
   const User = this;
 
   return Promise.all([User.findUserOfBox(boxId), User.findById(newOwnerId).exec()])
@@ -553,7 +562,7 @@ userSchema.statics.transferOwnershipOfBox = function transferOwnershipOfBox (new
     });
 };
 
-userSchema.methods.mail = function mail (template, data) {
+userSchema.methods.mail = function mail(template, data) {
   return mails.sendMail(template, this, data);
 };
 

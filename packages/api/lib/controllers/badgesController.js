@@ -1,8 +1,7 @@
 'use strict'
 
 const { model: Notification } = require('../../../models/src/notifications/notifications.js');
-const { handleError } = require('../helpers/errorHandler')
-
+const { User } = require('@sensebox/opensensemap-api-models');
 
 // ENVIRONMENT VARIABLES
 const dotenv = require('dotenv');
@@ -16,8 +15,7 @@ const username = process.env.USERNAME;
 // BADGR API CLIENT
 const API = require("@geobadges/badgr-api-client");
 // CONNECT TO API ENDPOINT WITH CREDENTIELS
-const client = new API({ endpoint, password, username });
-
+const client = new API({ endpoint, password, username, debug: true });
 
 // GET ALL BADGES
 const listBadges = async function listBadges(req, res, next) {
@@ -47,6 +45,7 @@ const getBadge = async function getBadge(req, res, next) {
 
 // GRANT BADGE TO USER (REQUEST EMAIL) BY BADGE CLASS ID
 const grantBadge = async function grantBadge(req, res, next) {
+    //TODO: CHECK IF USER HAS BADGE ALREADY
     try {
         // GET ISSUER
         const issuer = await getIssuer();
@@ -70,6 +69,8 @@ const grantBadge = async function grantBadge(req, res, next) {
         if (status === true) {
             // CREATE NEW NOTIFICATION FOR USER
             const notification = await Notification.initNew(req.user._id, req.user.email, "You just earned the badge " + badge.name.toUpperCase() + "! Go to mybadges.org to see it or open your mails.", badge.image, badge.entityId);
+            // ADD BADGEID TO USER OBJECT
+            req.user.addBadge(entityId);
             res.send({ code: 'Badge granted and notification sent', badge: badge, status: status, notification: notification });
         }
         else {
@@ -79,6 +80,23 @@ const grantBadge = async function grantBadge(req, res, next) {
     catch (err) {
         console.log(err);
     }
+}
+
+
+// GET ALL BADGES FROM USER BY ITS ID
+const getBackpackFromUser = async function getBackpackFromUser(req, res, next) {
+    let ownedBadges = [];
+    const email = req.params.email;
+    const user = await User.findOne({ email: email });
+    const badges = user.badges;
+    for (let i = 0; i < badges.length; i++) {
+        console.log(badges[i]);
+        const entityId = badges[i];
+        const fields = ['name', 'entityId', 'image'];
+        const badge = await client.getBadge({ entityId, fields });
+        ownedBadges.push(badge);
+    }
+    res.send(ownedBadges);
 }
 
 const getIssuer = async function getIssuer() {
@@ -92,5 +110,6 @@ const getIssuer = async function getIssuer() {
 module.exports = {
     getBadge,
     grantBadge,
-    listBadges
+    listBadges,
+    getBackpackFromUser
 }

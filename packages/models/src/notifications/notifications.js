@@ -11,8 +11,6 @@ const { Server } = require("socket.io");
 const io = new Server(1234, { /* options */ });
 const mongooseSocketIo = require('mongoose-socket.io');
 
-console.log(jwt_secret);
-
 io.use(jwtAuth.authenticate({
     secret: jwt_secret,
     algorithm: jwt_algorithm,

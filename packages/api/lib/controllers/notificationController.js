@@ -1,7 +1,6 @@
 'use strict'
 
 const { model: Notification } = require('../../../models/src/notifications/notifications.js');
-const { handleError } = require('../helpers/errorHandler')
 
 
 // GET ALL USER NOTIFICATIONS
