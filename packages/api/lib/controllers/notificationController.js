@@ -26,7 +26,6 @@ const getUnreadNotifications = async function getUnreadNotifications(req, res, n
 // POST NEW NOTIFICATION
 const postNewNotification = async function postNotification(req, res, next) {
     try {
-        console.log(req.user);
         let notification = await Notification.initNew(req.user._id, req.user.email, req.body.message, req.body.image, req.body.badgeId);
         res.send({ code: 'Ok', notification: notification });
     } catch (err) {
@@ -48,7 +47,6 @@ const deleteNotifications = async function deleteNotifications(req, res, next) {
 // SET NOTIFICATION AS READ
 const setNotificationAsRead = async function setNotificationAsRead(req, res, next) {
     try {
-        console.log(req.params);
         let notification = await Notification.findById(req.params.notificationId);
         notification.is_read = true;
         await notification.save();

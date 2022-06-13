@@ -1,5 +1,6 @@
 'use strict'
 
+const axios = require('axios');
 const { model: Notification } = require('../../../models/src/notifications/notifications.js');
 const { User } = require('@sensebox/opensensemap-api-models');
 
@@ -11,44 +12,36 @@ dotenv.config();
 const endpoint = process.env.BADGRAPI;
 const password = process.env.PASSWORD;
 const username = process.env.USERNAME;
+const ISSUERID = process.env.MYBADGESISSUERID;
 
 // BADGR API CLIENT
 const API = require("@geobadges/badgr-api-client");
 // CONNECT TO API ENDPOINT WITH CREDENTIELS
-const client = new API({ endpoint, password, username, debug: true });
+const client = new API({ endpoint, password, username, debug: true, admin: true });
 
-// GET ALL BADGES
-const listBadges = async function listBadges(req, res, next) {
-    try {
-        let fields = ['entityId', 'name', 'description', 'image']; // fields to include in return
-        let badges = await client.getBadgeClasses({ fields });
-        res.send(badges);
-    } catch (err) {
-        console.log(err);
-    }
-}
 
-// GET BADGE BY BADGE CLASS ID
-const getBadge = async function getBadge(req, res, next) {
-    try {
-        let entityId = req.params.badgeClassEntityId; // badge id
-        let fields = ['name', 'entityId', 'criteriaNarrative', 'tags', 'image', 'description']; // fields to include in return
-        let badge = await client.getBadge({
-            entityId,
-            fields
-        });
-        res.send(badge);
-    } catch (err) {
-        console.log(err);
-    }
+// GET ACCESSTOKEN
+const getAccessToken = async function getAccessToken() {
+    const {
+        accessToken,
+        expirationDate,
+        refreshToken
+    } = await client.getAccessToken();
+    return accessToken;
 }
 
 // GRANT BADGE TO USER (REQUEST EMAIL) BY BADGE CLASS ID
 const grantBadge = async function grantBadge(req, res, next) {
-    //TODO: CHECK IF USER HAS BADGE ALREADY
+    // CHECK IF USER ALREADY HAS THIS BADGE
+    const badges = await axios.get(process.env.BADGRAPI + '/v2/backpack/' + req.user.email, { headers: { Authorization: 'Bearer ' + await getAccessToken() } });
+    const usersOwnedBadges = badges.data.result;
+    for (let i = 0; i < usersOwnedBadges.length; i++) {
+        if (usersOwnedBadges[i].badgeclass == req.params.badgeClassEntityId) {
+            res.send({ code: 'User already has this badge' });
+            return;
+        }
+    }
     try {
-        // GET ISSUER
-        const issuer = await getIssuer();
         // GET BADGE
         const entityId = req.params.badgeClassEntityId; // badge id
         const fields = ['name', 'entityId', 'criteriaNarrative', 'tags', 'image', 'description']; // fields to include in return
@@ -62,15 +55,13 @@ const grantBadge = async function grantBadge(req, res, next) {
             createNotification: false,
             email: req.user.email,
             evidence: [],
-            issuerEntityId: issuer.entityId,
+            issuerEntityId: ISSUERID,
             narrative: badge.description
         })
         // IF SUCCESSFULLY GRANTED
         if (status === true) {
             // CREATE NEW NOTIFICATION FOR USER
             const notification = await Notification.initNew(req.user._id, req.user.email, "You just earned the badge " + badge.name.toUpperCase() + "! Go to mybadges.org to see it or open your mails.", badge.image, badge.entityId);
-            // ADD BADGEID TO USER OBJECT
-            req.user.addBadge(entityId);
             res.send({ code: 'Badge granted and notification sent', badge: badge, status: status, notification: notification });
         }
         else {
@@ -82,34 +73,19 @@ const grantBadge = async function grantBadge(req, res, next) {
     }
 }
 
-
 // GET ALL BADGES FROM USER BY ITS ID
-const getBackpackFromUser = async function getBackpackFromUser(req, res, next) {
-    let ownedBadges = [];
-    const email = req.params.email;
-    const user = await User.findOne({ email: email });
-    const badges = user.badges;
-    for (let i = 0; i < badges.length; i++) {
-        console.log(badges[i]);
-        const entityId = badges[i];
-        const fields = ['name', 'entityId', 'image'];
-        const badge = await client.getBadge({ entityId, fields });
-        ownedBadges.push(badge);
+const getBackpack = async function getBackpack(req, res, next) {
+    try {
+        const response = await axios.get(process.env.BADGRAPI + '/v2/backpack/' + req.params.email, { headers: { Authorization: 'Bearer ' + await getAccessToken() } });
+        const badges = response.data.result;
+        res.send(badges);
     }
-    res.send(ownedBadges);
-}
-
-const getIssuer = async function getIssuer() {
-    const fields = ['emails', 'entityId', 'firstName', 'lastName'];
-    const user = await client.getUser({
-        fields
-    });
-    return user;
+    catch (err) {
+        console.log(err);
+    }
 }
 
 module.exports = {
-    getBadge,
     grantBadge,
-    listBadges,
-    getBackpackFromUser
+    getBackpack
 }

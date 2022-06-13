@@ -60,9 +60,6 @@ const userSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Box'
   }],
-  badges: [{
-    type: String
-  }],
   language: {
     type: String,
     trim: true,
@@ -306,12 +303,6 @@ userSchema.methods.addBox = function addBox(params) {
         });
     });
 };
-
-userSchema.methods.addBadge = function addBadge(badgeId) {
-  const user = this;
-  user.badges.addToSet(badgeId);
-  user.save();
-}
 
 userSchema.methods.checkBoxOwner = function checkBoxOwner(boxId) {
   const user = this;

@@ -6,7 +6,7 @@ const config = require('config');
 var jwtAuth = require('socketio-jwt-auth');
 const { algorithm: jwt_algorithm, secret: jwt_secret, issuer: jwt_issuer, validity_ms: jwt_validity_ms } = config.get('jwt');
 
-// INITIALIZE SOCKET.IO
+// ############### INITIALIZE SOCKET.IO ######################
 const { Server } = require("socket.io");
 const io = new Server(1234, { /* options */ });
 const mongooseSocketIo = require('mongoose-socket.io');
@@ -42,6 +42,8 @@ io.on("connection", (socket) => {
         console.log('a user disconnected!');
     });
 });
+
+// ############### SOCKET STUFF END ###############
 
 
 // NOTIFICATION SCHEMA
