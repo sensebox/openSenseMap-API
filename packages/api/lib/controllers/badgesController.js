@@ -27,8 +27,14 @@ const getAccessToken = async function getAccessToken() {
         expirationDate,
         refreshToken
     } = await client.getAccessToken();
+    console.log({
+        accessToken,
+        expirationDate,
+        refreshToken
+    });
     return accessToken;
 }
+getAccessToken();
 
 // GRANT BADGE TO USER (REQUEST EMAIL) BY BADGE CLASS ID
 const grantBadge = async function grantBadge(req, res, next) {
@@ -76,8 +82,15 @@ const grantBadge = async function grantBadge(req, res, next) {
 // GET ALL BADGES FROM USER BY ITS ID
 const getBackpack = async function getBackpack(req, res, next) {
     try {
+        // GET ALL BADGES FROM USER
         const response = await axios.get(process.env.BADGRAPI + '/v2/backpack/' + req.params.email, { headers: { Authorization: 'Bearer ' + await getAccessToken() } });
         const badges = response.data.result;
+        // FILTER FOR BADGES FROM OPENSENSEMAP ISSUER
+        for (let i = 0; i < badges.length; i++) {
+            if (badges[i].issuer != ISSUERID) {
+                badges.splice(i, 1);
+            }
+        }
         res.send(badges);
     }
     catch (err) {
