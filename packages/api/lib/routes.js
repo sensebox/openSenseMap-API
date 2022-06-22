@@ -88,6 +88,7 @@ const routes = {
     { path: `${boxesPath}/data`, method: 'post', handler: measurementsController.getDataMulti, reference: 'api-Measurements-getDataMulti' },
     { path: `${boxesPath}/:boxId/data`, method: 'post', handler: measurementsController.postNewMeasurements, reference: 'api-Measurements-postNewMeasurements' },
     { path: `${boxesPath}/:boxId/:sensorId`, method: 'post', handler: measurementsController.postNewMeasurement, reference: 'api-Measurements-postNewMeasurement' },
+    { path: `${boxesPath}/:boxId/owner`, method: 'get', handler: boxesController.getOwnerOfBox, reference: 'api-Boxes-getOwnerOfBox' },
     { path: `${usersPath}/register`, method: 'post', handler: usersController.registerUser, reference: 'api-Users-register' },
     { path: `${usersPath}/request-password-reset`, method: 'post', handler: usersController.requestResetPassword, reference: 'api-Users-request-password-reset' },
     { path: `${usersPath}/password-reset`, method: 'post', handler: usersController.resetPassword, reference: 'api-Users-password-reset' },

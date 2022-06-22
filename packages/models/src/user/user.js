@@ -51,6 +51,10 @@ const userSchema = new mongoose.Schema({
       message: userEmailRequirementsText
     }
   },
+  isPublic: {
+    type: Boolean,
+    default: false
+  },
   unconfirmedEmail: {
     type: String,
     trim: true,
