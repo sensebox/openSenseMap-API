@@ -10,7 +10,7 @@ const { algorithm: jwt_algorithm, secret: jwt_secret, issuer: jwt_issuer, validi
 const { Server } = require("socket.io");
 const io = new Server(1234, {
     cors: {
-        origin: "http://localhost:4200",
+        origin: ["http://localhost:4200", "https://opensensemap.org", "http://opensensemap.org"],
         methods: ["GET", "POST"]
     }
 });
