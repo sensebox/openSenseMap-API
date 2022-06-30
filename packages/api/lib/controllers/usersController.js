@@ -43,7 +43,7 @@ const { User } = require('@sensebox/opensensemap-api-models'),
  * @apiSuccess (Created 201) {String} refreshToken valid refresh token
  * @apiSuccess (Created 201) {Object} data `{ "user": {"name":"fullname","email":"test@test.de","role":"user","language":"en_US","boxes":[],"emailIsConfirmed":false} }`
  */
-const registerUser = async function registerUser (req, res, next) {
+const registerUser = async function registerUser(req, res, next) {
   const { email, password, language, name } = req._userParams;
 
   try {
@@ -77,7 +77,7 @@ const registerUser = async function registerUser (req, res, next) {
  * @apiSuccess {Object} data `{ "user": {"name":"fullname","email":"test@test.de","role":"user","language":"en_US","boxes":[],"emailIsConfirmed":false} }`
  * @apiError {String} 403 Unauthorized
  */
-const signIn = async function signIn (req, res, next) {
+const signIn = async function signIn(req, res, next) {
   const { email: emailOrName, password } = req._userParams;
 
   try {
@@ -116,7 +116,7 @@ const signIn = async function signIn (req, res, next) {
  * @apiSuccess {Object} data `{ "user": {"name":"fullname","email":"test@test.de","role":"user","language":"en_US","boxes":[],"emailIsConfirmed":false} }`
  * @apiError {Object} Forbidden `{"code":"ForbiddenError","message":"Refresh token invalid or too old. Please sign in with your username and password."}`
  */
-const refreshJWT = async function refreshJWT (req, res, next) {
+const refreshJWT = async function refreshJWT(req, res, next) {
   try {
     const { token, refreshToken, user } = await refreshJwt(req._userParams.token);
     res.send(200, { code: 'Authorized', message: 'Successfully refreshed auth', data: { user }, token, refreshToken });
@@ -134,7 +134,7 @@ const refreshJWT = async function refreshJWT (req, res, next) {
  * @apiSuccess {String} code `Ok`
  * @apiSuccess {String} message `Successfully signed out`
  */
-const signOut = function signOut (req, res) {
+const signOut = function signOut(req, res) {
   invalidateToken(req);
 
   return res.send(200, { code: 'Ok', message: 'Successfully signed out' });
@@ -150,7 +150,7 @@ const signOut = function signOut (req, res) {
  * @apiSuccess {String} message `Password reset initiated`
  */
 // generate new password reset token and send the token to the user
-const requestResetPassword = async function requestResetPassword (req, res, next) {
+const requestResetPassword = async function requestResetPassword(req, res, next) {
   try {
     await User.initPasswordReset(req._userParams);
     res.send(200, { code: 'Ok', message: 'Password reset initiated' });
@@ -170,7 +170,7 @@ const requestResetPassword = async function requestResetPassword (req, res, next
  * @apiSuccess {String} message `Password successfully changed. You can now login with your new password`
  */
 // set new password with reset token as auth
-const resetPassword = async function resetPassword (req, res, next) {
+const resetPassword = async function resetPassword(req, res, next) {
   try {
     await User.resetPassword(req._userParams);
     res.send(200, { code: 'Ok', message: 'Password successfully changed. You can now login with your new password' });
@@ -189,7 +189,7 @@ const resetPassword = async function resetPassword (req, res, next) {
  * @apiSuccess {String} code `Ok`
  * @apiSuccess {String} message `E-Mail successfully confirmed. Thank you`
  */
-const confirmEmailAddress = async function confirmEmailAddress (req, res, next) {
+const confirmEmailAddress = async function confirmEmailAddress(req, res, next) {
   try {
     await User.confirmEmail(req._userParams);
     res.send(200, { code: 'Ok', message: 'E-Mail successfully confirmed. Thank you' });
@@ -206,7 +206,7 @@ const confirmEmailAddress = async function confirmEmailAddress (req, res, next) 
  * @apiSuccess {String} code `Ok`
  * @apiSuccess {String} data A json object with a single `boxes` array field
  */
-const getUserBoxes = async function getUserBoxes (req, res, next) {
+const getUserBoxes = async function getUserBoxes(req, res, next) {
   try {
     const boxes = await req.user.getBoxes();
     res.send(200, { code: 'Ok', data: { boxes } });
@@ -222,7 +222,7 @@ const getUserBoxes = async function getUserBoxes (req, res, next) {
  * @apiGroup Users
  * @apiUse JWTokenAuth
  */
-const getUser = function getUser (req, res) {
+const getUser = function getUser(req, res) {
   res.send(200, { code: 'Ok', data: { me: req.user } });
 };
 
@@ -238,7 +238,7 @@ const getUser = function getUser (req, res) {
  * @apiParam {String} [newPassword] the new password for this user. Should be at least 8 characters long.
  * @apiParam {String} currentPassword the current password for this user.
  */
-const updateUser = async function updateUser (req, res, next) {
+const updateUser = async function updateUser(req, res, next) {
   try {
     const { updated, signOut, messages, updatedUser } = await req.user.updateUser(req._userParams);
     if (updated === false) {
@@ -263,7 +263,7 @@ const updateUser = async function updateUser (req, res, next) {
  * @apiParam {String} password the current password for this user.
  */
 
-const deleteUser = async function deleteUser (req, res, next) {
+const deleteUser = async function deleteUser(req, res, next) {
   const { password } = req._userParams;
 
   try {
@@ -288,7 +288,7 @@ const deleteUser = async function deleteUser (req, res, next) {
  * @apiSuccess {String} code `Ok`
  * @apiSuccess {String} message `Email confirmation has been sent to <emailaddress>`
  */
-const requestEmailConfirmation = async function requestEmailConfirmation (req, res, next) {
+const requestEmailConfirmation = async function requestEmailConfirmation(req, res, next) {
   try {
     const result = await req.user.resendEmailConfirmation();
     let usedAddress = result.email;
@@ -300,6 +300,19 @@ const requestEmailConfirmation = async function requestEmailConfirmation (req, r
     handleError(err, next);
   }
 };
+
+const getPublicInformation = async function getPublicInformation(req, res, next) {
+  try {
+    const user = await User.findOne({ name: req.params.username });
+    if (!user._doc.isPublic) {
+      res.send(403, { code: 'Ok', message: 'Users profile is not public', user: null });
+    } else {
+      res.send(200, { code: 'Ok', user: user });
+    }
+  } catch (err) {
+    handleError(err, next);
+  }
+}
 
 module.exports = {
   registerUser: [
@@ -346,6 +359,7 @@ module.exports = {
   ],
   requestEmailConfirmation,
   getUserBoxes,
+  getPublicInformation,
   updateUser: [
     checkContentType,
     retrieveParameters([

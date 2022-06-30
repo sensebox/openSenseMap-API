@@ -2,7 +2,6 @@
 
 const axios = require('axios');
 const { model: Notification } = require('../../../models/src/notifications/notifications.js');
-const { User } = require('@sensebox/opensensemap-api-models');
 
 // ENVIRONMENT VARIABLES
 const dotenv = require('dotenv');
@@ -98,7 +97,24 @@ const getBackpack = async function getBackpack(req, res, next) {
     }
 }
 
+const getBadge = async function getBadge(req, res, next) {
+    try {
+        // GET BADGE
+        const entityId = req.params.id; // badge id
+        const fields = ['name', 'entityId', 'criteriaNarrative', 'tags', 'image', 'description']; // fields to include in return
+        const badge = await client.getBadge({
+            entityId,
+            fields
+        });
+        res.send(badge);
+    }
+    catch (err) {
+        console.log(err);
+    }
+}
+
 module.exports = {
     grantBadge,
-    getBackpack
+    getBackpack,
+    getBadge
 }

@@ -8,7 +8,12 @@ const { algorithm: jwt_algorithm, secret: jwt_secret, issuer: jwt_issuer, validi
 
 // ############### INITIALIZE SOCKET.IO ######################
 const { Server } = require("socket.io");
-const io = new Server(1234, { /* options */ });
+const io = new Server(1234, {
+    cors: {
+        origin: "http://localhost:4200",
+        methods: ["GET", "POST"]
+    }
+});
 const mongooseSocketIo = require('mongoose-socket.io');
 
 io.use(jwtAuth.authenticate({
@@ -78,7 +83,7 @@ const notificationSchema = new mongoose.Schema({
     }
 });
 
-// USE MONGOOSE PLUGIN TO EMIT EVENT WHEN MONGOOSE DETECTS CHANGES
+// USE MONGOOSE/SOCKET.IO PLUGIN TO EMIT EVENT WHEN MONGOOSE DETECTS CHANGES
 notificationSchema.plugin(mongooseSocketIo, {
     io,
     prefix: 'notification',

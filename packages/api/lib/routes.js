@@ -95,6 +95,9 @@ const routes = {
     { path: `${usersPath}/confirm-email`, method: 'post', handler: usersController.confirmEmailAddress, reference: 'api-Users-confirm-email' },
     { path: `${usersPath}/sign-in`, method: 'post', handler: usersController.signIn, reference: 'api-Users-sign-in' },
     { path: `${usersPath}/refresh-auth`, method: 'post', handler: usersController.refreshJWT, reference: 'api-Users-refresh-auth' },
+    { path: `${usersPath}/info/:username`, method: 'get', handler: usersController.getPublicInformation, reference: 'api-Users-getPublicInformation' },
+    { path: `${badgesPath}/getBackpack/:email`, method: 'get', handler: badgesController.getBackpack, reference: 'api-Badges-getBackpack' },
+    { path: `${badgesPath}/:id`, method: 'get', handler: badgesController.getBadge, reference: 'api-Badges-getBadge' },
   ],
   'auth': [
     { path: `${usersPath}/me`, method: 'get', handler: usersController.getUser, reference: 'api-Users-getUser' },
@@ -113,7 +116,6 @@ const routes = {
     { path: `${notificationsPath}/deleteAll`, method: 'get', handler: notificationController.deleteNotifications, reference: 'api-Notifications-deleteNotifications' },
     { path: `${notificationsPath}/setAsRead/:notificationId`, method: 'get', handler: notificationController.setNotificationAsRead, reference: 'api-Notifications-setAsRead' },
     { path: `${badgesPath}/grantBadge/:badgeClassEntityId`, method: 'get', handler: badgesController.grantBadge, reference: 'api-Badges-grantBadge' },
-    { path: `${badgesPath}/getBackpack/:email`, method: 'get', handler: badgesController.getBackpack, reference: 'api-Badges-getBackpack' },
   ],
   'management': [
     { path: `${managementPath}/boxes`, method: 'get', handler: managementController.listBoxes, reference: 'api-Admin-listBoxes' },
