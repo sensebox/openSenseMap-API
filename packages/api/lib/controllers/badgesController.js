@@ -2,6 +2,7 @@
 
 const axios = require('axios');
 const { model: Notification } = require('../../../models/src/notifications/notifications.js');
+const handleError = require('../helpers/errorHandler')
 
 // ENVIRONMENT VARIABLES
 const dotenv = require('dotenv');
@@ -38,15 +39,15 @@ getAccessToken();
 // GRANT BADGE TO USER (REQUEST EMAIL) BY BADGE CLASS ID
 const grantBadge = async function grantBadge(req, res, next) {
     // CHECK IF USER ALREADY HAS THIS BADGE
-    const badges = await axios.get(process.env.BADGRAPI + '/v2/backpack/' + req.user.email, { headers: { Authorization: 'Bearer ' + await getAccessToken() } });
-    const usersOwnedBadges = badges.data.result;
-    for (let i = 0; i < usersOwnedBadges.length; i++) {
-        if (usersOwnedBadges[i].badgeclass == req.params.badgeClassEntityId) {
-            res.send({ code: 'User already has this badge' });
-            return;
-        }
-    }
     try {
+        const badges = await axios.get(process.env.BADGRAPI + '/v2/backpack/' + req.user.email, { headers: { Authorization: 'Bearer ' + await getAccessToken() } });
+        const usersOwnedBadges = badges.data.result;
+        for (let i = 0; i < usersOwnedBadges.length; i++) {
+            if (usersOwnedBadges[i].badgeclass == req.params.badgeClassEntityId) {
+                res.send({ code: 'User already has this badge' });
+                return;
+            }
+        }
         // GET BADGE
         const entityId = req.params.badgeClassEntityId; // badge id
         const fields = ['name', 'entityId', 'criteriaNarrative', 'tags', 'image', 'description']; // fields to include in return
@@ -74,7 +75,7 @@ const grantBadge = async function grantBadge(req, res, next) {
         }
     }
     catch (err) {
-        console.log(err);
+        handleError(err, next);
     }
 }
 
@@ -93,7 +94,7 @@ const getBackpack = async function getBackpack(req, res, next) {
         res.send(badges);
     }
     catch (err) {
-        console.log(err);
+        handleError(err, next);
     }
 }
 
@@ -109,7 +110,7 @@ const getBadge = async function getBadge(req, res, next) {
         res.send(badge);
     }
     catch (err) {
-        console.log(err);
+        handleError(err, next);
     }
 }
 

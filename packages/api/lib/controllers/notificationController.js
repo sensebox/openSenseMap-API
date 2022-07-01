@@ -1,6 +1,7 @@
 'use strict'
 
 const { model: Notification } = require('../../../models/src/notifications/notifications.js');
+const handleError = require('../helpers/errorHandler');
 
 
 // GET ALL USER NOTIFICATIONS
@@ -9,7 +10,7 @@ const listNotifications = async function listNotifications(req, res, next) {
         let notifications = await Notification.find({ reciever: req.user._id });
         res.send(notifications);
     } catch (err) {
-        console.log(err);
+        handleError(err, next);
     }
 }
 
@@ -19,17 +20,7 @@ const getUnreadNotifications = async function getUnreadNotifications(req, res, n
         let notifications = await Notification.find({ reciever: req.user._id, is_read: false });
         res.send(notifications);
     } catch (err) {
-        console.log(err);
-    }
-}
-
-// POST NEW NOTIFICATION
-const postNewNotification = async function postNotification(req, res, next) {
-    try {
-        let notification = await Notification.initNew(req.user._id, req.user.email, req.body.message, req.body.image, req.body.badgeId);
-        res.send({ code: 'Ok', notification: notification });
-    } catch (err) {
-        console.log(err);
+        handleError(err, next);
     }
 }
 
@@ -39,7 +30,7 @@ const deleteNotifications = async function deleteNotifications(req, res, next) {
         await Notification.deleteMany({ reciever: req.user._id });
         res.send({ code: 'All user notifications deleted' });
     } catch (err) {
-        console.log(err);
+        handleError(err, next);
     }
 
 }
@@ -52,7 +43,7 @@ const setNotificationAsRead = async function setNotificationAsRead(req, res, nex
         await notification.save();
         res.send({ code: 'Ok', notification: notification });
     } catch (err) {
-        console.log(err);
+        handleError(err, next);
     }
 }
 
@@ -61,7 +52,6 @@ const setNotificationAsRead = async function setNotificationAsRead(req, res, nex
 module.exports = {
     listNotifications,
     getUnreadNotifications,
-    postNewNotification,
     deleteNotifications,
     setNotificationAsRead
 }
