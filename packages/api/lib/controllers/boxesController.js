@@ -381,7 +381,7 @@ const getOwnerOfBox = async function getOwnerOfBox(req, res, next) {
   try {
     const owner = await User.findOne({ boxes: boxId });
     if (owner) {
-      if (owner._doc.isPublic) {
+      if (owner._doc.isPublic || owner.isPublic) {
         res.send({ username: owner.name, msg: "User found." });
       }
       else {

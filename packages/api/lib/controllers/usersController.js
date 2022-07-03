@@ -304,7 +304,7 @@ const requestEmailConfirmation = async function requestEmailConfirmation(req, re
 const getPublicInformation = async function getPublicInformation(req, res, next) {
   try {
     const user = await User.findOne({ name: req.params.username });
-    if (!user._doc.isPublic) {
+    if (!user._doc.isPublic || !user.isPublic) {
       res.send(403, { code: 'Ok', message: 'Users profile is not public', user: null });
     } else {
       res.send(200, { code: 'Ok', user: user });
