@@ -63,12 +63,25 @@ const { transformAndValidateMeasurements } = require('./validators');
 
 const matchings = {
   p0: ['pm01', 'pm0', 'p1.0', 'p0'],
+  p01: ['pm0.1', 'p0.1'],
+  p03: ['pm0.3', 'pm03', 'p0.3', 'p03'],
+  p05: ['pm0.5', 'pm05', 'p0.5', 'p05'],
   p1: ['pm10', 'p10', 'p1'],
   p2: ['pm2.5', 'pm25', 'p2.5', 'p25', 'p2'],
+  p4: ['pm4', 'p4'],
+  p5: ['pm5', 'p5'],
+  n1: ['nc1.0', 'nc1', 'n1.0', 'n1'],
+  n01: ['nc0.1', 'n0.1', 'nc01', 'n01'],
+  n03: ['nc0.3', 'n0.3', 'nc03', 'n03'],
+  n05: ['nc0.5', 'n0.5', 'nc05', 'n05'],
+  n4: ['nc4.0', 'n4.0', 'nc4', 'n4'],
+  n5: ['nc5', 'n5'],
+  n10: ['nc10', 'n10'],
+  n25: ['nc2.5', 'n2.5'],
   temperature: ['temperatur'],
   humidity: ['rel. luftfeuchte', 'luftfeuchtigkeit', 'luftfeuchte'],
   pressure: ['luftdruck', 'druck'],
-  signal: ['stärke', 'signal']
+  signal: ['stärke', 'signal'],
 };
 
 const findSensorId = function findSensorId (sensors, value_type) {
@@ -158,4 +171,3 @@ module.exports = {
     return Promise.reject(new Error('Cannot decode empty message (luftdaten decoder)'));
   }
 };
-
