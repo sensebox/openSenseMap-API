@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+## v1.1.2
+- Added homeV2GSM model to box integrations
+
 ## v1.1.1
 
 - Update @sensebox/node-sketch-templater to v1.12.1
@@ -17,6 +20,7 @@
 - Update @sensebox/node-sketch-templater to v1.11.2
 - `grouptag` changed from `string` to `array`
 - Allow mqtts nad wss for mqtt-integration
+
 
 ## v0.0.32-beta.0
 - Allow mqtts nad wss for mqtt-integration

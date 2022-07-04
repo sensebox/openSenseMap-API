@@ -232,6 +232,9 @@ boxSchema.statics.initNew = function ({
   ttn: {
     app_id, dev_id, port, profile, decodeOptions: ttnDecodeOptions
   } = {},
+  gsm: {
+    imsi, secret_code
+  } = {},
   useAuth
 }) {
   // if model is not empty, get sensor definitions from products
@@ -252,6 +255,9 @@ boxSchema.statics.initNew = function ({
     }
   }
   if (model) {
+    if (model === 'homeV2GSM' && (!imsi || !secret_code)) {
+      return Promise.reject(new ModelError('homeV2GSM can not be created without imsi or secret code', { type: 'UnprocessableEntityError' }));
+    }
     //activate useAuth only for certain models until all sketches are updated
     if (['homeV2Lora', 'homeV2Ethernet', 'homeV2EthernetFeinstaub', 'homeV2Wifi', 'homeV2WifiFeinstaub', 'homeEthernet', 'homeWifi', 'homeEthernetFeinstaub', 'homeWifiFeinstaub', 'hackair_home_v2'].indexOf(model) !== -1) {
       useAuth = true;
@@ -266,6 +272,10 @@ boxSchema.statics.initNew = function ({
 
   if (app_id && dev_id && profile) {
     integrations.ttn = { app_id, dev_id, port, profile, decodeOptions: ttnDecodeOptions };
+  }
+
+  if (imsi && secret_code) {
+    integrations.gsm = { imsi, secret_code };
   }
 
   const boxLocation = {
