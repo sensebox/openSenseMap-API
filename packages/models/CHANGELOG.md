@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+## v1.1.2
+
+## v1.1.2
+ - Added GSM model to box integrations
+
 ## v1.1.1
 
 - Update @sensebox/node-sketch-templater to v1.12.1
