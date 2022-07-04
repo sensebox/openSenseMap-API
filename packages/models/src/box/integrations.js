@@ -62,7 +62,6 @@ const integrationSchema = new mongoose.Schema({
       msg: 'this profile requires an array \'decodeOptions\''
     }]
   },
-
   gsm: {
     type: tinggSchema,
     required: false,

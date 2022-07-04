@@ -255,7 +255,6 @@ boxSchema.statics.initNew = function ({
     }
   }
   if (model) {
-
     if (model === 'homeV2GSM' && (!imsi || !secret_code)) {
       return Promise.reject(new ModelError('homeV2GSM can not be created without imsi or secret code', { type: 'UnprocessableEntityError' }));
     }
@@ -274,6 +273,10 @@ boxSchema.statics.initNew = function ({
   if (app_id && dev_id && profile) {
     integrations.ttn = { app_id, dev_id, port, profile, decodeOptions: ttnDecodeOptions };
   }
+  if (imsi && secret_code) {
+    integrations.gsm = { imsi, secret_code };
+  }
+
   if (imsi && secret_code) {
     integrations.gsm = { imsi, secret_code };
   }
