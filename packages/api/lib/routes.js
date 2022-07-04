@@ -69,7 +69,7 @@ const printRoutes = function printRoutes (req, res) {
 
 const { boxes: boxesPath, users: usersPath, statistics: statisticsPath, management: managementPath } = config.get('routes');
 // the ones matching first are used
-// case is ignored 
+// case is ignored
 const routes = {
   'noauth': [
     { path: '/', method: 'get', handler: printRoutes, reference: 'api-Misc-printRoutes' },
