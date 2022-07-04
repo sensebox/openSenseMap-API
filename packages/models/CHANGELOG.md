@@ -18,6 +18,7 @@
 - `grouptag` changed from `string` to `array`
 - Allow mqtts nad wss for mqtt-integration
 
+
 ## v0.0.32-beta.0
 - Allow mqtts nad wss for mqtt-integration
 

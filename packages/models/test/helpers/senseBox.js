@@ -27,7 +27,8 @@ const senseBox = function senseBox ({
   model = 'homeEthernet',
   sensors,
   mqtt,
-  ttn
+  ttn,
+  gsm
 } = {}) {
   location = loc(location);
 
@@ -43,7 +44,8 @@ const senseBox = function senseBox ({
     model,
     sensors,
     mqtt,
-    ttn
+    ttn,
+    gsm
   };
 };
 
