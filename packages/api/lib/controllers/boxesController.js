@@ -50,6 +50,7 @@ const
   handleError = require('../helpers/errorHandler'),
   jsonstringify = require('stringify-stream');
 const { mongoose } = require('@sensebox/opensensemap-api-models/src/db');
+const BadgeController = require('./badgesController');
 
 /**
  * @apiDefine Addons
@@ -395,6 +396,27 @@ const getOwnerOfBox = async function getOwnerOfBox(req, res, next) {
   }
 }
 
+const getBoxesOfUser = async function getBoxesOfUser(req, res, next) {
+  var boxes = [];
+  console.log(req.params.username);
+  // given user id
+  const username = req.params.username;
+  try {
+    // get user with username
+    const user = await User.findOne({ name: username });
+    if(user.isPublic || user._doc.isPublic) {
+      console.log("user is public");
+      for(var i = 0; i < user.boxes.length; i++) {
+        const box = await Box.findById(user.boxes[i]);
+        boxes.push(box);
+      }
+    }
+    res.send(boxes);
+  } catch (err) {
+    handleError(err, next);
+  }
+}
+
 /**
  * @api {post} /boxes Post new senseBox
  * @apiGroup Boxes
@@ -428,6 +450,8 @@ const postNewBox = async function postNewBox(req, res, next) {
   try {
     let newBox = await req.user.addBox(req._userParams);
     newBox = await Box.populate(newBox, Box.BOX_SUB_PROPS_FOR_POPULATION);
+    // GRANT BADGE FOR NEW BOX
+    BadgeController.grantBadge(req.user._id, req.user.email, "xPeq9QP6SDCtrxwODqBOEw"); //'xPeq9QP6SDCtrxwODqBOEw' //"imWQAAzqRZas8G7o7T4qlQ"
     res.send(201, { message: 'Box successfully created', data: newBox });
     clearCache(['getBoxes', 'getStats']);
     postToSlack(`New Box: ${req.user.name} (${redactEmail(req.user.email)}) just registered "${newBox.name}" (${newBox.model}): <https://opensensemap.org/explore/${newBox._id}|link>`);
@@ -595,6 +619,7 @@ module.exports = {
     getBox
   ],
   getOwnerOfBox,
+  getBoxesOfUser,
   getBoxes: [
     retrieveParameters([
       { name: 'name', dataType: 'String' },
