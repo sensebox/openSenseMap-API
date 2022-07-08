@@ -365,6 +365,7 @@ module.exports = {
     retrieveParameters([
       { name: 'email', dataType: 'email' },
       { predef: 'password', name: 'currentPassword', required: false },
+      { predef: 'isPublic', name: 'isPublic', required: false },
       { predef: 'password', name: 'newPassword', required: false },
       { name: 'name', dataType: 'as-is' },
       { name: 'language' }

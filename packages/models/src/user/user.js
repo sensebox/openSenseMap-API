@@ -390,9 +390,8 @@ userSchema.methods.resendEmailConfirmation = function resendEmailConfirmation() 
     });
 };
 
-userSchema.methods.updateUser = function updateUser({ email, language, name, currentPassword, newPassword }) {
+userSchema.methods.updateUser = function updateUser({ email, language, name, currentPassword, newPassword, isPublic }) {
   const user = this;
-
   // don't allow email and password change in one request
   if (email && newPassword) {
     return Promise.reject(new ModelError('You cannot change your email address and password in the same request.'));
@@ -441,6 +440,17 @@ userSchema.methods.updateUser = function updateUser({ email, language, name, cur
       if (email && user.email !== email) {
         user.set('newEmail', email);
         msgs.push(' E-Mail changed. Please confirm your new address. Until confirmation, sign in using your old address');
+        somethingsChanged = true;
+      }
+
+      if (user._doc.isPublic !== isPublic) {
+        user.set('isPublic', isPublic);
+        if (isPublic) {
+          msgs.push('Your profile is now public.');
+        }
+        if (!isPublic) {
+          msgs.push('Your profile is now private.');
+        }
         somethingsChanged = true;
       }
 
