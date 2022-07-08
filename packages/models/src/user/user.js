@@ -101,7 +101,7 @@ const userSchema = new mongoose.Schema({
 }, { usePushEach: true });
 userSchema.plugin(timestamp);
 
-const toJSONProps = ['name', 'email', 'role', 'language', 'boxes', 'emailIsConfirmed'],
+const toJSONProps = ['name', 'email', 'role', 'language', 'boxes', 'emailIsConfirmed', "isPublic"],
   toJSONSecretProps = ['_id', 'unconfirmedEmail', 'lastUpdatedBy', 'createdAt', 'updatedAt'];
 
 // only send out names and email..
