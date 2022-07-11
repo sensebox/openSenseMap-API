@@ -90,10 +90,10 @@ const grantBadge = async function grantBadge(userId, email, badgeClassEntityId) 
 }
 
 // GET ALL BADGES FROM USER BY ITS ID
-const getBackpack = async function getBackpack(req, res, next) {
+const getBackpack = async function getBackpack(email) {
     try {
         // GET ALL BADGES FROM USER
-        const response = await axios.get(process.env.BADGRAPI + '/v2/backpack/' + req.params.email, { headers: { Authorization: 'Bearer ' + await getAccessToken() } });
+        const response = await axios.get(process.env.BADGRAPI + '/v2/backpack/' + email, { headers: { Authorization: 'Bearer ' + await getAccessToken() } });
         const badges = response.data.result;
         // FILTER FOR BADGES FROM OPENSENSEMAP ISSUER
         for (let i = 0; i < badges.length; i++) {
@@ -101,10 +101,11 @@ const getBackpack = async function getBackpack(req, res, next) {
                 badges.splice(i, 1);
             }
         }
-        res.send(badges);
+        return badges;
     }
     catch (err) {
-        handleError(err, next);
+        console.log(err);
+        //handleError(err, next);
     }
 }
 
