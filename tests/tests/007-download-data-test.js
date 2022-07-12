@@ -19,7 +19,7 @@ describe('downloading data', function () {
   let boxes = [];
   let boxIds = [];
 
-  const boxCount = 3;
+  const boxCount = 4;
 
   before(function () {
     return chakram.post(`${BASE_URL}/users/sign-in`, { email: 'tester2@test.test', password: '12345678910' })

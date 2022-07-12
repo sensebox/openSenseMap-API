@@ -16,7 +16,7 @@ describe('submitting measurements', function () {
   let boxes = [];
   let boxIds = [];
 
-  const boxCount = 3;
+  const boxCount = 4;
   let countMeasurements = 32;
 
   before(function () {
