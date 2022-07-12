@@ -354,6 +354,9 @@ const
 
 // functions which receive req._userparams as parameter
 const retrieveParametersPredefs = {
+  'dateNoDefault' () {
+    return { name: 'date', dataType: 'RFC 3339' };
+  },
   'fromDate' ({ toDate }) {
     if (!toDate) {
       return {};
@@ -512,6 +515,18 @@ const parseAndValidateTimeParamsForFindAllBoxes = function parseAndValidateTimeP
   next();
 };
 
+const validateDateNotPast = function validateDateNotPast (req, res, next) {
+  if (req._userParams.date) {
+    const { date } = req._userParams;
+    if (date.isBefore(moment.utc().toDate())) {
+      return next(new InvalidArgumentError(
+        `Invalid date specified: date (${date.toISOString()}) must be in the future.`
+      ));
+    }
+  }
+  next();
+};
+
 const checkPrivilege = function checkPrivilege (req, res, next) {
   if (req.user && req.user.role === config.get('management_role')) {
     return next();
@@ -535,5 +550,6 @@ module.exports = {
   retrieveParameters,
   initUserParams,
   parseAndValidateTimeParamsForFindAllBoxes,
-  checkPrivilege
+  checkPrivilege,
+  validateDateNotPast
 };
