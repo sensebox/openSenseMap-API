@@ -98,6 +98,7 @@ const routes = {
     { path: `${usersPath}/info/:username`, method: 'get', handler: usersController.getPublicInformation, reference: 'api-Users-getPublicInformation' },
     { path: `${badgesPath}/getBackpack/:email`, method: 'get', handler: badgesController.getBackpack, reference: 'api-Badges-getBackpack' },
     { path: `${badgesPath}/:id`, method: 'get', handler: badgesController.getBadge, reference: 'api-Badges-getBadge' },
+    { path: `${badgesPath}`, method: 'get', handler: badgesController.getAllBadges, reference: 'api-Badges-getAllBadge' },
     { path: `${boxesPath}/user/:username`, method: 'get', handler: boxesController.getBoxesOfUser, reference: 'api-Boxes-getBoxesOfUser' },
   ],
   'auth': [

@@ -34,6 +34,21 @@ const getAccessToken = async function getAccessToken() {
     }
 }
 
+const getAllBadges = async function getAllBadges(req, res, next) {
+    try {
+        // GET ALL BADGES
+        const badges = await axios({
+            headers: { Authorization: 'Bearer ' + await getAccessToken() },
+            method: "GET",
+            url: `${process.env.BADGRAPI}/v2/badgeclasses`,
+        });
+        res.send(badges.data.result);
+    }
+    catch (err) {
+        handleError(err, next);
+    }
+}
+
 // GRANT BADGE TO USER (REQUEST EMAIL) BY BADGE CLASS ID
 const grantBadge = async function grantBadge(userId, email, badgeClassEntityId) {
     // CHECK IF USER ALREADY HAS THIS BADGE
@@ -128,5 +143,6 @@ const getBadge = async function getBadge(req, res, next) {
 module.exports = {
     grantBadge,
     getBackpack,
-    getBadge
+    getBadge,
+    getAllBadges
 }
