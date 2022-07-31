@@ -137,6 +137,11 @@ const updateBox = async function updateBox(req, res, next) {
   try {
     let box = await Box.findBoxById(req._userParams.boxId, { lean: false, populate: false });
     box = await box.updateBox(req._userParams);
+    // CHECK IF BOX HAS ALL FIELDS
+    if(box.exposure && box.image && box.description) {
+      // GRANT BADGE
+      BadgeController.grantBadge(req.user._id, req.user.email, "ZiaPUsJxQ5-HGP1KJMaMTg");
+    }
     if (box._sensorsChanged === true) {
       req.user.mail('newSketch', box);
     }
@@ -450,8 +455,14 @@ const postNewBox = async function postNewBox(req, res, next) {
   try {
     let newBox = await req.user.addBox(req._userParams);
     newBox = await Box.populate(newBox, Box.BOX_SUB_PROPS_FOR_POPULATION);
+    console.log(newBox);
+    // CHECK IF BOX HAS ALL FIELDS
+    if(newBox.exposure && newBox.image && newBox.description) {
+      // GRANT BADGE
+      BadgeController.grantBadge(req.user._id, req.user.email, "ZiaPUsJxQ5-HGP1KJMaMTg");
+    }
     // GRANT BADGE FOR NEW BOX
-    BadgeController.grantBadge(req.user._id, req.user.email, "xPeq9QP6SDCtrxwODqBOEw"); //'xPeq9QP6SDCtrxwODqBOEw' //"imWQAAzqRZas8G7o7T4qlQ"
+    BadgeController.grantBadge(req.user._id, req.user.email, "pkC_0Nw1TPSG7XVGCEYtbg");
     res.send(201, { message: 'Box successfully created', data: newBox });
     clearCache(['getBoxes', 'getStats']);
     postToSlack(`New Box: ${req.user.name} (${redactEmail(req.user.email)}) just registered "${newBox.name}" (${newBox.model}): <https://opensensemap.org/explore/${newBox._id}|link>`);

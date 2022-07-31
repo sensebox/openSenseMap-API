@@ -305,11 +305,16 @@ const requestEmailConfirmation = async function requestEmailConfirmation(req, re
 const getPublicInformation = async function getPublicInformation(req, res, next) {
   try {
     const user = await User.findOne({ name: req.params.username }, 'name boxes isPublic email');
-    if (!user._doc.isPublic || !user.isPublic) {
-      res.send(403, { code: 'Ok', message: 'Users profile is not public', user: null });
+    //does user exist?
+    if (user) {
+      if (!user._doc.isPublic || !user.isPublic) {
+        res.send(403, { code: 'Ok', message: 'Users profile is not public', user: null });
+      } else {
+        const badges = await BadgeController.getBackpack(user.email);
+        res.send(200, { code: 'Ok', user: user, badges: badges });
+      }
     } else {
-      const badges = await BadgeController.getBackpack(user.email);
-      res.send(200, { code: 'Ok', user: user, badges: badges });
+      res.send(404, { code: 'Ok', message: 'User not found', user: null });
     }
   } catch (err) {
     handleError(err, next);
