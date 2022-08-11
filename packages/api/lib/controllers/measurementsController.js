@@ -40,10 +40,20 @@ const getLatestMeasurements = async function getLatestMeasurements (req, res, ne
         populate: false,
         onlyLastMeasurements: false,
         count: req._userParams.count,
+        projection: {
+          name: 1,
+          lastMeasurementAt: 1,
+          sensors: 1,
+          grouptag: 1
+        }
       });
 
       const measurements = await Measurement.findLatestMeasurementsForSensorsWithCount(box, req._userParams.count);
-      box['lastMeasurements'] = measurements;
+      for (let index = 0; index < box.sensors.length; index++) {
+        const sensor = box.sensors[index];
+        const values = measurements.find(elem => elem._id.equals(sensor._id));
+        sensor['lastMeasurements'] = values;
+      }
     } else {
       box = await Box.findBoxById(req._userParams.boxId, {
         onlyLastMeasurements: true

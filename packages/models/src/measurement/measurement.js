@@ -113,14 +113,17 @@ measurementSchema.statics.findLatestMeasurementsForSensorsWithCount = function f
       $group: {
         _id: '$sensor_id',
         measurements: {
-          $push: '$value',
+          $push: {
+            value: '$value',
+            createdAt: '$createdAt',
+          }
         },
         fromDate: {
           $last: '$createdAt',
         },
         toDate: {
           $first: '$createdAt',
-        }
+        },
       },
     },
     {
@@ -130,7 +133,7 @@ measurementSchema.statics.findLatestMeasurementsForSensorsWithCount = function f
           $slice: ['$measurements', count],
         },
         fromDate: 1,
-        toDate: 1
+        toDate: 1,
       },
     },
   ]).exec();
