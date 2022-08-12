@@ -1,7 +1,10 @@
-version: "2"
+version: "3.9"
+
 services:
   db:
-    image: ghcr.io/mpfeil/osem-dev-mongo:main
+    build:
+      context: ./images/mongodb
+    container_name: osem-dev-mongo
     ports:
       - "27017:27017"
     volumes:
