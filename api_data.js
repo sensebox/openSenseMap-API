@@ -1,5 +1,151 @@
 define({ "api": [
   {
+    "type": "post",
+    "url": "/boxes/claim",
+    "title": "Claim a senseBox marked for transfer",
+    "description": "<p>This will claim a senseBox marked for transfer</p>",
+    "name": "claimBox",
+    "group": "Boxes",
+    "parameter": {
+      "fields": {
+        "RequestBody": [
+          {
+            "group": "RequestBody",
+            "type": "String",
+            "optional": false,
+            "field": "token",
+            "description": "<p>the token to claim a senseBox</p>"
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "./packages/api/lib/controllers/boxesController.js",
+    "groupTitle": "Boxes",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "String",
+            "allowedValues": [
+              "\"application/json\"",
+              "\"application/json; charset=utf-8\""
+            ],
+            "optional": false,
+            "field": "content-type",
+            "description": ""
+          },
+          {
+            "group": "Header",
+            "type": "String",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>allows to send a valid JSON Web Token along with this request with <code>Bearer</code> prefix.</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "Authorization Header Example",
+          "content": "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE0ODMwMDYxNTIsImV4cCI6MTQ4MzAwOTc1MiwiaXNzIjoibG9jYWxob3N0OjgwMDAiLCJzdWIiOiJ0ZXN0QHRlc3QuZGUiLCJqdGkiOiJmMjNiOThkNi1mMjRlLTRjOTQtYWE5Ni1kMWI4M2MzNmY1MjAifQ.QegeWHWetw19vfgOvkTCsBfaSOPnjakhzzRjVtNi-2Q",
+          "type": "String"
+        }
+      ]
+    },
+    "error": {
+      "fields": {
+        "Error 4xx": [
+          {
+            "group": "Error 4xx",
+            "type": "Object",
+            "optional": false,
+            "field": "415",
+            "description": "<p>the request has invalid or missing content type.</p>"
+          },
+          {
+            "group": "Error 4xx",
+            "type": "String",
+            "optional": false,
+            "field": "403",
+            "description": "<p>{&quot;code&quot;:&quot;Forbidden&quot;,&quot;message&quot;:&quot;Invalid JWT. Please sign sign in&quot;}</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "Error-Response:",
+          "content": "HTTP/1.1 415 Unsupported Media Type\n{\"code\":\"NotAuthorized\",\"message\":\"Unsupported content-type. Try application/json\"}",
+          "type": "json"
+        }
+      ]
+    }
+  },
+  {
+    "type": "post",
+    "url": "/boxes/transfer",
+    "title": "Mark a senseBox for transferring to a different user",
+    "description": "<p>This will mark a senseBox for transfering it to a different user account</p>",
+    "name": "createTransfer",
+    "group": "Boxes",
+    "parameter": {
+      "fields": {
+        "RequestBody": [
+          {
+            "group": "RequestBody",
+            "type": "String",
+            "optional": false,
+            "field": "boxId",
+            "description": "<p>ID of the senseBox you want to transfer.</p>"
+          },
+          {
+            "group": "RequestBody",
+            "type": "RFC3339Date",
+            "optional": false,
+            "field": "expiresAt",
+            "description": "<p>Expiration date for transfer token (default: 24 hours from now).</p>"
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "./packages/api/lib/controllers/boxesController.js",
+    "groupTitle": "Boxes",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "String",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>allows to send a valid JSON Web Token along with this request with <code>Bearer</code> prefix.</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "Authorization Header Example",
+          "content": "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE0ODMwMDYxNTIsImV4cCI6MTQ4MzAwOTc1MiwiaXNzIjoibG9jYWxob3N0OjgwMDAiLCJzdWIiOiJ0ZXN0QHRlc3QuZGUiLCJqdGkiOiJmMjNiOThkNi1mMjRlLTRjOTQtYWE5Ni1kMWI4M2MzNmY1MjAifQ.QegeWHWetw19vfgOvkTCsBfaSOPnjakhzzRjVtNi-2Q",
+          "type": "String"
+        }
+      ]
+    },
+    "error": {
+      "fields": {
+        "Error 4xx": [
+          {
+            "group": "Error 4xx",
+            "type": "String",
+            "optional": false,
+            "field": "403",
+            "description": "<p>{&quot;code&quot;:&quot;Forbidden&quot;,&quot;message&quot;:&quot;Invalid JWT. Please sign sign in&quot;}</p>"
+          }
+        ]
+      }
+    }
+  },
+  {
     "type": "delete",
     "url": "/boxes/:senseBoxId",
     "title": "Mark a senseBox and its measurements for deletion",
@@ -506,6 +652,63 @@ define({ "api": [
     }
   },
   {
+    "type": "get",
+    "url": "/boxes/transfer/:senseBoxId",
+    "title": "Get transfer information for a senseBox",
+    "description": "<p>Get transfer information for a senseBox</p>",
+    "name": "getTransfer",
+    "group": "Boxes",
+    "version": "0.0.0",
+    "filename": "./packages/api/lib/controllers/boxesController.js",
+    "groupTitle": "Boxes",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "String",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>allows to send a valid JSON Web Token along with this request with <code>Bearer</code> prefix.</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "Authorization Header Example",
+          "content": "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE0ODMwMDYxNTIsImV4cCI6MTQ4MzAwOTc1MiwiaXNzIjoibG9jYWxob3N0OjgwMDAiLCJzdWIiOiJ0ZXN0QHRlc3QuZGUiLCJqdGkiOiJmMjNiOThkNi1mMjRlLTRjOTQtYWE5Ni1kMWI4M2MzNmY1MjAifQ.QegeWHWetw19vfgOvkTCsBfaSOPnjakhzzRjVtNi-2Q",
+          "type": "String"
+        }
+      ]
+    },
+    "error": {
+      "fields": {
+        "Error 4xx": [
+          {
+            "group": "Error 4xx",
+            "type": "String",
+            "optional": false,
+            "field": "403",
+            "description": "<p>{&quot;code&quot;:&quot;Forbidden&quot;,&quot;message&quot;:&quot;Invalid JWT. Please sign sign in&quot;}</p>"
+          }
+        ]
+      }
+    },
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": false,
+            "field": "senseBoxId",
+            "description": "<p>the ID of the senseBox you are referring to.</p>"
+          }
+        ]
+      }
+    }
+  },
+  {
     "type": "post",
     "url": "/boxes",
     "title": "Post new senseBox",
@@ -847,6 +1050,70 @@ define({ "api": [
     }
   },
   {
+    "type": "delete",
+    "url": "/boxes/transfer",
+    "title": "Revoke transfer token and remove senseBox from transfer",
+    "description": "<p>This will revoke the transfer token and remove the senseBox from transfer</p>",
+    "name": "removeTransfer",
+    "group": "Boxes",
+    "parameter": {
+      "fields": {
+        "RequestBody": [
+          {
+            "group": "RequestBody",
+            "type": "String",
+            "optional": false,
+            "field": "boxId",
+            "description": "<p>ID of the senseBox you want to remove from transfer.</p>"
+          },
+          {
+            "group": "RequestBody",
+            "type": "String",
+            "optional": false,
+            "field": "token",
+            "description": "<p>Transfer token you want to revoke.</p>"
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "./packages/api/lib/controllers/boxesController.js",
+    "groupTitle": "Boxes",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "String",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>allows to send a valid JSON Web Token along with this request with <code>Bearer</code> prefix.</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "Authorization Header Example",
+          "content": "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE0ODMwMDYxNTIsImV4cCI6MTQ4MzAwOTc1MiwiaXNzIjoibG9jYWxob3N0OjgwMDAiLCJzdWIiOiJ0ZXN0QHRlc3QuZGUiLCJqdGkiOiJmMjNiOThkNi1mMjRlLTRjOTQtYWE5Ni1kMWI4M2MzNmY1MjAifQ.QegeWHWetw19vfgOvkTCsBfaSOPnjakhzzRjVtNi-2Q",
+          "type": "String"
+        }
+      ]
+    },
+    "error": {
+      "fields": {
+        "Error 4xx": [
+          {
+            "group": "Error 4xx",
+            "type": "String",
+            "optional": false,
+            "field": "403",
+            "description": "<p>{&quot;code&quot;:&quot;Forbidden&quot;,&quot;message&quot;:&quot;Invalid JWT. Please sign sign in&quot;}</p>"
+          }
+        ]
+      }
+    }
+  },
+  {
     "type": "put",
     "url": "/boxes/:senseBoxId",
     "title": "Update a senseBox",
@@ -1175,6 +1442,79 @@ define({ "api": [
           "type": "json"
         }
       ]
+    }
+  },
+  {
+    "type": "put",
+    "url": "/boxes/transfer/:senseBoxId",
+    "title": "Update a transfer token",
+    "description": "<p>Update the expiration date of a transfer token</p>",
+    "name": "updateTransfer",
+    "group": "Boxes",
+    "parameter": {
+      "fields": {
+        "RequestBody": [
+          {
+            "group": "RequestBody",
+            "type": "String",
+            "optional": false,
+            "field": "Transfer",
+            "description": "<p>token you want to update.</p>"
+          },
+          {
+            "group": "RequestBody",
+            "type": "RFC3339Date",
+            "optional": false,
+            "field": "expiresAt",
+            "description": "<p>Expiration date for transfer token (default: 24 hours from now).</p>"
+          }
+        ],
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": false,
+            "field": "senseBoxId",
+            "description": "<p>the ID of the senseBox you are referring to.</p>"
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "./packages/api/lib/controllers/boxesController.js",
+    "groupTitle": "Boxes",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "String",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>allows to send a valid JSON Web Token along with this request with <code>Bearer</code> prefix.</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "Authorization Header Example",
+          "content": "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE0ODMwMDYxNTIsImV4cCI6MTQ4MzAwOTc1MiwiaXNzIjoibG9jYWxob3N0OjgwMDAiLCJzdWIiOiJ0ZXN0QHRlc3QuZGUiLCJqdGkiOiJmMjNiOThkNi1mMjRlLTRjOTQtYWE5Ni1kMWI4M2MzNmY1MjAifQ.QegeWHWetw19vfgOvkTCsBfaSOPnjakhzzRjVtNi-2Q",
+          "type": "String"
+        }
+      ]
+    },
+    "error": {
+      "fields": {
+        "Error 4xx": [
+          {
+            "group": "Error 4xx",
+            "type": "String",
+            "optional": false,
+            "field": "403",
+            "description": "<p>{&quot;code&quot;:&quot;Forbidden&quot;,&quot;message&quot;:&quot;Invalid JWT. Please sign sign in&quot;}</p>"
+          }
+        ]
+      }
     }
   },
   {
