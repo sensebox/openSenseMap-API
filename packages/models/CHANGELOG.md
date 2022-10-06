@@ -2,6 +2,27 @@
 
 ## Unreleased
 
+## v1.2.0
+
+- Extend `luftdatenHandler` (#578)
+- Add workflow to transfer a device to different account (#525)
+
+## v1.1.1
+
+- Update @sensebox/node-sketch-templater to v1.12.1
+
+## v1.1.0
+
+- Add DPS310 sensor
+- Update migrations
+- Update @sensebox/node-sketch-templater to v1.12.0
+
+## v1.0.0
+
+- Update @sensebox/node-sketch-templater to v1.11.2
+- `grouptag` changed from `string` to `array`
+- Allow mqtts nad wss for mqtt-integration
+
 ## v0.0.32-beta.0
 - Allow mqtts nad wss for mqtt-integration
 

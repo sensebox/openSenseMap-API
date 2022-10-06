@@ -241,7 +241,7 @@ module.exports = {
     retrieveParameters([
       { predef: 'boxId', required: true },
       { name: 'name' },
-      { name: 'grouptag', dataType: 'StringWithEmpty' },
+      { name: 'grouptag', dataType: ['String'] },
       { name: 'description', dataType: 'StringWithEmpty' },
       { name: 'weblink', dataType: 'StringWithEmpty' },
       { name: 'image', dataType: 'base64Image' },

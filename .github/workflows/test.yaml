@@ -13,12 +13,12 @@ jobs:
     name: Lint code
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
-      - name: Install Node.js 12
-        uses: actions/setup-node@v2.5.1
+      - name: Install Node.js 16
+        uses: actions/setup-node@v3.2.0
         with:
-          node-version: 12
+          node-version: 16
 
       - name: Get yarn cache directory path
         id: yarn-cache-dir-path
@@ -46,7 +46,7 @@ jobs:
     name: Run tests
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Execute tests
         run: |
