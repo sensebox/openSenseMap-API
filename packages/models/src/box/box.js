@@ -4,6 +4,7 @@ const { mongoose } = require('../db'),
   timestamp = require('mongoose-timestamp'),
   Schema = mongoose.Schema,
   { schema: sensorSchema, model: Sensor } = require('../sensor/sensor'),
+  { schema: locationSchema } = require('../location/location'),
   isEqual = require('lodash.isequal'),
   integrations = require('./integrations'),
   sensorLayouts = require('./sensorLayouts'),
@@ -21,28 +22,6 @@ const { mongoose } = require('../db'),
 
 const templateSketcher = new Sketcher();
 
-const locationSchema = new Schema({
-  type: {
-    type: String,
-    default: 'Point',
-    enum: ['Point'], // only 'Point' allowed
-    required: true
-  },
-  coordinates: {
-    type: [Number], // lng, lat, [height]
-    required: true,
-    validate: [function validateCoordLength (c) {
-      return c.length === 2 || c.length === 3;
-    }, '{PATH} must have length 2 or 3']
-  },
-  timestamp: {
-    type: Date,
-  }
-}, {
-  _id: false,
-  usePushEach: true
-});
-
 //senseBox schema
 const boxSchema = new Schema({
   name: {
@@ -50,14 +29,18 @@ const boxSchema = new Schema({
     required: true,
     trim: true
   },
-  locations: {
-    type: [locationSchema],
-    required: true,
-  },
-  currentLocation: {
+  location: {
     type: locationSchema,
-    required: true,
+    required: true
   },
+  // locations: {
+  //   type: [locationSchema],
+  //   required: true,
+  // },
+  // currentLocation: {
+  //   type: locationSchema,
+  //   required: true,
+  // },
   exposure: {
     type: String,
     trim: true,
@@ -279,6 +262,7 @@ boxSchema.statics.initNew = function ({
   // create box document and persist in database
   return this.create({
     name,
+    location, // new location field
     currentLocation: boxLocation,
     locations: [boxLocation],
     grouptag,
@@ -405,61 +389,78 @@ boxSchema.methods.updateLocation = function updateLocation (coords, timestamp) {
     timestamp = utcNow();
   }
 
+  const newLoc = {
+    type: 'Point',
+    coordinates: coords,
+    timestamp: timestamp,
+  };
+
   // search for temporally adjacent locations
   // (assuming that box.locations is ordered by location.timestamp)
-  let earlierLoc, laterLocIndex;
-  for (laterLocIndex = 0; laterLocIndex < box.locations.length; laterLocIndex++) {
-    earlierLoc = box.locations[laterLocIndex];
-    if (!earlierLoc || timestamp.isBefore(earlierLoc.timestamp)) {
-      earlierLoc = box.locations[laterLocIndex - 1];
-      break;
-    }
+  // let earlierLoc, laterLocIndex;
+  if (timestamp.isAfter(box.location.timestamp)) {
+
+    box.location = newLoc;
+
+    return box.save().then(() => Promise.resolve(newLoc));
   }
+
+  return Promise.resolve(newLoc);
+
+  // for (laterLocIndex = 0; laterLocIndex < box.locations.length; laterLocIndex++) {
+  //   earlierLoc = box.locations[laterLocIndex];
+  //   if (!earlierLoc || timestamp.isBefore(earlierLoc.timestamp)) {
+  //     earlierLoc = box.locations[laterLocIndex - 1];
+  //     break;
+  //   }
+  // }
 
   // check whether we insert a new location or update a existing one, depending on spatiotemporal setting
-  if (!earlierLoc && !coords) {
-    // the timestamp is earlier than any location we have, but no location is provided
-    // -> use the next laterLoc location (there is always one from registration)
-    box.locations[laterLocIndex].timestamp = timestamp;
+  // if (!earlierLoc && !coords) {
+  //   // the timestamp is earlier than any location we have, but no location is provided
+  //   // -> use the next laterLoc location (there is always one from registration)
+  //   box.locations[laterLocIndex].timestamp = timestamp;
 
-    // update currentLocation when there's no later location
-    if (!box.locations[laterLocIndex + 1]) {
-      box.currentLocation = box.locations[laterLocIndex];
-    }
+  //   // update currentLocation when there's no later location
+  //   if (!box.locations[laterLocIndex + 1]) {
+  //     box.currentLocation = box.locations[laterLocIndex];
+  //   }
 
-    return box.save().then(() => Promise.resolve(box.locations[laterLocIndex]));
-  } else if (
-    !earlierLoc ||
-    (
-      coords &&
-      !isEqual(earlierLoc.coordinates, coords) &&
-      !timestamp.isSame(earlierLoc.timestamp)
-    )
-  ) {
-    // insert a new location, if coords and timestamps differ from prevLoc
-    // (ensures that a box is not at multiple places at once),
-    // or there is no previous location
-    const newLoc = {
-      type: 'Point',
-      coordinates: coords,
-      timestamp: timestamp
-    };
+  //   return box.save().then(() => Promise.resolve(box.locations[laterLocIndex]));
+  // } else if (
+  //   !earlierLoc ||
+  //   (
+  //     coords &&
+  //     !isEqual(earlierLoc.coordinates, coords) &&
+  //     !timestamp.isSame(earlierLoc.timestamp)
+  //   )
+  // ) {
+  //   // insert a new location, if coords and timestamps differ from prevLoc
+  //   // (ensures that a box is not at multiple places at once),
+  //   // or there is no previous location
+  //   const newLoc = {
+  //     type: 'Point',
+  //     coordinates: coords,
+  //     timestamp: timestamp
+  //   };
 
-    // insert the new location after earlierLoc in array
-    box.locations.splice(laterLocIndex, 0, newLoc);
+  //   // insert the new location after earlierLoc in array
+  //   // box.locations.splice(laterLocIndex, 0, newLoc);
 
-    // update currentLocation when there's no later location
-    if (!box.locations[laterLocIndex + 1]) {
-      box.currentLocation = newLoc;
-    }
+  //   // update currentLocation when there's no later location
+  //   if (!box.locations[laterLocIndex + 1]) {
+  //     box.currentLocation = newLoc;
+  //   }
 
-    return box.save()
-      .then(() => Promise.resolve(newLoc));
-  }
+  //   return box.save()
+  //     .then(() => Promise.resolve(newLoc));
+  // }
 
   // coords and timestamps are equal or not provided
   // -> return unmodified previous location
-  return Promise.resolve(earlierLoc);
+  // return Promise.resolve(earlierLoc);
+
+  // return box.save().then(() => Promise.resolve(newLoc));
 };
 
 boxSchema.methods.saveMeasurement = function saveMeasurement (measurement) {
@@ -535,52 +536,56 @@ boxSchema.methods.saveMeasurementsArray = function saveMeasurementsArray (measur
 
   // iterate over all new measurements to check for location updates
   let m = 0;
-  const newLocations = [];
+  // const newLocations = [];
+  let latestNewLocation = box.location; // neuste location der messungen die geschickt wurden
 
   while (m < measurements.length) {
     // find the location in both new and existing locations, which is newest
     // in relation to the measurent time. (box.locations is sorted by date)
-    const earlierLocOld = findEarlierLoc(box.locations, measurements[m]),
-      earlierLocNew = findEarlierLoc(newLocations, measurements[m]);
+    // const earlierLocOld = findEarlierLoc(box.locations, measurements[m]),
+    //   earlierLocNew = findEarlierLoc(newLocations, measurements[m]);
 
-    let loc = earlierLocOld;
-    if (
-      earlierLocNew &&
-      parseTimestamp(earlierLocOld.timestamp).isBefore(earlierLocNew.timestamp)
-    ) {
-      loc = earlierLocNew;
-    }
+    // let loc = earlierLocOld;
+    // if (
+    //   earlierLocNew &&
+    //   parseTimestamp(earlierLocOld.timestamp).isBefore(earlierLocNew.timestamp)
+    // ) {
+    //   loc = earlierLocNew;
+    // }
 
     // if measurement is earlier than first location (only occurs in first iteration)
     // use the first location of the box and redate it
-    if (!loc) {
-      loc = box.locations[0];
-      loc.timestamp = measurements[m].createdAt;
-    }
+    // if (!loc) {
+    //   loc = box.locations[0];
+    //   loc.timestamp = measurements[m].createdAt;
+    // }
 
     // check if new location equals the found location.
     // if not create a new one, else reuse the found location
-    if (
-      measurements[m].location &&
-      !isEqual(loc.coordinates, measurements[m].location)
-    ) {
-      loc = {
-        type: 'Point',
-        coordinates: measurements[m].location,
-        timestamp: measurements[m].createdAt
-      };
-
-      newLocations.push(loc);
+    if (measurements[m].location) {
+      if (measurements[m].location.timestamp.isAfter(latestNewLocation.timestamp)) {
+        latestNewLocation = {
+          type: 'Point',
+          coordinates: measurements[m].location,
+          timestamp: measurements[m].createdAt,
+        };
+      }
     }
 
+    m++;
+    // do {
+    //   m++;
+    // } while (m < measurements.length);
+
+    // TODO: wenn keine location dann im response box.location
     // apply location to all measurements with missing or equal location.
-    do {
-      measurements[m].location = { type: 'Point', coordinates: loc.coordinates };
-      m++;
-    } while (
-      m < measurements.length &&
-      (!measurements[m].location || isEqual(measurements[m].location, loc.coordinates))
-    );
+    // do {
+    //   measurements[m].location = { type: 'Point', coordinates: loc.coordinates };
+    //   m++;
+    // } while (
+    //   m < measurements.length &&
+    //   (!measurements[m].location || isEqual(measurements[m].location, loc.coordinates))
+    // );
   }
 
   // save new measurements
@@ -625,20 +630,20 @@ boxSchema.methods.saveMeasurementsArray = function saveMeasurementsArray (measur
         updateQuery.$set['lastMeasurementAt'] = lastMeasurementAt;
       }
 
-      if (newLocations.length) {
+      if (latestNewLocation) {
         // add the new locations to the box
-        updateQuery.$push = {
-          locations: { $each: newLocations, $sort: { timestamp: 1 } }
-        };
+        // updateQuery.$push = {
+        //   locations: { $each: newLocations, $sort: { timestamp: 1 } }
+        // };
 
         // update currentLocation if necessary
-        const latestNewLocation = newLocations[newLocations.length - 1];
-        if (latestNewLocation.timestamp.isAfter(box.currentLocation.timestamp)) {
+        // const latestNewLocation = newLocations[newLocations.length - 1];
+        if (latestNewLocation.timestamp.isAfter(box.location.timestamp)) {
           if (!updateQuery.$set) {
             updateQuery.$set = {};
           }
 
-          updateQuery.$set.currentLocation = latestNewLocation;
+          updateQuery.$set.location = latestNewLocation;
         }
       }
 
@@ -901,7 +906,7 @@ boxSchema.methods.updateBox = function updateBox (args) {
 
   // run location update logic, if a location was provided.
   const locPromise = location
-    ? box.updateLocation(location).then(loc => box.set({ currentLocation: loc }))
+    ? box.updateLocation(location).then(loc => box.set({ location: loc }))
     : Promise.resolve();
 
   return locPromise.then(function () {

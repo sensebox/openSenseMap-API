@@ -3,39 +3,32 @@
 const { mongoose } = require('../db'),
   moment = require('moment'),
   decodeHandlers = require('./decoding'),
-  ModelError = require('../modelError');
+  ModelError = require('../modelError'),
+  { schema: locationSchema } = require('../location/location');
 
-const measurementSchema = new mongoose.Schema({
-  value: {
-    type: String,
-    required: true
-  },
-  sensor_id: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Sensor',
-    required: true
-  },
-  createdAt: {
-    type: Date,
-    required: true,
-    default: moment.utc().toDate()
-  },
-  location: {
-    type: {
+const measurementSchema = new mongoose.Schema(
+  {
+    value: {
       type: String,
-      default: 'Point',
-      enum: ['Point'], // only 'Point' allowed
-      required: true
-    },
-    coordinates: {
-      type: [Number], // lng, lat, [height]
       required: true,
-      validate: [function validateCoordLength (c) {
-        return c.length === 2 || c.length === 3;
-      }, '{PATH} has not length 2 or 3']
-    }
-  }
-}, { usePushEach: true });
+    },
+    sensor_id: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Sensor',
+      required: true,
+    },
+    createdAt: {
+      type: Date,
+      required: true,
+      default: moment.utc().toDate(),
+    },
+    location: {
+      type: locationSchema,
+      required: false,
+    },
+  },
+  { usePushEach: true }
+);
 
 measurementSchema.index({ sensor_id: 1, createdAt: -1 });
 

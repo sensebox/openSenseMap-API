@@ -168,6 +168,7 @@ const updateBox = async function updateBox (req, res, next) {
  * ]
  */
 const getBoxLocations = async function getBoxLocations (req, res, next) {
+  // TODO: do we really need this ?!?! -> just used in frontend to display the line / path
   try {
     const box = await Box.findBoxById(req._userParams.boxId, { onlyLocations: true, lean: false });
     res.send(await box.getLocations(req._userParams));
