@@ -37,6 +37,7 @@
     "dotenv": "^16.0.1",
     "mongoose-socket.io": "^1.2.1",
     "nodemon": "^2.0.16",
-    "socket.io": "^4.5.1"
+    "socket.io": "^4.5.1",
+    "socketio-jwt-auth": "^0.2.1"
   }
 }
