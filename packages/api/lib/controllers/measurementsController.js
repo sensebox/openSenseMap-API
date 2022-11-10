@@ -232,6 +232,57 @@ const getDataMulti = async function getDataMulti (req, res, next) {
   }
 };
 
+
+/**
+ * @api {get,post} /boxes/data?grouptag=:grouptag Get latest measurements for a grouptag as CSV
+ * @apiDescription Download data of a given grouptag from multiple selected senseBoxes as CSV
+ * @apiGroup Measurements
+ * @apiName getDataByGroupTag
+ * @apiParam {String} grouptag Comma separated list of senseBox IDs.
+ */
+const getDataByGroupTag = async function getDataByGroupTag (req, res, next) {
+  const { grouptag, format, download } = req._userParams;
+  var queryTags = grouptag.split(',');
+  // build query
+  let queryParams = {}
+  if (grouptag) {
+    queryParams['grouptag'] = { '$in': queryTags };
+  }
+
+  try {
+    let stream = await Box.findMeasurementsOfBoxesByTagStream({
+      query: queryParams
+    });
+    stream = stream
+      .on('error', function (err) {
+        return handleError(err, next);
+      });
+    switch (format) {
+    case 'csv':
+      res.header('Content-Type', 'text/csv');
+      stream = stream
+        .pipe(csvStringifier(columns, delimiter));
+      break;
+    case 'json':
+      res.header('Content-Type', 'application/json');
+      stream = stream
+        .pipe(jsonstringify({ open: '[', close: ']' }));
+      break;
+    }
+
+    // if (download === 'true') {
+    //   res.header('Content-Disposition', `attachment; filename=${createDownloadFilename(req.date(), 'download', [phenomenon, ...columns], format)}`);
+    // }
+
+
+    stream
+      .pipe(res);
+  } catch (err) {
+    console.log(err);
+    handleError(err, next);
+  }
+};
+
 /**
  * @api {post} /boxes/:senseBoxId/:sensorId Post new measurement
  * @apiDescription Posts a new measurement to a specific sensor of a box.
@@ -431,6 +482,13 @@ module.exports = {
     ]),
     validateFromToTimeParams,
     getDataMulti
+  ],
+  getDataByGroupTag: [
+    retrieveParameters([
+      { name: 'grouptag', required: true },
+      { name: 'format', defaultValue: 'json', allowedValues: ['csv', 'json'] }
+    ]),
+    getDataByGroupTag
   ],
   getLatestMeasurements: [
     retrieveParameters([
