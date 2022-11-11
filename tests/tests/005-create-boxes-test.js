@@ -156,7 +156,7 @@ describe('openSenseMap API Routes: /boxes', function () {
         expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
 
         boxCount = boxCount + 1;
-        //boxIds.push(response.body.data._id);
+        boxIds.push(response.body.data._id);
 
         return chakram.get(`${BASE_URL}/boxes/${response.body.data._id}`);
       })
@@ -205,6 +205,7 @@ describe('openSenseMap API Routes: /boxes', function () {
         expect(response).to.have.status(200);
         expect(response).to.have.schema(getUserBoxesSchema);
         expect(response).to.comprise.of.json('data.boxes.0.integrations.mqtt', { enabled: false });
+        expect(response).to.comprise.of.json('data.sharedBoxes.0.integrations.mqtt', { enabled: false });
 
         return chakram.wait();
       });
