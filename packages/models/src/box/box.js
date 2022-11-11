@@ -778,16 +778,15 @@ boxSchema.statics.findMeasurementsOfBoxesByTagStream = function findMeasurements
       }
 
       const sensors = Object.create(null);
-      console.log("BOXDATA",boxData);
       // store all matching sensors under sensors[sensorId]
       for (let i = 0, len = boxData.length; i < len; i++) {
         for (let j = 0, sensorslen = boxData[i].sensors.length; j < sensorslen; j++) {
-            const sensor = boxData[i].sensors[j];
+          const sensor = boxData[i].sensors[j];
 
-            sensor.boxId = boxData[i]._id.toString();
-            sensor.sensorId = sensor._id.toString();
+          sensor.boxId = boxData[i]._id.toString();
+          sensor.sensorId = sensor._id.toString();
 
-            sensors[boxData[i].sensors[j]['_id']] = sensor;
+          sensors[boxData[i].sensors[j]['_id']] = sensor;
         }
       }
 

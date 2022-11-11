@@ -246,7 +246,7 @@ const getDataByGroupTag = async function getDataByGroupTag (req, res, next) {
   // build query
   let queryParams = {}
   if (grouptag) {
-    queryParams['grouptag'] = { '$in': queryTags };
+    queryParams['grouptag'] = { '$all': queryTags };
   }
 
   try {
