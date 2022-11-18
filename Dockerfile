@@ -33,6 +33,7 @@ USER node
 WORKDIR /usr/src/app
 # COPY --from=build /usr/src/app /usr/src/app
 COPY --chown=node:node --from=build /usr/src/app/node_modules /usr/src/app/node_modules
+COPY --chown=node:node --from=build /usr/src/app/version.js /usr/src/app/version.js
 COPY --chown=node:node . /usr/src/app
 
 CMD ["dumb-init", "node", "packages/api/app.js"]
