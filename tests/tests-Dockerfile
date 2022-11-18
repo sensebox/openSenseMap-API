@@ -4,7 +4,9 @@ FROM node:16.18.1-bullseye-slim
 ENV NODE_ENV=production \
   YARN_PRODUCTION=false
 
-RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-recommends git dumb-init
+RUN apt-get update \
+  && apt-get upgrade -y \
+  && apt-get install -y --no-install-recommends git
 
 WORKDIR /usr/src/app
 
@@ -13,11 +15,7 @@ COPY . /usr/src/app
 
 RUN yarn install --pure-lockfile --production=false
 
-COPY . /usr/src/app
+RUN yarn create-version-file \
+  && rm -rf .git
 
-RUN yarn create-version-file
-
-COPY --chown=node:node . /usr/src/app
-USER node
-
-CMD ["dumb-init", "node", "packages/api/app.js"]
+CMD ["yarn", "start"]
