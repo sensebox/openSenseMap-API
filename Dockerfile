@@ -4,7 +4,7 @@
 # --------------> The build image
 FROM node:16.18.1-bullseye-slim as build
 
-RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-recommends dumb-init
+RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-recommends git dumb-init
 
 WORKDIR /usr/src/app
 

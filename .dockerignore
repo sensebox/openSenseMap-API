@@ -3,7 +3,6 @@ userimages
 *.yml
 Dockerfile
 .eslintrc.js
-.git
 .github
 doc
 version.js
