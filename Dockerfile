@@ -35,6 +35,9 @@ COPY --chown=node:node --from=build /usr/src/app/node_modules /usr/src/app/node_
 COPY --chown=node:node --from=build /usr/src/app/version.js /usr/src/app/version.js
 COPY --chown=node:node . /usr/src/app
 
+# Remove unused files and folders
+RUN rm -rf .git .scripts
+
 # Create and change ownership of folder to store uploaded images
 RUN mkdir -p /usr/src/app/dist/userimages && chown node:node /usr/src/app/dist/userimages
 
