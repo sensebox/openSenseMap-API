@@ -3,6 +3,7 @@ userimages
 *.yml
 Dockerfile
 .eslintrc.js
+.git
 .github
 doc
 version.js
@@ -13,7 +14,6 @@ version.js
 *.md
 *-dev.sh
 *.log
-.github
 tests
 apidoc
 apidoc.json
