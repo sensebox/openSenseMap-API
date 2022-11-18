@@ -35,7 +35,7 @@ COPY --chown=node:node --from=build /usr/src/app/node_modules /usr/src/app/node_
 COPY --chown=node:node --from=build /usr/src/app/version.js /usr/src/app/version.js
 COPY --chown=node:node . /usr/src/app
 
-# Change ownership of folder to store uploaded images
-RUN chown node:node /usr/src/app/dist/userimages
+# Create and change ownership of folder to store uploaded images
+RUN mkdir -p /usr/src/app/dist/userimages && chown node:node /usr/src/app/dist/userimages
 
 CMD ["dumb-init", "node", "packages/api/app.js"]
