@@ -1,7 +1,7 @@
 'use strict';
 
 const { Box, User } = require('@sensebox/opensensemap-api-models'),
-  { clearCache, checkContentType, postToSlack } = require('../helpers/apiUtils'),
+  { clearCache, checkContentType, postToMattermost } = require('../helpers/apiUtils'),
   { NotFoundError, BadRequestError } = require('restify-errors'),
   handleError = require('../helpers/errorHandler'),
   {
@@ -96,7 +96,7 @@ const deleteBoxes = async function deleteBoxes (req, res, next) {
       const user = await User.findUserOfBox(boxId);
       await user.removeBox(boxId);
       clearCache(['getBoxes', 'getStats']);
-      postToSlack(`Management Action: Box deleted: ${req.user.name} (${req.user.email}) just deleted ${boxIds.join(',')}`);
+      postToMattermost(`Management Action: Box deleted: ${req.user.name} (${req.user.email}) just deleted ${boxIds.join(',')}`);
     }
     res.send({ boxIds });
   } catch (err) {
@@ -121,7 +121,7 @@ const updateBox = async function updateBox (req, res, next) {
     const user = await User.findUserOfBox(boxId);
     box.owner = user.toJSON({ includeSecrets: true });
 
-    postToSlack(`Management Action: Box updated: ${req.user.name} (${req.user.email}) just updated "${box.name}" (${box.model}): <https://opensensemap.org/explore/${box._id}|link>`);
+    postToMattermost(`Management Action: Box updated: ${req.user.name} (${req.user.email}) just updated "${box.name}" (${box.model}): <https://opensensemap.org/explore/${box._id}|link>`);
     res.send({ code: 'Ok', data: box });
     clearCache(['getBoxes']);
   } catch (err) {
@@ -146,7 +146,7 @@ const updateUser = async function updateUser (req, res, next) {
 
     await user.save();
 
-    postToSlack(`Management Action: User updated: ${req.user.name} (${req.user.email}) just updated "${user.name}" (${user.email})`);
+    postToMattermost(`Management Action: User updated: ${req.user.name} (${req.user.email}) just updated "${user.name}" (${user.email})`);
     res.send({ code: 'Ok', data: user });
   } catch (err) {
     handleError(err, next);
@@ -164,7 +164,7 @@ const deleteUsers = async function deleteUsers (req, res, next) {
       userNames.push(`${user.name} (${user.email})`);
       await user.destroyUser({ sendMail: false });
       clearCache(['getBoxes', 'getStats']);
-      postToSlack(`Management Action: User deleted: ${req.user.name} (${req.user.email}) just deleted ${userNames.join(',')}`);
+      postToMattermost(`Management Action: User deleted: ${req.user.name} (${req.user.email}) just deleted ${userNames.join(',')}`);
     }
     res.send({ userIds });
   } catch (err) {

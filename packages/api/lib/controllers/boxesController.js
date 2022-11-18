@@ -38,7 +38,7 @@
 
 const
   { Box, User, Claim } = require('@sensebox/opensensemap-api-models'),
-  { addCache, clearCache, checkContentType, redactEmail, postToSlack } = require('../helpers/apiUtils'),
+  { addCache, clearCache, checkContentType, redactEmail, postToMattermost } = require('../helpers/apiUtils'),
   { point } = require('@turf/helpers'),
   classifyTransformer = require('../transformers/classifyTransformer'),
   {
@@ -411,7 +411,7 @@ const postNewBox = async function postNewBox (req, res, next) {
     newBox = await Box.populate(newBox, Box.BOX_SUB_PROPS_FOR_POPULATION);
     res.send(201, { message: 'Box successfully created', data: newBox });
     clearCache(['getBoxes', 'getStats']);
-    postToSlack(`New Box: ${req.user.name} (${redactEmail(req.user.email)}) just registered "${newBox.name}" (${newBox.model}): <https://opensensemap.org/explore/${newBox._id}|link>`);
+    postToMattermost(`New Box: ${req.user.name} (${redactEmail(req.user.email)}) just registered "${newBox.name}" (${newBox.model}): <https://opensensemap.org/explore/${newBox._id}|link>`);
   } catch (err) {
     handleError(err, next);
   }
@@ -481,7 +481,7 @@ const deleteBox = async function deleteBox (req, res, next) {
     const box = await req.user.removeBox(boxId);
     res.send({ code: 'Ok', message: 'box and all associated measurements marked for deletion' });
     clearCache(['getBoxes', 'getStats']);
-    postToSlack(`Box deleted: ${req.user.name} (${redactEmail(req.user.email)}) just deleted "${box.name}" (${boxId})`);
+    postToMattermost(`Box deleted: ${req.user.name} (${redactEmail(req.user.email)}) just deleted "${box.name}" (${boxId})`);
 
   } catch (err) {
     handleError(err, next);
