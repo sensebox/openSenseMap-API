@@ -20,8 +20,7 @@ RUN yarn install --pure-lockfile --production
 
 COPY . /usr/src/app
 
-RUN yarn create-version-file \
-  && rm -rf .git .scripts
+RUN yarn create-version-file
 
 # --------------> The production image
 FROM node:16.18.1-bullseye-slim
@@ -31,9 +30,12 @@ COPY --from=build /usr/bin/dumb-init /usr/bin/dumb-init
 USER node
 
 WORKDIR /usr/src/app
-# COPY --from=build /usr/src/app /usr/src/app
+
 COPY --chown=node:node --from=build /usr/src/app/node_modules /usr/src/app/node_modules
 COPY --chown=node:node --from=build /usr/src/app/version.js /usr/src/app/version.js
 COPY --chown=node:node . /usr/src/app
+
+# Change ownership of folder to store uploaded images
+RUN chown node:node /usr/src/app/dist/userimages
 
 CMD ["dumb-init", "node", "packages/api/app.js"]
