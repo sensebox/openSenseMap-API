@@ -12,19 +12,9 @@ const { Box, User } = require('@sensebox/opensensemap-api-models'),
 const listBoxes = async function listBoxes (req, res, next) {
   try {
     let boxes = await Box.find().exec();
-    const users = await User.find().exec();
 
     boxes = boxes
       .map(b => b.toJSON({ includeSecrets: true }));
-
-    for (const user of users) {
-      for (const userbox of user.boxes) {
-        const foundbox = boxes.find(box => box._id.equals(userbox));
-        if (foundbox) {
-          foundbox.owner = user.toJSON({ includeSecrets: true });
-        }
-      }
-    }
 
     res.send({ code: 'Ok', boxes });
   } catch (err) {
@@ -35,14 +25,9 @@ const listBoxes = async function listBoxes (req, res, next) {
 const listUsers = async function listUsers (req, res, next) {
   try {
     const users = await User.find()
-      .populate('boxes')
       .then(function (users) {
         return users.map(function (user) {
-          const boxes = user.boxes.map(b => b.toJSON({ includeSecrets: true }));
-
           user = user.toJSON({ includeSecrets: true });
-
-          user.boxes = boxes;
 
           return user;
         });
