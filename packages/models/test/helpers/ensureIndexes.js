@@ -4,9 +4,9 @@ const { User, Box, Measurement, Claim } = require('../../index');
 
 module.exports = function () {
   return Promise.all([
-    User.ensureIndexes(),
-    Box.ensureIndexes(),
-    Measurement.ensureIndexes(),
-    Claim.ensureIndexes()
+    User.createIndexes(),
+    Box.createIndexes(),
+    Measurement.createIndexes(),
+    Claim.createIndexes()
   ]);
 };

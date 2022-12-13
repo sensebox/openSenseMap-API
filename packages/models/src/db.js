@@ -38,7 +38,9 @@ const connect = function connect (uri) {
   return new Promise(function (resolve, reject) {
     mongoose
       .connect(uri, {
-        useMongoClient: true,
+        useNewUrlParser: true,
+        useUnifiedTopology: true,
+        useCreateIndex: true,
         reconnectTries: Number.MAX_VALUE,
         promiseLibrary: global.Promise
       })
