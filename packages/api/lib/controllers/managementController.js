@@ -15,7 +15,7 @@ const listBoxes = async function listBoxes (req, res, next) {
   const stringifier = jsonstringify({ open: '[', close: ']' });
 
   try {
-    const stream = await Box.find().cursor({ lean: true });
+    const stream = await Box.find({}, { _id: 1, name: 1, exposure: 1, model: 1, createdAt: 1, updatedAt: 1 }).cursor({ lean: true });
     // let boxes = await Box.find().exec();
 
     // boxes = boxes.map((b) => b.toJSON({ includeSecrets: true }));
