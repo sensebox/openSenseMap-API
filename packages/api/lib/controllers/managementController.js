@@ -6,17 +6,28 @@ const { Box, User } = require('@sensebox/opensensemap-api-models'),
   handleError = require('../helpers/errorHandler'),
   {
     retrieveParameters,
-  } = require('../helpers/userParamHelpers');
+  } = require('../helpers/userParamHelpers'),
+  jsonstringify = require('stringify-stream');
 
 
 const listBoxes = async function listBoxes (req, res, next) {
+  // default format
+  const stringifier = jsonstringify({ open: '[', close: ']' });
+
   try {
-    let boxes = await Box.find().exec();
+    const stream = await Box.find().cursor({ lean: true });
+    // let boxes = await Box.find().exec();
 
-    boxes = boxes
-      .map(b => b.toJSON({ includeSecrets: true }));
+    // boxes = boxes.map((b) => b.toJSON({ includeSecrets: true }));
 
-    res.send({ code: 'Ok', boxes });
+    stream
+      .pipe(stringifier)
+      .on('error', function (err) {
+        res.end(`Error: ${err.message}`);
+      })
+      .pipe(res);
+
+    // res.send({ code: 'Ok', boxes });
   } catch (err) {
     handleError(err, next);
   }
