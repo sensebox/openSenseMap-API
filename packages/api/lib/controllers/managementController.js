@@ -16,18 +16,12 @@ const listBoxes = async function listBoxes (req, res, next) {
 
   try {
     const stream = await Box.find({}, { _id: 1, name: 1, exposure: 1, model: 1, createdAt: 1, updatedAt: 1 }).cursor({ lean: true });
-    // let boxes = await Box.find().exec();
-
-    // boxes = boxes.map((b) => b.toJSON({ includeSecrets: true }));
-
     stream
       .pipe(stringifier)
       .on('error', function (err) {
         res.end(`Error: ${err.message}`);
       })
       .pipe(res);
-
-    // res.send({ code: 'Ok', boxes });
   } catch (err) {
     handleError(err, next);
   }

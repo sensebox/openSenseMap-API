@@ -96,11 +96,8 @@ describe('Management Tests', function () {
 
   describe('boxes management', function () {
     it('should allow to request a list of boxes with secrets', async function () {
-      const { body: { boxes } } = await requestWithAuth('get', `${MANAGEMENT_URL}/boxes`);
-      expect(Array.isArray(boxes)).true;
-      for (const box of boxes) {
-        expect(box.integrations).exist;
-      }
+      const { body } = await requestWithAuth('get', `${MANAGEMENT_URL}/boxes`);
+      expect(Array.isArray(body)).true;
 
       return chakram.wait();
     });
