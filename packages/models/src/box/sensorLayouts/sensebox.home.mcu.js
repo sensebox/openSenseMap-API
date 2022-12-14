@@ -25,7 +25,7 @@ const {
   sps30_pm4, 
   sps30_pm10
 } = sensorDefinitions;
-console.log(sensorDefinitions)
+
 module.exports = [
   hdc1080_temperature,
   hdc1080_humidity,
