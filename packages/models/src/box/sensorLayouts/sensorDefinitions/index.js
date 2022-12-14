@@ -1,5 +1,6 @@
 'use strict';
 
+ 
 const veml6070_uvintensity = require('./veml6070_uvintensity'),
   tsl45315_lightintensity = require('./tsl45315_lightintensity'),
   bmp280_pressure = require('./bmp280_pressure'),
@@ -42,8 +43,11 @@ const veml6070_uvintensity = require('./veml6070_uvintensity'),
   windspeed = require('./windspeed'),
   scd30_co2 = require('./scd30_co2'),
   dps310_temperature = require('./dps310_temperature'),
-  dps310_pressure = require('./dps310_pressure');
-
+  dps310_pressure = require('./dps310_pressure'),
+  sps30_pm1 = require('./sps30_pm1'),
+  sps30_pm25 = require('./sps30_pm25'),
+  sps30_pm4 = require('./sps30_pm4'),
+  sps30_pm10 = require('./sps30_pm10');
 module.exports = {
   hdc1008_temperature,
   hdc1080_temperature,
@@ -87,5 +91,9 @@ module.exports = {
   windspeed,
   scd30_co2,
   dps310_temperature,
-  dps310_pressure
+  dps310_pressure, 
+  sps30_pm1,
+  sps30_pm25,
+  sps30_pm4,
+  sps30_pm10
 };

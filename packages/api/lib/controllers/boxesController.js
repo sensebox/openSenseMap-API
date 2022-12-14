@@ -736,6 +736,7 @@ module.exports = {
           'windspeed',
           'scd30',
           'dps310',
+          'sps30'
         ],
       },
       {
