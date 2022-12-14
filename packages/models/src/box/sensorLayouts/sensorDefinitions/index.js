@@ -1,6 +1,6 @@
 'use strict';
 
- 
+
 const veml6070_uvintensity = require('./veml6070_uvintensity'),
   tsl45315_lightintensity = require('./tsl45315_lightintensity'),
   bmp280_pressure = require('./bmp280_pressure'),
@@ -91,7 +91,7 @@ module.exports = {
   windspeed,
   scd30_co2,
   dps310_temperature,
-  dps310_pressure, 
+  dps310_pressure,
   sps30_pm1,
   sps30_pm25,
   sps30_pm4,
