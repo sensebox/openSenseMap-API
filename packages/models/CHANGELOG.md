@@ -2,9 +2,9 @@
 
 ## Unreleased
 
-## v1.3.0
+## v1.3.1
 
-## v1.2.1
+## v1.3.0
 - Add SPS30 sensor 
 - Update @sensebox/node-sketch-templater to v1.13.0
 
