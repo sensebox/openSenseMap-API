@@ -6,27 +6,22 @@ const { Box, User } = require('@sensebox/opensensemap-api-models'),
   handleError = require('../helpers/errorHandler'),
   {
     retrieveParameters,
-  } = require('../helpers/userParamHelpers');
+  } = require('../helpers/userParamHelpers'),
+  jsonstringify = require('stringify-stream');
 
 
 const listBoxes = async function listBoxes (req, res, next) {
+  // default format
+  const stringifier = jsonstringify({ open: '[', close: ']' });
+
   try {
-    let boxes = await Box.find().exec();
-    const users = await User.find().exec();
-
-    boxes = boxes
-      .map(b => b.toJSON({ includeSecrets: true }));
-
-    for (const user of users) {
-      for (const userbox of user.boxes) {
-        const foundbox = boxes.find(box => box._id.equals(userbox));
-        if (foundbox) {
-          foundbox.owner = user.toJSON({ includeSecrets: true });
-        }
-      }
-    }
-
-    res.send({ code: 'Ok', boxes });
+    const stream = await Box.find({}, { _id: 1, name: 1, exposure: 1, model: 1, createdAt: 1, updatedAt: 1 }).cursor({ lean: true });
+    stream
+      .pipe(stringifier)
+      .on('error', function (err) {
+        res.end(`Error: ${err.message}`);
+      })
+      .pipe(res);
   } catch (err) {
     handleError(err, next);
   }
@@ -35,14 +30,9 @@ const listBoxes = async function listBoxes (req, res, next) {
 const listUsers = async function listUsers (req, res, next) {
   try {
     const users = await User.find()
-      .populate('boxes')
       .then(function (users) {
         return users.map(function (user) {
-          const boxes = user.boxes.map(b => b.toJSON({ includeSecrets: true }));
-
           user = user.toJSON({ includeSecrets: true });
-
-          user.boxes = boxes;
 
           return user;
         });
