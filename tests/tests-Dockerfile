@@ -1,4 +1,4 @@
-FROM node:16.18.1-bullseye-slim
+FROM node:16.19.0-bullseye-slim
 
 # YARN_PRODUCTION=false is a workaround for https://github.com/yarnpkg/yarn/issues/4557
 ENV NODE_ENV=production \
@@ -6,7 +6,7 @@ ENV NODE_ENV=production \
 
 RUN apt-get update \
   && apt-get upgrade -y \
-  && apt-get install -y --no-install-recommends git
+  && apt-get install -y --no-install-recommends git dumb-init
 
 WORKDIR /usr/src/app
 
@@ -18,4 +18,4 @@ RUN yarn install --pure-lockfile --production=false
 RUN yarn create-version-file \
   && rm -rf .git
 
-CMD ["yarn", "start"]
+CMD ["dumb-init", "yarn", "start"]
