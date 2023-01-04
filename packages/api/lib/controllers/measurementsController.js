@@ -234,8 +234,8 @@ const getDataMulti = async function getDataMulti (req, res, next) {
 
 
 /**
- * @api {get,post} /boxes/data?grouptag=:grouptag Get latest measurements for a grouptag as CSV
- * @apiDescription Download data of a given grouptag from multiple selected senseBoxes as CSV
+ * @api {get,post} /boxes/data?grouptag=:grouptag Get latest measurements for a grouptag as JSON
+ * @apiDescription Download data of a given grouptag from multiple senseBoxes as JSON
  * @apiGroup Measurements
  * @apiName getDataByGroupTag
  * @apiParam {String} grouptag The grouptag to search by.
@@ -475,7 +475,7 @@ module.exports = {
   getDataByGroupTag: [
     retrieveParameters([
       { name: 'grouptag', required: true },
-      { name: 'format', defaultValue: 'json', allowedValues: ['csv', 'json'] }
+      { name: 'format', defaultValue: 'json', allowedValues: ['json'] }
     ]),
     getDataByGroupTag
   ],
