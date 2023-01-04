@@ -1,19 +1,18 @@
 version: "3.9"
 
+volumes:
+  mongo-data:
+
 services:
   db:
-    build:
-      context: ./images/mongodb
+    image: mongo:5
     container_name: osem-dev-mongo
     ports:
       - "27017:27017"
     volumes:
       - mongo-data:/data/db
-    networks:
-      - api-db-network
-
-volumes:
-  mongo-data:
-networks:
-  api-db-network:
-    external: true
+      # - ./dumps/boxes:/exports/boxes
+      # - ./dumps/measurements:/exports/measurements
+      - ./.scripts/mongodb/osem_admin.sh:/docker-entrypoint-initdb.d/osem_admin.sh
+      # - ./.scripts/mongodb/osem_seed_boxes.sh:/docker-entrypoint-initdb.d/osem_seed_boxes.sh
+      # - ./.scripts/mongodb/osem_seed_measurements.sh:/docker-entrypoint-initdb.d/osem_seed_measurements.sh
