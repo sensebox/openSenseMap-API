@@ -396,7 +396,7 @@ const getBox = async function getBox (req, res, next) {
  * @apiParam (RequestBody) {Object} [mqtt] specify parameters of the MQTT integration for external measurement upload. Please see below for the accepted parameters
  * @apiParam (RequestBody) {Object} [ttn] specify parameters for the TTN integration for measurement from TheThingsNetwork.org upload. Please see below for the accepted parameters
  * @apiParam (RequestBody) {Boolean="true","false"} [useAuth] whether to use access_token or not for authentication
- * @apiParam (RequestBody) {Boolean="true","false"} [sharedBox] whether to use access_token or not for authentication
+ * @apiParam (RequestBody) {Boolean="true","false"} [sharedBox] whether to share this box (allows transfer to another user while still being able to read the secret and commit measurements)
  *
  * @apiUse LocationBody
  * @apiUse SensorBody
