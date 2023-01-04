@@ -242,9 +242,9 @@ const getDataMulti = async function getDataMulti (req, res, next) {
  */
 const getDataByGroupTag = async function getDataByGroupTag (req, res, next) {
   const { grouptag, format } = req._userParams;
-  let queryTags = grouptag.split(',');
+  const queryTags = grouptag.split(',');
   // build query
-  let queryParams = {};
+  const queryParams = {};
   if (grouptag) {
     queryParams['grouptag'] = { '$all': queryTags };
   }
