@@ -13,7 +13,7 @@ version.js
 *.md
 *-dev.sh
 *.log
-.github
 tests
 apidoc
 apidoc.json
+images

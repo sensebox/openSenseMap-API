@@ -23,7 +23,9 @@ const log = bunyan.createLogger({ name: 'opensensemap-api', serializers: bunyan.
 
 const server = restify.createServer({
   name: `opensensemap-api (${getVersion})`,
-  log
+  log,
+  onceNext: true,
+  strictNext: false,
 });
 
 // We're using caddy as proxy. It supplies a 'X-Forwarded-Proto' header
