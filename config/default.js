@@ -13,7 +13,7 @@ const defaults = {
   api_url: '', // if not set, generated from api_protocol and api_base_domain
   honeybadger_apikey: '',
   slack_url: '',
-  mattermost_url: 'https://chat.reedu.de/hooks/kehtgn3n1bfj9ka9kjgkuyyh3a',
+  mattermost_url: '',
   management_role: 'admin',
   routes: {
     boxes: '/boxes',
