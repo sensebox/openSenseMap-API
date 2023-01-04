@@ -26,6 +26,10 @@ const sensorSchema = new mongoose.Schema({
     required: false,
     trim: true
   },
+  iconUrl: {
+    type: String,
+    required: false
+  },
   lastMeasurement: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Measurement'

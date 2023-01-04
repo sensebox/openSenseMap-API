@@ -1,5 +1,6 @@
 'use strict';
 
+const restify = require('restify');
 const { usersController,
     statisticsController,
     boxesController,
@@ -10,6 +11,7 @@ const { usersController,
   { getVersion } = require('./helpers/apiUtils'),
   { verifyJwt } = require('./helpers/jwtHelpers'),
   { initUserParams, checkPrivilege } = require('./helpers/userParamHelpers');
+
 
 const spaces = function spaces (num) {
   let str = ' ';
@@ -67,10 +69,13 @@ const printRoutes = function printRoutes (req, res) {
   res.end(lines.join('\n'));
 };
 
-const { boxes: boxesPath, users: usersPath, statistics: statisticsPath, management: managementPath } = config.get('routes');
+const { assets, boxes: boxesPath, users: usersPath, statistics: statisticsPath, management: managementPath } = config.get('routes');
 // the ones matching first are used
 // case is ignored
 const routes = {
+  'static': [
+    { path: `${assets.path}/*`, method: 'get', directory: assets.directory, reference: 'api-Misc-getAssets' }
+  ],
   'noauth': [
     { path: '/', method: 'get', handler: printRoutes, reference: 'api-Misc-printRoutes' },
     { path: '/stats', method: 'get', handler: statisticsController.getStatistics, reference: 'api-Misc-getStatistics' },
@@ -128,6 +133,13 @@ const routes = {
 const initRoutes = function initRoutes (server) {
   // attach a function for user parameters
   server.use(initUserParams);
+
+  for (const route of routes.static) {
+    server[route.method]({ path: route.path }, restify.plugins.serveStatic({
+      appendRequestPath: false,
+      directory: route.directory
+    }));
+  }
 
   // attach the routes
   for (const route of routes.noauth) {

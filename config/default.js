@@ -13,13 +13,17 @@ const defaults = {
   api_url: '', // if not set, generated from api_protocol and api_base_domain
   honeybadger_apikey: '',
   slack_url: '',
-  mattermost_url: '',
+  mattermost_url: 'https://chat.reedu.de/hooks/kehtgn3n1bfj9ka9kjgkuyyh3a',
   management_role: 'admin',
   routes: {
     boxes: '/boxes',
     users: '/users',
     statistics: '/statistics',
     management: '/management',
+    assets: {
+      path: '/assets',
+      directory: './assets',
+    },
   },
   jwt: {
     secret: 'OH GOD THIS IS SO INSECURE PLS CHANGE ME', // should be at least 32 characters
