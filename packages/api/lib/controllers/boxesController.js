@@ -411,7 +411,15 @@ const postNewBox = async function postNewBox (req, res, next) {
     newBox = await Box.populate(newBox, Box.BOX_SUB_PROPS_FOR_POPULATION);
     res.send(201, { message: 'Box successfully created', data: newBox });
     clearCache(['getBoxes', 'getStats']);
-    postToMattermost(`New Box: ${req.user.name} (${redactEmail(req.user.email)}) just registered "${newBox.name}" (${newBox.model}): <https://opensensemap.org/explore/${newBox._id}|link>`);
+    postToMattermost(
+      `New Box: ${req.user.name} (${redactEmail(
+        req.user.email
+      )}) just registered "${newBox.name}" (${
+        newBox.model
+      }): [https://opensensemap.org/explore/${
+        newBox._id
+      }](https://opensensemap.org/explore/${newBox._id})`
+    );
   } catch (err) {
     handleError(err, next);
   }

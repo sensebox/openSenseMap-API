@@ -111,7 +111,9 @@ const updateBox = async function updateBox (req, res, next) {
     const user = await User.findUserOfBox(boxId);
     box.owner = user.toJSON({ includeSecrets: true });
 
-    postToMattermost(`Management Action: Box updated: ${req.user.name} (${req.user.email}) just updated "${box.name}" (${box.model}): <https://opensensemap.org/explore/${box._id}|link>`);
+    postToMattermost(
+      `Management Action: Box updated: ${req.user.name} (${req.user.email}) just updated "${box.name}" (${box.model}): [https://opensensemap.org/explore/${box._id}](https://opensensemap.org/explore/${box._id})`
+    );
     res.send({ code: 'Ok', data: box });
     clearCache(['getBoxes']);
   } catch (err) {
