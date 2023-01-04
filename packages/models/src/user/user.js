@@ -289,8 +289,8 @@ userSchema.methods.addBox = function addBox (params) {
       // persist the saved box in the user
       savedBox.serialPort = serialPort;
       user.boxes.addToSet(savedBox._id);
-      if(params.sharedBox){
-        user.sharedBoxes.addToSet(savedBox._id)
+      if (params.sharedBox) {
+        user.sharedBoxes.addToSet(savedBox._id);
       }
 
       return user.save()
