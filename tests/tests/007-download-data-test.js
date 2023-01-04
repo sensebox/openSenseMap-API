@@ -194,6 +194,20 @@ describe('downloading data', function () {
         });
     });
 
+    it('should return the sensors of a box with 3 measurements for /boxes/:boxid/sensors?count=3 GET', function () {
+      return chakram.get(`${BASE_URL}/boxes/${boxIds[0]}/sensors?count=3`)
+        .then(function (response) {
+          expect(response).to.have.status(200);
+          expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
+          expect(response).to.have.schema(boxSensorsSchema);
+          console.log(response.body.sensors[0])
+          expect(response.body.sensors[0].lastMeasurements.measurements.length).to.be.equal(3);
+          // expect(response.body.sensors[0].lastMeasurements.measurements[0]).to.have.schema(measurementsSchema);
+          console.log(response.body.sensors[0].lastMeasurements.measurements[0])
+          return chakram.wait();
+        });
+    });
+
     it('should return a single sensor of a box for /boxes/:boxid/sensors/:sensorId GET', function () {
       return chakram.get(`${BASE_URL}/boxes/${boxes[0]._id}/sensors/${boxes[0].sensors[0]._id}`)
         .then(function (response) {
