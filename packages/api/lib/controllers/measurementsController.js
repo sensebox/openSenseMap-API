@@ -241,10 +241,10 @@ const getDataMulti = async function getDataMulti (req, res, next) {
  * @apiParam {String} grouptag Comma separated list of senseBox IDs.
  */
 const getDataByGroupTag = async function getDataByGroupTag (req, res, next) {
-  const { grouptag, format, download } = req._userParams;
-  var queryTags = grouptag.split(',');
+  const { grouptag, format } = req._userParams;
+  let queryTags = grouptag.split(',');
   // build query
-  let queryParams = {}
+  let queryParams = {};
   if (grouptag) {
     queryParams['grouptag'] = { '$all': queryTags };
   }
@@ -258,11 +258,6 @@ const getDataByGroupTag = async function getDataByGroupTag (req, res, next) {
         return handleError(err, next);
       });
     switch (format) {
-    case 'csv':
-      res.header('Content-Type', 'text/csv');
-      stream = stream
-        .pipe(csvStringifier(columns, delimiter));
-      break;
     case 'json':
       res.header('Content-Type', 'application/json');
       stream = stream
@@ -270,15 +265,9 @@ const getDataByGroupTag = async function getDataByGroupTag (req, res, next) {
       break;
     }
 
-    // if (download === 'true') {
-    //   res.header('Content-Disposition', `attachment; filename=${createDownloadFilename(req.date(), 'download', [phenomenon, ...columns], format)}`);
-    // }
-
-
     stream
       .pipe(res);
   } catch (err) {
-    console.log(err);
     handleError(err, next);
   }
 };

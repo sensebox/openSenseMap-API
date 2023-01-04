@@ -767,7 +767,7 @@ boxSchema.statics.findMeasurementsOfBoxesStream = function findMeasurementsOfBox
     });
 };
 
-boxSchema.statics.findMeasurementsOfBoxesByTagStream = function findMeasurementsOfBoxesStream (opts) {
+boxSchema.statics.findMeasurementsOfBoxesByTagStream = function findMeasurementsOfBoxesByTagStream (opts) {
   const { query } = opts;
 
   return this.find(query, BOX_PROPS_FOR_POPULATION)
@@ -793,7 +793,7 @@ boxSchema.statics.findMeasurementsOfBoxesByTagStream = function findMeasurements
       // // construct a stream transformer applied to queried measurements
       // // that augments each measure with queried columns (location, ...)
       // // and applies transformations to timestamps
-      const transformer = measurementTransformer(["sensorId", 'boxId'], sensors, undefined);
+      const transformer = measurementTransformer(['sensorId', 'boxId'], sensors, undefined);
 
       const measureQuery = {
         'sensor_id': { '$in': Object.keys(sensors) },
@@ -953,7 +953,6 @@ boxSchema.methods.getLocations = function getLocations ({ format, fromDate, toDa
   const box = this;
 
   const locs = box.locations.filter(function (loc) {
-    console.log(loc);
     return (
       fromDate.isSameOrBefore(loc.timestamp) &&
       toDate.isSameOrAfter(loc.timestamp)
