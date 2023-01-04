@@ -28,7 +28,6 @@ const getDBUri = function getDBUri (uri) {
 };
 
 const connect = function connect (uri) {
-  
   uri = getDBUri(uri);
 
   mongoose.connection.on('connecting', function () {
