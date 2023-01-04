@@ -595,6 +595,41 @@ describe('openSenseMap API Routes: /boxes', function () {
         return chakram.wait();
       });
   });
+  it('should allow to update the box via PUT with array as grouptags', function () {
+    const update_payload = { name: 'neuername', exposure: 'outdoor', grouptag: ['newgroup'], description: 'total neue beschreibung', location: { lat: 54.2, lng: 21.1 }, weblink: 'http://www.google.de', image: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVQYV2NgYAAAAAMAAWgmWQ0AAAAASUVORK5CYII=' };
+
+    return chakram.put(`${BASE_URL}/boxes/${boxIds[2]}`, update_payload, { headers: { 'Authorization': `Bearer ${jwt2}` } })
+      .then(function (response) {
+        expect(response).to.have.status(200);
+        expect(response).to.comprise.of.json('data.name', update_payload.name);
+        expect(response).to.comprise.of.json('data.exposure', update_payload.exposure);
+        expect(response.body.data.grouptag).to.have.same.members(update_payload.grouptag);
+        expect(response).to.comprise.of.json('data.description', update_payload.description);
+        expect(response).to.comprise.of.json('data.currentLocation', {
+          type: 'Point',
+          coordinates: [update_payload.location.lng, update_payload.location.lat]
+        });
+
+        // loc field with old schema (backwards compat):
+        expect(response).to.comprise.of.json('data.loc', [{
+          type: 'Feature',
+          geometry: {
+            type: 'Point',
+            coordinates: [
+              update_payload.location.lng,
+              update_payload.location.lat
+            ]
+          }
+        }]);
+
+        // image should contain timestamp. request duration should be less than 1s.
+        expect(response).to.comprise.of.json('data.image', function (image) {
+          return expect(moment().diff(moment(parseInt(image.split('_')[1].slice(0, -4), 36) * 1000))).to.be.below(1000);
+        });
+
+        return chakram.wait();
+      });
+  });
 
   it('should deny to update a box of other users', function () {
     let otherJwt, otherBoxId;
@@ -677,7 +712,7 @@ describe('openSenseMap API Routes: /boxes', function () {
         expect(response).to.have.status(200);
         expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
         expect(Array.isArray(response.body)).to.be.true;
-        expect(response.body.length).to.be.equal(1);
+        expect(response.body.length).to.be.equal(2);
 
         return chakram.wait();
       });

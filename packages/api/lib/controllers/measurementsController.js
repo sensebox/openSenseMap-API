@@ -238,7 +238,7 @@ const getDataMulti = async function getDataMulti (req, res, next) {
  * @apiDescription Download data of a given grouptag from multiple selected senseBoxes as CSV
  * @apiGroup Measurements
  * @apiName getDataByGroupTag
- * @apiParam {String} grouptag Comma separated list of senseBox IDs.
+ * @apiParam {String} grouptag The grouptag to search by.
  */
 const getDataByGroupTag = async function getDataByGroupTag (req, res, next) {
   const { grouptag, format } = req._userParams;
