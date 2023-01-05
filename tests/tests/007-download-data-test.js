@@ -584,4 +584,20 @@ describe('downloading data', function () {
 
   });
 
+  describe('/boxes/data/bytag?grouptag=newgroup', function () {
+
+    const expectedMeasurementsCount = 40;
+
+    it('should allow download data by Grouptag /boxes/data/bytag=newgroup as json', function () {
+      return chakram.get(`${BASE_URL}/boxes/data/bytag?grouptag=newgroup`)
+        .then(function (response) {
+          expect(response).to.have.status(200);
+          expect(response.body.length).to.be.equal(expectedMeasurementsCount);
+          expect(response).to.have.header('content-type', 'application/json');
+
+          return chakram.wait();
+        });
+    });
+  });
+
 });
