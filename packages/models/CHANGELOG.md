@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## v2.0.1
+
+- Fix `undefined` errors in luftdatenHandler (#691)
+
 ## v2.0.0
 
 - Update dependencies (#602, #666)
