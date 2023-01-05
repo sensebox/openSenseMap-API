@@ -497,7 +497,9 @@ boxSchema.methods.saveMeasurement = function saveMeasurement (measurement) {
 boxSchema.methods.sensorIds = function sensorIds () {
   const sensorIds = [];
   for (let i = this.sensors.length - 1; i >= 0; i--) {
-    sensorIds.push(this.sensors[i]._id.toString());
+    if (this.sensors[i]._id) {
+      sensorIds.push(this.sensors[i]._id.toString());
+    }
   }
 
   return sensorIds;
