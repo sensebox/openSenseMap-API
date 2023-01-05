@@ -598,6 +598,6 @@ describe('downloading data', function () {
           return chakram.wait();
         });
     });
-  })
+  });
 
 });
