@@ -201,6 +201,7 @@ describe('downloading data', function () {
           expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
           expect(response).to.have.schema(boxSensorsSchema);
           expect(response.body.sensors[0].lastMeasurements.measurements.length).to.be.equal(3);
+          
           return chakram.wait();
         });
     });
