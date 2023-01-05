@@ -819,7 +819,7 @@ module.exports = {
         allowedValues: ['true', 'false'],
       },
       { name: 'full', defaultValue: 'false', allowedValues: ['true', 'false'] },
-      { name: 'near' },
+      { predef: 'near' },
       { name: 'maxDistance' },
       { predef: 'bbox' },
     ]),
