@@ -1,6 +1,24 @@
 # openSenseMap API Changelog
 
-## v10.0
+## v10.1.1
+
+- Use @sensebox/opensensemap-api-models v1.2.0
+
+## v10.1.0
+
+- Update grouptag in management routes (#582)
+- Move osem mongo dev image to api repo (#614)
+
+## v10.0.3
+
+- Use @sensebox/opensensemap-api-models v1.1.1
+
+## v10.0.2
+
+- Use @sensebox/opensensemap-api-models v1.1.0
+- Update dependencies
+
+## v10.0.0
 
 - Use @sensebox/opensensemap-api-models v1.0.0
 - Update CI

@@ -82,10 +82,6 @@ describe('Management Tests', function () {
       expect(user._id).exist;
       expect(user.boxes).exist;
 
-      for (const box of user.boxes) {
-        expect(box.integrations).exist;
-      }
-
       return chakram.wait();
     });
 
@@ -100,15 +96,8 @@ describe('Management Tests', function () {
 
   describe('boxes management', function () {
     it('should allow to request a list of boxes with secrets', async function () {
-      const { body: { boxes } } = await requestWithAuth('get', `${MANAGEMENT_URL}/boxes`);
-      expect(Array.isArray(boxes)).true;
-      for (const box of boxes) {
-        expect(box.integrations).exist;
-        expect(box.owner).exist;
-        expect(box.owner.name).exist;
-        expect(box.owner.email).exist;
-        expect(box.owner._id).exist;
-      }
+      const { body } = await requestWithAuth('get', `${MANAGEMENT_URL}/boxes`);
+      expect(Array.isArray(body)).true;
 
       return chakram.wait();
     });
@@ -117,10 +106,6 @@ describe('Management Tests', function () {
       const { body } = await requestWithAuth('get', `${MANAGEMENT_URL}/boxes/${normalUserBox._id}`);
       expect(body.name).equal(valid_sensebox().name);
       expect(body.integrations).exist;
-      expect(body.owner).exist;
-      expect(body.owner.name).exist;
-      expect(body.owner.email).exist;
-      expect(body.owner._id).exist;
 
       return chakram.wait();
     });

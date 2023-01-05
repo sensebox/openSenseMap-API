@@ -14,6 +14,7 @@ const { mongoose } = require('../db'),
   { min_length: password_min_length, salt_factor: password_salt_factor } = require('config').get('openSenseMap-API-models.password'),
   { v4: uuidv4 } = require('uuid'),
   { model: Box } = require('../box/box'),
+  { model: Claim } = require('../box/claim'),
   mails = require('./mails'),
   moment = require('moment'),
   timestamp = require('mongoose-timestamp'),
@@ -356,6 +357,80 @@ userSchema.methods.removeBox = function removeBox (boxId) {
           return box;
         });
 
+    });
+};
+
+userSchema.methods.transferBox = function transferBox (boxId, date) {
+  const user = this;
+
+  // checkBoxOwner throws ModelError
+  user.checkBoxOwner(boxId);
+
+  return Claim.initClaim(boxId, date)
+    .then(function (claim) {
+      return claim;
+    });
+};
+
+userSchema.methods.updateTransfer = function updateTransfer (boxId, token, date) {
+  const user = this;
+
+  // checkBoxOwner throws ModelError
+  user.checkBoxOwner(boxId);
+
+  return Claim.findClaimByToken(token)
+    .exec()
+    .then(function (claim) {
+      if (!claim) {
+        return Promise.reject(
+          new ModelError('Coudn\'t update, token not found', {
+            type: 'NotFoundError',
+          })
+        );
+      }
+
+      claim.set('expiresAt', date);
+
+      return claim.save();
+    });
+};
+
+userSchema.methods.removeTransfer = function removeTransfer (boxId, token) {
+  const user = this;
+
+  // checkBoxOwner throws ModelError
+  user.checkBoxOwner(boxId);
+
+  return Claim.findClaimByToken(token)
+    .exec()
+    .then(function (claim) {
+      if (!claim) {
+        return Promise.reject(new ModelError('Coudn\'t remove, token not found', { type: 'NotFoundError' }));
+      }
+
+      // remove token
+      return claim.remove();
+    });
+};
+
+userSchema.methods.claimBox = function claimBox (token) {
+  const user = this;
+
+  return Claim.findClaimByToken(token)
+    .exec()
+    .then(function (claim) {
+
+      if (!claim) {
+        return Promise.reject(new ModelError('Token was not found', { type: 'NotFoundError' }));
+      }
+
+      return {
+        owner: user.id,
+        claim
+      };
+    })
+    .catch(function (error) {
+      throw new ModelError(error.message, token);
     });
 };
 
