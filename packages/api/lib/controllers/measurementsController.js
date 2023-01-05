@@ -19,6 +19,7 @@ const
  * @apiGroup Measurements
  * @apiName getLatestMeasurements
  * @apiUse BoxIdParam
+ * @apiParam {NumberNumber=1-100} [count] Number of measurements to be retrieved for every sensor.
  */
 /**
  * @api {get} /boxes/:senseBoxId/sensors/:sensorId Get latest measurements of a sensor
@@ -35,7 +36,30 @@ const getLatestMeasurements = async function getLatestMeasurements (req, res, ne
   let box;
 
   try {
-    box = await Box.findBoxById(req._userParams.boxId, { onlyLastMeasurements: true });
+    if (req._userParams.count) {
+      box = await Box.findBoxById(req._userParams.boxId, {
+        populate: false,
+        onlyLastMeasurements: false,
+        count: req._userParams.count,
+        projection: {
+          name: 1,
+          lastMeasurementAt: 1,
+          sensors: 1,
+          grouptag: 1
+        }
+      });
+
+      const measurements = await Measurement.findLatestMeasurementsForSensorsWithCount(box, req._userParams.count);
+      for (let index = 0; index < box.sensors.length; index++) {
+        const sensor = box.sensors[index];
+        const values = measurements.find(elem => elem._id.equals(sensor._id));
+        sensor['lastMeasurements'] = values;
+      }
+    } else {
+      box = await Box.findBoxById(req._userParams.boxId, {
+        onlyLastMeasurements: true
+      });
+    }
   } catch (err) {
     handleError(err, next);
 
@@ -413,6 +437,7 @@ module.exports = {
     retrieveParameters([
       { predef: 'boxId', required: true },
       { predef: 'sensorId' },
+      { name: 'count', dataType: 'Integer', min: 1, max: 100, required: false },
       { name: 'onlyValue', required: false }
     ]),
     getLatestMeasurements

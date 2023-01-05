@@ -86,6 +86,59 @@ measurementSchema.statics.findLatestMeasurementsForSensors = function findLatest
     .exec();
 };
 
+measurementSchema.statics.findLatestMeasurementsForSensorsWithCount = function findLatestMeasurementsForSensorsWithCount (box, count) {
+  const match = {
+    $or: []
+  };
+  for (let index = 0; index < box.sensors.length; index++) {
+    const sensor = box.sensors[index];
+    match.$or.push({
+      sensor_id: sensor._id
+    });
+  }
+
+  return this.aggregate([
+    {
+      $match: match,
+    },
+    {
+      $sort: {
+        createdAt: -1,
+      },
+    },
+    {
+      $limit: count * box.sensors.length,
+    },
+    {
+      $group: {
+        _id: '$sensor_id',
+        measurements: {
+          $push: {
+            value: '$value',
+            createdAt: '$createdAt',
+          }
+        },
+        fromDate: {
+          $last: '$createdAt',
+        },
+        toDate: {
+          $first: '$createdAt',
+        },
+      },
+    },
+    {
+      $project: {
+        _id: 1,
+        measurements: {
+          $slice: ['$measurements', count],
+        },
+        fromDate: 1,
+        toDate: 1,
+      },
+    },
+  ]).exec();
+};
+
 measurementSchema.statics.getMeasurementsStream = function getMeasurementsStream ({ fromDate, toDate, sensorId }) {
   const queryLimit = 10000;
 
