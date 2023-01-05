@@ -599,7 +599,7 @@ describe('openSenseMap API Routes: /boxes', function () {
   it('should allow to update the box via PUT with array as grouptags', function () {
     const update_payload = { name: 'neuername', exposure: 'outdoor', grouptag: ['newgroup'], description: 'total neue beschreibung', location: { lat: 54.2, lng: 21.1 }, weblink: 'http://www.google.de', image: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVQYV2NgYAAAAAMAAWgmWQ0AAAAASUVORK5CYII=' };
 
-    return chakram.put(`${BASE_URL}/boxes/${boxIds[2]}`, update_payload, { headers: { 'Authorization': `Bearer ${jwt2}` } })
+    return chakram.put(`${BASE_URL}/boxes/${boxIds[3]}`, update_payload, { headers: { 'Authorization': `Bearer ${jwt2}` } })
       .then(function (response) {
         expect(response).to.have.status(200);
         expect(response).to.comprise.of.json('data.name', update_payload.name);
