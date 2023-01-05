@@ -199,9 +199,9 @@ const confirmEmailAddress = async function confirmEmailAddress (req, res, next) 
 };
 
 /**
- * @api {post} /users/me/boxes list all boxes of the signed in user
+ * @api {post} /users/me/boxes list all boxes and sharedBoxes of the signed in user
  * @apiName getUserBoxes
- * @apiDescription List all boxes of the signed in user with secret fields
+ * @apiDescription List all boxes and sharedBoxes of the signed in user with secret fields
  * @apiGroup Users
  * @apiSuccess {String} code `Ok`
  * @apiSuccess {String} data A json object with a single `boxes` array field
@@ -209,7 +209,8 @@ const confirmEmailAddress = async function confirmEmailAddress (req, res, next) 
 const getUserBoxes = async function getUserBoxes (req, res, next) {
   try {
     const boxes = await req.user.getBoxes();
-    res.send(200, { code: 'Ok', data: { boxes } });
+    const sharedBoxes = await req.user.getSharedBoxes();
+    res.send(200, { code: 'Ok', data: { boxes: boxes, sharedBoxes: sharedBoxes } });
   } catch (err) {
     handleError(err, next);
   }

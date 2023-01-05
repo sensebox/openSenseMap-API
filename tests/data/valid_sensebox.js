@@ -26,6 +26,7 @@ module.exports = function ({ bbox, model, sensors, lonlat, name = '', sensorTemp
     'exposure': 'indoor',
     'weblink': 'https://api.opensensemap.org',
     'location': loc,
+    'sharedBox': true,
     'mqtt': {
       'enabled': false,
       'url': '',

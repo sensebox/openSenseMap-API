@@ -727,7 +727,7 @@ boxSchema.statics.findMeasurementsOfBoxesStream = function findMeasurementsOfBox
       // store all matching sensors under sensors[sensorId]
       for (let i = 0, len = boxData.length; i < len; i++) {
         for (let j = 0, sensorslen = boxData[i].sensors.length; j < sensorslen; j++) {
-          if (boxData[i].sensors[j][sensorProperty].toString() === phenomenon) {
+          if (boxData[i].sensors[j][sensorProperty] && boxData[i].sensors[j][sensorProperty].toString() === phenomenon) {
             const sensor = boxData[i].sensors[j];
 
             sensor.lat = boxData[i].currentLocation.coordinates[1];

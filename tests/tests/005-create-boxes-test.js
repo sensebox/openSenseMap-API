@@ -156,7 +156,7 @@ describe('openSenseMap API Routes: /boxes', function () {
         expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
 
         boxCount = boxCount + 1;
-        //boxIds.push(response.body.data._id);
+        boxIds.push(response.body.data._id);
 
         return chakram.get(`${BASE_URL}/boxes/${response.body.data._id}`);
       })
@@ -199,12 +199,13 @@ describe('openSenseMap API Routes: /boxes', function () {
       });
   });
 
-  it('should let users retrieve their box with all fields', function () {
+  it('should let users retrieve their boxes and sharedBoxes with all fields', function () {
     return chakram.get(`${BASE_URL}/users/me/boxes`, { headers: { 'Authorization': `Bearer ${jwt}` } })
       .then(function (response) {
         expect(response).to.have.status(200);
         expect(response).to.have.schema(getUserBoxesSchema);
         expect(response).to.comprise.of.json('data.boxes.0.integrations.mqtt', { enabled: false });
+        expect(response).to.comprise.of.json('data.sharedBoxes.0.integrations.mqtt', { enabled: false });
 
         return chakram.wait();
       });
@@ -598,7 +599,7 @@ describe('openSenseMap API Routes: /boxes', function () {
   it('should allow to update the box via PUT with array as grouptags', function () {
     const update_payload = { name: 'neuername', exposure: 'outdoor', grouptag: ['newgroup'], description: 'total neue beschreibung', location: { lat: 54.2, lng: 21.1 }, weblink: 'http://www.google.de', image: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVQYV2NgYAAAAAMAAWgmWQ0AAAAASUVORK5CYII=' };
 
-    return chakram.put(`${BASE_URL}/boxes/${boxIds[2]}`, update_payload, { headers: { 'Authorization': `Bearer ${jwt2}` } })
+    return chakram.put(`${BASE_URL}/boxes/${boxIds[3]}`, update_payload, { headers: { 'Authorization': `Bearer ${jwt2}` } })
       .then(function (response) {
         expect(response).to.have.status(200);
         expect(response).to.comprise.of.json('data.name', update_payload.name);
