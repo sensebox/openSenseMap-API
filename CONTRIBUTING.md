@@ -27,11 +27,10 @@ To install all dependencies, run
 
 ### Starting the project locally
 
-Before starting the development database, create the following network
+If you have some MongoDB dumps of `boxes` or `measurements` place them within the `dumps` folder and comment in the
+volume mappings within the `docker-compose.yml`. The dumps will be seeded for you.
 
-    docker network create api-db-network
-
-Afterwards, start your development database
+Start your development database
 
     docker-compose up -d
 

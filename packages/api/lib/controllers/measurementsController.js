@@ -19,6 +19,7 @@ const
  * @apiGroup Measurements
  * @apiName getLatestMeasurements
  * @apiUse BoxIdParam
+ * @apiParam {NumberNumber=1-100} [count] Number of measurements to be retrieved for every sensor.
  */
 /**
  * @api {get} /boxes/:senseBoxId/sensors/:sensorId Get latest measurements of a sensor

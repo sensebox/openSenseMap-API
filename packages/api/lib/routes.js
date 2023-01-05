@@ -117,7 +117,6 @@ const routes = {
     { path: `${managementPath}/boxes/:boxId`, method: 'get', handler: managementController.getBox, reference: 'api-Admin-getBox' },
     { path: `${managementPath}/boxes/:boxId`, method: 'put', handler: managementController.updateBox, reference: 'api-Admin-updateBox' },
     { path: `${managementPath}/boxes/delete`, method: 'post', handler: managementController.deleteBoxes, reference: 'api-Admin-deleteBoxes' },
-
     { path: `${managementPath}/users`, method: 'get', handler: managementController.listUsers, reference: 'api-Admin-listUsers' },
     { path: `${managementPath}/users/:userId`, method: 'get', handler: managementController.getUser, reference: 'api-Admin-getUser' },
     { path: `${managementPath}/users/:userId`, method: 'put', handler: managementController.updateUser, reference: 'api-Admin-updateUser' },
@@ -137,16 +136,21 @@ const initRoutes = function initRoutes (server) {
   }
 
   // Attach secured routes (needs authorization through jwt)
-  server.use(verifyJwt);
-
+  // The .use() method runs now for all routes
+  // https://github.com/restify/node-restify/issues/1685
   for (const route of routes.auth) {
-    server[route.method]({ path: route.path }, route.handler);
+    server[route.method]({ path: route.path }, [verifyJwt, route.handler]);
   }
 
-  server.use(checkPrivilege);
-
+  // Attach verifyJwt and checkPrivilage routes (needs authorization through jwt)
+  // The .use() method runs now for all routes
+  // https://github.com/restify/node-restify/issues/1685
   for (const route of routes.management) {
-    server[route.method]({ path: route.path }, route.handler);
+    server[route.method]({ path: route.path }, [
+      verifyJwt,
+      checkPrivilege,
+      route.handler,
+    ]);
   }
 };
 

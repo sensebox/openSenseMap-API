@@ -1,32 +1,27 @@
 'use strict';
 
 const { Box, User } = require('@sensebox/opensensemap-api-models'),
-  { clearCache, checkContentType, postToSlack } = require('../helpers/apiUtils'),
+  { clearCache, checkContentType, postToMattermost } = require('../helpers/apiUtils'),
   { NotFoundError, BadRequestError } = require('restify-errors'),
   handleError = require('../helpers/errorHandler'),
   {
     retrieveParameters,
-  } = require('../helpers/userParamHelpers');
+  } = require('../helpers/userParamHelpers'),
+  jsonstringify = require('stringify-stream');
 
 
 const listBoxes = async function listBoxes (req, res, next) {
+  // default format
+  const stringifier = jsonstringify({ open: '[', close: ']' });
+
   try {
-    let boxes = await Box.find().exec();
-    const users = await User.find().exec();
-
-    boxes = boxes
-      .map(b => b.toJSON({ includeSecrets: true }));
-
-    for (const user of users) {
-      for (const userbox of user.boxes) {
-        const foundbox = boxes.find(box => box._id.equals(userbox));
-        if (foundbox) {
-          foundbox.owner = user.toJSON({ includeSecrets: true });
-        }
-      }
-    }
-
-    res.send({ code: 'Ok', boxes });
+    const stream = await Box.find({}, { _id: 1, name: 1, exposure: 1, model: 1, createdAt: 1, updatedAt: 1 }).cursor({ lean: true });
+    stream
+      .pipe(stringifier)
+      .on('error', function (err) {
+        res.end(`Error: ${err.message}`);
+      })
+      .pipe(res);
   } catch (err) {
     handleError(err, next);
   }
@@ -35,14 +30,9 @@ const listBoxes = async function listBoxes (req, res, next) {
 const listUsers = async function listUsers (req, res, next) {
   try {
     const users = await User.find()
-      .populate('boxes')
       .then(function (users) {
         return users.map(function (user) {
-          const boxes = user.boxes.map(b => b.toJSON({ includeSecrets: true }));
-
           user = user.toJSON({ includeSecrets: true });
-
-          user.boxes = boxes;
 
           return user;
         });
@@ -96,7 +86,7 @@ const deleteBoxes = async function deleteBoxes (req, res, next) {
       const user = await User.findUserOfBox(boxId);
       await user.removeBox(boxId);
       clearCache(['getBoxes', 'getStats']);
-      postToSlack(`Management Action: Box deleted: ${req.user.name} (${req.user.email}) just deleted ${boxIds.join(',')}`);
+      postToMattermost(`Management Action: Box deleted: ${req.user.name} (${req.user.email}) just deleted ${boxIds.join(',')}`);
     }
     res.send({ boxIds });
   } catch (err) {
@@ -121,7 +111,9 @@ const updateBox = async function updateBox (req, res, next) {
     const user = await User.findUserOfBox(boxId);
     box.owner = user.toJSON({ includeSecrets: true });
 
-    postToSlack(`Management Action: Box updated: ${req.user.name} (${req.user.email}) just updated "${box.name}" (${box.model}): <https://opensensemap.org/explore/${box._id}|link>`);
+    postToMattermost(
+      `Management Action: Box updated: ${req.user.name} (${req.user.email}) just updated "${box.name}" (${box.model}): [https://opensensemap.org/explore/${box._id}](https://opensensemap.org/explore/${box._id})`
+    );
     res.send({ code: 'Ok', data: box });
     clearCache(['getBoxes']);
   } catch (err) {
@@ -146,7 +138,7 @@ const updateUser = async function updateUser (req, res, next) {
 
     await user.save();
 
-    postToSlack(`Management Action: User updated: ${req.user.name} (${req.user.email}) just updated "${user.name}" (${user.email})`);
+    postToMattermost(`Management Action: User updated: ${req.user.name} (${req.user.email}) just updated "${user.name}" (${user.email})`);
     res.send({ code: 'Ok', data: user });
   } catch (err) {
     handleError(err, next);
@@ -164,7 +156,7 @@ const deleteUsers = async function deleteUsers (req, res, next) {
       userNames.push(`${user.name} (${user.email})`);
       await user.destroyUser({ sendMail: false });
       clearCache(['getBoxes', 'getStats']);
-      postToSlack(`Management Action: User deleted: ${req.user.name} (${req.user.email}) just deleted ${userNames.join(',')}`);
+      postToMattermost(`Management Action: User deleted: ${req.user.name} (${req.user.email}) just deleted ${userNames.join(',')}`);
     }
     res.send({ userIds });
   } catch (err) {
