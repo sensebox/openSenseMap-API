@@ -200,10 +200,7 @@ describe('downloading data', function () {
           expect(response).to.have.status(200);
           expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
           expect(response).to.have.schema(boxSensorsSchema);
-          console.log(response.body.sensors[0])
           expect(response.body.sensors[0].lastMeasurements.measurements.length).to.be.equal(3);
-          // expect(response.body.sensors[0].lastMeasurements.measurements[0]).to.have.schema(measurementsSchema);
-          console.log(response.body.sensors[0].lastMeasurements.measurements[0])
           return chakram.wait();
         });
     });
