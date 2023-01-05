@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+## v1.2.0
+
+- Extend `luftdatenHandler` (#578)
+- Add workflow to transfer a device to different account (#525)
+
 ## v1.1.1
 
 - Update @sensebox/node-sketch-templater to v1.12.1
