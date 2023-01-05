@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## v2.0.2
+
+- Fix `undefined` errors in findMeasurementsForSensors (#692)
+
 ## v2.0.1
 
 - Fix `undefined` errors in luftdatenHandler (#691)
