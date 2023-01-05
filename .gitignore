@@ -29,6 +29,7 @@ userimages*
 
 # exclude everything
 dumps/*
+assets/*
 
 # exception to the rule
 !dumps/.gitkeep

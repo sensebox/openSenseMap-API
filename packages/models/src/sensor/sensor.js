@@ -32,6 +32,10 @@ const sensorSchema = new mongoose.Schema({
   }
 }, { usePushEach: true });
 
+sensorSchema.set('toJSON', {
+  virtuals: true
+});
+
 sensorSchema.methods.equals = function equals ({ unit, sensorType, title, _id }) {
   if (_id) {
     return this._id.equals(_id);
@@ -109,6 +113,10 @@ sensorSchema.methods.deleteMeasurements = function deleteMeasurements (createdAt
     });
 
 };
+
+sensorSchema.virtual('iconUrl').get(function () {
+  return `http://localhost:8000/assets/${this.icon}.png`;
+});
 
 const sensorModel = mongoose.model('Sensor', sensorSchema);
 

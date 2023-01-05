@@ -49,6 +49,13 @@
     // Base route for management routes
     // Default: "/management"
     "management": "/my-custom-management-path"
+    // Base route for assets route
+    // Default path: "/assets"
+    // Default directory: "./assets" relative to process
+    "assets": {
+      "path": "/my-custom-management-path",
+      "directory": "./public"
+    }
   },
   // Json Web Token configuration
   "jwt": {

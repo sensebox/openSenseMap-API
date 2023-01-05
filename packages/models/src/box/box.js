@@ -158,6 +158,7 @@ const BOX_SUB_PROPS_FOR_POPULATION = [
 
 boxSchema.set('toJSON', {
   version: false,
+  virtuals: true,
   transform: function transform (doc, ret, options) {
     const box = {};
 
