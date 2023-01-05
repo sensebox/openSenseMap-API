@@ -1,5 +1,23 @@
 # openSenseMap API Changelog
 
+## v10.2.2
+
+- Use @sensebox/opensensemap-api-models v2.0.2
+
+## v10.2.1
+
+- Use @sensebox/opensensemap-api-models v2.0.1
+
+## v10.2.0
+
+- Use @sensebox/opensensemap-api-models v2.0.0
+- Add Mattermost notifications (#664)
+- Update dependencies (#629, #602, #666)
+- Fix Mattermost messages (#689)
+- Add `grouptag` parameter for downloads (#660)
+- Add `sharedBoxes` functionality (#605)
+- Add `count` parameter for getLastMeasurements (#588)
+
 ## v10.1.1
 
 - Use @sensebox/opensensemap-api-models v1.2.0

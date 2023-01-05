@@ -16,3 +16,4 @@ services:
       - ./.scripts/mongodb/osem_admin.sh:/docker-entrypoint-initdb.d/osem_admin.sh
       # - ./.scripts/mongodb/osem_seed_boxes.sh:/docker-entrypoint-initdb.d/osem_seed_boxes.sh
       # - ./.scripts/mongodb/osem_seed_measurements.sh:/docker-entrypoint-initdb.d/osem_seed_measurements.sh
+      

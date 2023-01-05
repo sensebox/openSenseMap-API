@@ -2,6 +2,20 @@
 
 ## Unreleased
 
+## v2.0.2
+
+- Fix `undefined` errors in findMeasurementsForSensors (#692)
+
+## v2.0.1
+
+- Fix `undefined` errors in luftdatenHandler (#691)
+
+## v2.0.0
+
+- Update dependencies (#602, #666)
+- Added `findLatestMeasurementsForSensorsWithCount` static method to Measurement schema (#588)
+- Added `sharedBoxes` functionality (#605)
+
 ## v1.2.0
 
 - Extend `luftdatenHandler` (#578)

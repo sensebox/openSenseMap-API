@@ -7,10 +7,12 @@
   "contributors": [
     "Christoph Kisfeld",
     "Gerald Pape",
-    "Norwin Roosen"
+    "Norwin Roosen",
+    "Umut Tas",
+    "Felix Erdmann"
   ],
   "dependencies": {
-    "@sensebox/opensensemap-api-models": "^1.2.0",
+    "@sensebox/opensensemap-api-models": "2.0.2",
     "@turf/area": "^6.3.0",
     "@turf/bbox": "^6.3.0",
     "@turf/centroid": "^6.3.0",

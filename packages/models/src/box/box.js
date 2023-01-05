@@ -498,7 +498,9 @@ boxSchema.methods.saveMeasurement = function saveMeasurement (measurement) {
 boxSchema.methods.sensorIds = function sensorIds () {
   const sensorIds = [];
   for (let i = this.sensors.length - 1; i >= 0; i--) {
-    sensorIds.push(this.sensors[i]._id.toString());
+    if (this.sensors[i]._id) {
+      sensorIds.push(this.sensors[i]._id.toString());
+    }
   }
 
   return sensorIds;
@@ -728,7 +730,7 @@ boxSchema.statics.findMeasurementsOfBoxesStream = function findMeasurementsOfBox
       // store all matching sensors under sensors[sensorId]
       for (let i = 0, len = boxData.length; i < len; i++) {
         for (let j = 0, sensorslen = boxData[i].sensors.length; j < sensorslen; j++) {
-          if (boxData[i].sensors[j][sensorProperty].toString() === phenomenon) {
+          if (boxData[i].sensors[j][sensorProperty] && boxData[i].sensors[j][sensorProperty].toString() === phenomenon) {
             const sensor = boxData[i].sensors[j];
 
             sensor.lat = boxData[i].currentLocation.coordinates[1];
@@ -767,6 +769,46 @@ boxSchema.statics.findMeasurementsOfBoxesStream = function findMeasurementsOfBox
         .map(transformer);
     });
 };
+
+boxSchema.statics.findMeasurementsOfBoxesByTagStream = function findMeasurementsOfBoxesByTagStream (opts) {
+  const { query } = opts;
+
+  return this.find(query, BOX_PROPS_FOR_POPULATION)
+    .lean()
+    .then(function (boxData) {
+      if (boxData.length === 0) {
+        throw new ModelError('No senseBoxes found', { type: 'NotFoundError' });
+      }
+
+      const sensors = Object.create(null);
+      // store all matching sensors under sensors[sensorId]
+      for (let i = 0, len = boxData.length; i < len; i++) {
+        for (let j = 0, sensorslen = boxData[i].sensors.length; j < sensorslen; j++) {
+          const sensor = boxData[i].sensors[j];
+
+          sensor.boxId = boxData[i]._id.toString();
+          sensor.sensorId = sensor._id.toString();
+
+          sensors[boxData[i].sensors[j]['_id']] = sensor;
+        }
+      }
+
+      // // construct a stream transformer applied to queried measurements
+      // // that augments each measure with queried columns (location, ...)
+      // // and applies transformations to timestamps
+      const transformer = measurementTransformer(['sensorId', 'boxId'], sensors, undefined);
+
+      const measureQuery = {
+        'sensor_id': { '$in': Object.keys(sensors) },
+        // 'createdAt': { '$gt': from, '$lt': to }
+      };
+
+      return Measurement.find(measureQuery, { 'createdAt': 1, 'value': 1, 'location': 1, '_id': 0, 'sensor_id': 1 })
+        .cursor({ lean: true, order: 1 })
+        .map(transformer);
+    });
+};
+
 
 // try to add sensors defined in addons to the box. If the sensors already exist,
 // nothing is done.
@@ -1047,7 +1089,7 @@ boxSchema.statics.findBoxesLastMeasurements = function findBoxesLastMeasurements
 
           for (let i = 0; i < measurementsLength; i++) { //iterate measurments
             for (const sensor of box.sensors) {
-              if (sensor._id.equals(measurements[i].sensor_id)) {
+              if (sensor._id && sensor._id.equals(measurements[i].sensor_id)) {
 
                 measurements[i].sensor_id = undefined;
                 sensor.lastMeasurement = measurements[i];

@@ -106,15 +106,17 @@ const findSensorId = function findSensorId (sensors, value_type) {
     let sensorId;
 
     for (const sensor of sensors) {
-      const title = sensor.title.toLowerCase();
-      const type = sensor.sensorType.toLowerCase();
-      if (
-        (title === vt_phenomenon || matchings[vt_phenomenon].includes(title) || matchings[vt_phenomenon].some(alias => title.includes(alias)))
-        &&
-        (type.startsWith(vt_sensortype))
-      ) {
-        sensorId = sensor._id.toString();
-        break;
+      if (sensor.title && sensor.sensorType) {
+        const title = sensor.title.toLowerCase();
+        const type = sensor.sensorType.toLowerCase();
+        if (
+          (title === vt_phenomenon || matchings[vt_phenomenon].includes(title) || matchings[vt_phenomenon].some(alias => title.includes(alias)))
+          &&
+          (type.startsWith(vt_sensortype))
+        ) {
+          sensorId = sensor._id.toString();
+          break;
+        }
       }
     }
 
