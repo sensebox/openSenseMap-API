@@ -284,6 +284,26 @@ describe('openSenseMap API locations tests', function () {
         });
     });
 
+    it('should allow filtering boxes near a location', function () {
+      return chakram
+        .get(`${BASE_URL}?near=120,60`)
+        .then(logResponseIfError)
+        .then(function (response) {
+          expect(response).to.have.status(200);
+
+          expect(response.body).to.be.an('array');
+          expect(response.body).to.have.length(1);
+        });
+    });
+
+    it('should reject filtering boxes near a location with wrong parameter values', function () {
+      return chakram.get(`${BASE_URL}?near=test,60`).then(function (response) {
+        expect(response).to.have.status(422);
+
+        return chakram.wait();
+      });
+    });
+
   });
 
   describe('POST /boxes/:boxID/:sensorID', function () {
