@@ -825,6 +825,17 @@ define({ "api": [
             "optional": true,
             "field": "useAuth",
             "description": "<p>whether to use access_token or not for authentication</p>"
+          },
+          {
+            "group": "RequestBody",
+            "type": "Boolean",
+            "allowedValues": [
+              "\"true\"",
+              "\"false\""
+            ],
+            "optional": true,
+            "field": "sharedBox",
+            "description": "<p>whether to share this box (allows transfer to another user while still being able to read the secret and commit measurements)</p>"
           }
         ],
         "Formats accepted for the location field": [
@@ -1854,6 +1865,30 @@ define({ "api": [
   },
   {
     "type": "get,post",
+    "url": "/boxes/data?grouptag=:grouptag",
+    "title": "Get latest measurements for a grouptag as JSON",
+    "description": "<p>Download data of a given grouptag from multiple senseBoxes as JSON</p>",
+    "group": "Measurements",
+    "name": "getDataByGroupTag",
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": false,
+            "field": "grouptag",
+            "description": "<p>The grouptag to search by.</p>"
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "./packages/api/lib/controllers/measurementsController.js",
+    "groupTitle": "Measurements"
+  },
+  {
+    "type": "get,post",
     "url": "/boxes/data?boxId=:senseBoxIds&from-date=:fromDate&to-date:toDate&phenomenon=:phenomenon",
     "title": "Get latest measurements for a phenomenon as CSV",
     "description": "<p>Download data of a given phenomenon from multiple selected senseBoxes as CSV</p>",
@@ -2024,12 +2059,19 @@ define({ "api": [
     "description": "<p>Get the latest measurements of all sensors of the specified senseBox.</p>",
     "group": "Measurements",
     "name": "getLatestMeasurements",
-    "version": "0.0.0",
-    "filename": "./packages/api/lib/controllers/measurementsController.js",
-    "groupTitle": "Measurements",
     "parameter": {
       "fields": {
         "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "NumberNumber",
+            "allowedValues": [
+              "1-100"
+            ],
+            "optional": true,
+            "field": "count",
+            "description": "<p>Number of measurements to be retrieved for every sensor.</p>"
+          },
           {
             "group": "Parameter",
             "type": "String",
@@ -2039,7 +2081,10 @@ define({ "api": [
           }
         ]
       }
-    }
+    },
+    "version": "0.0.0",
+    "filename": "./packages/api/lib/controllers/measurementsController.js",
+    "groupTitle": "Measurements"
   },
   {
     "type": "post",
@@ -2660,9 +2705,9 @@ define({ "api": [
   {
     "type": "post",
     "url": "/users/me/boxes",
-    "title": "list all boxes of the signed in user",
+    "title": "list all boxes and sharedBoxes of the signed in user",
     "name": "getUserBoxes",
-    "description": "<p>List all boxes of the signed in user with secret fields</p>",
+    "description": "<p>List all boxes and sharedBoxes of the signed in user with secret fields</p>",
     "group": "Users",
     "success": {
       "fields": {
