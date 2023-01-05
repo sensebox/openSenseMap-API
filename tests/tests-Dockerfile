@@ -1,25 +1,21 @@
-FROM node:14.18-alpine
+FROM node:16.19.0-bullseye-slim
 
 # YARN_PRODUCTION=false is a workaround for https://github.com/yarnpkg/yarn/issues/4557
 ENV NODE_ENV=production \
   YARN_PRODUCTION=false
 
-# taken from node:6-onbuild
-RUN mkdir -p /usr/src/app
+RUN apt-get update \
+  && apt-get upgrade -y \
+  && apt-get install -y --no-install-recommends git dumb-init
+
 WORKDIR /usr/src/app
 
 # COPY in dev versions
 COPY . /usr/src/app
 
-RUN apk --no-cache --virtual .build add build-base python2 git \
-  && yarn install --pure-lockfile --production=false \
-  && apk del .build
-COPY . /usr/src/app
+RUN yarn install --pure-lockfile --production=false
 
-# for git 2.1.4
-RUN apk --no-cache --virtual .git add git \
-  && yarn create-version-file \
-  && rm -rf .git \
-  && apk del .git
+RUN yarn create-version-file \
+  && rm -rf .git
 
-CMD [ "yarn", "start" ]
+CMD ["dumb-init", "yarn", "start"]
