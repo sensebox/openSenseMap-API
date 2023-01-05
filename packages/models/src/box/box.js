@@ -1088,7 +1088,7 @@ boxSchema.statics.findBoxesLastMeasurements = function findBoxesLastMeasurements
 
           for (let i = 0; i < measurementsLength; i++) { //iterate measurments
             for (const sensor of box.sensors) {
-              if (sensor._id.equals(measurements[i].sensor_id)) {
+              if (sensor._id && sensor._id.equals(measurements[i].sensor_id)) {
 
                 measurements[i].sensor_id = undefined;
                 sensor.lastMeasurement = measurements[i];
