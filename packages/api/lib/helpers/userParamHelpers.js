@@ -340,7 +340,15 @@ const validateAndCastParam = function validateAndCastParam ({ value, dataType, a
 
 // we need a custom function for locations, because arrays and objects are accepted,
 // which currently cannot be accomplished with retrieveParameters()
-const retrieveLocationParameter = function ({ value, dataType, dataTypeIsArray }) {
+const retrieveLocationParameter = function ({ value }) {
+  try {
+    return { castedValue: transformAndValidateCoords(value) };
+  } catch (err) {
+    return { error: ERROR_CUSTOM_MESSAGE, message: err.message };
+  }
+};
+
+const retrieveNearParameter = function ({ value, dataType, dataTypeIsArray }) {
   try {
     // wrap dataType in array for calling of casting function
     dataType = dataTypeIsArray ? dataType[0] : dataType;
@@ -402,7 +410,7 @@ const retrieveParametersPredefs = {
     return { name: 'bbox', dataType: 'bbox' };
   },
   'near' () {
-    return { name: 'near', dataType: ['Number'], paramValidatorAndParser: retrieveLocationParameter };
+    return { name: 'near', dataType: ['Number'], paramValidatorAndParser: retrieveNearParameter };
   },
   'maxDistance' () {
     return { name: 'maxDistance', dataType: 'as-is' };
