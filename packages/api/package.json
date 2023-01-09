@@ -29,7 +29,7 @@
     "got": "^11.8.2",
     "honeybadger": "^1.4.0",
     "isemail": "^3.0.0",
-    "jsonwebtoken": "^8.1.0",
+    "jsonwebtoken": "^9.0.0",
     "millify": "^5.0.1",
     "moment": "^2.29.4",
     "ms": "^2.1.3",
