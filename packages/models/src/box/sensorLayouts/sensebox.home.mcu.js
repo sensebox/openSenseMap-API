@@ -18,7 +18,8 @@ const {
   smt50_soiltemperature,
   soundlevelmeter,
   windspeed,
-  scd30_co2
+  scd30_co2,
+  dps310_pressure
 } = sensorDefinitions;
 
 module.exports = [
@@ -37,5 +38,6 @@ module.exports = [
   smt50_soiltemperature,
   soundlevelmeter,
   windspeed,
-  scd30_co2
+  scd30_co2,
+  dps310_pressure,
 ];

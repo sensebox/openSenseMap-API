@@ -1,5 +1,7 @@
 'use strict';
 
+const escapeMarkdown = require('./escapeMarkdown');
+
 const { NotAuthorizedError, UnsupportedMediaTypeError } = require('restify-errors'),
   config = require('config'),
   apicache = require('apicache'),
@@ -124,6 +126,19 @@ const postToSlack = function postToSlack (text) {
   }
 };
 
+const postToMattermost = function postToMattermost (text) {
+  if (config.get('mattermost_url')) {
+    text = `[${hostname}]: ${text}`;
+    got
+      .post(config.get('mattermost_url'), {
+        json: { text: escapeMarkdown(text) },
+        retry: 0,
+      })
+      // swallow errors, we don't care
+      .catch(() => {});
+  }
+};
+
 const redactEmail = function redactEmail (email) {
   /* eslint-disable prefer-const */
   let [name = '', domain = ''] = email.split('@');
@@ -194,6 +209,7 @@ module.exports = {
   preCors,
   Sentry,
   postToSlack,
+  postToMattermost,
   getVersion,
   redactEmail,
   createDownloadFilename,

@@ -1,17 +1,18 @@
-FROM node:14.18-alpine as build
+# Image selected based on https://snyk.io/blog/choosing-the-best-node-js-docker-image/
+# Used best practices from https://snyk.io/blog/10-best-practices-to-containerize-nodejs-web-applications-with-docker/
 
-ENV NODE_ENV=production
+# --------------> The build image
+FROM node:16.19.0-bullseye-slim as build
 
-RUN apk --no-cache --virtual .build add build-base python2 git
+RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-recommends git dumb-init
 
-# taken from node:6-onbuild
-#RUN mkdir -p /usr/src/app
 WORKDIR /usr/src/app
 
-# copy in main package.json and yarn.lock
+# Copy in main package.json and yarn.lock
 COPY package.json /usr/src/app/
 COPY yarn.lock /usr/src/app/
-# copy in workspace package.json files
+
+# Copy in workspace package.json files
 COPY packages/api/package.json /usr/src/app/packages/api/
 COPY packages/models/package.json /usr/src/app/packages/models/
 
@@ -19,15 +20,25 @@ RUN yarn install --pure-lockfile --production
 
 COPY . /usr/src/app
 
-RUN yarn create-version-file \
-  && rm -rf .git .scripts
+RUN yarn create-version-file
 
-# Final stage
-FROM node:14.18-alpine
+# --------------> The production image
+FROM node:16.19.0-bullseye-slim
 
 ENV NODE_ENV=production
+COPY --from=build /usr/bin/dumb-init /usr/bin/dumb-init
+USER node
 
 WORKDIR /usr/src/app
-COPY --from=build /usr/src/app /usr/src/app
 
-CMD [ "yarn", "start" ]
+COPY --chown=node:node --from=build /usr/src/app/node_modules /usr/src/app/node_modules
+COPY --chown=node:node --from=build /usr/src/app/version.js /usr/src/app/version.js
+COPY --chown=node:node . /usr/src/app
+
+# Remove unused files and folders
+RUN rm -rf .git .scripts
+
+# Create and change ownership of folder to store uploaded images
+RUN mkdir -p /usr/src/app/dist/userimages && chown node:node /usr/src/app/dist/userimages
+
+CMD ["dumb-init", "node", "packages/api/app.js"]

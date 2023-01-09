@@ -43,7 +43,7 @@ describe('Box model', function () {
         .then(shouldBeABoxWithSecrets)
         .then(function (box) {
           expect(box.name).equal('testSensebox');
-          expect(box.grouptag).not.exist;
+          expect(box.grouptag).to.be.an('array').that.is.empty;
           expect(box.model).equal('homeEthernet');
 
           expect(box.integrations.mqtt.enabled).false;
@@ -60,7 +60,7 @@ describe('Box model', function () {
     it('should persist integrations and other properties upon creation', function () {
       const box = senseBox({
         name: 'integrationsbox',
-        grouptag: 'grouptagTest',
+        grouptag: ['grouptagTest'],
         exposure: 'outdoor',
         ttn: {
           dev_id: 'test_devid',
@@ -88,7 +88,8 @@ describe('Box model', function () {
         .then(function ({ integrations, name, grouptag, exposure }) {
           expect(name).equal('integrationsbox');
 
-          expect(grouptag).equal('grouptagTest');
+          // expect(grouptag).equal(['grouptagTest']);
+          expect(grouptag).to.be.an('array').that.include('grouptagTest');
 
           expect(exposure).equal('outdoor');
 
@@ -560,7 +561,7 @@ describe('Box model', function () {
         }) {
           expect(name).equal(updatePayload.name);
           expect(exposure).equal(updatePayload.exposure);
-          expect(grouptag).equal(updatePayload.grouptag);
+          expect(grouptag).to.be.an('array').that.include(updatePayload.grouptag);
           expect(weblink).equal(updatePayload.weblink);
           expect(description).equal(updatePayload.description);
           expect(model).equal(updatePayload.model);
@@ -616,11 +617,11 @@ describe('Box model', function () {
           return Box.findById(box._id);
         })
         .then(function (box) {
-          expect(box.grouptag).equal(updatePayload.grouptag);
+          expect(box.grouptag).to.be.an('array').that.include(updatePayload.grouptag);
           expect(box.weblink).equal(updatePayload.weblink);
           expect(box.description).equal(updatePayload.description);
 
-          updatePayload.grouptag = '';
+          updatePayload.grouptag = [];
           updatePayload.weblink = '';
           updatePayload.description = '';
 
@@ -630,7 +631,7 @@ describe('Box model', function () {
           return Box.findById(box._id);
         })
         .then(function ({ grouptag, weblink, description }) {
-          expect(grouptag).not.exist;
+          expect(grouptag).to.be.an('array').that.is.empty;
           expect(weblink).not.exist;
           expect(description).not.exist;
         });

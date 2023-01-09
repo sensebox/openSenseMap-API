@@ -2,7 +2,7 @@
 
 const { User } = require('@sensebox/opensensemap-api-models'),
   { InternalServerError, ForbiddenError } = require('restify-errors'),
-  { checkContentType, redactEmail, postToSlack, clearCache } = require('../helpers/apiUtils'),
+  { checkContentType, redactEmail, clearCache, postToMattermost } = require('../helpers/apiUtils'),
   { retrieveParameters } = require('../helpers/userParamHelpers'),
   handleError = require('../helpers/errorHandler'),
   { createToken, refreshJwt, invalidateToken } = require('../helpers/jwtHelpers');
@@ -49,7 +49,7 @@ const registerUser = async function registerUser (req, res, next) {
   try {
     const newUser = await new User({ name, email, password, language })
       .save();
-    postToSlack(`New User: ${newUser.name} (${redactEmail(newUser.email)})`);
+    postToMattermost(`New User: ${newUser.name} (${redactEmail(newUser.email)})`);
 
     try {
       const { token, refreshToken } = await createToken(newUser);
@@ -199,9 +199,9 @@ const confirmEmailAddress = async function confirmEmailAddress (req, res, next) 
 };
 
 /**
- * @api {post} /users/me/boxes list all boxes of the signed in user
+ * @api {post} /users/me/boxes list all boxes and sharedBoxes of the signed in user
  * @apiName getUserBoxes
- * @apiDescription List all boxes of the signed in user with secret fields
+ * @apiDescription List all boxes and sharedBoxes of the signed in user with secret fields
  * @apiGroup Users
  * @apiSuccess {String} code `Ok`
  * @apiSuccess {String} data A json object with a single `boxes` array field
@@ -209,7 +209,8 @@ const confirmEmailAddress = async function confirmEmailAddress (req, res, next) 
 const getUserBoxes = async function getUserBoxes (req, res, next) {
   try {
     const boxes = await req.user.getBoxes();
-    res.send(200, { code: 'Ok', data: { boxes } });
+    const sharedBoxes = await req.user.getSharedBoxes();
+    res.send(200, { code: 'Ok', data: { boxes: boxes, sharedBoxes: sharedBoxes } });
   } catch (err) {
     handleError(err, next);
   }
@@ -273,7 +274,7 @@ const deleteUser = async function deleteUser (req, res, next) {
     await req.user.destroyUser();
     res.send(200, { code: 'Ok', message: 'User and all boxes of user marked for deletion. Bye Bye!' });
     clearCache(['getBoxes', 'getStats']);
-    postToSlack(`User deleted: ${req.user.name} (${redactEmail(req.user.email)})`);
+    postToMattermost(`User deleted: ${req.user.name} (${redactEmail(req.user.email)})`);
   } catch (err) {
     handleError(err, next);
   }

@@ -1,5 +1,53 @@
 # openSenseMap API Changelog
 
+## v10.2.3
+
+- Use @sensebox/opensensemap-api-models v2.0.3
+- Validate `near` parameter (#694)
+
+## v10.2.2
+
+- Use @sensebox/opensensemap-api-models v2.0.2
+
+## v10.2.1
+
+- Use @sensebox/opensensemap-api-models v2.0.1
+
+## v10.2.0
+
+- Use @sensebox/opensensemap-api-models v2.0.0
+- Add Mattermost notifications (#664)
+- Update dependencies (#629, #602, #666)
+- Fix Mattermost messages (#689)
+- Add `grouptag` parameter for downloads (#660)
+- Add `sharedBoxes` functionality (#605)
+- Add `count` parameter for getLastMeasurements (#588)
+
+## v10.1.1
+
+- Use @sensebox/opensensemap-api-models v1.2.0
+
+## v10.1.0
+
+- Update grouptag in management routes (#582)
+- Move osem mongo dev image to api repo (#614)
+
+## v10.0.3
+
+- Use @sensebox/opensensemap-api-models v1.1.1
+
+## v10.0.2
+
+- Use @sensebox/opensensemap-api-models v1.1.0
+- Update dependencies
+
+## v10.0.0
+
+- Use @sensebox/opensensemap-api-models v1.0.0
+- Update CI
+- Publish container on Github Registry
+- Correct API documentation
+
 ## v9.4
 - Add Cayenne LPP Decoding
 

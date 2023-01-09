@@ -18,6 +18,7 @@ const defaults = {
     tracesSampleRate: 1.0, // adjust in production
   },
   slack_url: '',
+  mattermost_url: '',
   management_role: 'admin',
   routes: {
     boxes: '/boxes',
