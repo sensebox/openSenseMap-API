@@ -1,5 +1,10 @@
 # openSenseMap API Changelog
 
+## v10.2.3
+
+- Use @sensebox/opensensemap-api-models v2.0.3
+- Validate `near` parameter (#694)
+
 ## v10.2.2
 
 - Use @sensebox/opensensemap-api-models v2.0.2

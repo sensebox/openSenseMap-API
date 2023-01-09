@@ -348,6 +348,27 @@ const retrieveLocationParameter = function ({ value }) {
   }
 };
 
+const retrieveNearParameter = function ({ value, dataType, dataTypeIsArray }) {
+  try {
+    // wrap dataType in array for calling of casting function
+    dataType = dataTypeIsArray ? dataType[0] : dataType;
+    if (!dataTypeIsArray && Array.isArray(value)) {
+      return { error: ARRAY_NOT_ALLOWED };
+    }
+
+    // test and cast value against dataType
+    value = castParam(value, dataType, dataTypeIsArray);
+
+    if (typeof value === 'undefined') {
+      return { error: CAST_FAILED };
+    }
+
+    return { castedValue: transformAndValidateCoords(value) };
+  } catch (err) {
+    return { error: ERROR_CUSTOM_MESSAGE, message: err.message };
+  }
+};
+
 const
   GET_DATA_MULTI_DEFAULT_COLUMNS = ['sensorId', 'createdAt', 'value', 'lat', 'lon'],
   GET_DATA_MULTI_ALLOWED_COLUMNS = ['createdAt', 'value', 'lat', 'lon', 'height', 'unit', 'boxId', 'sensorId', 'phenomenon', 'sensorType', 'boxName', 'exposure'];
@@ -389,7 +410,7 @@ const retrieveParametersPredefs = {
     return { name: 'bbox', dataType: 'bbox' };
   },
   'near' () {
-    return { name: 'near', dataType: 'as-is' };
+    return { name: 'near', dataType: ['Number'], paramValidatorAndParser: retrieveNearParameter };
   },
   'maxDistance' () {
     return { name: 'maxDistance', dataType: 'as-is' };

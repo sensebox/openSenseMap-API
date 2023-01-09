@@ -1005,7 +1005,7 @@ const buildFindBoxesQuery = function buildFindBoxesQuery (opts = {}) {
       '$near': {
         '$geometry': {
           type: 'Point',
-          coordinates: [near.split(',')[0], near.split(',')[1]]
+          coordinates: [near[0], near[1]]
         },
         '$maxDistance': maxDistance ? maxDistance : 1000,
       }
