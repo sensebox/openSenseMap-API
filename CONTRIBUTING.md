@@ -14,7 +14,7 @@ Make sure you have the following tools installed:
 
 - Docker
 - Docker Compose
-- Node.Js v14
+- Node.Js v16
 - Yarn package manager
 
 Fork, then clone the repo:
