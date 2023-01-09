@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## v2.0.3
+
+- Change handling `near` parameter (#694)
+
 ## v2.0.2
 
 - Fix `undefined` errors in findMeasurementsForSensors (#692)
