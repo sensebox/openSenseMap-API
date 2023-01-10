@@ -11,7 +11,12 @@ const defaults = {
   protocol: 'https',
   port: 8000,
   api_url: '', // if not set, generated from api_protocol and api_base_domain
-  honeybadger_apikey: '',
+  sentry: {
+    // Check all config options here: https://docs.sentry.io/platforms/node/configuration/
+    dsn: '', // required to enable Sentry
+    environment: 'localhost', // adjust to your environments
+    tracesSampleRate: 1.0, // adjust in production
+  },
   slack_url: '',
   mattermost_url: '',
   management_role: 'admin',

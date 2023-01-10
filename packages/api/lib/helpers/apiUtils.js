@@ -104,18 +104,16 @@ const preCors = function preCors (request, response, next) {
   return next();
 };
 
-let Honeybadger = {
-  notify () { },
-  resetContext () { }
-};
+let Sentry = {};
 
 /* eslint-disable global-require */
-if (config.get('honeybadger_apikey')) {
-  Honeybadger = require('honeybadger').configure({
-    apiKey: config.get('honeybadger_apikey')
-  });
+if (config.get('sentry') && config.has('sentry.dsn') && config.get('sentry.dsn').length > 0) {
+  const sentryConfig = Object.assign({}, config.get('sentry'));
+  Sentry = require('@sentry/node');
+  Sentry.init(sentryConfig);
 }
 /* eslint-enable global-require */
+
 
 
 const postToSlack = function postToSlack (text) {
@@ -211,7 +209,7 @@ module.exports = {
   checkContentType,
   preRequest,
   preCors,
-  Honeybadger,
+  Sentry,
   postToSlack,
   postToMattermost,
   getVersion,
