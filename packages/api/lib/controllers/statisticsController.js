@@ -24,7 +24,7 @@ const { Box, Measurement } = require('@sensebox/opensensemap-api-models'),
  * @apiSuccessExample {json} [human=true]
  * ["318","118M","393"]
  */
-const getStatistics = async function getStatistics (req, res, next) {
+const getStatistics = async function getStatistics (req, res) {
   const { human } = req._userParams;
   try {
     let results = await Promise.all([
@@ -43,7 +43,7 @@ const getStatistics = async function getStatistics (req, res, next) {
     res.send(200, results);
 
   } catch (err) {
-    return next(err);
+    return err;
   }
 };
 
@@ -72,14 +72,14 @@ const getStatistics = async function getStatistics (req, res, next) {
 
 const idwColumns = ['sensorId', 'value', 'lat', 'lon'];
 
-const idwHandler = async function (req, res, next) {
+const idwHandler = async function (req, res) {
   const { phenomenon, bbox, exposure, cellWidth, gridType, power, numTimeSteps, numClasses, fromDate, toDate } = req._userParams;
 
   // validate bbox param, we don't want too much load on our server!
   const areaSqKm = area(bbox) / 10e6;
 
   if (areaSqKm / cellWidth > 2500) {
-    return next(new UnprocessableEntityError('planned computation too expensive ((area in square kilometers / cellWidth) > 2500)'));
+    return Promise.reject(new UnprocessableEntityError('planned computation too expensive ((area in square kilometers / cellWidth) > 2500)'));
   }
 
   // build query
@@ -104,7 +104,7 @@ const idwHandler = async function (req, res, next) {
 
     cursor
       .on('error', function (err) {
-        return handleError(err, next);
+        return handleError(err);
       })
       .pipe(idwTransformer({
         numTimeSteps,
@@ -121,7 +121,7 @@ const idwHandler = async function (req, res, next) {
       })
       .pipe(res);
   } catch (err) {
-    handleError(err, next);
+    return handleError(err);
   }
 };
 
@@ -186,13 +186,13 @@ const idwHandler = async function (req, res, next) {
  *  5a8e8c6c8432c3001bfe4156,2018-02-05T00:00:00.000Z,17
  */
 const minWindowLengthMs = ms('1m');
-const descriptiveStatisticsHandler = async function descriptiveStatisticsHandler (req, res, next) {
+const descriptiveStatisticsHandler = async function descriptiveStatisticsHandler (req, res) {
   const { boxId, bbox, exposure, delimiter, columns, phenomenon, operation, download, format, window } = req._userParams;
   let { fromDate, toDate } = req._userParams;
 
   const windowMs = Math.round(ms(window) / minWindowLengthMs) * minWindowLengthMs;
   if (!windowMs || windowMs < minWindowLengthMs) {
-    return next(new BadRequestError(`Invalid window length. Smallest window size is ${ms(minWindowLengthMs, { long: true })}.`));
+    return Promise.reject(new BadRequestError(`Invalid window length. Smallest window size is ${ms(minWindowLengthMs, { long: true })}.`));
   }
 
   // compute start and end times in milliseconds
@@ -212,9 +212,9 @@ const descriptiveStatisticsHandler = async function descriptiveStatisticsHandler
   toDate = new Date(toDate + windowMs);
 
   if (boxId && bbox) {
-    return next(new BadRequestError('please specify only boxId or bbox'));
+    return Promise.reject(new BadRequestError('please specify only boxId or bbox'));
   } else if (!boxId && !bbox) {
-    return next(new BadRequestError('please specify either boxId or bbox'));
+    return Promise.reject(new BadRequestError('please specify either boxId or bbox'));
   }
 
   const opts = {
@@ -302,7 +302,7 @@ const descriptiveStatisticsHandler = async function descriptiveStatisticsHandler
     // stream response to client
     cursor
       .on('error', function (err) {
-        return handleError(err, next);
+        return handleError(err);
       })
       .pipe(new DescriptiveStatisticsTransformer({
         operation,
@@ -310,15 +310,15 @@ const descriptiveStatisticsHandler = async function descriptiveStatisticsHandler
         tidy: (format === 'tidy')
       }))
       .on('error', function (err) {
-        return handleError(err, next);
+        return handleError(err);
       })
       .pipe(stringifier)
       .on('error', function (err) {
-        return handleError(err, next);
+        return handleError(err);
       })
       .pipe(res);
   } catch (err) {
-    handleError(err, next);
+    return handleError(err);
   }
 };
 

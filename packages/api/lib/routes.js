@@ -26,7 +26,7 @@ const spaces = function spaces (num) {
  * @apiDescription Returns all routes of this API in human readable format
  * @apiGroup Misc
  */
-const printRoutes = function printRoutes (req, res) {
+const printRoutes = async function printRoutes (req, res) {
   res.header('Content-Type', 'text/plain; charset=utf-8');
 
   const lines = [
@@ -122,7 +122,6 @@ const routes = {
     { path: `${managementPath}/users/:userId`, method: 'put', handler: managementController.updateUser, reference: 'api-Admin-updateUser' },
     { path: `${managementPath}/users/delete`, method: 'post', handler: managementController.deleteUsers, reference: 'api-Admin-deleteUsers' },
     { path: `${managementPath}/users/:userId/exec`, method: 'post', handler: managementController.execUserAction, reference: 'api-Admin-execUserAction' },
-
   ]
 };
 

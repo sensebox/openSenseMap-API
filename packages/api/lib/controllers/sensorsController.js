@@ -40,13 +40,13 @@ const { Box } = require('@sensebox/opensensemap-api-models'),
  * @apiParam (RequestBody) {RFC3339Date[]} [timestamps] Allows to specify timestamps which should be deleted
  * @apiParam (RequestBody) {Boolean=true,false} [deleteAllMeasurements=false] Specify `deleteAllMeasurements` with a value of `true` to delete all measurements of this sensor
  */
-const deleteSensorData = async function deleteSensorData (req, res, next) {
+const deleteSensorData = async function deleteSensorData (req, res) {
   try {
     const box = await Box.findBoxById(req._userParams.boxId, { lean: false });
     const message = await box.deleteMeasurementsOfSensor(req._userParams);
     res.send({ code: 'Ok', message });
   } catch (err) {
-    handleError(err, next);
+    return handleError(err);
   }
 };
 

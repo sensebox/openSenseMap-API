@@ -30,7 +30,7 @@ const
  * @apiUse SensorIdParam
  * @apiParam {Boolean="true","false"} [onlyValue] If set to true only returns the measured value without information about the sensor. Requires a sensorId.
  */
-const getLatestMeasurements = async function getLatestMeasurements (req, res, next) {
+const getLatestMeasurements = async function getLatestMeasurements (req, res) {
   const { _userParams: params } = req;
 
   let box;
@@ -61,9 +61,7 @@ const getLatestMeasurements = async function getLatestMeasurements (req, res, ne
       });
     }
   } catch (err) {
-    handleError(err, next);
-
-    return;
+    return handleError(err);
   }
 
   if (params.sensorId) {
@@ -122,7 +120,7 @@ const jsonLocationReplacer = function jsonLocationReplacer (k, v) {
  * @apiParam {Boolean="true","false"} [download] if specified, the api will set the `content-disposition` header thus forcing browsers to download instead of displaying. Is always true for format csv.
  * @apiUse SeparatorParam
  */
-const getData = function getData (req, res, next) {
+const getData = async function getData (req, res) {
   const { sensorId, format, download, outliers, outlierWindow, delimiter } = req._userParams;
   let stringifier;
 
@@ -141,7 +139,7 @@ const getData = function getData (req, res, next) {
 
   let measurementsStream = Measurement.getMeasurementsStream(req._userParams)
     .on('error', function (err) {
-      return handleError(err, next);
+      return handleError(err);
     });
 
   if (outliers) {
@@ -173,7 +171,7 @@ const getData = function getData (req, res, next) {
  * @apiParam {String=createdAt,value,lat,lon,height,boxId,boxName,exposure,sensorId,phenomenon,unit,sensorType} [columns=sensorId,createdAt,value,lat,lon] Comma separated list of columns to export.
  * @apiParam {Boolean=true,false} [download=true] Set the `content-disposition` header to force browsers to download instead of displaying.
  */
-const getDataMulti = async function getDataMulti (req, res, next) {
+const getDataMulti = async function getDataMulti (req, res) {
   const { boxId, bbox, exposure, delimiter, columns, fromDate, toDate, phenomenon, download, format } = req._userParams;
 
   // build query
@@ -182,9 +180,9 @@ const getDataMulti = async function getDataMulti (req, res, next) {
   };
 
   if (boxId && bbox) {
-    return next(new BadRequestError('please specify only boxId or bbox'));
+    return Promise.reject(new BadRequestError('please specify only boxId or bbox'));
   } else if (!boxId && !bbox) {
-    return next(new BadRequestError('please specify either boxId or bbox'));
+    return Promise.reject(new BadRequestError('please specify either boxId or bbox'));
   }
 
   if (boxId) {
@@ -206,7 +204,7 @@ const getDataMulti = async function getDataMulti (req, res, next) {
     });
     stream = stream
       .on('error', function (err) {
-        return handleError(err, next);
+        return handleError(err);
       });
 
     switch (format) {
@@ -229,7 +227,7 @@ const getDataMulti = async function getDataMulti (req, res, next) {
     stream
       .pipe(res);
   } catch (err) {
-    handleError(err, next);
+    return handleError(err);
   }
 };
 
@@ -241,7 +239,7 @@ const getDataMulti = async function getDataMulti (req, res, next) {
  * @apiName getDataByGroupTag
  * @apiParam {String} grouptag The grouptag to search by.
  */
-const getDataByGroupTag = async function getDataByGroupTag (req, res, next) {
+const getDataByGroupTag = async function getDataByGroupTag (req, res) {
   const { grouptag, format } = req._userParams;
   const queryTags = grouptag.split(',');
   // build query
@@ -256,7 +254,7 @@ const getDataByGroupTag = async function getDataByGroupTag (req, res, next) {
     });
     stream = stream
       .on('error', function (err) {
-        return handleError(err, next);
+        return handleError(err);
       });
     switch (format) {
     case 'json':
@@ -269,7 +267,7 @@ const getDataByGroupTag = async function getDataByGroupTag (req, res, next) {
     stream
       .pipe(res);
   } catch (err) {
-    handleError(err, next);
+    return handleError(err);
   }
 };
 
@@ -287,13 +285,13 @@ const getDataByGroupTag = async function getDataByGroupTag (req, res, next) {
  * @apiParam (RequestBody) {Location} [location] the WGS84-coordinates of the measurement.
  * @apiHeader {String} Authorization Box' unique access_token. Will be used as authorization token if box has auth enabled (e.g. useAuth: true)
  */
-const postNewMeasurement = async function postNewMeasurement (req, res, next) {
+const postNewMeasurement = async function postNewMeasurement (req, res) {
   const { boxId, sensorId, value, createdAt, location } = req._userParams;
 
   try {
     const box = await Box.findBoxById(boxId, { populate: false, lean: false });
     if (box.useAuth && box.access_token && box.access_token !== req.headers.authorization) {
-      throw new UnauthorizedError('Box access token not valid!');
+      return Promise.reject(new UnauthorizedError('Box access token not valid!'));
     }
 
     const [measurement] = await Measurement.decodeMeasurements([{
@@ -305,7 +303,7 @@ const postNewMeasurement = async function postNewMeasurement (req, res, next) {
     await box.saveMeasurement(measurement);
     res.send(201, 'Measurement saved in box');
   } catch (err) {
-    handleError(err, next);
+    return handleError(err);
   }
 };
 
@@ -388,7 +386,7 @@ const postNewMeasurement = async function postNewMeasurement (req, res, next) {
  *    "error": "4"
  * }
  */
-const postNewMeasurements = async function postNewMeasurements (req, res, next) {
+const postNewMeasurements = async function postNewMeasurements (req, res) {
   const { boxId, luftdaten, hackair } = req._userParams;
   let contentType = req.getContentType();
 
@@ -408,17 +406,17 @@ const postNewMeasurements = async function postNewMeasurements (req, res, next) 
 
       // authorization for all boxes that have not opt out
       if ((box.useAuth || contentType === 'hackair') && box.access_token && box.access_token !== req.headers.authorization) {
-        throw new UnauthorizedError('Box access token not valid!');
+        return Promise.reject(new UnauthorizedError('Box access token not valid!'));
       }
 
       const measurements = await Measurement.decodeMeasurements(req.body, { contentType, sensors: box.sensors });
       await box.saveMeasurementsArray(measurements);
       res.send(201, 'Measurements saved in box');
     } catch (err) {
-      handleError(err, next);
+      return handleError(err);
     }
   } else {
-    return next(new UnsupportedMediaTypeError('Unsupported content-type.'));
+    return Promise.reject(new UnsupportedMediaTypeError('Unsupported content-type.'));
   }
 };
 

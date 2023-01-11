@@ -1,5 +1,8 @@
 'use strict';
 
-const bunyan = require('bunyan');
+const pino = require('pino');
 
-module.exports = bunyan.createLogger({ name: 'opensensemap-api-models', serializers: bunyan.stdSerializers });
+module.exports = pino({
+  name: 'opensensemap-api-models',
+  serializers: pino.stdSerializers
+});
