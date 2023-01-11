@@ -763,9 +763,9 @@ boxSchema.statics.findMeasurementsOfBoxesStream = function findMeasurementsOfBox
         ];
       }
 
-      return Promise.resolve(Measurement.find(measureQuery, { 'createdAt': 1, 'value': 1, 'location': 1, '_id': 0, 'sensor_id': 1 })
+      return Measurement.find(measureQuery, { 'createdAt': 1, 'value': 1, 'location': 1, '_id': 0, 'sensor_id': 1 })
         .cursor({ lean: true, sort: order })
-        .map(transformer));
+        .map(transformer);
     });
 };
 
