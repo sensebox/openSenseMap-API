@@ -23,7 +23,7 @@
     "@turf/triangle-grid": "^6.3.0",
     "apicache": "^1.6.2",
     "config": "^3.3.6",
-    "csv-stringify": "^5.6.2",
+    "csv-stringify": "^6.2.3",
     "dashify": "^2.0.0",
     "got": "^11.8.2",
     "honeybadger": "^1.4.0",
@@ -39,5 +39,8 @@
     "stringify-stream": "^1.0.5",
     "uuid": "^8.3.2"
   },
-  "private": true
+  "private": true,
+  "devDependencies": {
+    "csv-parse": "^4.15.4"
+  }
 }

@@ -1,12 +1,18 @@
 'use strict';
 
-const
-  { BadRequestError, UnsupportedMediaTypeError } = require('restify-errors'),
+const {
+    BadRequestError,
+    UnsupportedMediaTypeError,
+  } = require('restify-errors'),
   { Measurement, Box } = require('@sensebox/opensensemap-api-models'),
-  { checkContentType, createDownloadFilename, csvStringifier } = require('../helpers/apiUtils'),
+  {
+    checkContentType,
+    createDownloadFilename,
+    csvStringifier,
+  } = require('../helpers/apiUtils'),
   {
     retrieveParameters,
-    validateFromToTimeParams
+    validateFromToTimeParams,
   } = require('../helpers/userParamHelpers'),
   handleError = require('../helpers/errorHandler'),
   OutlierTransformer = require('../transformers/outlierTransformer'),
@@ -194,8 +200,11 @@ const getDataMulti = async function getDataMulti (req, res) {
     queryParams['exposure'] = { '$in': exposure };
   }
 
+  // default format
+  let stringifier = csvStringifier(columns, delimiter);
+
   try {
-    let stream = await Box.findMeasurementsOfBoxesStream({
+    const stream = await Box.findMeasurementsOfBoxesStream({
       query: queryParams,
       bbox,
       from: fromDate.toDate(),
@@ -206,13 +215,10 @@ const getDataMulti = async function getDataMulti (req, res) {
     switch (format) {
     case 'csv':
       res.header('Content-Type', 'text/csv');
-      stream = stream
-        .pipe(csvStringifier(columns, delimiter));
       break;
     case 'json':
       res.header('Content-Type', 'application/json');
-      stream = stream
-        .pipe(jsonstringify({ open: '[', close: ']' }));
+      stringifier = jsonstringify({ open: '[', close: ']' });
       break;
     }
 
@@ -221,6 +227,7 @@ const getDataMulti = async function getDataMulti (req, res) {
     }
 
     stream
+      .pipe(stringifier)
       .on('error', function (err) {
         res.end(`Error: ${err.message}`);
       })
