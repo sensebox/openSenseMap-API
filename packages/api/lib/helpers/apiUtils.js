@@ -6,7 +6,7 @@ const { NotAuthorizedError, UnsupportedMediaTypeError } = require('restify-error
   config = require('config'),
   apicache = require('apicache'),
   got = require('got'),
-  csvstringify = require('csv-stringify'),
+  { stringify } = require('csv-stringify'),
   hostname = require('os').hostname();
 
 const addCache = function addCache (duration, group) {
@@ -196,7 +196,7 @@ const computeTimestampTruncationLength = function computeTimestampTruncationLeng
 };
 
 const csvStringifier = function csvStringifier (columns, delimiter) {
-  return csvstringify({
+  return stringify({
     columns, delimiter, header: 1, cast: {
       date: d => d.toISOString()
     }

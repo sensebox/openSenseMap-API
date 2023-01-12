@@ -11,7 +11,7 @@ You'll find that the repostiory uses yarn workspaces to separate the [API](packa
 Configuration of both the api and the models is done using mechanisms provided by [lorenwest/node-config](https://github.com/lorenwest/node-config). You can find an annotated example configuration with all keys in [`config/config.example.json`](config/config.example.json).
 
 ## Development
-- Have [Node.js] v14, [yarn](https://yarnpkg.com/), [Docker](https://docs.docker.com/engine/installation/) and [docker-compose](https://docs.docker.com/compose/install/) installed
+- Have [Node.js] v16, [yarn](https://yarnpkg.com/), [Docker](https://docs.docker.com/engine/installation/) and [docker-compose](https://docs.docker.com/compose/install/) installed
 - Start your development database (`docker-compose up -d db`)
 - Create branch for your feature (`git checkout my-awesome-feature`)
 - Run `yarn install`
@@ -60,7 +60,7 @@ yarn test
   - Is generated and pushed to GitHub by GitHub Actions [file](.github/workflows/test.yaml)
 
 ### Tags and Versions
-Git Tags are used for Docker hub builds (like `v1`). Version number is increased by one for each new version. Docker images are built automatically by the Docker hub for all tags starting with `v`
+Git Tags are used for Github Container Registry builds (like `v1`). Version number is increased by following semantic versioning. Docker images are built automatically by Github Actions for all tags starting with `v` all pushes to `master` and all pull requests against `master`.
 
 #### Versioned container images
 - Check out `master` branch

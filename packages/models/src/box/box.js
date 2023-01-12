@@ -717,6 +717,8 @@ boxSchema.statics.findMeasurementsOfBoxesStream = function findMeasurementsOfBox
     return Promise.reject(new Error('missing sensor query'));
   }
 
+  // return this.find(query, BOX_PROPS_FOR_POPULATION).cursor({ lean: true });
+
   return this.find(query, BOX_PROPS_FOR_POPULATION)
     .lean()
     .then(function (boxData) {
@@ -772,7 +774,7 @@ boxSchema.statics.findMeasurementsOfBoxesStream = function findMeasurementsOfBox
 boxSchema.statics.findMeasurementsOfBoxesByTagStream = function findMeasurementsOfBoxesByTagStream (opts) {
   const { query } = opts;
 
-  return this.find(query, BOX_PROPS_FOR_POPULATION)
+  return Promise.resolve(this.find(query, BOX_PROPS_FOR_POPULATION)
     .lean()
     .then(function (boxData) {
       if (boxData.length === 0) {
@@ -805,7 +807,7 @@ boxSchema.statics.findMeasurementsOfBoxesByTagStream = function findMeasurements
       return Measurement.find(measureQuery, { 'createdAt': 1, 'value': 1, 'location': 1, '_id': 0, 'sensor_id': 1 })
         .cursor({ lean: true, order: 1 })
         .map(transformer);
-    });
+    }));
 };
 
 
