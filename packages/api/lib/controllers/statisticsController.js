@@ -102,6 +102,9 @@ const idwHandler = async function (req, res) {
     });
     res.header('Content-Type', 'application/json; charset=utf-8');
 
+    // Flush again
+    res.flushHeaders();
+
     cursor
       .on('error', function (err) {
         return handleError(err);
@@ -298,6 +301,9 @@ const descriptiveStatisticsHandler = async function descriptiveStatisticsHandler
     if (download === 'true') {
       res.header('Content-Disposition', `attachment; filename=${createDownloadFilename(req.date(), operation, [phenomenon, ...columns], fileExtension)}`);
     }
+
+    // Flush again to stream
+    res.flushHeaders();
 
     // stream response to client
     cursor
