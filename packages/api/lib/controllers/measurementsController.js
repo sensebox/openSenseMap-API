@@ -156,6 +156,9 @@ const getData = async function getData (req, res) {
       }));
   }
 
+  // A last time flush headers :)
+  res.flushHeaders();
+
   measurementsStream
     .pipe(stringifier)
     .pipe(res);
