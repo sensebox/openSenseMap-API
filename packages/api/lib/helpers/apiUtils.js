@@ -201,7 +201,8 @@ const csvStringifier = function csvStringifier (columns, delimiter) {
   return stringify({
     columns, delimiter, header: 1, cast: {
       date: d => d.toISOString()
-    } });
+    }
+  });
 };
 
 module.exports = {

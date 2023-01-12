@@ -717,6 +717,8 @@ boxSchema.statics.findMeasurementsOfBoxesStream = function findMeasurementsOfBox
     return Promise.reject(new Error('missing sensor query'));
   }
 
+  // return this.find(query, BOX_PROPS_FOR_POPULATION).cursor({ lean: true });
+
   return this.find(query, BOX_PROPS_FOR_POPULATION)
     .lean()
     .then(function (boxData) {

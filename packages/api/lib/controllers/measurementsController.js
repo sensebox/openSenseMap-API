@@ -200,11 +200,8 @@ const getDataMulti = async function getDataMulti (req, res) {
     queryParams['exposure'] = { '$in': exposure };
   }
 
-  // default format
-  let stringifier = csvStringifier(columns, delimiter);
-
   try {
-    const stream = await Box.findMeasurementsOfBoxesStream({
+    let stream = await Box.findMeasurementsOfBoxesStream({
       query: queryParams,
       bbox,
       from: fromDate.toDate(),
@@ -215,21 +212,25 @@ const getDataMulti = async function getDataMulti (req, res) {
     switch (format) {
     case 'csv':
       res.header('Content-Type', 'text/csv');
+      stream = stream.pipe(csvStringifier(columns, delimiter));
       break;
     case 'json':
       res.header('Content-Type', 'application/json');
-      stringifier = jsonstringify({ open: '[', close: ']' });
+      // stringifier = jsonstringify({ open: '[', close: ']' });
+      stream = stream.pipe(jsonstringify({ open: '[', close: ']' }));
       break;
     }
 
     if (download === 'true') {
-      res.header('Content-Disposition', `attachment; filename=${createDownloadFilename(req.date(), 'download', [phenomenon, ...columns], format)}`);
+      res.setHeader('Content-Disposition', `attachment; filename=${createDownloadFilename(req.date(), 'download', [phenomenon, ...columns], format)}`);
     }
 
+    // flushHeaders is fixing csv-stringify
+    res.flushHeaders();
+
     stream
-      .pipe(stringifier)
       .on('error', function (err) {
-        res.end(`Error: ${err.message}`);
+        console.log(`Error: ${err.message}`);
       })
       .pipe(res);
   } catch (err) {
