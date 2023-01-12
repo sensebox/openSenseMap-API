@@ -208,6 +208,10 @@ const getDataMulti = async function getDataMulti (req, res) {
       to: toDate.toDate(),
       columns
     });
+    stream = stream
+      .on('error', function (err) {
+        return handleError(err);
+      });
 
     switch (format) {
     case 'csv':
@@ -229,9 +233,6 @@ const getDataMulti = async function getDataMulti (req, res) {
     res.flushHeaders();
 
     stream
-      .on('error', function (err) {
-        console.log(`Error: ${err.message}`);
-      })
       .pipe(res);
   } catch (err) {
     return handleError(err);
