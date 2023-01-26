@@ -2,7 +2,7 @@
 # Used best practices from https://snyk.io/blog/10-best-practices-to-containerize-nodejs-web-applications-with-docker/
 
 # --------------> The build image
-FROM node:16.19.0-bullseye-slim as build
+FROM node:19.5.0-bullseye-slim as build
 
 RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-recommends git dumb-init
 
@@ -23,7 +23,7 @@ COPY . /usr/src/app
 RUN yarn create-version-file
 
 # --------------> The production image
-FROM node:16.19.0-bullseye-slim
+FROM node:19.5.0-bullseye-slim
 
 ENV NODE_ENV=production
 COPY --from=build /usr/bin/dumb-init /usr/bin/dumb-init
