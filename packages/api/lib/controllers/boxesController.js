@@ -132,7 +132,7 @@ const
  * @apiUse ContentTypeJSON
  *
  */
-const updateBox = async function updateBox (req, res, next) {
+const updateBox = async function updateBox (req, res) {
   try {
     let box = await Box.findBoxById(req._userParams.boxId, { lean: false, populate: false });
     box = await box.updateBox(req._userParams);
@@ -143,7 +143,7 @@ const updateBox = async function updateBox (req, res, next) {
     res.send({ code: 'Ok', data: box.toJSON({ includeSecrets: true }) });
     clearCache(['getBoxes']);
   } catch (err) {
-    handleError(err, next);
+    return handleError(err);
   }
 };
 
@@ -167,12 +167,12 @@ const updateBox = async function updateBox (req, res, next) {
  *   { "coordinates": [7.68323, 51.9423], "type": "Point", "timestamp": "2017-07-27T12:02:00Z"}
  * ]
  */
-const getBoxLocations = async function getBoxLocations (req, res, next) {
+const getBoxLocations = async function getBoxLocations (req, res) {
   try {
     const box = await Box.findBoxById(req._userParams.boxId, { onlyLocations: true, lean: false });
     res.send(await box.getLocations(req._userParams));
   } catch (err) {
-    handleError(err, next);
+    return handleError(err);
   }
 };
 
@@ -203,7 +203,7 @@ const geoJsonStringifyReplacer = function geoJsonStringifyReplacer (key, box) {
  * @apiParam {Boolean="true","false"} [classify=false] if specified, the api will classify the boxes accordingly to their last measurements.
  * @apiParam {Boolean="true","false"} [minimal=false] if specified, the api will only return a minimal set of box metadata consisting of [_id, updatedAt, currentLocation, exposure, name] for a fast response.
  * @apiParam {Boolean="true","false"} [full=false] if true the API will return populated lastMeasurements (use this with caution for now, expensive on the database)
- * @apiParam {String} [near] A comma separated coordinate, if specified, the api will only return senseBoxes within maxDistance (in m) of this location
+ * @apiParam {Number} [near] A comma separated coordinate, if specified, the api will only return senseBoxes within maxDistance (in m) of this location
  * @apiParam {Number} [maxDistance=1000] the amount of meters around the near Parameter that the api will search for senseBoxes
  * @apiUse ExposureFilterParam
  * @apiUse BBoxParam
@@ -211,7 +211,7 @@ const geoJsonStringifyReplacer = function geoJsonStringifyReplacer (key, box) {
  * @apiSampleRequest https://api.opensensemap.org/boxes?date=2015-03-07T02:50Z&phenomenon=Temperatur
  * @apiSampleRequest https://api.opensensemap.org/boxes?date=2015-03-07T02:50Z,2015-04-07T02:50Z&phenomenon=Temperatur
  */
-const getBoxes = async function getBoxes (req, res, next) {
+const getBoxes = async function getBoxes (req, res) {
   // content-type is always application/json for this route
   res.header('Content-Type', 'application/json; charset=utf-8');
 
@@ -252,7 +252,7 @@ const getBoxes = async function getBoxes (req, res, next) {
       })
       .pipe(res);
   } catch (err) {
-    handleError(err, next);
+    return handleError(err);
   }
 };
 
@@ -357,7 +357,7 @@ const getBoxes = async function getBoxes (req, res, next) {
 }
  */
 
-const getBox = async function getBox (req, res, next) {
+const getBox = async function getBox (req, res) {
   const { format, boxId } = req._userParams;
 
   try {
@@ -372,7 +372,7 @@ const getBox = async function getBox (req, res, next) {
     }
     res.send(box);
   } catch (err) {
-    handleError(err, next);
+    return handleError(err);
   }
 };
 
@@ -397,6 +397,7 @@ const getBox = async function getBox (req, res, next) {
  * @apiParam (RequestBody) {Object} [mqtt] specify parameters of the MQTT integration for external measurement upload. Please see below for the accepted parameters
  * @apiParam (RequestBody) {Object} [ttn] specify parameters for the TTN integration for measurement from TheThingsNetwork.org upload. Please see below for the accepted parameters
  * @apiParam (RequestBody) {Boolean="true","false"} [useAuth] whether to use access_token or not for authentication
+ * @apiParam (RequestBody) {Boolean="true","false"} [sharedBox] whether to share this box (allows transfer to another user while still being able to read the secret and commit measurements)
  *
  * @apiUse LocationBody
  * @apiUse SensorBody
@@ -405,15 +406,23 @@ const getBox = async function getBox (req, res, next) {
  * @apiUse ContentTypeJSON
  * @apiUse JWTokenAuth
  */
-const postNewBox = async function postNewBox (req, res, next) {
+const postNewBox = async function postNewBox (req, res) {
   try {
     let newBox = await req.user.addBox(req._userParams);
     newBox = await Box.populate(newBox, Box.BOX_SUB_PROPS_FOR_POPULATION);
     res.send(201, { message: 'Box successfully created', data: newBox });
     clearCache(['getBoxes', 'getStats']);
-    postToMattermost(`New Box: ${req.user.name} (${redactEmail(req.user.email)}) just registered "${newBox.name}" (${newBox.model}): <https://opensensemap.org/explore/${newBox._id}|link>`);
+    postToMattermost(
+      `New Box: ${req.user.name} (${redactEmail(
+        req.user.email
+      )}) just registered "${newBox.name}" (${
+        newBox.model
+      }): [https://opensensemap.org/explore/${
+        newBox._id
+      }](https://opensensemap.org/explore/${newBox._id})`
+    );
   } catch (err) {
-    handleError(err, next);
+    return handleError(err);
   }
 };
 
@@ -434,7 +443,7 @@ const postNewBox = async function postNewBox (req, res, next) {
  * @apiUse JWTokenAuth
  * @apiUse BoxIdParam
  */
-const getSketch = async function getSketch (req, res, next) {
+const getSketch = async function getSketch (req, res) {
   res.header('Content-Type', 'text/plain; charset=utf-8');
   try {
     const box = await Box.findBoxById(req._userParams.boxId, { populate: false, lean: false });
@@ -459,7 +468,7 @@ const getSketch = async function getSketch (req, res, next) {
 
     res.send(box.getSketch(params));
   } catch (err) {
-    handleError(err, next);
+    return handleError(err);
   }
 };
 
@@ -473,7 +482,7 @@ const getSketch = async function getSketch (req, res, next) {
  * @apiUse JWTokenAuth
  * @apiUse BoxIdParam
  */
-const deleteBox = async function deleteBox (req, res, next) {
+const deleteBox = async function deleteBox (req, res) {
   const { password, boxId } = req._userParams;
 
   try {
@@ -484,7 +493,7 @@ const deleteBox = async function deleteBox (req, res, next) {
     postToMattermost(`Box deleted: ${req.user.name} (${redactEmail(req.user.email)}) just deleted "${box.name}" (${boxId})`);
 
   } catch (err) {
-    handleError(err, next);
+    return handleError(err);
   }
 };
 
@@ -496,7 +505,7 @@ const deleteBox = async function deleteBox (req, res, next) {
  * @apiUse JWTokenAuth
  * @apiUse BoxIdParam
  */
-const getTransfer = async function getTransfer (req, res, next) {
+const getTransfer = async function getTransfer (req, res) {
   const { boxId } = req._userParams;
   try {
     const transfer = await Claim.findClaimByDeviceID(boxId);
@@ -504,7 +513,7 @@ const getTransfer = async function getTransfer (req, res, next) {
       data: transfer,
     });
   } catch (err) {
-    handleError(err, next);
+    return handleError(err);
   }
 };
 
@@ -517,7 +526,7 @@ const getTransfer = async function getTransfer (req, res, next) {
  * @apiParam (RequestBody) {RFC3339Date} expiresAt Expiration date for transfer token (default: 24 hours from now).
  * @apiUse JWTokenAuth
  */
-const createTransfer = async function createTransfer (req, res, next) {
+const createTransfer = async function createTransfer (req, res) {
   const { boxId, date } = req._userParams;
   try {
     const transferCode = await req.user.transferBox(boxId, date);
@@ -526,7 +535,7 @@ const createTransfer = async function createTransfer (req, res, next) {
       data: transferCode,
     });
   } catch (err) {
-    handleError(err, next);
+    return handleError(err);
   }
 };
 
@@ -540,7 +549,7 @@ const createTransfer = async function createTransfer (req, res, next) {
  * @apiUse JWTokenAuth
  * @apiUse BoxIdParam
  */
-const updateTransfer = async function updateTransfer (req, res, next) {
+const updateTransfer = async function updateTransfer (req, res) {
   const { boxId, token, date } = req._userParams;
   try {
     const transfer = await req.user.updateTransfer(boxId, token, date);
@@ -549,7 +558,7 @@ const updateTransfer = async function updateTransfer (req, res, next) {
       data: transfer,
     });
   } catch (err) {
-    handleError(err, next);
+    return handleError(err);
   }
 };
 
@@ -562,13 +571,13 @@ const updateTransfer = async function updateTransfer (req, res, next) {
  * @apiParam (RequestBody) {String} token Transfer token you want to revoke.
  * @apiUse JWTokenAuth
  */
-const removeTransfer = async function removeTransfer (req, res, next) {
+const removeTransfer = async function removeTransfer (req, res) {
   const { boxId, token } = req._userParams;
   try {
     await req.user.removeTransfer(boxId, token);
     res.send(204);
   } catch (err) {
-    handleError(err, next);
+    return handleError(err);
   }
 };
 
@@ -581,7 +590,7 @@ const removeTransfer = async function removeTransfer (req, res, next) {
  * @apiParam (RequestBody) {String} token the token to claim a senseBox
  * @apiUse JWTokenAuth
  */
-const claimBox = async function claimBox (req, res, next) {
+const claimBox = async function claimBox (req, res) {
   const { token } = req._userParams;
 
   try {
@@ -592,7 +601,7 @@ const claimBox = async function claimBox (req, res, next) {
 
     res.send(200, { message: 'Device successfully claimed!' });
   } catch (err) {
-    handleError(err, next);
+    return handleError(err);
   }
 };
 
@@ -767,6 +776,7 @@ module.exports = {
       { name: 'ttn', dataType: 'object' },
       { name: 'useAuth', allowedValues: ['true', 'false'] },
       { predef: 'location', required: true },
+      { name: 'sharedBox', allowedValues: ['true', 'false'] }
     ]),
     postNewBox,
   ],
@@ -810,7 +820,7 @@ module.exports = {
         allowedValues: ['true', 'false'],
       },
       { name: 'full', defaultValue: 'false', allowedValues: ['true', 'false'] },
-      { name: 'near' },
+      { predef: 'near' },
       { name: 'maxDistance' },
       { predef: 'bbox' },
     ]),

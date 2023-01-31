@@ -1,12 +1,18 @@
 'use strict';
 
-const
-  { BadRequestError, UnsupportedMediaTypeError } = require('restify-errors'),
+const {
+    BadRequestError,
+    UnsupportedMediaTypeError,
+  } = require('restify-errors'),
   { Measurement, Box } = require('@sensebox/opensensemap-api-models'),
-  { checkContentType, createDownloadFilename, csvStringifier } = require('../helpers/apiUtils'),
+  {
+    checkContentType,
+    createDownloadFilename,
+    csvStringifier,
+  } = require('../helpers/apiUtils'),
   {
     retrieveParameters,
-    validateFromToTimeParams
+    validateFromToTimeParams,
   } = require('../helpers/userParamHelpers'),
   handleError = require('../helpers/errorHandler'),
   OutlierTransformer = require('../transformers/outlierTransformer'),
@@ -19,6 +25,7 @@ const
  * @apiGroup Measurements
  * @apiName getLatestMeasurements
  * @apiUse BoxIdParam
+ * @apiParam {NumberNumber=1-100} [count] Number of measurements to be retrieved for every sensor.
  */
 /**
  * @api {get} /boxes/:senseBoxId/sensors/:sensorId Get latest measurements of a sensor
@@ -29,17 +36,38 @@ const
  * @apiUse SensorIdParam
  * @apiParam {Boolean="true","false"} [onlyValue] If set to true only returns the measured value without information about the sensor. Requires a sensorId.
  */
-const getLatestMeasurements = async function getLatestMeasurements (req, res, next) {
+const getLatestMeasurements = async function getLatestMeasurements (req, res) {
   const { _userParams: params } = req;
 
   let box;
 
   try {
-    box = await Box.findBoxById(req._userParams.boxId, { onlyLastMeasurements: true });
-  } catch (err) {
-    handleError(err, next);
+    if (req._userParams.count) {
+      box = await Box.findBoxById(req._userParams.boxId, {
+        populate: false,
+        onlyLastMeasurements: false,
+        count: req._userParams.count,
+        projection: {
+          name: 1,
+          lastMeasurementAt: 1,
+          sensors: 1,
+          grouptag: 1
+        }
+      });
 
-    return;
+      const measurements = await Measurement.findLatestMeasurementsForSensorsWithCount(box, req._userParams.count);
+      for (let index = 0; index < box.sensors.length; index++) {
+        const sensor = box.sensors[index];
+        const values = measurements.find(elem => elem._id.equals(sensor._id));
+        sensor['lastMeasurements'] = values;
+      }
+    } else {
+      box = await Box.findBoxById(req._userParams.boxId, {
+        onlyLastMeasurements: true
+      });
+    }
+  } catch (err) {
+    return handleError(err);
   }
 
   if (params.sensorId) {
@@ -98,7 +126,7 @@ const jsonLocationReplacer = function jsonLocationReplacer (k, v) {
  * @apiParam {Boolean="true","false"} [download] if specified, the api will set the `content-disposition` header thus forcing browsers to download instead of displaying. Is always true for format csv.
  * @apiUse SeparatorParam
  */
-const getData = function getData (req, res, next) {
+const getData = async function getData (req, res) {
   const { sensorId, format, download, outliers, outlierWindow, delimiter } = req._userParams;
   let stringifier;
 
@@ -117,7 +145,7 @@ const getData = function getData (req, res, next) {
 
   let measurementsStream = Measurement.getMeasurementsStream(req._userParams)
     .on('error', function (err) {
-      return handleError(err, next);
+      return handleError(err);
     });
 
   if (outliers) {
@@ -127,6 +155,9 @@ const getData = function getData (req, res, next) {
         replaceOutlier: (outliers === 'replace')
       }));
   }
+
+  // A last time flush headers :)
+  res.flushHeaders();
 
   measurementsStream
     .pipe(stringifier)
@@ -149,7 +180,7 @@ const getData = function getData (req, res, next) {
  * @apiParam {String=createdAt,value,lat,lon,height,boxId,boxName,exposure,sensorId,phenomenon,unit,sensorType} [columns=sensorId,createdAt,value,lat,lon] Comma separated list of columns to export.
  * @apiParam {Boolean=true,false} [download=true] Set the `content-disposition` header to force browsers to download instead of displaying.
  */
-const getDataMulti = async function getDataMulti (req, res, next) {
+const getDataMulti = async function getDataMulti (req, res) {
   const { boxId, bbox, exposure, delimiter, columns, fromDate, toDate, phenomenon, download, format } = req._userParams;
 
   // build query
@@ -158,9 +189,9 @@ const getDataMulti = async function getDataMulti (req, res, next) {
   };
 
   if (boxId && bbox) {
-    return next(new BadRequestError('please specify only boxId or bbox'));
+    return Promise.reject(new BadRequestError('please specify only boxId or bbox'));
   } else if (!boxId && !bbox) {
-    return next(new BadRequestError('please specify either boxId or bbox'));
+    return Promise.reject(new BadRequestError('please specify either boxId or bbox'));
   }
 
   if (boxId) {
@@ -182,15 +213,61 @@ const getDataMulti = async function getDataMulti (req, res, next) {
     });
     stream = stream
       .on('error', function (err) {
-        return handleError(err, next);
+        return handleError(err);
       });
 
     switch (format) {
     case 'csv':
       res.header('Content-Type', 'text/csv');
-      stream = stream
-        .pipe(csvStringifier(columns, delimiter));
+      stream = stream.pipe(csvStringifier(columns, delimiter));
       break;
+    case 'json':
+      res.header('Content-Type', 'application/json');
+      // stringifier = jsonstringify({ open: '[', close: ']' });
+      stream = stream.pipe(jsonstringify({ open: '[', close: ']' }));
+      break;
+    }
+
+    if (download === 'true') {
+      res.setHeader('Content-Disposition', `attachment; filename=${createDownloadFilename(req.date(), 'download', [phenomenon, ...columns], format)}`);
+    }
+
+    // flushHeaders is fixing csv-stringify
+    res.flushHeaders();
+
+    stream
+      .pipe(res);
+  } catch (err) {
+    return handleError(err);
+  }
+};
+
+
+/**
+ * @api {get,post} /boxes/data?grouptag=:grouptag Get latest measurements for a grouptag as JSON
+ * @apiDescription Download data of a given grouptag from multiple senseBoxes as JSON
+ * @apiGroup Measurements
+ * @apiName getDataByGroupTag
+ * @apiParam {String} grouptag The grouptag to search by.
+ */
+const getDataByGroupTag = async function getDataByGroupTag (req, res) {
+  const { grouptag, format } = req._userParams;
+  const queryTags = grouptag.split(',');
+  // build query
+  const queryParams = {};
+  if (grouptag) {
+    queryParams['grouptag'] = { '$all': queryTags };
+  }
+
+  try {
+    let stream = await Box.findMeasurementsOfBoxesByTagStream({
+      query: queryParams
+    });
+    stream = stream
+      .on('error', function (err) {
+        return handleError(err);
+      });
+    switch (format) {
     case 'json':
       res.header('Content-Type', 'application/json');
       stream = stream
@@ -198,14 +275,10 @@ const getDataMulti = async function getDataMulti (req, res, next) {
       break;
     }
 
-    if (download === 'true') {
-      res.header('Content-Disposition', `attachment; filename=${createDownloadFilename(req.date(), 'download', [phenomenon, ...columns], format)}`);
-    }
-
     stream
       .pipe(res);
   } catch (err) {
-    handleError(err, next);
+    return handleError(err);
   }
 };
 
@@ -223,13 +296,13 @@ const getDataMulti = async function getDataMulti (req, res, next) {
  * @apiParam (RequestBody) {Location} [location] the WGS84-coordinates of the measurement.
  * @apiHeader {String} Authorization Box' unique access_token. Will be used as authorization token if box has auth enabled (e.g. useAuth: true)
  */
-const postNewMeasurement = async function postNewMeasurement (req, res, next) {
+const postNewMeasurement = async function postNewMeasurement (req, res) {
   const { boxId, sensorId, value, createdAt, location } = req._userParams;
 
   try {
     const box = await Box.findBoxById(boxId, { populate: false, lean: false });
     if (box.useAuth && box.access_token && box.access_token !== req.headers.authorization) {
-      throw new UnauthorizedError('Box access token not valid!');
+      return Promise.reject(new UnauthorizedError('Box access token not valid!'));
     }
 
     const [measurement] = await Measurement.decodeMeasurements([{
@@ -241,7 +314,7 @@ const postNewMeasurement = async function postNewMeasurement (req, res, next) {
     await box.saveMeasurement(measurement);
     res.send(201, 'Measurement saved in box');
   } catch (err) {
-    handleError(err, next);
+    return handleError(err);
   }
 };
 
@@ -324,7 +397,7 @@ const postNewMeasurement = async function postNewMeasurement (req, res, next) {
  *    "error": "4"
  * }
  */
-const postNewMeasurements = async function postNewMeasurements (req, res, next) {
+const postNewMeasurements = async function postNewMeasurements (req, res) {
   const { boxId, luftdaten, hackair } = req._userParams;
   let contentType = req.getContentType();
 
@@ -344,17 +417,17 @@ const postNewMeasurements = async function postNewMeasurements (req, res, next) 
 
       // authorization for all boxes that have not opt out
       if ((box.useAuth || contentType === 'hackair') && box.access_token && box.access_token !== req.headers.authorization) {
-        throw new UnauthorizedError('Box access token not valid!');
+        return Promise.reject(new UnauthorizedError('Box access token not valid!'));
       }
 
       const measurements = await Measurement.decodeMeasurements(req.body, { contentType, sensors: box.sensors });
       await box.saveMeasurementsArray(measurements);
       res.send(201, 'Measurements saved in box');
     } catch (err) {
-      handleError(err, next);
+      return handleError(err);
     }
   } else {
-    return next(new UnsupportedMediaTypeError('Unsupported content-type.'));
+    return Promise.reject(new UnsupportedMediaTypeError('Unsupported content-type.'));
   }
 };
 
@@ -409,10 +482,18 @@ module.exports = {
     validateFromToTimeParams,
     getDataMulti
   ],
+  getDataByGroupTag: [
+    retrieveParameters([
+      { name: 'grouptag', required: true },
+      { name: 'format', defaultValue: 'json', allowedValues: ['json'] }
+    ]),
+    getDataByGroupTag
+  ],
   getLatestMeasurements: [
     retrieveParameters([
       { predef: 'boxId', required: true },
       { predef: 'sensorId' },
+      { name: 'count', dataType: 'Integer', min: 1, max: 100, required: false },
       { name: 'onlyValue', required: false }
     ]),
     getLatestMeasurements

@@ -2,11 +2,27 @@
 
 ## Unreleased
 
+## v2.0.3
+
+- Change handling `near` parameter (#694)
+
+## v2.0.2
+
+- Fix `undefined` errors in findMeasurementsForSensors (#692)
+
+## v2.0.1
+
+- Fix `undefined` errors in luftdatenHandler (#691)
+
+## v2.0.0
+
+- Update dependencies (#602, #666)
+- Added `findLatestMeasurementsForSensorsWithCount` static method to Measurement schema (#588)
+- Added `sharedBoxes` functionality (#605)
+
 ## v1.3.1
 - Add SPS30 sensor 
 - Update @sensebox/node-sketch-templater to v1.13.0
-
-## v1.3.0
 
 ## v1.2.0
 

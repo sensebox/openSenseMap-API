@@ -6,43 +6,33 @@ const { Box, User } = require('@sensebox/opensensemap-api-models'),
   handleError = require('../helpers/errorHandler'),
   {
     retrieveParameters,
-  } = require('../helpers/userParamHelpers');
+  } = require('../helpers/userParamHelpers'),
+  jsonstringify = require('stringify-stream');
 
 
-const listBoxes = async function listBoxes (req, res, next) {
+const listBoxes = async function listBoxes (req, res) {
+  // default format
+  const stringifier = jsonstringify({ open: '[', close: ']' });
+
   try {
-    let boxes = await Box.find().exec();
-    const users = await User.find().exec();
-
-    boxes = boxes
-      .map(b => b.toJSON({ includeSecrets: true }));
-
-    for (const user of users) {
-      for (const userbox of user.boxes) {
-        const foundbox = boxes.find(box => box._id.equals(userbox));
-        if (foundbox) {
-          foundbox.owner = user.toJSON({ includeSecrets: true });
-        }
-      }
-    }
-
-    res.send({ code: 'Ok', boxes });
+    const stream = await Box.find({}, { _id: 1, name: 1, exposure: 1, model: 1, createdAt: 1, updatedAt: 1 }).cursor({ lean: true });
+    stream
+      .pipe(stringifier)
+      .on('error', function (err) {
+        res.end(`Error: ${err.message}`);
+      })
+      .pipe(res);
   } catch (err) {
-    handleError(err, next);
+    return handleError(err);
   }
 };
 
-const listUsers = async function listUsers (req, res, next) {
+const listUsers = async function listUsers (req, res) {
   try {
     const users = await User.find()
-      .populate('boxes')
       .then(function (users) {
         return users.map(function (user) {
-          const boxes = user.boxes.map(b => b.toJSON({ includeSecrets: true }));
-
           user = user.toJSON({ includeSecrets: true });
-
-          user.boxes = boxes;
 
           return user;
         });
@@ -50,11 +40,11 @@ const listUsers = async function listUsers (req, res, next) {
 
     res.send({ code: 'Ok', users });
   } catch (err) {
-    handleError(err, next);
+    return handleError(err);
   }
 };
 
-const getUser = async function getUser (req, res, next) {
+const getUser = async function getUser (req, res) {
   const { userId } = req._userParams;
 
   try {
@@ -67,11 +57,11 @@ const getUser = async function getUser (req, res, next) {
       });
     res.send(user.toJSON({ includeSecrets: true }));
   } catch (err) {
-    handleError(err, next);
+    return handleError(err);
   }
 };
 
-const getBox = async function getBox (req, res, next) {
+const getBox = async function getBox (req, res) {
   const { boxId } = req._userParams;
 
   try {
@@ -84,11 +74,11 @@ const getBox = async function getBox (req, res, next) {
 
     res.send(box);
   } catch (err) {
-    handleError(err, next);
+    return handleError(err);
   }
 };
 
-const deleteBoxes = async function deleteBoxes (req, res, next) {
+const deleteBoxes = async function deleteBoxes (req, res) {
   const { boxIds } = req._userParams;
 
   try {
@@ -100,11 +90,11 @@ const deleteBoxes = async function deleteBoxes (req, res, next) {
     }
     res.send({ boxIds });
   } catch (err) {
-    handleError(err, next);
+    return handleError(err);
   }
 };
 
-const updateBox = async function updateBox (req, res, next) {
+const updateBox = async function updateBox (req, res) {
   try {
     const { owner, boxId } = req._userParams;
     // update owner
@@ -121,21 +111,23 @@ const updateBox = async function updateBox (req, res, next) {
     const user = await User.findUserOfBox(boxId);
     box.owner = user.toJSON({ includeSecrets: true });
 
-    postToMattermost(`Management Action: Box updated: ${req.user.name} (${req.user.email}) just updated "${box.name}" (${box.model}): <https://opensensemap.org/explore/${box._id}|link>`);
+    postToMattermost(
+      `Management Action: Box updated: ${req.user.name} (${req.user.email}) just updated "${box.name}" (${box.model}): [https://opensensemap.org/explore/${box._id}](https://opensensemap.org/explore/${box._id})`
+    );
     res.send({ code: 'Ok', data: box });
     clearCache(['getBoxes']);
   } catch (err) {
-    handleError(err, next);
+    return handleError(err);
   }
 };
 
-const updateUser = async function updateUser (req, res, next) {
+const updateUser = async function updateUser (req, res) {
   try {
     const { userId } = req._userParams;
 
     const user = await User.findById(userId);
     if (!user) {
-      throw new NotFoundError('Box not found');
+      return Promise.reject(new NotFoundError('Box not found'));
     }
 
     for (const param of ['email', 'name', 'password', 'role', 'language']) {
@@ -149,11 +141,11 @@ const updateUser = async function updateUser (req, res, next) {
     postToMattermost(`Management Action: User updated: ${req.user.name} (${req.user.email}) just updated "${user.name}" (${user.email})`);
     res.send({ code: 'Ok', data: user });
   } catch (err) {
-    handleError(err, next);
+    return handleError(err);
   }
 };
 
-const deleteUsers = async function deleteUsers (req, res, next) {
+const deleteUsers = async function deleteUsers (req, res) {
   try {
     const { userIds } = req._userParams;
 
@@ -168,16 +160,16 @@ const deleteUsers = async function deleteUsers (req, res, next) {
     }
     res.send({ userIds });
   } catch (err) {
-    handleError(err, next);
+    return handleError(err);
   }
 };
 
-const execUserAction = async function execUserAction (req, res, next) {
+const execUserAction = async function execUserAction (req, res) {
   try {
     const { userId, boxId, action } = req._userParams;
 
     if (action === 'resendBoxMail' && !boxId) {
-      throw new BadRequestError('Action \'resendBoxMail\' requires parameter boxId.');
+      return Promise.reject(new BadRequestError('Action \'resendBoxMail\' requires parameter boxId.'));
     }
 
     const user = await User.findById(userId)
@@ -187,7 +179,7 @@ const execUserAction = async function execUserAction (req, res, next) {
     if (action === 'resendBoxMail') {
       box = user.boxes.find(id => id.equals(boxId));
       if (!box) {
-        throw new BadRequestError(`Box with id ${boxId} not in this user.`);
+        return Promise.reject(new BadRequestError(`Box with id ${boxId} not in this user.`));
       }
     }
 
@@ -211,7 +203,7 @@ const execUserAction = async function execUserAction (req, res, next) {
 
     res.send({ code: 'Ok' });
   } catch (err) {
-    handleError(err, next);
+    return handleError(err);
   }
 };
 

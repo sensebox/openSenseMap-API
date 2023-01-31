@@ -26,3 +26,9 @@ dev_run_migration.sh
 
 development.json
 userimages*
+
+# exclude everything
+dumps/*
+
+# exception to the rule
+!dumps/.gitkeep

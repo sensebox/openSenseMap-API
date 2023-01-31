@@ -17,13 +17,16 @@ const
   config = require('config'),
   { preRequest, preCors, Honeybadger, getVersion, postToMattermost } = require('./lib/helpers/apiUtils'),
   routes = require('./lib/routes'),
-  bunyan = require('bunyan');
+  pino = require('pino');
 
-const log = bunyan.createLogger({ name: 'opensensemap-api', serializers: bunyan.stdSerializers });
+// const log = bunyan.createLogger({ name: 'opensensemap-api', serializers: bunyan.stdSerializers });
+const log = pino({ name: 'opensensemap-api', sserializers: pino.stdSerializers });
 
 const server = restify.createServer({
   name: `opensensemap-api (${getVersion})`,
-  log
+  log,
+  onceNext: true,
+  strictNext: false,
 });
 
 // We're using caddy as proxy. It supplies a 'X-Forwarded-Proto' header

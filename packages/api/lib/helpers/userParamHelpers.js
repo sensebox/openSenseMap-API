@@ -206,12 +206,10 @@ const castParam = function castParam (param, paramDataType, dataTypeIsArray) {
   return param;
 };
 
-const initUserParams = function initUserParams (req, res, next) {
+const initUserParams = async function initUserParams (req) {
   if (!req._userParams) {
     req._userParams = Object.create(null);
   }
-
-  next();
 };
 
 const setUserParam = function setUserParam (req, paramName, paramValue) {
@@ -348,6 +346,27 @@ const retrieveLocationParameter = function ({ value }) {
   }
 };
 
+const retrieveNearParameter = function ({ value, dataType, dataTypeIsArray }) {
+  try {
+    // wrap dataType in array for calling of casting function
+    dataType = dataTypeIsArray ? dataType[0] : dataType;
+    if (!dataTypeIsArray && Array.isArray(value)) {
+      return { error: ARRAY_NOT_ALLOWED };
+    }
+
+    // test and cast value against dataType
+    value = castParam(value, dataType, dataTypeIsArray);
+
+    if (typeof value === 'undefined') {
+      return { error: CAST_FAILED };
+    }
+
+    return { castedValue: transformAndValidateCoords(value) };
+  } catch (err) {
+    return { error: ERROR_CUSTOM_MESSAGE, message: err.message };
+  }
+};
+
 const
   GET_DATA_MULTI_DEFAULT_COLUMNS = ['sensorId', 'createdAt', 'value', 'lat', 'lon'],
   GET_DATA_MULTI_ALLOWED_COLUMNS = ['createdAt', 'value', 'lat', 'lon', 'height', 'unit', 'boxId', 'sensorId', 'phenomenon', 'sensorType', 'boxName', 'exposure'];
@@ -389,7 +408,7 @@ const retrieveParametersPredefs = {
     return { name: 'bbox', dataType: 'bbox' };
   },
   'near' () {
-    return { name: 'near', dataType: 'as-is' };
+    return { name: 'near', dataType: ['Number'], paramValidatorAndParser: retrieveNearParameter };
   },
   'maxDistance' () {
     return { name: 'maxDistance', dataType: 'as-is' };
@@ -402,7 +421,7 @@ const retrieveParametersPredefs = {
   }
 };
 
-const handleAndSetParameterRequest = function handleAndSetParameterRequest (req, next, { name, aliases, dataType = 'String', allowedValues, mapping, required = false, defaultValue, min, max, paramValidatorAndParser = validateAndCastParam }) {
+const handleAndSetParameterRequest = async function handleAndSetParameterRequest (req, { name, aliases, dataType = 'String', allowedValues, mapping, required = false, defaultValue, min, max, paramValidatorAndParser = validateAndCastParam }) {
   // extract param from request
   const { value, nameUsed } = extractParam({ req, name, aliases });
   // there was no user supplied value but a default value
@@ -412,7 +431,7 @@ const handleAndSetParameterRequest = function handleAndSetParameterRequest (req,
     return;
   } else if (typeof value === 'undefined' && required === true) {
     // no user supplied value and required -> error
-    return next(new BadRequestError(`missing required parameter ${name}`));
+    return Promise.reject(new BadRequestError(`missing required parameter ${name}`));
   } else if (typeof value === 'undefined' && required === false) {
     // no value and not required, skip to the next parameter
     return;
@@ -424,15 +443,15 @@ const handleAndSetParameterRequest = function handleAndSetParameterRequest (req,
   const { castedValue, error, message } = paramValidatorAndParser({ value, dataType, allowedValues, mapping, dataTypeIsArray, min, max });
   switch (error) {
   case ARRAY_NOT_ALLOWED:
-    return next(new BadRequestError(`Parameter ${nameUsed} must only be specified once`));
+    return Promise.reject(new BadRequestError(`Parameter ${nameUsed} must only be specified once`));
   case CAST_FAILED:
     /* eslint-disable prefer-template */
-    return next(new UnprocessableEntityError(`Parameter ${nameUsed} is not parseable as datatype ${(dataTypeIsArray ? 'array of ' + dataType[0] : dataType)}`));
+    return Promise.reject(new UnprocessableEntityError(`Parameter ${nameUsed} is not parseable as datatype ${(dataTypeIsArray ? 'array of ' + dataType[0] : dataType)}`));
     /* eslint-enable prefer-template */
   case ILLEGAL_VALUE:
-    return next(new UnprocessableEntityError(`Illegal value for parameter ${nameUsed}. allowed values: ${allowedValues.join(', ')}`));
+    return Promise.reject(new UnprocessableEntityError(`Illegal value for parameter ${nameUsed}. allowed values: ${allowedValues.join(', ')}`));
   case ERROR_CUSTOM_MESSAGE:
-    return next(new UnprocessableEntityError(`Illegal value for parameter ${nameUsed}. ${message}`));
+    return Promise.reject(new UnprocessableEntityError(`Illegal value for parameter ${nameUsed}. ${message}`));
   }
 
   // no error matched
@@ -451,7 +470,7 @@ const handleAndSetParameterRequest = function handleAndSetParameterRequest (req,
 // min: minimal value for Numbers and Integers. Compared with >=
 // max: maximal value for Numbers and Integers. Compared with <
 const retrieveParameters = function retrieveParameters (parameters = []) {
-  return function (req, res, next) {
+  return async function (req) {
     //for (let { name, aliases, dataType, allowedValues, mapping, required, defaultValue, predef } of parameters) {
     for (const parameter of parameters) {
       // predef has precedence over all other keys
@@ -463,86 +482,81 @@ const retrieveParameters = function retrieveParameters (parameters = []) {
         Object.assign(parameterPredef, parameter);
 
         // handle paramter request
-        handleAndSetParameterRequest(req, next, parameterPredef);
+        await handleAndSetParameterRequest(req, parameterPredef);
         continue;
       }
 
       if (parameter.name) {
-        handleAndSetParameterRequest(req, next, parameter);
+        await handleAndSetParameterRequest(req, parameter);
       }
     }
-
-    return next();
   };
 };
 
 const fromToTimeParamsSanityCheck = function fromToTimeParamsSanityCheck (fromDate, toDate) {
   if ((fromDate && !toDate) || (toDate && !fromDate)) {
-    return new BadRequestError('fromDate and toDate need to be specified simultaneously');
+    return Promise.reject(BadRequestError('fromDate and toDate need to be specified simultaneously'));
   }
 
   if (fromDate && toDate) {
     if (fromDate.isAfter(toDate)) {
-      return new InvalidArgumentError(`Invalid time frame specified: fromDate (${fromDate.toISOString()}) is after toDate (${toDate.toISOString()})`);
+      return Promise.reject(new InvalidArgumentError(`Invalid time frame specified: fromDate (${fromDate.toISOString()}) is after toDate (${toDate.toISOString()})`));
     }
   }
 };
 
-const validateFromToTimeParams = function validateFromToTimeParams (req, res, next) {
-  next(fromToTimeParamsSanityCheck(req._userParams.fromDate, req._userParams.toDate));
+const validateFromToTimeParams = async function validateFromToTimeParams (req) {
+  return (fromToTimeParamsSanityCheck(req._userParams.fromDate, req._userParams.toDate));
 };
 
-const parseAndValidateTimeParamsForFindAllBoxes = function parseAndValidateTimeParamsForFindAllBoxes (req, res, next) {
+const parseAndValidateTimeParamsForFindAllBoxes = async function parseAndValidateTimeParamsForFindAllBoxes (req) {
   if (req._userParams.date) {
     const [fromDate, toDate, ...rest] = req._userParams.date;
 
     if (rest.length !== 0) {
-      return next(new UnprocessableEntityError('invalid number of dates for date parameter supplied'));
+      return Promise.reject(new UnprocessableEntityError('invalid number of dates for date parameter supplied'));
     } else if (!toDate) {
       setUserParam(req, 'fromDate', fromDate.clone().subtract(4, 'hours')); // sub 4
       setUserParam(req, 'toDate', fromDate.clone().add(4, 'hours')); // then add 4 to get into the future
     } else {
       const timesSane = fromToTimeParamsSanityCheck(fromDate, toDate);
       if (typeof timesSane !== 'undefined') {
-        return next(timesSane);
+        return timesSane;
       }
 
       setUserParam(req, 'fromDate', fromDate);
       setUserParam(req, 'toDate', toDate);
     }
   }
-
-  next();
 };
 
-const validateDateNotPast = function validateDateNotPast (req, res, next) {
+const validateDateNotPast = async function validateDateNotPast (req) {
   if (req._userParams.date) {
     const { date } = req._userParams;
     if (date.isBefore(moment.utc().toDate())) {
-      return next(new InvalidArgumentError(
+      return Promise.reject(new InvalidArgumentError(
         `Invalid date specified: date (${date.toISOString()}) must be in the future.`
       ));
     }
   }
-  next();
 };
 
-const checkPrivilege = function checkPrivilege (req, res, next) {
+const checkPrivilege = async function checkPrivilege (req) {
   if (req.user && req.user.role === config.get('management_role')) {
-    return next();
+    return;
   }
 
   if (req._userParams.boxId) {
     try {
       req.user.checkBoxOwner(req._userParams.boxId);
 
-      return next();
+      return;
     } catch (err) {
-      return handleModelError(err, next);
+      return handleModelError(err);
     }
   }
 
-  return next(new ForbiddenError('Not signed in or not authorized to access.'));
+  return Promise.reject(new ForbiddenError('Not signed in or not authorized to access.'));
 };
 
 module.exports = {
