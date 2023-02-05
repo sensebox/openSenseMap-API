@@ -13,6 +13,8 @@
   ],
   "dependencies": {
     "@sensebox/opensensemap-api-models": "2.0.3",
+    "@sentry/node": "^7.29.0",
+    "@sentry/tracing": "^7.29.0",
     "@turf/area": "^6.3.0",
     "@turf/bbox": "^6.3.0",
     "@turf/centroid": "^6.3.0",
@@ -26,7 +28,6 @@
     "csv-stringify": "^6.2.3",
     "dashify": "^2.0.0",
     "got": "^11.8.2",
-    "honeybadger": "^1.4.0",
     "isemail": "^3.0.0",
     "jsonwebtoken": "^9.0.0",
     "millify": "^5.0.1",

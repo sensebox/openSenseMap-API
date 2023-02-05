@@ -23,6 +23,11 @@
   // If not specified, Honeybadger integration is disabled
   // No default
   "honeybadger_apikey": "a531z298s",
+  // Sentry configuration
+  "sentry": {
+    "dsn": "",
+    "environment": ""
+  },
   // A valid Slack incoming webhook url. Used for sending restart and status messages
   // If not specified, Slack integration is disabled
   // No default

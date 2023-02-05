@@ -15,7 +15,7 @@ const
   restify = require('restify'),
   { fullResponse, queryParser, jsonBodyParser, pre: { sanitizePath } } = restify.plugins,
   config = require('config'),
-  { preRequest, preCors, Honeybadger, getVersion, postToMattermost } = require('./lib/helpers/apiUtils'),
+  { preRequest, preCors, Sentry, getVersion, postToMattermost } = require('./lib/helpers/apiUtils'),
   routes = require('./lib/routes'),
   pino = require('pino');
 
@@ -60,10 +60,10 @@ db.connect()
     process.exit(1);
   });
 
-// InternalServerError is the only error we want to report to Honeybadger..
+// InternalServerError is the only error we want to report to Sentry...
 server.on('InternalServer', function (req, res, err, callback) {
-  // set honeybadger context
-  Honeybadger.resetContext({
+  // Pass some request information to sentry
+  Sentry.setContext('request', {
     headers: req.headers,
     method: req.method,
     url: req.url,
@@ -73,11 +73,12 @@ server.on('InternalServer', function (req, res, err, callback) {
     body: req.body,
     _body: req._body,
     query: req.query,
-    _userParams: req._userParams
+    _userParams: req._userParams,
   });
   log.error(err);
-  // and notify
-  Honeybadger.notify(err);
+
+  // Notify Sentry
+  Sentry.captureException(err);
 
   return callback();
 });
