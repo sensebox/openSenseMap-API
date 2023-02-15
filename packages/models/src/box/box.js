@@ -883,7 +883,7 @@ boxSchema.methods.getSketch = function getSketch ({ encoding, serialPort, soilDi
   this.access_token = access_token;
   this.display_enabled = display_enabled;
   this.enable_debug = enable_debug;
-  
+
 
   return templateSketcher.generateSketch(this, { encoding });
 };
