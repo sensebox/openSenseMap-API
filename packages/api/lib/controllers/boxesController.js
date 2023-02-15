@@ -440,6 +440,8 @@ const postNewBox = async function postNewBox (req, res) {
  * @apiParam {String} [appEUI] the appEUI of TTN application
  * @apiParam {String} [appKey] the appKey of TTN application
  * @apiParam {Boolean="true","false"} [display_enabled] include code for an attached oled display
+ * @apiParam {Boolean="true","false"} [enable_debug] include code debug messages printed on the serial monitor
+
  * @apiUse JWTokenAuth
  * @apiUse BoxIdParam
  */
@@ -458,7 +460,8 @@ const getSketch = async function getSketch (req, res) {
       devEUI: req._userParams.devEUI,
       appEUI: req._userParams.appEUI,
       appKey: req._userParams.appKey,
-      display_enabled: req._userParams.display_enabled
+      display_enabled: req._userParams.display_enabled,
+      enable_debug: req._userParams.enable_debug
     };
 
     // pass access token only if useAuth is true and access_token is available
@@ -682,6 +685,7 @@ module.exports = {
       { name: 'appEUI', dataType: 'StringWithEmpty' },
       { name: 'appKey', dataType: 'StringWithEmpty' },
       { name: 'display_enabled', allowedValues: ['true', 'false'] },
+      { name: 'enable_debug', allowedValues: ['true', 'false'] },
     ]),
     checkPrivilege,
     getSketch,
