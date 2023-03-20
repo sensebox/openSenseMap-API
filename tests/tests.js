@@ -9,11 +9,6 @@ const path = require('path').join(__dirname, 'tests');
 require('fs')
   .readdirSync(path)
   .forEach(function (file) {
-
-    if (file.includes('mail-test')) {
-      return;
-    }
-
     /* eslint-disable global-require */
     require(`${path}/${file}`);
     /* eslint-enable global-require */
