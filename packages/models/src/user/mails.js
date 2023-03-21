@@ -3,24 +3,20 @@
 const config = require('config').get('openSenseMap-API-models.integrations'),
   log = require('../log');
 
-// const noMailerConfiguredFunc = function () {
-//   return Promise.resolve({ msg: 'no mailer configured' });
-// };
-
 const noQueueConfiguredFunc = function () {
   return Promise.resolve({ msg: 'no queue configured' });
 };
 
 module.exports = {
   addToQueue: noQueueConfiguredFunc,
-  // sendMail: noMailerConfiguredFunc,
 };
 
 if (config.has('redis') && config.has('redis.host') && config.has('redis.port') && config.has('redis.username') && config.has('redis.password') && config.has('redis.db') && config.has('mailer.queue')) {
   /* eslint-disable global-require */
-  // const got = require('got');
   const { Queue } = require('bullmq');
   /* eslint-enable global-require */
+
+  let queue;
 
   const mailTemplates = {
     newBox (user, box) {
@@ -137,7 +133,10 @@ if (config.has('redis') && config.has('redis.host') && config.has('redis.port') 
   };
 
   const requestQueue = () => {
-    return new Queue(config.get('mailer.queue'), {
+    if (queue) {
+      return queue;
+    }
+    queue = new Queue(config.get('mailer.queue'), {
       connection: {
         host: config.get('redis.host'),
         port: config.get('redis.port'),
@@ -146,6 +145,8 @@ if (config.has('redis') && config.has('redis.host') && config.has('redis.port') 
         db: config.get('redis.db'),
       },
     });
+
+    return queue;
   };
 
   module.exports = {
@@ -168,7 +169,17 @@ if (config.has('redis') && config.has('redis.host') && config.has('redis.port') 
         attachment
       }, {
         removeOnComplete: true,
-      });
+      })
+        .then((response) => {
+          log.info({
+            msg: 'Successfully added mail to queue',
+            job_id: response.id,
+            template: response.name
+          });
+        })
+        .catch((err) => {
+          throw err;
+        });
     }
   };
 }
