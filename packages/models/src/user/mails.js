@@ -3,9 +3,9 @@
 const config = require('config').get('openSenseMap-API-models.integrations'),
   log = require('../log');
 
-const noMailerConfiguredFunc = function () {
-  return Promise.resolve({ msg: 'no mailer configured' });
-};
+// const noMailerConfiguredFunc = function () {
+//   return Promise.resolve({ msg: 'no mailer configured' });
+// };
 
 const noQueueConfiguredFunc = function () {
   return Promise.resolve({ msg: 'no queue configured' });
@@ -13,12 +13,12 @@ const noQueueConfiguredFunc = function () {
 
 module.exports = {
   addToQueue: noQueueConfiguredFunc,
-  sendMail: noMailerConfiguredFunc,
+  // sendMail: noMailerConfiguredFunc,
 };
 
 if (config.has('redis') && config.has('redis.host') && config.has('redis.port') && config.has('redis.username') && config.has('redis.password') && config.has('redis.db') && config.has('mailer.queue')) {
   /* eslint-disable global-require */
-  const got = require('got');
+  // const got = require('got');
   const { Queue } = require('bullmq');
   /* eslint-enable global-require */
 
@@ -136,29 +136,6 @@ if (config.has('redis') && config.has('redis.host') && config.has('redis.port') 
     },
   };
 
-  const requestMailer = (payload) => {
-    return got
-      .post(config.get('mailer.url'), {
-        cert: config.get('cert'),
-        key: config.get('key'),
-        ca: config.get('ca_cert'),
-        json: payload,
-        ecdhCurve: 'auto',
-      })
-      .then((response) => {
-        log.info({
-          msg: 'successfully sent mails',
-          mailer_response: response.body,
-          mailer_response_code: response.statusCode,
-        });
-
-        return response;
-      })
-      .catch((err) => {
-        throw err;
-      });
-  };
-
   const requestQueue = () => {
     return new Queue(config.get('mailer.queue'), {
       connection: {
@@ -192,36 +169,6 @@ if (config.has('redis') && config.has('redis.host') && config.has('redis.port') 
       }, {
         removeOnComplete: true,
       });
-    },
-    sendMail (template, user, data) {
-      if (!(template in mailTemplates)) {
-        return Promise.reject(
-          new Error(`template ${template} not implemented`)
-        );
-      }
-
-      const {
-        payload = {},
-        attachment,
-        recipient = { address: user.email, name: user.name },
-      } = mailTemplates[template](user, data);
-
-      // add user and origin to payload
-      payload.user = user;
-      payload.origin = config.get('mailer.origin');
-
-      // complete the payload
-      const mailRequestPayload = [
-        {
-          template,
-          lang: user.language,
-          recipient,
-          payload,
-          attachment,
-        },
-      ];
-
-      return requestMailer(mailRequestPayload);
-    },
+    }
   };
 }

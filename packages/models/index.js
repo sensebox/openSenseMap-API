@@ -25,7 +25,7 @@ config.util.setModuleDefaults('openSenseMap-API-models', {
       port: 6379,
       username: '',
       password: '',
-      db: 0
+      db: 0,
     },
     mailer: {
       url: '',
