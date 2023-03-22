@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+## v3.0.0
+
+- Upgrade `restify` to v9.0.0
+- Add SPS30 sensors
+- Remove old mailer and add Redis based queue system
+
 ## v2.0.3
 
 - Change handling `near` parameter (#694)
@@ -21,7 +27,7 @@
 - Added `sharedBoxes` functionality (#605)
 
 ## v1.3.1
-- Add SPS30 sensor 
+- Add SPS30 sensor
 - Update @sensebox/node-sketch-templater to v1.13.0
 
 ## v1.2.0
