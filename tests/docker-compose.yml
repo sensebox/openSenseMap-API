@@ -26,14 +26,21 @@ services:
               "salt_factor": 1
             },
             "image_folder": "/userimages/",
-
             "integrations": {
               "ca_cert": "-----BEGIN CERTIFICATE-----\nMIIE8jCCAtqgAwIBAgIBATANBgkqhkiG9w0BAQsFADAZMRcwFQYDVQQDEw5vcGVu\nU2Vuc2VNYXBDQTAeFw0xODAxMjQxMzQ1NDlaFw0yODAxMjQxMzQ1NDlaMBkxFzAV\nBgNVBAMTDm9wZW5TZW5zZU1hcENBMIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIIC\nCgKCAgEAtRv1MmOOMnL1vqaFF1uf6XzHvUUkFoQsktRMQgr4Kq4TpBJdt2yrEWAf\ngBup20//Hb3pu1tGHnINRlrfnRbu/0Twq0iXP+zjzrn1TIppbQb8Hr5gci25vY8e\nfc3ZRhYDrPyf+Z+F3U5Skr2itvBEshSiy3L53YG+JJ6ohPeVW3ePoBOIZvFYEGNV\nDsEbt3DVAjdFOfB4SypZG9UyX8xNUw7aAbjLib9CkdT2hEDiZ6iiKDklxZnNt1fm\nYQ/FGJRMd3ZTMddrGcexPSY1dQOJHrnlf+fVkahfqLD4RmVaL0O4cc/e/YIJQEZi\nblD+cUduKl0itkeXj1PEbYyngGixkJ+9+WuZvOwTqNrCgWU1uXrRH3UKn2XGYQau\nauq4AqnEgvMSev7nxdXEznzey1ugEeNSHXyyvj70KrUEHJ1kL4aL53YD0Xd8Y0hL\n88MHl3GkjkojZ68U0a/0TUSfTuv+JdP19HfZY5qVKst1309tlgaOiQXafAsiVBRr\ncieFHXxvoruQy/6pTwGRtfWbyujib+xXaTX36y08IXK0Jb45WJDoVgPswsHYqF6E\n/AH0NSRZrXckfMQviUea27/lOD1M96cwslDjvOngJdUu1zBGLdfQ8SWcs1HqdG7i\nq+Iuh/UGq4aJgRTENEBrc4kjQQyZszXBJmRxAWKIgN0h+jEzGIsCAwEAAaNFMEMw\nDgYDVR0PAQH/BAQDAgEGMBIGA1UdEwEB/wQIMAYBAf8CAQAwHQYDVR0OBBYEFJl6\n7zgZ/9GRVgb1dBglkSyXfGNRMA0GCSqGSIb3DQEBCwUAA4ICAQBYJIxwwt+/C1+6\nyjIDzQ6wkfdDWzBj9kfV90plp4zX7rhT+M2t/en0/lN2BgK3J1fw+PWbku6A19hA\nniZ/mBZrKki0UzzqGO1/ovh3izC2zeRL1lqwxdxj29+2waPk2vH/sy97AuY3q/5G\nE+H96RReOJZxysIAg2UxXpvgdupnTGMrh+fuU7iGm9NYLSLuD2SaZY/ZThSPFXOh\nb59W6gMmNKo6rN09jj994rJQfsxH2JOkqiTHfwXp3Ch4Zg80XC9RvvRk6S4dtnLe\npQy+Bg3YjQ+sSUIaNrvWoP8ut+9aHdfSlQi/7aYD7tYEhdTK7G++4RWZ0C31G9an\n6Yjcg1lJDWkP+ii91danhisdCwP2xteRXzpFM/uJ/dY+xBaX/Kp12bhF8PzbgJHa\nrsDApLlywVSrZtglSJ5eBhDbuLPEGqATWCExvlPO2R4MF1CID/+aybj5o9Zfmok4\nU8Z1QwLZElpTh1OhkYCyIzRJ2eG1Hx6svLh6nx4ai3iumbjzWh+E4xrncdTBA6hk\nRKF+yZKDfpFF8iwemKExthQwCSjqEGi6bYf02Gw6A226FSqdD2Tw0TghnXtT9fQ6\nyBx1uNSDDXdCFWmPzvZIMLe335mP2RKQrcGIbAUi0WgTuqFNyCshnoWmQigP6lqK\nC5m4Hth2wvbwzeqDD2kvRQfpipy9Cw==\n-----END CERTIFICATE-----\n",
               "key": "-----BEGIN RSA PRIVATE KEY-----\nMIIJKAIBAAKCAgEAtRv1MmOOMnL1vqaFF1uf6XzHvUUkFoQsktRMQgr4Kq4TpBJd\nt2yrEWAfgBup20//Hb3pu1tGHnINRlrfnRbu/0Twq0iXP+zjzrn1TIppbQb8Hr5g\nci25vY8efc3ZRhYDrPyf+Z+F3U5Skr2itvBEshSiy3L53YG+JJ6ohPeVW3ePoBOI\nZvFYEGNVDsEbt3DVAjdFOfB4SypZG9UyX8xNUw7aAbjLib9CkdT2hEDiZ6iiKDkl\nxZnNt1fmYQ/FGJRMd3ZTMddrGcexPSY1dQOJHrnlf+fVkahfqLD4RmVaL0O4cc/e\n/YIJQEZiblD+cUduKl0itkeXj1PEbYyngGixkJ+9+WuZvOwTqNrCgWU1uXrRH3UK\nn2XGYQauauq4AqnEgvMSev7nxdXEznzey1ugEeNSHXyyvj70KrUEHJ1kL4aL53YD\n0Xd8Y0hL88MHl3GkjkojZ68U0a/0TUSfTuv+JdP19HfZY5qVKst1309tlgaOiQXa\nfAsiVBRrcieFHXxvoruQy/6pTwGRtfWbyujib+xXaTX36y08IXK0Jb45WJDoVgPs\nwsHYqF6E/AH0NSRZrXckfMQviUea27/lOD1M96cwslDjvOngJdUu1zBGLdfQ8SWc\ns1HqdG7iq+Iuh/UGq4aJgRTENEBrc4kjQQyZszXBJmRxAWKIgN0h+jEzGIsCAwEA\nAQKCAgBsqjuyYh19k5BzNcKBQ05tb5sAqy19/QwphQvETISeRxgtx39HgQIbSMtd\nuDtwBU2S8NH+wkMOHWxtnDSzMoFv1FN60fE+P8pnzRerNxkOe7RmVd/UYi8h1296\nGDqXXLoT3ve1dMuC/2138iRhE0SEfPE4lOHqz9/gZPnD3jFVUiVw7IdZDNHD83Wj\nhqY0qJSF4de9bdUfdGdG1eKFrDVw8mZHxjMJkSJGEbtfmva9L2csLy3EpAXUTf9C\nmY2us7w1qV89dn0iWLi1cel9LgPl1bAn0FhKLvZGZvhwdHtqBH30e77V6GHYmOKS\nQjKIkU0+Sed76vS64I3pFQ2jdC2lEBmvYrdX4n8Ab/yWBi/KyouJW583KlevLbPk\n0GsDVQiolLLl4z5gcpGCoLH8jm/soGfXWyTBbd5Ei+01Zf/yYHTtYPh2WYLFBZ4z\nnnhbTcquOoqF44wXPRqOBKVX1amiMG4llmIne89DGlZQaP9A+4Q+o/5aTkInupwT\nBI2JRLe/YZb/0S/wOGKGFygvM1p1I/ToCg2FOX0ZWzkRZ9Sr9RAKMX3VHImYRSID\nszU/PSPxSAjy22u1vgO6wAAaOaO1OS4JwpKbhqVyjuvzvIwHMVfTgqyhIRsk39Ev\nuTqHTse8v6S+fJY3RDLR1ereWJgPpzKnDPxg2F5ROXVGaDZb0QKCAQEAzJ5c3mDz\nKsrsf0HpmK+w95gb4pPd529BLNVv/tKBNqUkg1jsYriL7nGLVNSKFDmIyokOb/sI\nqzDQRNg/4LanH8lhrmtmCeH05Tkz3Aj1IwF8I8/fr/57Aj0DgxFSJ3aDgys2q4ld\ngIR3fe4hIDF0rXb8bAYqOt7rfl3qvbRSsLjQCi358fHRQeMGDjyC9FZ6POwdQFAP\n531uXNYnnePnuXfuSgzVBp83pW3V8rW4YkpFoPhT38msVny63EAhRcoot/2X96Cd\njRQNq/5v8G0luBv2DEDSP/CDfTZKhkMaauf8KIACLeYYNTz2gFvDfa5TroqAe5De\nHZHfqh94wyBV9wKCAQEA4pZTGWk1S0WQz01AlMvRXiM7H7jEAmddRgrpQ2w7g+Ss\nkJesYzREZ7j/kIpK3ACuQXjW/Tjlnpkp206ocCIoIwExOVG4vsewDEGaYqOvllro\n+GW7O4DhwgeUWAao/Ge1T/gu+8z/VM9N88udbc0xq8P0jn6xial9rLkhll5rZDS7\niIz1mFAzrADU5c7TvElXs86KX+T6+/sE2nNwsImaZHC1oclIHl9WnJy/qCPYFS04\nY6q9vg+vOlzRc6KgmOp/5Jex2oQsXKx45v0O8+mfLlyT6CBw4rWb0ksHC3aM8zCr\ncGmgbzqVYYIewnZ//yRm98Mty8p/m3p3iNNzHExdDQKCAQBfrel1HtZ1+x9tPi/x\n8q2IiTr4zvXjg3VxdniBKoO7Pqt9M7aNTwg3viZNy3ipjmG1ezMiD7t0+UVZ+9ia\nxi4NwggIHDZBhsQR75adXB7seIRI5qoNTKzOViNvRUkqJNPIIQvWWEw9jTOm0hPx\nTs7lUg8koBldH+H0XAwpGsnT0weMywTmKpIUAglR3N/LSyirlijzaryVHWTeylEK\nFojDhB4LyEZQa2EE3QA/FtQaOeqnI5dsvIv2gSqLVP15+dbiehV2eEdTsb3W4AoN\n3avWlFSQVDs8JMYHZbyhXX1b4hBaC8l5Fu/Y7SHC0aXu/fYpVqBPp2UFZLG2hjLc\n4yDvAoIBACzF84mz5loHVwP/ieFdHPPzFj3AbsrizeWHRmySOHhpeUfhEKlRrKqq\nPaW8DerHH6fETwcedREPxtuVAWeW+ENieu2OnmjkYH8rf2w6V/nn4N0kjQjHANUs\nVj3GoyGtBIDW08Hh0hpaFFc2RtdpkoUUZYC6vC4tla3Jrz9dTO8yFFR5NhZw0qUM\nTQVUBzbPb0sSZvln78hW47Ce2wenSSDLvLhJY7zMrfqoZp685nfYxam8FV43DzMD\nIEgvPHi67aan6vb44yM02XcbThcYdOHeXUOjFWtW44F8XdoABP4RAe9mj9MqylXI\nNnfKnqQ19zrCEIySaQC6BGC/F6Hh3QkCggEBAMQxjQVI0eUBv8C+/e9HsbvnvtPz\nBSpGdKKDvp+vfw8dP0rxCFHeDeBglTOGOB4uTUGGkU2l6HDA/pFdSOmsiXLpc/Ai\nQX4n2sj5R5W4mCiYVuHWo/BCkEF7utcwHu3raBhnYeuUooISfe2S8A/66PF9lnO9\n+FVODW6Q+qdHNH349AXwtgOS/neg16I5hw0PgMkcNuJl+bgXlyy+0O8N2/37ofb1\nbvj+34qtubGRdgtSP/EF8NxYWIz3VVqVyHtPOKoAR2Aa1ilg8ixbS1KfiqZejY6u\nTZMPvBabA8anDKtUFq7OFkzPYxMYNkL4rZGltiZMPuRRJ5RKw+yNxaLVz3M=\n-----END RSA PRIVATE KEY-----\n",
               "cert": "-----BEGIN CERTIFICATE-----\nMIIFTTCCAzWgAwIBAgIRALQEmnFXPN2DhNRd0IV9DcAwDQYJKoZIhvcNAQELBQAw\nGTEXMBUGA1UEAxMOb3BlblNlbnNlTWFwQ0EwHhcNMTgwMTI0MTM0NTUzWhcNMjgw\nMTI0MTM0NTQ4WjAYMRYwFAYDVQQDDA1tYWlsZXJfY2xpZW50MIICIjANBgkqhkiG\n9w0BAQEFAAOCAg8AMIICCgKCAgEAtRv1MmOOMnL1vqaFF1uf6XzHvUUkFoQsktRM\nQgr4Kq4TpBJdt2yrEWAfgBup20//Hb3pu1tGHnINRlrfnRbu/0Twq0iXP+zjzrn1\nTIppbQb8Hr5gci25vY8efc3ZRhYDrPyf+Z+F3U5Skr2itvBEshSiy3L53YG+JJ6o\nhPeVW3ePoBOIZvFYEGNVDsEbt3DVAjdFOfB4SypZG9UyX8xNUw7aAbjLib9CkdT2\nhEDiZ6iiKDklxZnNt1fmYQ/FGJRMd3ZTMddrGcexPSY1dQOJHrnlf+fVkahfqLD4\nRmVaL0O4cc/e/YIJQEZiblD+cUduKl0itkeXj1PEbYyngGixkJ+9+WuZvOwTqNrC\ngWU1uXrRH3UKn2XGYQauauq4AqnEgvMSev7nxdXEznzey1ugEeNSHXyyvj70KrUE\nHJ1kL4aL53YD0Xd8Y0hL88MHl3GkjkojZ68U0a/0TUSfTuv+JdP19HfZY5qVKst1\n309tlgaOiQXafAsiVBRrcieFHXxvoruQy/6pTwGRtfWbyujib+xXaTX36y08IXK0\nJb45WJDoVgPswsHYqF6E/AH0NSRZrXckfMQviUea27/lOD1M96cwslDjvOngJdUu\n1zBGLdfQ8SWcs1HqdG7iq+Iuh/UGq4aJgRTENEBrc4kjQQyZszXBJmRxAWKIgN0h\n+jEzGIsCAwEAAaOBkDCBjTAOBgNVHQ8BAf8EBAMCA7gwHQYDVR0lBBYwFAYIKwYB\nBQUHAwEGCCsGAQUFBwMCMB0GA1UdDgQWBBSZeu84Gf/RkVYG9XQYJZEsl3xjUTAf\nBgNVHSMEGDAWgBSZeu84Gf/RkVYG9XQYJZEsl3xjUTAcBgNVHREEFTATggZtYWls\nZXKCCWxvY2FsaG9zdDANBgkqhkiG9w0BAQsFAAOCAgEAKh+FD9v6fuHsl9ZGMP6H\nOI2of3PJRLTEMdp2rKJ1V9ULmr7sCO3fz7vUWdyKMuJXmtt6RKWwZMQfL26fsM+l\nz18wWoNly5OhhrSf6gJF2zEEr+X6emTn/RPHejc6eQKFqrdypwi890PSmhUZShz8\nCHxbUqWLmlc6CYx6t3pDcQ4/ryr5kx9cPFiPovxo+7Cc8eTkRQQfiwBUnNlXiwIq\n5R9MCZR7/XjskJeV2WzqWeRAfQgvcCvAzCEyrb/I5bLYrBwQFnATxhPvfDjZ2E+E\nK6sE/MqEXzU1gQM/zaCzpd1pXMq7PF+NkEsHuOTdZ0CvM31LD+RwxUwuETTCFuj5\n9bfhq0CTUs3Cdot9kQ+jASWMGhAhMYolhjnd58rSF4DCG9rdCl877lC1S/oNpoUU\nSN6g7X8P7HgynQZTOjUadXNbsS92KubyjE0kS1krV6yh3JH+izfgdI+ABpcHzOAB\n2fE+vRfjVbM3qeE5t4HfD8FwZKhw+PUqrDr8qKQyRX1HPpd7wcF/9bd1mMsUkAdg\nVhnkGh9AP2jDDC9xvP/LbslU+UCRXoA5hW5suey+L2cF516iR55UNObAk/TyGjVm\neXVP290e3TZZ5v2BzJdbf2rT5N6DpKntauljfbc7KQm3HZ/2aGn9O3FvzYuhUxGE\nnNAr/VqDx2/WivNpl2OEz18=\n-----END CERTIFICATE-----\n",
               "mailer": {
                 "url": "https://mailer:3924/",
-                "origin": "http://osem-api:8000"
+                "origin": "http://osem-api:8000",
+                "queue": "mails"
+              },
+              "redis": {
+                "host": "redis-stack",
+                "port": 6379,
+                "username": "queue",
+                "password": "somepassword",
+                "db": 0
               },
               "mqtt": {
                 "url": "mqtt-osem-integration:3925"
@@ -46,139 +53,36 @@ services:
         }
     depends_on:
       - db
+      - redis-stack
 
   mailer:
-    image: sensebox/sensebox-mailer:${SENSEBOX_MAILER_TAG:-v0.0.1}
+    image: ghcr.io/opensensemap/mailer:main
+    platform: linux/amd64
     environment:
-      SENSEBOX_MAILER_SERVER_CERT: |-
-        -----BEGIN CERTIFICATE-----
-        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
-        E9oQ4S8eb7hnqaXfQuJtMsg=
-        -----END CERTIFICATE-----
-      SENSEBOX_MAILER_SERVER_KEY: |-
-        -----BEGIN RSA PRIVATE KEY-----
-        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
-        -----END RSA PRIVATE KEY-----
-      SENSEBOX_MAILER_CA_CERT: |-
-        -----BEGIN CERTIFICATE-----
-        MIIE8jCCAtqgAwIBAgIBATANBgkqhkiG9w0BAQsFADAZMRcwFQYDVQQDEw5vcGVu
-        U2Vuc2VNYXBDQTAeFw0xODAxMjQxMzQ1NDlaFw0yODAxMjQxMzQ1NDlaMBkxFzAV
-        BgNVBAMTDm9wZW5TZW5zZU1hcENBMIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIIC
-        CgKCAgEAtRv1MmOOMnL1vqaFF1uf6XzHvUUkFoQsktRMQgr4Kq4TpBJdt2yrEWAf
-        gBup20//Hb3pu1tGHnINRlrfnRbu/0Twq0iXP+zjzrn1TIppbQb8Hr5gci25vY8e
-        fc3ZRhYDrPyf+Z+F3U5Skr2itvBEshSiy3L53YG+JJ6ohPeVW3ePoBOIZvFYEGNV
-        DsEbt3DVAjdFOfB4SypZG9UyX8xNUw7aAbjLib9CkdT2hEDiZ6iiKDklxZnNt1fm
-        YQ/FGJRMd3ZTMddrGcexPSY1dQOJHrnlf+fVkahfqLD4RmVaL0O4cc/e/YIJQEZi
-        blD+cUduKl0itkeXj1PEbYyngGixkJ+9+WuZvOwTqNrCgWU1uXrRH3UKn2XGYQau
-        auq4AqnEgvMSev7nxdXEznzey1ugEeNSHXyyvj70KrUEHJ1kL4aL53YD0Xd8Y0hL
-        88MHl3GkjkojZ68U0a/0TUSfTuv+JdP19HfZY5qVKst1309tlgaOiQXafAsiVBRr
-        cieFHXxvoruQy/6pTwGRtfWbyujib+xXaTX36y08IXK0Jb45WJDoVgPswsHYqF6E
-        /AH0NSRZrXckfMQviUea27/lOD1M96cwslDjvOngJdUu1zBGLdfQ8SWcs1HqdG7i
-        q+Iuh/UGq4aJgRTENEBrc4kjQQyZszXBJmRxAWKIgN0h+jEzGIsCAwEAAaNFMEMw
-        DgYDVR0PAQH/BAQDAgEGMBIGA1UdEwEB/wQIMAYBAf8CAQAwHQYDVR0OBBYEFJl6
-        7zgZ/9GRVgb1dBglkSyXfGNRMA0GCSqGSIb3DQEBCwUAA4ICAQBYJIxwwt+/C1+6
-        yjIDzQ6wkfdDWzBj9kfV90plp4zX7rhT+M2t/en0/lN2BgK3J1fw+PWbku6A19hA
-        niZ/mBZrKki0UzzqGO1/ovh3izC2zeRL1lqwxdxj29+2waPk2vH/sy97AuY3q/5G
-        E+H96RReOJZxysIAg2UxXpvgdupnTGMrh+fuU7iGm9NYLSLuD2SaZY/ZThSPFXOh
-        b59W6gMmNKo6rN09jj994rJQfsxH2JOkqiTHfwXp3Ch4Zg80XC9RvvRk6S4dtnLe
-        pQy+Bg3YjQ+sSUIaNrvWoP8ut+9aHdfSlQi/7aYD7tYEhdTK7G++4RWZ0C31G9an
-        6Yjcg1lJDWkP+ii91danhisdCwP2xteRXzpFM/uJ/dY+xBaX/Kp12bhF8PzbgJHa
-        rsDApLlywVSrZtglSJ5eBhDbuLPEGqATWCExvlPO2R4MF1CID/+aybj5o9Zfmok4
-        U8Z1QwLZElpTh1OhkYCyIzRJ2eG1Hx6svLh6nx4ai3iumbjzWh+E4xrncdTBA6hk
-        RKF+yZKDfpFF8iwemKExthQwCSjqEGi6bYf02Gw6A226FSqdD2Tw0TghnXtT9fQ6
-        yBx1uNSDDXdCFWmPzvZIMLe335mP2RKQrcGIbAUi0WgTuqFNyCshnoWmQigP6lqK
-        C5m4Hth2wvbwzeqDD2kvRQfpipy9Cw==
-        -----END CERTIFICATE-----
-      SENSEBOX_MAILER_SMTP_SERVER: mailhog
-      SENSEBOX_MAILER_SMTP_PORT: 1025
-      SENSEBOX_MAILER_SMTP_USER: ignored
-      SENSEBOX_MAILER_SMTP_PASSWORD: ignored
-      SENSEBOX_MAILER_FROM_DOMAIN: senseboxtest
-
+      - SMTP_HOST=mailhog
+      - SMTP_PORT=1025
+      - SMTP_SECURE=false
+      - SMTP_USERNAME=ignored
+      - SMTP_PASSWORD=ignored
+      - REDIS_HOST=redis-stack
+      - REDIS_PORT=6379
+      - REDIS_USERNAME=queue
+      - REDIS_PASSWORD=somepassword
+      - REDIS_DB=0
+      - BULLMQ_QUEUE_NAME=mails
     depends_on:
       - mailhog
+      - redis-stack
+
   mailhog:
     image: mailhog/mailhog:v1.0.1
+    platform: linux/amd64
     ports:
       - "8025:8025"
 
   mqtt-osem-integration:
     image: ghcr.io/sensebox/mqtt-osem-integration:v0.1.0
+    platform: linux/amd64
     depends_on:
       - db
     environment:
@@ -204,6 +108,13 @@ services:
       - "8883:8883"
     volumes:
       - ./mosquitto:/mosquitto/config
+
+  redis-stack:
+    image: redis/redis-stack-server:latest
+    volumes:
+      - ./redis/local-redis-stack.conf:/redis-stack.conf
+    ports:
+      - 6379:6379
 
   db:
     image: mongo:${MONGO_TAG:-5}

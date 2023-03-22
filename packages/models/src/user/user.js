@@ -644,7 +644,8 @@ userSchema.statics.transferOwnershipOfBox = function transferOwnershipOfBox (new
 };
 
 userSchema.methods.mail = function mail (template, data) {
-  return mails.sendMail(template, this, data);
+  // return mails.sendMail(template, this, data);
+  return mails.addToQueue(template, this, data);
 };
 
 const handleE11000 = function (error, res, next) {
