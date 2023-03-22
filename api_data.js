@@ -451,7 +451,7 @@ define({ "api": [
           },
           {
             "group": "Parameter",
-            "type": "String",
+            "type": "Number",
             "optional": true,
             "field": "near",
             "description": "<p>A comma separated coordinate, if specified, the api will only return senseBoxes within maxDistance (in m) of this location</p>"
@@ -795,7 +795,8 @@ define({ "api": [
               "\"soundlevelmeter\"",
               "\"windspeed\"",
               "\"scd30\"",
-              "\"dps310\""
+              "\"dps310\"",
+              "\"sps30\""
             ],
             "optional": true,
             "field": "sensorTemplates",
