@@ -1,5 +1,12 @@
 # openSenseMap API Changelog
 
+## v11.0.0
+
+- Use @sensebox/opensensemap-api-models v3.0.0
+- Update Github Action dependencies
+- Update restify
+- Update Readme information
+
 ## v10.2.3
 
 - Use @sensebox/opensensemap-api-models v2.0.3
