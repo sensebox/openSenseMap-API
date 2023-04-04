@@ -178,13 +178,14 @@
   resolved "https://registry.yarnpkg.com/@sensebox/osem-protos/-/osem-protos-1.1.0.tgz#a7de8bc6be867953f1309181a012063c23299e79"
   integrity sha512-H+nUVcWlT0dvIqfJnYHuX9JBcCkP1ZKGE5YTRNWPbAEdZ11h+srpQsmeI58wK5hJcdukaZAjc4Dy96IeGM77aA==
 
-"@sensebox/sketch-templater@^1.13.1-beta.0":
-  version "1.13.1-beta.0"
-  resolved "https://registry.yarnpkg.com/@sensebox/sketch-templater/-/sketch-templater-1.13.1-beta.0.tgz#a1c2b3b879e448f78cff86ba5da2725d255cead6"
-  integrity sha512-Gn6eCcEPT2blnlm7K6GZ4LVAWkjbwdkzLY/jYQPiH4apyHLj1DuO2YX0T8soPyZq7fnZ+IfSSSNohfsUrV93rg==
+"@sensebox/sketch-templater@^1.13.1-beta.1":
+  version "1.13.1-beta.1"
+  resolved "https://registry.yarnpkg.com/@sensebox/sketch-templater/-/sketch-templater-1.13.1-beta.1.tgz#518b8686b17da974748816c8b95287540c90a627"
+  integrity sha512-DrqBrsJ7HAvHU9H/2/DIfYrp5rdrsY8TyUWmen7xf69wYEJkv7Jm1VEX7lXCZGxuY+oUk/i1q9qK21gDgoDA9g==
   dependencies:
     config "^3.3.7"
     dedent "^0.7.0"
+    eol "^0.9.1"
 
 "@sindresorhus/is@^4.0.0":
   version "4.0.0"
@@ -1316,6 +1317,11 @@ entities@^2.0.0:
   version "2.1.0"
   resolved "https://registry.yarnpkg.com/entities/-/entities-2.1.0.tgz#992d3129cf7df6870b96c57858c249a120f8b8b5"
   integrity sha512-hCx1oky9PFrJ611mf0ifBLBRW8lUUVRlFolb5gWRfIELabBlbp9xZvrqZLZAs+NxFnbfQoeGd8wDkygjg7U85w==
+
+eol@^0.9.1:
+  version "0.9.1"
+  resolved "https://registry.yarnpkg.com/eol/-/eol-0.9.1.tgz#f701912f504074be35c6117a5c4ade49cd547acd"
+  integrity sha512-Ds/TEoZjwggRoz/Q2O7SE3i4Jm66mqTDfmdHdq/7DKVk3bro9Q8h6WdXKdPqFLMoqxrDK5SVRzHVPOS6uuGtrg==
 
 es6-promise@3.2.1:
   version "3.2.1"
