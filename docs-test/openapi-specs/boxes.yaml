@@ -1,0 +1,578 @@
+openapi: 3.1.0
+info:
+  title: boxes
+  version: 1.0.0
+
+servers:
+  - url: https://api.opensensemap.org
+    description: Main (production) server
+
+paths:
+  ####################
+  # boxes operations #
+  ####################
+  
+  # get all phenomena
+  /boxes/{senseBoxId}:
+    get:
+      parameters:
+        - in: path
+          name: senseBoxId
+          description: The ID of the senseBox you are referring to.
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: format
+          description: "The format the sensor data is returned in. If `geojson`, a GeoJSON Point Feature is returned. Default value: `json`"
+          required: false
+          schema:
+            type: string
+            enum:
+              - json
+              - geojson
+      summary: Get one senseBox
+      description: Retrieves one senseBox as JSON or GeoJSON Point Feature 
+      tags:
+        - boxes
+      operationId: getBox
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  _id: 
+                    type: string
+                    description: the id of the senseBox
+                  createdAt:
+                    type: string
+                    format: date-time
+                    description: time of creation
+                  exposure:
+                    type: string
+                    enum: 
+                      - outdoor
+                      - indoor
+                      - mobile
+                      - unknown
+                    description: the exposure of the senseBox
+                  grouptag:
+                    type: string
+                    description: a tag that marks the belonging of the senseBox to a group of boxes with the same tag
+                  image:
+                    type: string
+                    description: unique identifier for the image showing the senseBox that is uploaded to the openSenseMap
+                  currentLocation:
+                    type: object
+                    description: last registered location of the senseBox
+                    properties:
+                      coordinates:
+                        type: array
+                        description: cordinates of the location in (lng/lat)
+                        items:
+                          type: number
+                          format: float
+                        minItems: 2
+                        maxItems: 2
+                      timestamp:
+                        type: string
+                        format: date-time
+                      type:
+                        type: string
+                        enum:
+                          - Point
+                  name:
+                    type: string
+                    description: the name of the senseBox
+                  sensors:
+                    type: array
+                    description: array with all the sensors that are connected to the senseBox
+                    items:
+                      type: object
+                      properties:
+                        _id:
+                          type: string
+                          description: the id of the sensor
+                        sensorType:
+                          type: string
+                          description: sensor name/abbreviation
+                        title:
+                          type: string
+                          description: the title of the phenomenon the sensor measures
+                        unit:
+                          type: string
+                          description: the unit the sensor measures in (notation)
+                        lastMeasurement:
+                          type: object
+                          description: time and value of the last measurement taken by the sensor
+                          properties:
+                            value:
+                              type: number
+                              format: float
+                            createdAt:
+                              type: string
+                              format: date-time
+                              description: time of measurement
+                        icon:
+                          type: string
+                  updatedAt:
+                    type: string
+                    format: date-time
+                    description: time of last update
+              example:
+                _id: 57000b8745fd40c8196ad04c
+                createdAt: 2016-06-02T11:22:51.817Z
+                exposure: outdoor
+                grouptag: ""
+                image: 57000b8745fd40c8196ad04c.png?1466435154159
+                currentLocation:
+                  coordinates: [7.64568, 51.962372]
+                  timestamp: '2016-06-02T11:22:51.817Z'
+                  type: Point
+                name: Oststr/Mauritzsteinpfad
+                sensors:
+                  - _id: 57000b8745fd40c8196ad04e
+                    lastMeasurement:
+                      value: 0
+                      createdAt: 2016-11-11T21:22:01.675Z
+                    sensorType: VEML6070
+                    title: UV-Intensität
+                    unit: μW/cm²
+                  - _id: 57000b8745fd40c8196ad04f
+                    lastMeasurement:
+                      value: 0
+                      createdAt: 2016-11-11T21:22:01.675Z
+                    sensorType: TSL45315
+                    title: Beleuchtungsstärke
+                    unit: lx
+                  - _id: 57000b8745fd40c8196ad050
+                    lastMeasurement:
+                      value: 1019.21
+                      createdAt: 2016-11-11T21:22:01.675Z
+                    sensorType: BMP280
+                    title: Luftdruck
+                    unit: hPa
+                  - _id: 57000b8745fd40c8196ad051
+                    lastMeasurement:
+                      value: 99.38
+                      createdAt: 2016-11-11T21:22:01.675Z
+                    sensorType: HDC1008
+                    title: rel. Luftfeuchte
+                    unit: '%'
+                  - _id: 57000b8745fd40c8196ad052
+                    lastMeasurement:
+                      value: 0.21
+                      createdAt: 2016-11-11T21:22:01.675Z
+                    sensorType: HDC1008
+                    title: Temperatur
+                    unit: °C
+                  - _id: 576996be6c521810002479dd
+                    sensorType: WiFi
+                    unit: dBm
+                    title: Wifi-Stärke
+                    lastMeasurement:
+                      value: -66
+                      createdAt: 2016-11-11T21:22:01.675Z
+                  - _id: 579f9eae68b4a2120069edc8
+                    sensorType: VCC
+                    unit: V
+                    title: Eingangsspannung
+                    lastMeasurement:
+                      value: 2.73
+                      createdAt: 2016-11-11T21:22:01.675Z
+                    icon: osem-shock
+                updatedAt: 2016-11-11T21:22:01.686Z
+
+
+  # get all senseBoxes
+  /boxes:
+    get:
+      parameters:
+        - in: query
+          name: name
+          description: Search string to find boxes by name, if specified all other parameters are ignored.
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: limit
+          description: "Limit the search results. Default value: `5`"
+          required: false
+          schema:
+            type: integer
+        - in: query
+          name: date
+          description: "One or two RFC 3339 timestamps at which boxes should provide measurements. Use in combination with `phenomenon`."
+          required: false
+          schema:
+            type: string
+            format: date-time
+        - in: query
+          name: phenomenon
+          description: "A sensor phenomenon (determined by sensor name) such as `temperature`, `humidity` or `UV intensity`. Use in combination with `date`."
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: format
+          description: "The format the sensor data is returned in. If `geojson`, a GeoJSON Point Feature is returned. Default value: `json`"
+          required: false
+          schema:
+            type: string
+            enum:
+              - json
+              - geojson
+        - in: query
+          name: grouptag
+          description: "Only return boxes with this grouptag. Allows to specify multiple separated with a comma."
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: model
+          description: "Only return boxes with this model. Allows to specify multiple separated with a comma."
+          required: false
+          schema:
+            type: string
+            enum:
+              - homeEthernet
+              - homeWifi
+              - homeEthernetFeinstaub
+              - homeWifiFeinstaub
+              - luftdaten_sds011"
+              - luftdaten_sds011_dht11
+              - luftdaten_sds011_dht22
+              - luftdaten_sds011_bmp180
+              - luftdaten_sds011_bme280
+        - in: query
+          name: classify
+          description: "If specified, the API will classify the boxes accordingly to their last measurements. Default value: `false`"
+          required: false
+          schema:
+            type: boolean
+        - in: query
+          name: minimal
+          description: "If specified, the API will only return a minimal set of box metadata consisting of [`_id`, `updatedAt`, `currentLocation`, `exposure`, `name`] for a fast response. Default value: `false`"
+          required: false
+          schema:
+            type: boolean
+        - in: query
+          name: full
+          description: "If true the API will return populated `lastMeasurements` (use this with caution for now, expensive on the database). Default value: `false`"
+          required: false
+          schema:
+            type: boolean
+        - in: query
+          name: near
+          description: "A comma separated coordinate, if specified, the api will only return senseBoxes within maxDistance (in m) of this location."
+          required: false
+          schema:
+            type: boolean
+          example: "`7.625799,51.962541`"
+        - in: query
+          name: maxDistance
+          description: "The amount of meters around the `near` parameter that the API will search for senseBoxes. Default value: `1000`"
+          required: false
+          schema:
+            type: integer
+        - in: query
+          name: exposure
+          description: "Only include boxes with this exposure. Allows to specify multiple exposures separated by comma (Example: `indoor,mobile`)"
+          required: false
+          schema:
+            type: string
+            enum:
+              - indoor
+              - outdoor
+              - mobile
+              - unknown
+        - in: query
+          name: bbox
+          description: "A bounding box containing four WGS84 coordinates separated by comata (,). Order is: longitude southwest, latitude southwest, longitude northeast, latitude northeast. Minimal and maximal values are: `-180`, `180` for longitude and `-90`, `90` for latitude."
+          required: false
+          schema:
+            type: string
+          example: "`7.599792,51.947545,7.652664,51.975999`"
+      summary: Get all senseBoxes
+      description: Retrieves all senseBoxes filtered by specified parameters. With the optional `date` and `phenomenon` parameters you can find senseBoxes that have submitted data around that time, +/- 4 hours, or specify two dates separated by a comma.
+      tags:
+        - boxes
+      operationId: getBoxes
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                description: Array with all senseBoxes retrieved
+                items:
+                  type: object
+                  properties:
+                    _id: 
+                      type: string
+                      description: the id of the senseBox
+                    createdAt:
+                      type: string
+                      format: date-time
+                      description: time of creation
+                    exposure:
+                      type: string
+                      enum: 
+                        - outdoor
+                        - indoor
+                      description: the exposure of the senseBox
+                    grouptag:
+                      type: string
+                      description: a tag that marks the belonging of the senseBox to a group of boxes with the same tag
+                    image:
+                      type: string
+                      description: unique identifier for the image showing the senseBox that is uploaded to the openSenseMap
+                    currentLocation:
+                      type: object
+                      description: last registered location of the senseBox
+                      properties:
+                        coordinates:
+                          type: array
+                          description: cordinates of the location in (lng/lat)
+                          items:
+                            type: number
+                            format: float
+                          minItems: 2
+                          maxItems: 2
+                        timestamp:
+                          type: string
+                          format: date-time
+                        type:
+                          type: string
+                          enum:
+                            - Point
+                    name:
+                      type: string
+                      description: the name of the senseBox
+                    sensors:
+                      type: array
+                      description: array with all the sensors that are connected to the senseBox
+                      items:
+                        type: object
+                        properties:
+                          _id:
+                            type: string
+                            description: the id of the sensor
+                          sensorType:
+                            type: string
+                            description: sensor name/abbreviation
+                          title:
+                            type: string
+                            description: the title of the phenomenon the sensor measures
+                          unit:
+                            type: string
+                            description: the unit the sensor measures in (notation)
+                          lastMeasurement:
+                            type: object
+                            description: time and value of the last measurement taken by the sensor
+                            properties:
+                              value:
+                                type: number
+                                format: float
+                              createdAt:
+                                type: string
+                                format: date-time
+                                description: time of measurement
+                          icon:
+                            type: string
+                    updatedAt:
+                      type: string
+                      format: date-time
+                      description: time of last update
+    # post:
+    #   security:
+    #     - bearerAuth: []
+    #   summary: Post new senseBox
+    #   description: Create a new senseBox. This method allows you to submit a new senseBox.
+    #   tags:
+    #     - boxes
+    #   operationId: postNewBox
+    #   requestBody:
+    #     - application/json:
+    #         schema:
+    #           type: object
+    #           required:
+    #             - name
+    #             - exposure
+    #             - location
+    #           properties:
+    #             name:
+    #               type: string
+    #               description: the name of the senseBox
+    #             grouptag:
+    #               type: string
+    #               description: a tag that marks the belonging of the senseBox to a group of boxes with the same tag
+    #             exposure:
+    #               type: string
+    #               description: the exposure of this senseBox
+    #               enum: 
+    #                 - outdoor
+    #                 - indoor
+    #                 - mobile
+    #                 - unknown
+    #             location:
+    #               type: object
+    #               description: the coordinates of this senseBox
+    #               required:
+    #                 - lat
+    #                 - lng
+    #               properties:
+    #                 lat:
+    #                   type: number
+    #                   description: "Latitude between `-90` and `90`"
+    #                 lng:
+    #                   type: number
+    #                   description: "Longitude between `-180` and `180`"
+    #                 height:
+    #                   type: number
+    #                   description: Height above ground in meters.
+    #             model:
+    #               type: string
+    #               description: specify the model if you want to use a predefined senseBox model, autocreating sensor definitions
+    #               enum:
+    #                - homeV2Lora
+    #                - homeV2Ethernet
+    #                - homeV2Wifi
+    #                - homeEthernet
+    #                - homeWifi
+    #                - homeEthernetFeinstaub
+    #                - homeWifiFeinstaub
+    #                - luftdaten_sds011
+    #                - luftdaten_sds011_dht11
+    #                - luftdaten_sds011_dht22
+    #                - luftdaten_sds011_bmp180
+    #                - luftdaten_sds011_bme280
+    #                - hackair_home_v2"
+    #             sensors:
+    #               type: Array
+    #               description: "An array containing the sensors of this senseBox. Only use if `model` is unspecified."
+    #               items:
+    #                 type: object
+    #                 required:
+    #                   - title
+    #                   - unit
+    #                   - sensorType
+    #                 description: A single sensor for the nested Sensor parameter
+    #                 properties:
+    #                   title:
+    #                     type: string
+    #                     description: the title of the phenomenon the sensor observes
+    #                   unit:
+    #                     type: string
+    #                     description: the unit of the phenomenon the sensor observes
+    #                   sensorType:
+    #                     type: string
+    #                     description: the type of the sensor
+    #                   icon:
+    #                     type: string
+    #                     description: the visual representation for the openSenseMap of this sensor
+    #             sensorTemplates:
+    #               type: Array
+    #               description: Specify which sensors should be included.
+    #               items:
+    #                 type: string
+    #                 enum:
+    #                   - hdc1080
+    #                   - bmp280
+    #                   - tsl45315
+    #                   - veml6070
+    #                   - sds011
+    #                   - bme680
+    #                   - smt50
+    #                   - soundlevelmeter
+    #                   - windspeed
+    #                   - scd30
+    #                   - dps310
+    #             mqqt:
+    #               type: object
+    #               description: specify parameters of the MQTT integration for external measurement upload. Please see below for the accepted parameters
+    #               properties:
+    #                 enabled:
+    #                   type: boolean
+    #                   description: "enable or disable mqtt. Default value: `false`"
+    #                 url:
+    #                   type: string
+    #                   description: the url to the mqtt server
+    #                 topic:
+    #                   type: string
+    #                   description: the topic to subscribe to
+    #                 messageFormat:
+    #                   type: string
+    #                   enum:
+    #                     - json
+    #                     - csv
+    #                   description: the format the mqtt messages are in
+    #                 decodeOptions:
+    #                   type: string
+    #                   description: a json encoded string with options for decoding the message. 'jsonPath' for 'json' messageFormat
+    #                 connectionOptions:
+    #                   type: string
+    #                   description: a json encoded string with options to supply to the mqtt client (https://github.com/mqttjs/MQTT.js#client)
+    #             ttn:
+    #               type: object
+    #               required:
+    #                 - dev_id
+    #                 - app_id
+    #                 - profile
+    #               description: specify parameters for the TTN integration for measurement from TheThingsNetwork.org upload. Please see below for the accepted parameters
+    #               properties:
+    #                 dev_id:
+    #                   type: string
+    #                   description: The device ID recieved from TTN
+    #                 app_id:
+    #                   type: string
+    #                   description: The application ID recieved from TTN
+    #                 profile:
+    #                   type: string
+    #                   enum:
+    #                     - lora-serialization
+    #                     - sensebox/home
+    #                     - json
+    #                     - debug
+    #                     - cayenne-lpp
+    #                   description: A decoding profile matching the payload format. For details and configuration see https://github.com/sensebox/ttn-osem-integration#decoding-profiles
+    #                 decodeOptions:
+    #                   type: Array
+    #                   description: A JSON Array containing decoder configuration, needed for some profiles.
+    #                 port:
+    #                  type: number
+    #                  description: The TTN port to listen for messages. Optional, if not provided, all ports are used.
+    #             useAuth:
+    #               type: boolean
+    #               enum:
+    #                 - true
+    #                 - false
+    #               description: whether to use access_token or not for authentication
+    #             sharedBox:
+    #               type: boolean
+    #               enum:
+    #                 - true
+    #                 - false
+    #               description: whether to share this box (allows transfer to another user while still being able to read the secret and commit measurements)
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+
+
+# parameters:
+#   BoxIdParam:
+#     name: senseBoxId
+#     in: path
+#     description: The ID of the senseBox you are referring to.
+#     required: true
+#     schema:
+#       type: string
