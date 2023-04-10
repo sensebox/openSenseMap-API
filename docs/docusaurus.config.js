@@ -55,26 +55,26 @@ const config = {
             specPath: "openapi-specs/boxes.yaml",
             outputDir: "docs/Boxes",
           }, 
-          interpolation: { // Note: key is treated as the <id> and can be used to specify an API doc instance when using CLI commands
-            specPath: "openapi-specs/interpolation.yaml", // Path to designated spec file
-            outputDir: "docs/Interpolation", // Output directory for generated .mdx docs
-          },
-          measurements: {
-            specPath: "openapi-specs/measurements.yaml",
-            outputDir: "docs/Measurements",
-          },
-          misc: {
-            specPath: "openapi-specs/misc.yaml",
-            outputDir: "docs/Misc",
-          },
-          statistics: {
-            specPath: "openapi-specs/statistics.yaml",
-            outputDir: "docs/Statistics",
-          },
-          users: {
-            specPath: "openapi-specs/users.yaml",
-            outputDir: "docs/Users",
-          },
+          // interpolation: { // Note: key is treated as the <id> and can be used to specify an API doc instance when using CLI commands
+          //   specPath: "openapi-specs/interpolation.yaml", // Path to designated spec file
+          //   outputDir: "docs/Interpolation", // Output directory for generated .mdx docs
+          // },
+          // measurements: {
+          //   specPath: "openapi-specs/measurements.yaml",
+          //   outputDir: "docs/Measurements",
+          // },
+          // misc: {
+          //   specPath: "openapi-specs/misc.yaml",
+          //   outputDir: "docs/Misc",
+          // },
+          // statistics: {
+          //   specPath: "openapi-specs/statistics.yaml",
+          //   outputDir: "docs/Statistics",
+          // },
+          // users: {
+          //   specPath: "openapi-specs/users.yaml",
+          //   outputDir: "docs/Users",
+          // },
         }
       },
     ]
