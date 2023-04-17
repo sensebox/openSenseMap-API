@@ -1,5 +1,9 @@
 # openSenseMap API Changelog
 
+## v11.0.1
+
+- Use @sensebox/opensensemap-api-models v3.0.1
+
 ## v11.0.0
 
 - Use @sensebox/opensensemap-api-models v3.0.0
