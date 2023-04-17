@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## v3.0.1
+
+- Update `@sensebox/sketch-templater` to fix compiling bug
+
 ## v3.0.0
 
 - Upgrade `restify` to v9.0.0
