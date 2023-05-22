@@ -31,5 +31,9 @@
     "mocha": "^8.3.2",
     "mqtt": "^4.2.8",
     "randomgeojson": "^1.0.0"
+  },
+  "dependencies": {
+    "@novu/node": "^0.15.0",
+    "axios": "^1.4.0"
   }
 }
