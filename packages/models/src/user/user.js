@@ -549,8 +549,10 @@ userSchema.methods.updateUser = function updateUser ({ email, language, name, cu
     });
 };
 
-userSchema.methods.getBoxes = function getBoxes () {
+userSchema.methods.getBoxes = function getBoxes (page) {
   return Box.find({ _id: { $in: this.boxes } })
+    .limit(25)
+    .skip(page * 25)
     .populate(Box.BOX_SUB_PROPS_FOR_POPULATION)
     .then(function (boxes) {
       return boxes.map(b => b.toJSON({ includeSecrets: true }));
@@ -561,7 +563,7 @@ userSchema.methods.getSharedBoxes = function getSharedBoxes () {
   return Box.find({ _id: { $in: this.sharedBoxes } })
     .populate(Box.BOX_SUB_PROPS_FOR_POPULATION)
     .then(function (boxes) {
-      return boxes.map(b => b.toJSON({ includeSecrets: true }));
+      return boxes.map((b) => b.toJSON({ includeSecrets: true }));
     });
 };
 

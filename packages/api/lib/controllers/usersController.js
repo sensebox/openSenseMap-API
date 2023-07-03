@@ -247,12 +247,14 @@ const confirmEmailAddress = async function confirmEmailAddress (req, res) {
  * @apiName getUserBoxes
  * @apiDescription List all boxes and sharedBoxes of the signed in user with secret fields
  * @apiGroup Users
+ * @apiParam {Integer} page the selected page for pagination
  * @apiSuccess {String} code `Ok`
  * @apiSuccess {String} data A json object with a single `boxes` array field
  */
 const getUserBoxes = async function getUserBoxes (req, res) {
+  const { page } = req._userParams;
   try {
-    const boxes = await req.user.getBoxes();
+    const boxes = await req.user.getBoxes(page);
     const sharedBoxes = await req.user.getSharedBoxes();
     res.send(200, {
       code: 'Ok',
@@ -410,7 +412,12 @@ module.exports = {
     confirmEmailAddress,
   ],
   requestEmailConfirmation,
-  getUserBoxes,
+  getUserBoxes: [
+    retrieveParameters([
+      { name: 'page', dataType: 'Integer', defaultValue: 0, min: 0 }
+    ]),
+    getUserBoxes
+  ],
   updateUser: [
     checkContentType,
     retrieveParameters([
