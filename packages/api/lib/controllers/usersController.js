@@ -253,12 +253,13 @@ const confirmEmailAddress = async function confirmEmailAddress (req, res) {
  */
 const getUserBoxes = async function getUserBoxes (req, res) {
   const { page } = req._userParams;
+  req.user;
   try {
     const boxes = await req.user.getBoxes(page);
     const sharedBoxes = await req.user.getSharedBoxes();
     res.send(200, {
       code: 'Ok',
-      data: { boxes: boxes, sharedBoxes: sharedBoxes },
+      data: { boxes: boxes, boxes_count: req.user.boxes.length, sharedBoxes: sharedBoxes },
     });
   } catch (err) {
     return handleError(err);
