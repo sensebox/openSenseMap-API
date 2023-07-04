@@ -216,12 +216,14 @@ describe('openSenseMap API Routes: /boxes', function () {
     let boxId;
 
     return chakram
-      .get(`${BASE_URL}/user/me/boxes`, {
+      .get(`${BASE_URL}/users/me/boxes`, {
         headers: { Authorization: `Bearer ${jwt}` },
       })
       .then(function (response) {
         expect(response).to.have.status(200);
         expect(response).to.have.schema(getUserBoxesSchema);
+
+        return response;
       })
       .then(function (response) {
         boxId = response.body.data.boxes[0]._id;
@@ -735,25 +737,40 @@ describe('openSenseMap API Routes: /boxes', function () {
   it('should deny to retrieve a box of other user', function () {
     let otherJwt, otherBoxId;
 
-    return chakram.post(`${BASE_URL}/users/sign-in`, { name: 'mrtest2', email: 'tester3@test.test', passwort: '12345678' })
+    return chakram
+      .post(`${BASE_URL}/users/sign-in`, {
+        name: 'mrtest2',
+        email: 'tester3@test.test',
+        password: '12345678',
+      })
       .then(function (response) {
         expect(response).to.have.status(200);
-        expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
+        expect(response).to.have.header(
+          'content-type',
+          'application/json; charset=utf-8'
+        );
 
         expect(response.body.token).to.exist;
 
         otherJwt = response.body.token;
 
-        return chakram.get(`${BASE_URL}/users/me/boxes`, { headers: { 'Authorization': `Bearer ${otherJwt}` } });
+        return chakram.get(`${BASE_URL}/users/me/boxes`, {
+          headers: { Authorization: `Bearer ${otherJwt}` },
+        });
       })
       .then(function (response) {
         otherBoxId = response.body.data.boxes[0]._id;
 
-        return chakram.get(`${BASE_URL}/users/me/boxes/${otherBoxId}`, { headers: { 'Authorization': `Bearer ${jwt}` } });
+        return chakram.get(`${BASE_URL}/users/me/boxes/${otherBoxId}`, {
+          headers: { Authorization: `Bearer ${jwt}` },
+        });
       })
       .then(function (response) {
         expect(response).to.have.status(403);
-        expect(response).to.have.json({ code: 'Forbidden', message: 'User does not own this senseBox' });
+        expect(response).to.have.json({
+          code: 'Forbidden',
+          message: 'User does not own this senseBox',
+        });
       });
   });
 
