@@ -559,6 +559,19 @@ userSchema.methods.getBoxes = function getBoxes (page) {
     });
 };
 
+userSchema.methods.getBox = function getBox (boxId) {
+  const user = this;
+
+  // checkBoxOwner throws ModelError
+  user.checkBoxOwner(boxId);
+
+  return Box.findOne({ _id: boxId })
+    .populate(Box.BOX_SUB_PROPS_FOR_POPULATION)
+    .then(function (box) {
+      return box.toJSON({ includeSecrets: true });
+    });
+};
+
 userSchema.methods.getSharedBoxes = function getSharedBoxes () {
   return Box.find({ _id: { $in: this.sharedBoxes } })
     .populate(Box.BOX_SUB_PROPS_FOR_POPULATION)

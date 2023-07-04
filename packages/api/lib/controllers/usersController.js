@@ -253,13 +253,36 @@ const confirmEmailAddress = async function confirmEmailAddress (req, res) {
  */
 const getUserBoxes = async function getUserBoxes (req, res) {
   const { page } = req._userParams;
-  req.user;
   try {
     const boxes = await req.user.getBoxes(page);
     const sharedBoxes = await req.user.getSharedBoxes();
     res.send(200, {
       code: 'Ok',
       data: { boxes: boxes, boxes_count: req.user.boxes.length, sharedBoxes: sharedBoxes },
+    });
+  } catch (err) {
+    return handleError(err);
+  }
+};
+
+/**
+ * @api {get} /users/me/boxes/:boxId get specific box of the signed in user
+ * @apiName getUserBox
+ * @apiDescription Get specific box of the signed in user with secret fields
+ * @apiGroup Users
+ * @apiParam {Integer} page the selected page for pagination
+ * @apiSuccess {String} code `Ok`
+ * @apiSuccess {String} data A json object with a single `box` object field
+ */
+const getUserBox = async function getUserBox (req, res) {
+  const { boxId } = req._userParams;
+  try {
+    const box = await req.user.getBox(boxId);
+    res.send(200, {
+      code: 'Ok',
+      data: {
+        box
+      },
     });
   } catch (err) {
     return handleError(err);
@@ -413,11 +436,17 @@ module.exports = {
     confirmEmailAddress,
   ],
   requestEmailConfirmation,
+  getUserBox: [
+    retrieveParameters([
+      { predef: 'boxId', required: true }
+    ]),
+    getUserBox,
+  ],
   getUserBoxes: [
     retrieveParameters([
-      { name: 'page', dataType: 'Integer', defaultValue: 0, min: 0 }
+      { name: 'page', dataType: 'Integer', defaultValue: 0, min: 0 },
     ]),
-    getUserBoxes
+    getUserBoxes,
   ],
   updateUser: [
     checkContentType,
