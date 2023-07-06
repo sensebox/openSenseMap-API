@@ -31,5 +31,6 @@
     "mocha": "^8.3.2",
     "mqtt": "^4.2.8",
     "randomgeojson": "^1.0.0"
-  }
+  },
+  "version": "0.0.0"
 }
