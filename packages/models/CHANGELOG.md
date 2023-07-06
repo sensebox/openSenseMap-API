@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+## v3.1.0
+
+- Add `page` parameter to `getBoxes` method in user model
+- Add new `getBox` to user model for retreiving single box with secrets
+
 ## v3.0.1
 
 - Update `@sensebox/sketch-templater` to fix compiling bug
