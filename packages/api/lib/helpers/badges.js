@@ -1,6 +1,5 @@
 'use strict';
 
-//import axios, { get, post } from 'axios';
 const axios = require('axios');
 
 const config = require('config');
@@ -13,17 +12,22 @@ const username = config.get('myBadges.username');
 const password = config.get('myBadges.password');
 const client_id = config.get('myBadges.client_id');
 const client_secret = config.get('myBadges.client_secret');
+const osem_frontend = config.get('osem_frontend');
 
 // CONNECT TO API ENDPOINT WITH CREDENTIALS
 const getAccessToken = async function getAccessToken () {
-  await axios({
+  const accessData = await axios({
     method: 'POST',
     url: `${endpoint}/o/token`,
     data: `grant_type=password&username=${username}&password=${password}&client_id=${client_id}&client_secret=${client_secret}&scope=rw:serverAdmin`,
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded'
     }
+  }).then((response) => {
+    return response.data;
   });
+
+  return accessData;
 };
 
 // const getBadge = async function getBadge(badgeId) {
@@ -41,8 +45,21 @@ const getAccessToken = async function getAccessToken () {
 //     }
 // };
 
-const grantBadge = async function grantBadge (email, badgeClassEntityId) {
+const grantBadge = async function grantBadge (email, badgeClassEntityId, userId) {
   try {
+    // check if user is public
+    const isUserPublic = await axios({
+      url: `${osem_frontend}/explore/profile/${userId}/info`,
+      method: 'GET',
+    }).then(
+      (response) => {
+        return response.data.public;
+      }
+    );
+    if (!isUserPublic) {
+
+      return false;
+    }
     const accessData = await getAccessToken();
     // Check if user already has this badge
     const badges = await axios({
@@ -63,7 +80,6 @@ const grantBadge = async function grantBadge (email, badgeClassEntityId) {
         method: 'GET',
         params: { access_token: accessData.access_token },
       });
-
       // Grant badge with Badgr API
       const grant = await axios({
         url: `${endpoint}/v1/issuer/issuers/${ISSUERID}/badges/${badge.data.result[0].entityId}/assertions`,
@@ -84,7 +100,7 @@ const grantBadge = async function grantBadge (email, badgeClassEntityId) {
       // eslint-disable-next-line no-prototype-builtins
       const status = !grant.data.hasOwnProperty('revoked') || grant.data.revoked === false;
       if (status) {
-        await triggerNotification(email, { badge: badge.data.result[0] });
+        await triggerNotification(userId, { badge: badge.data.result[0] });
       }
 
       return status;
