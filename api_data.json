@@ -2704,12 +2704,69 @@
     }
   },
   {
+    "type": "get",
+    "url": "/users/me/boxes/:boxId",
+    "title": "get specific box of the signed in user",
+    "name": "getUserBox",
+    "description": "<p>Get specific box of the signed in user with secret fields</p>",
+    "group": "Users",
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "Integer",
+            "optional": false,
+            "field": "page",
+            "description": "<p>the selected page for pagination</p>"
+          }
+        ]
+      }
+    },
+    "success": {
+      "fields": {
+        "Success 200": [
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": false,
+            "field": "code",
+            "description": "<p><code>Ok</code></p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": false,
+            "field": "data",
+            "description": "<p>A json object with a single <code>box</code> object field</p>"
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "./packages/api/lib/controllers/usersController.js",
+    "groupTitle": "Users"
+  },
+  {
     "type": "post",
     "url": "/users/me/boxes",
     "title": "list all boxes and sharedBoxes of the signed in user",
     "name": "getUserBoxes",
     "description": "<p>List all boxes and sharedBoxes of the signed in user with secret fields</p>",
     "group": "Users",
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "Integer",
+            "optional": false,
+            "field": "page",
+            "description": "<p>the selected page for pagination</p>"
+          }
+        ]
+      }
+    },
     "success": {
       "fields": {
         "Success 200": [
