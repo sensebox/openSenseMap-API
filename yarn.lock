@@ -3197,10 +3197,10 @@ restify-errors@^8.0.2:
   optionalDependencies:
     safe-json-stringify "^1.0.4"
 
-restify@10.0.0:
-  version "10.0.0"
-  resolved "https://registry.yarnpkg.com/restify/-/restify-10.0.0.tgz#8675810d6b9f141c3f9e8bd25bfcee5380ba0fc7"
-  integrity sha512-J57tSX1EPGbqVBznQ619zyFMFQno750d3lDfocTiblcQd5FZhCLD26hcW/u7hrXWetltsxoPZv/86Jc9acKfaQ==
+restify@11.1.0:
+  version "11.1.0"
+  resolved "https://registry.yarnpkg.com/restify/-/restify-11.1.0.tgz#5296d55062fd4d27450a3dc219df3d7d8bcdaaa6"
+  integrity sha512-ng7uBlj4wpIpshhAjNNSd6JG5Eg32+zgync2gG8OlF4e2xzIflZo54GJ/qLs765OtQaVU+uJPcNOL5Atm2F/dg==
   dependencies:
     assert-plus "^1.0.0"
     csv "^6.2.2"
