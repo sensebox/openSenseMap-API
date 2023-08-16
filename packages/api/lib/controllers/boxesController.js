@@ -51,6 +51,9 @@ const
   handleError = require('../helpers/errorHandler'),
   jsonstringify = require('stringify-stream');
 
+// New PostgreSQL connector
+const db = require('../db');
+
 /**
  * @apiDefine Addons
  * @apiParam {String="feinstaub"} addon specify a sensor addon for a box.
@@ -215,45 +218,47 @@ const getBoxes = async function getBoxes (req, res) {
   // content-type is always application/json for this route
   res.header('Content-Type', 'application/json; charset=utf-8');
 
-  // default format
-  let stringifier = jsonstringify({ open: '[', close: ']' });
-  // format
-  if (req._userParams.format === 'geojson') {
-    stringifier = jsonstringify({ open: '{"type":"FeatureCollection","features":[', close: ']}' }, geoJsonStringifyReplacer);
-  }
+  const { rows } = await db.query('SELECT * FROM "Device"');
+  res.send(rows);
+  // // default format
+  // let stringifier = jsonstringify({ open: '[', close: ']' });
+  // // format
+  // if (req._userParams.format === 'geojson') {
+  //   stringifier = jsonstringify({ open: '{"type":"FeatureCollection","features":[', close: ']}' }, geoJsonStringifyReplacer);
+  // }
 
-  try {
-    let stream;
+  // try {
+  //   let stream;
 
-    // Search boxes by name
-    // Directly return results and do nothing else
-    if (req._userParams.name) {
-      stream = await Box.findBoxes(req._userParams);
-    } else {
-      if (req._userParams.minimal === 'true') {
-        stream = await Box.findBoxesMinimal(req._userParams);
-      } else {
-        stream = await Box.findBoxesLastMeasurements(req._userParams);
-      }
+  //   // Search boxes by name
+  //   // Directly return results and do nothing else
+  //   if (req._userParams.name) {
+  //     stream = await Box.findBoxes(req._userParams);
+  //   } else {
+  //     if (req._userParams.minimal === 'true') {
+  //       stream = await Box.findBoxesMinimal(req._userParams);
+  //     } else {
+  //       stream = await Box.findBoxesLastMeasurements(req._userParams);
+  //     }
 
-      if (req._userParams.classify === 'true') {
-        stream = stream
-          .pipe(new classifyTransformer())
-          .on('error', function (err) {
-            res.end(`Error: ${err.message}`);
-          });
-      }
-    }
+  //     if (req._userParams.classify === 'true') {
+  //       stream = stream
+  //         .pipe(new classifyTransformer())
+  //         .on('error', function (err) {
+  //           res.end(`Error: ${err.message}`);
+  //         });
+  //     }
+  //   }
 
-    stream
-      .pipe(stringifier)
-      .on('error', function (err) {
-        res.end(`Error: ${err.message}`);
-      })
-      .pipe(res);
-  } catch (err) {
-    return handleError(err);
-  }
+  //   stream
+  //     .pipe(stringifier)
+  //     .on('error', function (err) {
+  //       res.end(`Error: ${err.message}`);
+  //     })
+  //     .pipe(res);
+  // } catch (err) {
+  //   return handleError(err);
+  // }
 };
 
 /**
