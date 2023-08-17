@@ -1,4 +1,5 @@
 const { Queue } = require("bullmq");
+const config = require('config').get('badgr-queue')
 
 let queue;
 
@@ -6,7 +7,7 @@ const requestQueue = () => {
   if (queue) {
     return queue;
   }
-  queue = new Queue(config.get("mailer.queue"), {
+  queue = new Queue(config.get("queue-name"), {
     connection: {
       host: config.get("redis.host"),
       port: config.get("redis.port"),
