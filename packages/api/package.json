@@ -22,6 +22,7 @@
     "@turf/square-grid": "^6.3.0",
     "@turf/triangle-grid": "^6.3.0",
     "apicache": "^1.6.2",
+    "bullmq": "^3.10.1",
     "config": "^3.3.6",
     "csv-stringify": "^6.2.3",
     "dashify": "^2.0.0",

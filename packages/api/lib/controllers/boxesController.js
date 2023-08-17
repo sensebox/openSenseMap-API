@@ -39,6 +39,7 @@
 const
   { Box, User, Claim } = require('@sensebox/opensensemap-api-models'),
   { addCache, clearCache, checkContentType, redactEmail, postToMattermost } = require('../helpers/apiUtils'),
+  { grantBadge } = require('../helpers/badgrQuery'),
   { point } = require('@turf/helpers'),
   classifyTransformer = require('../transformers/classifyTransformer'),
   {
@@ -421,6 +422,11 @@ const postNewBox = async function postNewBox (req, res) {
         newBox._id
       }](https://opensensemap.org/explore/${newBox._id})`
     );
+    grantBadge({
+      badgeClassEntityId: '4xqx4qjfTwOSiK816Lr2tg',
+      user: req.user.email,
+      issuerEntityId: "oERPzHYrSKC8Cwxx3-IewA",
+    });
   } catch (err) {
     return handleError(err);
   }
