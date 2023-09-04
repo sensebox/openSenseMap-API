@@ -49,7 +49,10 @@ const
     validateDateNotPast
   } = require('../helpers/userParamHelpers'),
   handleError = require('../helpers/errorHandler'),
-  jsonstringify = require('stringify-stream');
+  jsonstringify = require('stringify-stream'),
+  { v4: uuidv4 } = require('uuid'),
+  bcrypt = require('bcrypt'),
+  { preparePasswordHash } = require('./usersController');
 
 // New PostgreSQL connector
 const db = require('../db');
@@ -136,19 +139,131 @@ const db = require('../db');
  *
  */
 const updateBox = async function updateBox (req, res) {
-  try {
-    let box = await Box.findBoxById(req._userParams.boxId, { lean: false, populate: false });
-    box = await box.updateBox(req._userParams);
-    if (box._sensorsChanged === true) {
-      req.user.mail('newSketch', box);
-    }
+  // ---- Postgres DB ----
 
-    res.send({ code: 'Ok', data: box.toJSON({ includeSecrets: true }) });
-    clearCache(['getBoxes']);
-  } catch (err) {
-    return handleError(err);
+  const boxId = req._userParams.boxId;
+  const newBoxData = req._userParams;
+
+  const updatedDevice = {
+    // updatedAt in production, should be self assigned
+    name: req.body.name,
+    updatedAt: new Date().toISOString(),
+    description: req.body.description,
+    exposure: req.body.exposure,
+    useAuth: true,
+    model: req.body.model,
+    public: true,
+    status: req.body.status,
+    latitude: req.body.location ? req.body.location.lat : undefined,
+    longitude: req.body.location ? req.body.location.lng : undefined,
+    userId: req.body.user_id
+  };
+  let setStatement = ''
+  for (const key in updatedDevice) {
+    if (Object.hasOwnProperty.call(updatedDevice, key)) {
+      const element = updatedDevice[key];
+      if (element) {
+        setStatement += `"${key}" = '${element}',`
+      }
+    }
   }
+  if (setStatement.endsWith(',')) {
+    setStatement = setStatement.slice(0, -1); // Remove the last character
+  }
+
+
+
+  const query = `
+      UPDATE "Device"
+      SET ${setStatement}
+      WHERE "id" = $1
+      RETURNING *;
+    `;
+  const values = [boxId];
+
+  try {
+    await db.query('BEGIN');
+
+    const result = await db.query(query, values);
+    // for (sensor in req.body.sensors) {
+    //   console.log(sensor);
+    await updateSensor(req.body.sensors, boxId)
+    // }
+    await db.query('COMMIT');
+    res.send({ code: 'Ok', data: updatedDevice });
+    return result.rows[0];
+  } catch (err) {
+    await db.query('ROLLBACK');
+    throw err;
+  }
+
+  // ---- Mongo DB ----
+  // try {
+  //   let box = await Box.findBoxById(req._userParams.boxId, { lean: false, populate: false });
+  //   box = await box.updateBox(req._userParams);
+  //   if (box._sensorsChanged === true) {
+  //     req.user.mail('newSketch', box);
+  //   }
+
+  //   res.send({ code: 'Ok', data: box.toJSON({ includeSecrets: true }) });
+  //   clearCache(['getBoxes']);
+  // } catch (err) {
+  //   return handleError(err);
+  // }
 };
+
+  // ---- Postgres DB ----
+async function updateSensor(sensorData, boxId) {
+  for (const { _id, title, unit, sensorType, status, icon, deleted, edited, new: isNew } of sensorData) {
+    console.log(_id, title, unit, sensorType, status, icon, deleted, edited, isNew);
+    const updatedAt = new Date().toISOString(); // Current ISO timestamp
+
+    const values = [];
+    const updateFields = [];
+    let query;
+
+    if (deleted) {
+      query = `
+            DELETE FROM "Sensor"
+            WHERE "id" = $1;
+          `;
+      values.push(_id);
+    } else if (edited && isNew) {
+      query = `
+            INSERT INTO "Sensor" ("id", "title", "unit", "sensorType", "status", "icon", "updatedAt", "deviceId")
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8);
+          `;
+      values.push(_id, title, unit, sensorType, status, icon, updatedAt, boxId);
+    } else if (edited && !deleted) {
+      if (title !== undefined) {
+        updateFields.push(`"title" = $${values.push(title)}`);
+      }
+      if (unit !== undefined) {
+        updateFields.push(`"unit" = $${values.push(unit)}`);
+      }
+      if (sensorType !== undefined) {
+        updateFields.push(`"sensorType" = $${values.push(sensorType)}`);
+      }
+      if (status !== undefined) {
+        updateFields.push(`"status" = $${values.push(status)}`);
+      }
+      if (icon !== undefined) {
+        updateFields.push(`"icon" = $${values.push(icon)}`);
+      }
+
+      query = `
+            UPDATE "Sensor"
+            SET ${updateFields.join(', ')}, "updatedAt" = $${values.push(updatedAt)}
+            WHERE "id" = $${values.push(_id)};
+          `;
+      console.log(query)
+    } else {
+      throw new Error(`Invalid operation for sensor with id ${_id}`);
+    }
+    await db.query(query, values)
+  }
+}
+
 
 /**
  * @api {get} /boxes/:senseBoxId/locations Get locations of a senseBox
@@ -171,12 +286,55 @@ const updateBox = async function updateBox (req, res) {
  * ]
  */
 const getBoxLocations = async function getBoxLocations (req, res) {
+  // ---- Postgres DB ----
+
+  const { boxId, format, fromDate, toDate } = req._userParams;
+
+  const query = `
+    SELECT
+      d."updatedAt" as timestamp,
+      ARRAY[d.longitude, d.latitude] AS coordinates,
+      'Point' AS type
+    FROM
+      "Device" d
+    WHERE
+      d.id = $1 
+      AND d."updatedAt" >= $2 
+      AND d."updatedAt" <= $3;
+  `;
+
+  let values = [boxId, fromDate, toDate];
+
   try {
-    const box = await Box.findBoxById(req._userParams.boxId, { onlyLocations: true, lean: false });
-    res.send(await box.getLocations(req._userParams));
+    let result = await db.query(query, values);
+    if (format === 'geojson') {
+      const geo = {
+        type: 'Feature',
+        geometry: { type: 'LineString', coordinates: [] },
+        properties: { timestamps: [] }
+      };
+
+      for (const l of result.rows) {
+        geo.geometry.coordinates.push(l.coordinates);
+        geo.properties.timestamps.push(l.timestamp);
+      }
+
+      result.rows = geo;
+    }
+    res.send(result.rows);
+    return result.rows;
   } catch (err) {
+    console.log("An error.")
     return handleError(err);
-  }
+  };
+
+  // ---- Mongo DB ---- 
+  // try {
+  //   const box = await Box.findBoxById(req._userParams.boxId, { onlyLocations: true, lean: false });
+  //   res.send(await box.getLocations(req._userParams));
+  // } catch (err) {
+  //   return handleError(err);
+  // }
 };
 
 const geoJsonStringifyReplacer = function geoJsonStringifyReplacer (key, box) {
@@ -217,9 +375,14 @@ const geoJsonStringifyReplacer = function geoJsonStringifyReplacer (key, box) {
 const getBoxes = async function getBoxes (req, res) {
   // content-type is always application/json for this route
   res.header('Content-Type', 'application/json; charset=utf-8');
-
-  const { rows } = await db.query('SELECT * FROM "Device"');
-  res.send(rows);
+  // ---- Postgres DB ----
+  try {
+    const { rows } = await db.query('SELECT * FROM "Device"');
+    res.send(rows);
+  } catch (err) {
+    return handleError(err);
+  }
+  // ---- Mongo DB ---- 
   // // default format
   // let stringifier = jsonstringify({ open: '[', close: ']' });
   // // format
@@ -364,21 +527,37 @@ const getBoxes = async function getBoxes (req, res) {
 
 const getBox = async function getBox (req, res) {
   const { format, boxId } = req._userParams;
-
+  
+  // ---- Postgres DB ----
   try {
-    const box = await Box.findBoxById(boxId);
-
+    const { rows } = await db.query(`SELECT * FROM "Device" WHERE id = '${boxId}';`);
+    console.log(rows)
     if (format === 'geojson') {
-      const coordinates = box.currentLocation.coordinates;
-      box.currentLocation = undefined;
-      box.loc = undefined;
-
+      const box = rows[0]
+      const coordinates = [box.longitude, box.latitude];
       return res.send(point(coordinates, box));
     }
-    res.send(box);
+    res.send(rows);
   } catch (err) {
     return handleError(err);
   }
+
+  // ---- Mongo DB ---- 
+  // try {
+  //   const box = await Box.findBoxById(boxId);
+
+  //   if (format === 'geojson') {
+  //     const coordinates = box.currentLocation.coordinates;
+  //     box.currentLocation = undefined;
+  //     box.loc = undefined;
+
+  //     return res.send(point(coordinates, box));
+  //   }
+  //   res.send(box);
+  // } catch (err) {
+  //   return handleError(err);
+  // }
+
 };
 
 /**
@@ -412,23 +591,114 @@ const getBox = async function getBox (req, res) {
  * @apiUse JWTokenAuth
  */
 const postNewBox = async function postNewBox (req, res) {
+  // ---- Postgres DB ----
+
   try {
-    let newBox = await req.user.addBox(req._userParams);
-    newBox = await Box.populate(newBox, Box.BOX_SUB_PROPS_FOR_POPULATION);
-    res.send(201, { message: 'Box successfully created', data: newBox });
-    clearCache(['getBoxes', 'getStats']);
-    postToMattermost(
-      `New Box: ${req.user.name} (${redactEmail(
-        req.user.email
-      )}) just registered "${newBox.name}" (${
-        newBox.model
-      }): [https://opensensemap.org/explore/${
-        newBox._id
-      }](https://opensensemap.org/explore/${newBox._id})`
-    );
-  } catch (err) {
-    return handleError(err);
+    await db.query('BEGIN');
+
+    const newDevice = {
+      // remove id & updatedAt in production, should be self assigned
+      id: uuidv4(),
+      updatedAt: new Date().toISOString().slice(0, 19).replace('T', ' '),
+      name: req.body.name,
+      description: req.body.description || null,
+      exposure: req.body.exposure,
+      useAuth: req.body.useAuth || false,
+      model: req.body.model || null,
+      public: req.body.public || false,
+      status: req.body.status || 'INACTIVE',
+      latitude: req.body.location.lat,
+      longitude: req.body.location.lng,
+      userId: req.body.user_id
+    };
+  
+  // Build dynamic SQL query
+  let query = `
+    INSERT INTO "Device" (id, name, exposure, "useAuth", public, status, latitude, longitude, "userId", "updatedAt"`;
+  
+  // Define placeholders and values for optional fields
+  const placeholders = [];
+  const values = [
+    newDevice.id,
+    newDevice.name,
+    newDevice.exposure,
+    newDevice.useAuth,
+    newDevice.public,
+    newDevice.status,
+    newDevice.latitude,
+    newDevice.longitude,
+    newDevice.userId,
+    newDevice.updatedAt,
+  ];
+  let valueString = '$1, $2, $3, $4, $5, $6, $7, $8, $9, $10'
+  
+  if (newDevice.description !== null) {
+    placeholders.push(', description');
+    valueString += `, $${values.push(newDevice.description)}`;
   }
+  
+  if (newDevice.model !== null) {
+    placeholders.push(', model');
+    valueString += `, $${values.push(newDevice.model)}`;
+  }
+    
+  query += placeholders.join('');
+  query += `
+    )
+    VALUES (
+      ${valueString}
+    )
+    RETURNING id;
+  `;
+
+  console.log(query);
+
+    const newBox = await db.query(query, values);
+    console.log('New device inserted with ID:', newBox.rows[0].id);
+
+    for (const sensorData of req.body.sensors) {
+      const insertSensorQuery = `
+        INSERT INTO "Sensor" ("id", "title", "unit", "sensorType", "deviceId", "updatedAt")
+        VALUES ($1, $2, $3, $4, $5, $6);
+      `;
+
+      const insertSensorValues = [
+        sensorData.id,
+        sensorData.title,
+        sensorData.unit,
+        sensorData.sensorType,
+        newBox.rows[0].id, // Use the ID of the inserted box
+        new Date().toISOString().slice(0, 19).replace('T', ' '),
+      ];
+
+      await db.query(insertSensorQuery, insertSensorValues);
+      console.log('New sensor with ID:', sensorData.id, " added to box.");
+    }
+    await db.query('COMMIT');
+    res.send(201, { message: 'Box successfully created', data: newBox.rows[0].id });
+  } catch (error) {
+    await db.query('ROLLBACK');
+    console.error('Error inserting new device:', error);
+    throw error;
+  }
+
+  // ---- Mongo DB ---- 
+  // try {
+  //   let newBox = await req.user.addBox(req._userParams);
+  //   newBox = await Box.populate(newBox, Box.BOX_SUB_PROPS_FOR_POPULATION);
+  //   res.send(201, { message: 'Box successfully created', data: newBox });
+  //   clearCache(['getBoxes', 'getStats']);
+  //   postToMattermost(
+  //     `New Box: ${req.user.name} (${redactEmail(
+  //       req.user.email
+  //     )}) just registered "${newBox.name}" (${
+  //       newBox.model
+  //     }): [https://opensensemap.org/explore/${
+  //       newBox._id
+  //     }](https://opensensemap.org/explore/${newBox._id})`
+  //   );
+  // } catch (err) {
+  //   return handleError(err);
 };
 
 /**
@@ -475,6 +745,30 @@ const getSketch = async function getSketch (req, res) {
   } catch (err) {
     return handleError(err);
   }
+
+  // ---- Postgres DB Work In Progress ----
+  // const { rows } = await db.query(`SELECT * FROM "Device" WHERE id = '${boxId}';`);
+  // const box = rows[0]
+  // const params = {
+  //   serialPort: req._userParams.serialPort,
+  //   soilDigitalPort: req._userParams.soilDigitalPort,
+  //   soundMeterPort: req._userParams.soundMeterPort,
+  //   windSpeedPort: req._userParams.windSpeedPort,
+  //   ssid: req._userParams.ssid,
+  //   password: req._userParams.password,
+  //   devEUI: req._userParams.devEUI,
+  //   appEUI: req._userParams.appEUI,
+  //   appKey: req._userParams.appKey,
+  //   display_enabled: req._userParams.display_enabled
+  // };
+
+  // // pass access token only if useAuth is true and access_token is available
+  // if (box.access_token) {
+  //   params.access_token = box.access_token;
+  // }
+
+  // res.send(box.getSketch(params));
+
 };
 
 /**
@@ -487,19 +781,58 @@ const getSketch = async function getSketch (req, res) {
  * @apiUse JWTokenAuth
  * @apiUse BoxIdParam
  */
-const deleteBox = async function deleteBox (req, res) {
+const deleteBox = async function deleteBox(req, res) {
   const { password, boxId } = req._userParams;
-
+  
+  // ---- Postgres DB ---- 
   try {
-    await req.user.checkPassword(password);
-    const box = await req.user.removeBox(boxId);
+    await db.query('BEGIN');
+
+    const user = req.user
+    
+    // Find user's hashed password
+    const passwordQuery = 'SELECT * FROM "Password" WHERE "userId" = $1';
+    const passwordResult = await db.query(passwordQuery, [user.id]);
+    const hashedPassword = passwordResult.rows[0];
+
+    if (!hashedPassword) {
+      throw new Error('Invalid password');
+    }
+
+    // Compare passwords using bcrypt
+    const isPasswordValid = await bcrypt.compare(preparePasswordHash(password), hashedPassword.hash);
+
+    if (!isPasswordValid) {
+      throw new Error('Password incorrect', { type: 'ForbiddenError' });
+    }
+
+    const deleteBoxQuery = 'DELETE FROM "Device" WHERE id = $1 RETURNING name';
+    const { rows } = await db.query(deleteBoxQuery, [boxId]);
+    await db.query('COMMIT');
+    // Send a response and perform other actions
     res.send({ code: 'Ok', message: 'box and all associated measurements marked for deletion' });
     clearCache(['getBoxes', 'getStats']);
-    postToMattermost(`Box deleted: ${req.user.name} (${redactEmail(req.user.email)}) just deleted "${box.name}" (${boxId})`);
+    postToMattermost(`Box deleted: ${user.name} (${redactEmail(user.email)}) just deleted "${rows[0].name}" ${boxId}`);
 
   } catch (err) {
+    await db.query('ROLLBACK');
+    console.error(err);
     return handleError(err);
   }
+
+  // ---- Mongo DB ----
+  // const { password, boxId } = req._userParams;
+
+  // try {
+  //   await req.user.checkPassword(password);
+  //   const box = await req.user.removeBox(boxId);
+  //   res.send({ code: 'Ok', message: 'box and all associated measurements marked for deletion' });
+  //   clearCache(['getBoxes', 'getStats']);
+  //   postToMattermost(`Box deleted: ${req.user.name} (${redactEmail(req.user.email)}) just deleted "${box.name}" (${boxId})`);
+
+  // } catch (err) {
+  //   return handleError(err);
+  // }
 };
 
 /**

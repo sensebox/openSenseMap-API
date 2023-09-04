@@ -8,6 +8,8 @@ const config = require('config'),
   moment = require('moment'),
   { User } = require('@sensebox/opensensemap-api-models'),
   { ForbiddenError } = require('restify-errors');
+const db = require('../db');
+
 
 const { algorithm: jwt_algorithm, secret: jwt_secret, issuer: jwt_issuer, validity_ms: jwt_validity_ms } = config.get('jwt');
 const refresh_token_validity_ms = config.get('refresh_token.validity_ms');
@@ -79,7 +81,8 @@ const refreshJwt = async function refreshJwt (refreshToken) {
 const jwtInvalidErrorMessage = 'Invalid JWT authorization. Please sign in to obtain new JWT.';
 
 const verifyJwt = function verifyJwt (req, res, next) {
-  // check if Authorization header is present
+// ---- Postgres DB ----
+  // Check if Authorization header is present
   const rawAuthorizationHeader = req.header('authorization');
   if (!rawAuthorizationHeader) {
     return next(new ForbiddenError(jwtInvalidErrorMessage));
@@ -95,22 +98,22 @@ const verifyJwt = function verifyJwt (req, res, next) {
       return next(new ForbiddenError(jwtInvalidErrorMessage));
     }
 
-    // check if the token is blacklisted by performing a hmac digest on the string representation of the jwt.
+    // TODO: Check if the token is blacklisted by performing a hmac digest on the string representation of the jwt.
     // also checks the existence of the jti claim
-    if (isTokenBlacklisted(decodedJwt, jwtString)) {
-      return next(new ForbiddenError(jwtInvalidErrorMessage));
-    }
+    // if (await isTokenBlacklisted(decodedJwt, jwtString)) {
+    //   return next(new ForbiddenError(jwtInvalidErrorMessage));
+    // }
 
-    User.findOne({ email: decodedJwt.sub.toLowerCase(), role: decodedJwt.role })
-      .exec()
+    findUserByEmailAndRole(decodedJwt.sub.toLowerCase(), decodedJwt.role)
       .then(function (user) {
         if (!user) {
-          throw new Error();
+          throw new Error('User not found');
         }
 
         req.user = user;
         req._jwt = decodedJwt;
         req._jwtString = jwtString;
+
 
         return next();
       })
@@ -118,6 +121,82 @@ const verifyJwt = function verifyJwt (req, res, next) {
         return next(new ForbiddenError(jwtInvalidErrorMessage));
       });
   });
+
+
+// ---- Mongo DB ----
+  // // check if Authorization header is present
+  // const rawAuthorizationHeader = req.header('authorization');
+  // if (!rawAuthorizationHeader) {
+  //   return next(new ForbiddenError(jwtInvalidErrorMessage));
+  // }
+
+  // const [bearer, jwtString] = rawAuthorizationHeader.split(' ');
+  // if (bearer !== 'Bearer') {
+  //   return next(new ForbiddenError(jwtInvalidErrorMessage));
+  // }
+
+  // jwt.verify(jwtString, jwt_secret, jwtVerifyOptions, function (err, decodedJwt) {
+  //   if (err) {
+  //     return next(new ForbiddenError(jwtInvalidErrorMessage));
+  //   }
+
+  //   // check if the token is blacklisted by performing a hmac digest on the string representation of the jwt.
+  //   // also checks the existence of the jti claim
+  //   if (isTokenBlacklisted(decodedJwt, jwtString)) {
+  //     return next(new ForbiddenError(jwtInvalidErrorMessage));
+  //   }
+
+  //   User.findOne({ email: decodedJwt.sub.toLowerCase(), role: decodedJwt.role })
+  //     .exec()
+  //     .then(function (user) {
+  //       if (!user) {
+  //         throw new Error();
+  //       }
+
+  //       req.user = user;
+  //       req._jwt = decodedJwt;
+  //       req._jwtString = jwtString;
+
+  //       return next();
+  //     })
+  //     .catch(function () {
+  //       return next(new ForbiddenError(jwtInvalidErrorMessage));
+  //     });
+  // });
+};
+
+// ---- Postgres DB -> TODO: Check for blacklisted tokens ----
+// const isTokenBlacklisted = async (decodedJwt, jwtString) => {
+//   const query = `
+//     SELECT EXISTS (
+//       SELECT FROM "BlacklistedToken"
+//       WHERE jwt = $1
+//     );
+//   `;
+
+//   const values = [jwtString];
+
+//   try {
+//     const result = await db.query(query, values);
+//     return result.rows[0].exists;
+//   } finally {
+//   }
+// };
+
+// ---- Postgres DB ----
+const findUserByEmailAndRole = async (email, role) => {
+  const query = `
+      SELECT * FROM "User"
+      WHERE email = $1 AND role = $2;
+    `;
+
+  const values = [email, role];
+
+  try {
+    const result = await db.query(query, values);
+    return result.rows[0];
+  } finally {
+  }
 };
 
 module.exports = {

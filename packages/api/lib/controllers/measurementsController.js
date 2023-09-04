@@ -19,6 +19,8 @@ const {
   jsonstringify = require('stringify-stream'),
   { UnauthorizedError, NotFoundError } = require('restify-errors');
 
+const db = require('../db');
+
 /**
  * @api {get} /boxes/:senseBoxId/sensors Get latest measurements of a senseBox
  * @apiDescription Get the latest measurements of all sensors of the specified senseBox.
@@ -36,62 +38,131 @@ const {
  * @apiUse SensorIdParam
  * @apiParam {Boolean="true","false"} [onlyValue] If set to true only returns the measured value without information about the sensor. Requires a sensorId.
  */
-const getLatestMeasurements = async function getLatestMeasurements (req, res) {
-  const { _userParams: params } = req;
+const getLatestMeasurements = async function getLatestMeasurements(req, res) {
+  // ---- Postgres DB ----
 
-  let box;
+  let boxId = req._userParams.boxId
+  let count = 1
+  if (req._userParams.count) {
+    count = req._userParams.count
+  }
+  let values = [boxId, count];
+  let sensorId = undefined
+  if (req._userParams.sensorId) {
+    sensorId = req._userParams.sensorId
+    values.push(sensorId);
+  }
+  // Get latest measurements of a senseBox
+  // icon is missing for sensors
+  let query = `
+  SELECT
+    d.id AS _id,
+    d.name AS name,
+    json_agg(
+      json_build_object(
+        'title', s.title,
+        'unit', s.unit,
+        'sensorType', s."sensorType",
+        '_id', s.id,
+        'last_measurements', last_measurements.measurements,
+        'lastMeasurement', (
+          SELECT json_build_object(
+            'value', m.value,
+            'createdAt', m.time
+          )
+          FROM "Measurement" m
+          WHERE m."sensorId" = s.id
+          ORDER BY m.time DESC
+          LIMIT 1
+        )
+      )
+    ) AS sensors
+  FROM
+    "Device" d
+  JOIN
+    "Sensor" s ON d.id = s."deviceId"
+  LEFT JOIN LATERAL (
+    SELECT json_agg(json_build_object('value', m2.value, 'createdAt', m2.time)) AS measurements
+    FROM (
+      SELECT "value", "time",
+             ROW_NUMBER() OVER (ORDER BY "time" DESC) AS row_num
+      FROM "Measurement"
+      WHERE "sensorId" = s.id
+    ) m2
+    WHERE m2.row_num <= $2
+  ) last_measurements ON true
+  WHERE
+    d.id = $1
+    ${sensorId !== undefined ? 'AND s.id = $3' : ''}
+  GROUP BY
+    d.name, d.id
+`;
 
   try {
-    if (req._userParams.count) {
-      box = await Box.findBoxById(req._userParams.boxId, {
-        populate: false,
-        onlyLastMeasurements: false,
-        count: req._userParams.count,
-        projection: {
-          name: 1,
-          lastMeasurementAt: 1,
-          sensors: 1,
-          grouptag: 1
-        }
-      });
-
-      const measurements = await Measurement.findLatestMeasurementsForSensorsWithCount(box, req._userParams.count);
-      for (let index = 0; index < box.sensors.length; index++) {
-        const sensor = box.sensors[index];
-        const values = measurements.find(elem => elem._id.equals(sensor._id));
-        sensor['lastMeasurements'] = values;
-      }
-    } else {
-      box = await Box.findBoxById(req._userParams.boxId, {
-        onlyLastMeasurements: true
-      });
-    }
+    const result = await db.query(query, values);
+    res.send(result.rows);
+    return result.rows;
   } catch (err) {
+    console.log("An error.")
     return handleError(err);
   }
+  
+  // ---- Mongo DB ----
+  // const { _userParams: params } = req;
 
-  if (params.sensorId) {
-    const sensor = box.sensors.find(s => s._id.equals(params.sensorId));
-    if (sensor) {
-      if (params.onlyValue) {
-        if (!sensor.lastMeasurement) {
-          res.send(undefined);
+  // let box;
 
-          return;
-        }
-        res.send(sensor.lastMeasurement.value);
+  // try {
+  //   if (req._userParams.count) {
+  //     box = await Box.findBoxById(req._userParams.boxId, {
+  //       populate: false,
+  //       onlyLastMeasurements: false,
+  //       count: req._userParams.count,
+  //       projection: {
+  //         name: 1,
+  //         lastMeasurementAt: 1,
+  //         sensors: 1,
+  //         grouptag: 1
+  //       }
+  //     });
 
-        return;
-      }
-      res.send(sensor);
+  //     const measurements = await Measurement.findLatestMeasurementsForSensorsWithCount(box, req._userParams.count);
+  //     for (let index = 0; index < box.sensors.length; index++) {
+  //       const sensor = box.sensors[index];
+  //       const values = measurements.find(elem => elem._id.equals(sensor._id));
+  //       sensor['lastMeasurements'] = values;
+  //     }
+  //   } else {
+  //     box = await Box.findBoxById(req._userParams.boxId, {
+  //       onlyLastMeasurements: true
+  //     });
+  //   }
+  // } catch (err) {
+  //   return handleError(err);
+  // }
 
-      return;
-    }
+  // if (params.sensorId) {
+  //   const sensor = box.sensors.find(s => s._id.equals(params.sensorId));
+  //   if (sensor) {
+  //     if (params.onlyValue) {
+  //       if (!sensor.lastMeasurement) {
+  //         res.send(undefined);
 
-    res.send(new NotFoundError(`Sensor with id ${params.sensorId} does not exist`));
-  } else {
-    res.send(box);
-  }
+  //         return;
+  //       }
+  //       res.send(sensor.lastMeasurement.value);
+
+  //       return;
+  //     }
+  //     res.send(sensor);
+
+  //     return;
+  //   }
+
+  //   res.send(new NotFoundError(`Sensor with id ${params.sensorId} does not exist`));
+  // } else {
+  //   res.send(box);
+  // }
 };
 
 /**
@@ -126,42 +197,92 @@ const jsonLocationReplacer = function jsonLocationReplacer (k, v) {
  * @apiParam {Boolean="true","false"} [download] if specified, the api will set the `content-disposition` header thus forcing browsers to download instead of displaying. Is always true for format csv.
  * @apiUse SeparatorParam
  */
-const getData = async function getData (req, res) {
-  const { sensorId, format, download, outliers, outlierWindow, delimiter } = req._userParams;
-  let stringifier;
+const getData = async function getData(req, res) {
+// ---- Postgres DB ----
 
-  // IDEA: add geojson point featurecollection format
-  if (format === 'csv') {
-    res.header('Content-Type', 'text/csv');
-    stringifier = csvStringifier(['createdAt', 'value'], delimiter);
-  } else if (format === 'json') {
-    res.header('Content-Type', 'application/json; charset=utf-8');
-    // IDEA: add geojson point featurecollection format
-    stringifier = jsonstringify({ open: '[', close: ']' }, jsonLocationReplacer);
-  }
-  if (download === 'true') {
-    res.header('Content-Disposition', `attachment; filename=${sensorId}.${format}`);
+  const { sensorId, fromDate, toDate, format, download, outliers, outlierWindow, delimiter } = req._userParams;
+
+  let whereClause = ''
+
+  if (fromDate) {
+    whereClause += `
+    AND m.time >= '${fromDate}' 
+    `
   }
 
-  let measurementsStream = Measurement.getMeasurementsStream(req._userParams)
-    .on('error', function (err) {
-      return handleError(err);
-    });
-
-  if (outliers) {
-    measurementsStream = measurementsStream
-      .pipe(new OutlierTransformer({
-        window: Math.trunc(outlierWindow), // only allow integer values
-        replaceOutlier: (outliers === 'replace')
-      }));
+  if (toDate) {
+    whereClause += `
+    AND m.time <= '${toDate}'
+    `
   }
 
-  // A last time flush headers :)
-  res.flushHeaders();
+  const query = `
+    SELECT
+        m.time AS created_at,
+        m.value AS value,
+        ARRAY[d.longitude, d.latitude] AS location
+    FROM
+        "Measurement" m
+    JOIN
+        "Sensor" s ON s.id = $1
+    JOIN
+        "Device" d ON s."deviceId" = d.id
+    WHERE
+      m."sensorId" = $1
+      ${whereClause}
+    LIMIT 10000;
+  `;
 
-  measurementsStream
-    .pipe(stringifier)
-    .pipe(res);
+  const values = [sensorId];
+
+  try {
+    const result = await db.query(query, values);
+    res.send(result.rows);
+    return result.rows;
+  } catch (err) {
+    console.log("An error.")
+    return handleError(err);
+  };
+
+
+
+// ---- Mongo DB ----
+
+  // const { sensorId, format, download, outliers, outlierWindow, delimiter } = req._userParams;
+  // let stringifier;
+
+  // // IDEA: add geojson point featurecollection format
+  // if (format === 'csv') {
+  //   res.header('Content-Type', 'text/csv');
+  //   stringifier = csvStringifier(['createdAt', 'value'], delimiter);
+  // } else if (format === 'json') {
+  //   res.header('Content-Type', 'application/json; charset=utf-8');
+  //   // IDEA: add geojson point featurecollection format
+  //   stringifier = jsonstringify({ open: '[', close: ']' }, jsonLocationReplacer);
+  // }
+  // if (download === 'true') {
+  //   res.header('Content-Disposition', `attachment; filename=${sensorId}.${format}`);
+  // }
+
+  // let measurementsStream = Measurement.getMeasurementsStream(req._userParams)
+  //   .on('error', function (err) {
+  //     return handleError(err);
+  //   });
+
+  // if (outliers) {
+  //   measurementsStream = measurementsStream
+  //     .pipe(new OutlierTransformer({
+  //       window: Math.trunc(outlierWindow), // only allow integer values
+  //       replaceOutlier: (outliers === 'replace')
+  //     }));
+  // }
+
+  // // A last time flush headers :)
+  // res.flushHeaders();
+
+  // measurementsStream
+  //   .pipe(stringifier)
+  //   .pipe(res);
 };
 
 /**
@@ -180,13 +301,12 @@ const getData = async function getData (req, res) {
  * @apiParam {String=createdAt,value,lat,lon,height,boxId,boxName,exposure,sensorId,phenomenon,unit,sensorType} [columns=sensorId,createdAt,value,lat,lon] Comma separated list of columns to export.
  * @apiParam {Boolean=true,false} [download=true] Set the `content-disposition` header to force browsers to download instead of displaying.
  */
-const getDataMulti = async function getDataMulti (req, res) {
+const getDataMulti = async function getDataMulti(req, res) {
+// ---- Postgres DB ----
   const { boxId, bbox, exposure, delimiter, columns, fromDate, toDate, phenomenon, download, format } = req._userParams;
 
-  // build query
-  const queryParams = {
-    'sensors.title': phenomenon
-  };
+  const queryParams = [];
+  let whereClause = '';
 
   if (boxId && bbox) {
     return Promise.reject(new BadRequestError('please specify only boxId or bbox'));
@@ -195,53 +315,169 @@ const getDataMulti = async function getDataMulti (req, res) {
   }
 
   if (boxId) {
-    queryParams['_id'] = { '$in': boxId };
+    queryParams.push(...boxId);
+    whereClause = `AND d.id IN (${queryParams.map((_, idx) => `$${idx + 1}`).join(', ')})`;
   }
+
+  if (bbox && bbox.type === 'Polygon' && bbox.coordinates && bbox.coordinates[0]) {
+    const coordinates = bbox.coordinates[0];
+    const lngSW = coordinates[0][0];
+    const latSW = coordinates[0][1];
+    const lngNE = coordinates[2][0];
+    const latNE = coordinates[2][1];
+
+    whereClause = `
+      AND d.latitude >= ${latSW} AND d.latitude <= ${latNE}
+      AND d.longitude >= ${lngSW} AND d.longitude <= ${lngNE}
+    `;
+  }
+
 
   // exposure parameter
   if (exposure) {
-    queryParams['exposure'] = { '$in': exposure };
+    queryParams.push(...exposure);
+    whereClause += ` AND d.exposure IN (${queryParams.map((_, idx) => `$${idx + 1}`).join(', ')})`;
   }
 
+
+  const selectItems = {
+    createdAt: 'm.time AS "createdAt"',
+    value: 'm.value AS value',
+    lat: 'd.latitude AS lat',
+    lon: 'd.longitude AS lon',
+    height: '',
+    boxId: 'd.id AS "boxId"',
+    boxName: 'd.name AS "boxName"',
+    exposure: 'd.exposure AS exposure',
+    sensorId: 's.id AS "sensorId"',
+    phenomenon: 's.title AS phenomenon',
+    unit: 's."unit" AS unit',
+    sensorType: 's."sensorType" AS "sensorType"'
+  };
+
+  const selectedColumns = columns
+    .map(item => selectItems[item])
+    .filter(Boolean);
+
   try {
-    let stream = await Box.findMeasurementsOfBoxesStream({
-      query: queryParams,
-      bbox,
-      from: fromDate.toDate(),
-      to: toDate.toDate(),
-      columns
-    });
-    stream = stream
-      .on('error', function (err) {
-        return handleError(err);
-      });
+    const query = `
+  SELECT
+    ${selectedColumns.join(',\n    ')}
+      FROM
+        "Device" d
+      JOIN
+        "Sensor" s ON d.id = s."deviceId"
+      LEFT JOIN LATERAL (
+        SELECT
+          value, time
+        FROM
+          "Measurement"
+        WHERE
+          "sensorId" = s.id
+        ORDER BY
+          time DESC
+        LIMIT 1
+      ) m ON true
+      WHERE
+        1 = 1 ${whereClause};
+    `;
 
-    switch (format) {
-    case 'csv':
+    let { rows } = await db.query(query, queryParams);
+
+    if (format === 'csv') {
+      console.log(rows);
       res.header('Content-Type', 'text/csv');
-      stream = stream.pipe(csvStringifier(columns, delimiter));
-      break;
-    case 'json':
-      res.header('Content-Type', 'application/json');
-      // stringifier = jsonstringify({ open: '[', close: ']' });
-      stream = stream.pipe(jsonstringify({ open: '[', close: ']' }));
-      break;
-    }
-
-    if (download === 'true') {
       res.setHeader('Content-Disposition', `attachment; filename=${createDownloadFilename(req.date(), 'download', [phenomenon, ...columns], format)}`);
+      // Create header line for CSV
+      const header = Object.keys(rows[0]).join(',') + '\n';
+
+      // Create data lines for CSV
+      const csvData = rows
+        .map(item =>
+          Object.values(item)
+            .map(value => `"${value}"`)
+            .join(',')
+        )
+        .join('\n');
+
+      // Combine header and data lines
+      const csvContent = header + csvData;
+      res.send(csvContent);
+    } else if (format === 'json') {
+      res.header('Content-Type', 'application/json');
+      console.log(rows);
+      res.send(rows);
     }
-
-    // flushHeaders is fixing csv-stringify
-    res.flushHeaders();
-
-    stream
-      .pipe(res);
   } catch (err) {
     return handleError(err);
   }
+
+// ---- Mongo DB ----
+  // const { boxId, bbox, exposure, delimiter, columns, fromDate, toDate, phenomenon, download, format } = req._userParams;
+
+  // // build query
+  // const queryParams = {
+  //   'sensors.title': phenomenon
+  // };
+
+  // if (boxId && bbox) {
+  //   return Promise.reject(new BadRequestError('please specify only boxId or bbox'));
+  // } else if (!boxId && !bbox) {
+  //   return Promise.reject(new BadRequestError('please specify either boxId or bbox'));
+  // }
+
+  // if (boxId) {
+  //   queryParams['_id'] = { '$in': boxId };
+  // }
+
+  // // exposure parameter
+  // if (exposure) {
+  //   queryParams['exposure'] = { '$in': exposure };
+  // }
+
+  // try {
+  //   let stream = await Box.findMeasurementsOfBoxesStream({
+  //     query: queryParams,
+  //     bbox,
+  //     from: fromDate.toDate(),
+  //     to: toDate.toDate(),
+  //     columns
+  //   });
+  //   stream = stream
+  //     .on('error', function (err) {
+  //       return handleError(err);
+  //     });
+
+  //   switch (format) {
+  //   case 'csv':
+  //     res.header('Content-Type', 'text/csv');
+  //     stream = stream.pipe(csvStringifier(columns, delimiter));
+  //     break;
+  //   case 'json':
+  //     res.header('Content-Type', 'application/json');
+  //     // stringifier = jsonstringify({ open: '[', close: ']' });
+  //     stream = stream.pipe(jsonstringify({ open: '[', close: ']' }));
+  //     break;
+  //   }
+
+  //   if (download === 'true') {
+  //     res.setHeader('Content-Disposition', `attachment; filename=${createDownloadFilename(req.date(), 'download', [phenomenon, ...columns], format)}`);
+  //   }
+
+  //   // flushHeaders is fixing csv-stringify
+  //   res.flushHeaders();
+
+  //   stream
+  //     .pipe(res);
+  // } catch (err) {
+  //   return handleError(err);
+  // }
 };
 
+// ---- Postgres DB ----
+function rowToCSV(row, columns, delimiter) {
+  return columns.map(col => row[col] || '').join(delimiter);
+}
 
 /**
  * @api {get,post} /boxes/data?grouptag=:grouptag Get latest measurements for a grouptag as JSON
@@ -250,7 +486,38 @@ const getDataMulti = async function getDataMulti (req, res) {
  * @apiName getDataByGroupTag
  * @apiParam {String} grouptag The grouptag to search by.
  */
-const getDataByGroupTag = async function getDataByGroupTag (req, res) {
+const getDataByGroupTag = async function getDataByGroupTag(req, res) {
+// ---- Postgres DB -> No Grouptags available yet! Just exemplary code here----
+
+  // const query = `
+  //       SELECT
+  //           d.id AS box_id,
+  //           d.name AS box_name,
+  //           s.id AS sensor_id,
+  //           s.title AS sensor_title,
+  //           m.time AS measurement_created_at,
+  //           m.value AS measurement_value
+  //       FROM
+  //           "Device" d
+  //       JOIN
+  //           "Sensor" s ON d.id = s.deviceId
+  //       JOIN
+  //           "Measurement" m ON s.id = m.sensorId
+  //       WHERE
+  //           d.exposure = $1;
+  //     `;
+
+  // const values = [grouptag];
+
+  // try {
+  //   const result = await db.query(query, values);
+  //   return result.rows;
+  // } catch(err) {
+  //   return handleError(err);
+  // }
+
+  // ---- Mongo DB ----
+
   const { grouptag, format } = req._userParams;
   const queryTags = grouptag.split(',');
   // build query
@@ -296,26 +563,59 @@ const getDataByGroupTag = async function getDataByGroupTag (req, res) {
  * @apiParam (RequestBody) {Location} [location] the WGS84-coordinates of the measurement.
  * @apiHeader {String} Authorization Box' unique access_token. Will be used as authorization token if box has auth enabled (e.g. useAuth: true)
  */
-const postNewMeasurement = async function postNewMeasurement (req, res) {
+const postNewMeasurement = async function postNewMeasurement(req, res) {
+  // ---- Postgres DB ----
+
   const { boxId, sensorId, value, createdAt, location } = req._userParams;
+  // const token = req.headers.authorization;
+  let query = ''
+  let values = []
+
+if (createdAt){
+  query = `
+        INSERT INTO "Measurement" ("sensorId", value, time)
+        VALUES ($1, $2, $3);
+      `;
+
+  values = [sensorId, value, createdAt];
+} else {
+  query = `
+        INSERT INTO "Measurement" ("sensorId", value)
+        VALUES ($1, $2);
+      `;
+
+  values = [sensorId, value];
+}
 
   try {
-    const box = await Box.findBoxById(boxId, { populate: false, lean: false });
-    if (box.useAuth && box.access_token && box.access_token !== req.headers.authorization) {
-      return Promise.reject(new UnauthorizedError('Box access token not valid!'));
-    }
-
-    const [measurement] = await Measurement.decodeMeasurements([{
-      sensor_id: sensorId,
-      value,
-      createdAt,
-      location
-    }]);
-    await box.saveMeasurement(measurement);
+    await db.query(query, values);
     res.send(201, 'Measurement saved in box');
   } catch (err) {
     return handleError(err);
   }
+
+
+  // ---- Mongo DB ----
+  
+  // const { boxId, sensorId, value, createdAt, location } = req._userParams;
+
+  // try {
+  //   const box = await Box.findBoxById(boxId, { populate: false, lean: false });
+  //   if (box.useAuth && box.access_token && box.access_token !== req.headers.authorization) {
+  //     return Promise.reject(new UnauthorizedError('Box access token not valid!'));
+  //   }
+
+  //   const [measurement] = await Measurement.decodeMeasurements([{
+  //     sensor_id: sensorId,
+  //     value,
+  //     createdAt,
+  //     location
+  //   }]);
+  //   await box.saveMeasurement(measurement);
+  //   res.send(201, 'Measurement saved in box');
+  // } catch (err) {
+  //   return handleError(err);
+  // }
 };
 
 /**
@@ -397,7 +697,9 @@ const postNewMeasurement = async function postNewMeasurement (req, res) {
  *    "error": "4"
  * }
  */
-const postNewMeasurements = async function postNewMeasurements (req, res) {
+const postNewMeasurements = async function postNewMeasurements(req, res) {
+  // ---- Postgres DB ----
+
   const { boxId, luftdaten, hackair } = req._userParams;
   let contentType = req.getContentType();
 
@@ -405,30 +707,92 @@ const postNewMeasurements = async function postNewMeasurements (req, res) {
     contentType = 'hackair';
   } else if (luftdaten) {
     contentType = 'luftdaten';
+  } 
+
+  // TODO: Decoders for various content types and authorization check
+  // if (Measurement.hasDecoder(contentType)) {
+    // authorization for all boxes that have not opt out
+    // if ((box.useAuth || contentType === 'hackair') && box.access_token && box.access_token !== req.headers.authorization) {
+    //   return Promise.reject(new UnauthorizedError('Box access token not valid!'));
+    // }
+    // const { rows } = await db.query(`
+    //   SELECT
+    //         d.id AS box_id,
+    //         d.name AS box_name,
+    //         s.id AS sensor_id,
+    //         s.title AS sensor_title
+    //     FROM
+    //         "Device" d
+    //     JOIN
+    //         "Sensor" s ON d.id = s."deviceId"
+    //     WHERE 
+    //      d.id = '${boxId}'
+    // `);
+    // const measurements = await Measurement.decodeMeasurements(req.body, { contentType, sensors: rows });
+  // }
+  // else {
+  //   return Promise.reject(new UnsupportedMediaTypeError('Unsupported content-type.'));
+  // }
+
+  let query = ''
+
+    query = `
+      INSERT INTO "Measurement" ("sensorId", value, time)
+      VALUES ($1, $2, $3);
+    `;
+
+  try{
+  // Begin a transaction
+  await db.query('BEGIN');
+  for (const measurement of req.body) {
+    const sensorId = measurement['sensorId']
+    const value = measurement['value']
+    const time = measurement['createdAt']
+    var values = [sensorId, value, time];
+    await db.query(query, values);
+  }
+  // Commit the transaction
+  await db.query('COMMIT');
+  res.send(201, 'Measurements saved in box');
+  } catch (error) {
+    // Rollback the transaction in case of error
+    await db.query('ROLLBACK');
+    throw error;
   }
 
-  if (Measurement.hasDecoder(contentType)) {
-    try {
-      const box = await Box.findBoxById(boxId, { populate: false, lean: false, projection: { sensors: 1, locations: 1, lastMeasurementAt: 1, currentLocation: 1, model: 1, access_token: 1, useAuth: 1 } });
+  
+// ---- Mongo DB ----
+  // const { boxId, luftdaten, hackair } = req._userParams;
+  // let contentType = req.getContentType();
 
-      // if (contentType === 'hackair' && box.access_token !== req.headers.authorization) {
-      //   throw new UnauthorizedError('Box access token not valid!');
-      // }
+  // if (hackair) {
+  //   contentType = 'hackair';
+  // } else if (luftdaten) {
+  //   contentType = 'luftdaten';
+  // }
 
-      // authorization for all boxes that have not opt out
-      if ((box.useAuth || contentType === 'hackair') && box.access_token && box.access_token !== req.headers.authorization) {
-        return Promise.reject(new UnauthorizedError('Box access token not valid!'));
-      }
+  // if (Measurement.hasDecoder(contentType)) {
+  //   try {
+  //     const box = await Box.findBoxById(boxId, { populate: false, lean: false, projection: { sensors: 1, locations: 1, lastMeasurementAt: 1, currentLocation: 1, model: 1, access_token: 1, useAuth: 1 } });
 
-      const measurements = await Measurement.decodeMeasurements(req.body, { contentType, sensors: box.sensors });
-      await box.saveMeasurementsArray(measurements);
-      res.send(201, 'Measurements saved in box');
-    } catch (err) {
-      return handleError(err);
-    }
-  } else {
-    return Promise.reject(new UnsupportedMediaTypeError('Unsupported content-type.'));
-  }
+  //     // if (contentType === 'hackair' && box.access_token !== req.headers.authorization) {
+  //     //   throw new UnauthorizedError('Box access token not valid!');
+  //     // }
+
+  //     // authorization for all boxes that have not opt out
+  //     if ((box.useAuth || contentType === 'hackair') && box.access_token && box.access_token !== req.headers.authorization) {
+  //       return Promise.reject(new UnauthorizedError('Box access token not valid!'));
+  //     }
+
+  //     const measurements = await Measurement.decodeMeasurements(req.body, { contentType, sensors: box.sensors });
+  //     await box.saveMeasurementsArray(measurements);
+  //     res.send(201, 'Measurements saved in box');
+  //   } catch (err) {
+  //     return handleError(err);
+  //   }
+  // } else {
+  //   return Promise.reject(new UnsupportedMediaTypeError('Unsupported content-type.'));
+  // }
 };
 
 

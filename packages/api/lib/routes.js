@@ -72,26 +72,26 @@ const { boxes: boxesPath, users: usersPath, statistics: statisticsPath, manageme
 // case is ignored
 const routes = {
   'noauth': [
-    { path: '/', method: 'get', handler: printRoutes, reference: 'api-Misc-printRoutes' },
-    { path: '/stats', method: 'get', handler: statisticsController.getStatistics, reference: 'api-Misc-getStatistics' },
-    { path: `${statisticsPath}/idw`, method: 'get', handler: statisticsController.getIdw, reference: 'api-Interpolation-calculateIdw' },
+    { path: '/', method: 'get', handler: printRoutes, reference: 'api-Misc-printRoutes' }, // no DB request
+    { path: '/stats', method: 'get', handler: statisticsController.getStatistics, reference: 'api-Misc-getStatistics' }, // done
+    { path: `${statisticsPath}/idw`, method: 'get', handler: statisticsController.getIdw, reference: 'api-Interpolation-calculateIdw' }, 
     { path: `${statisticsPath}/descriptive`, method: 'get', handler: statisticsController.descriptiveStatisticsHandler, reference: 'api-Statistics-descriptive' },
-    { path: `${boxesPath}`, method: 'get', handler: boxesController.getBoxes, reference: 'api-Boxes-getBoxes' },
-    { path: `${boxesPath}/data`, method: 'get', handler: measurementsController.getDataMulti, reference: 'api-Measurements-getDataMulti' },
-    { path: `${boxesPath}/data/bytag`, method: 'get', handler: measurementsController.getDataByGroupTag, reference: 'api-Measurements-getDataByGroupTag' },
-    { path: `${boxesPath}/:boxId`, method: 'get', handler: boxesController.getBox, reference: 'api-Boxes-getBox' },
-    { path: `${boxesPath}/:boxId/sensors`, method: 'get', handler: measurementsController.getLatestMeasurements, reference: 'api-Measurements-getLatestMeasurements' },
-    { path: `${boxesPath}/:boxId/sensors/:sensorId`, method: 'get', handler: measurementsController.getLatestMeasurements, reference: 'api-Measurements-getLatestMeasurementOfSensor' },
-    { path: `${boxesPath}/:boxId/data/:sensorId`, method: 'get', handler: measurementsController.getData, reference: 'api-Measurements-getData' },
-    { path: `${boxesPath}/:boxId/locations`, method: 'get', handler: boxesController.getBoxLocations, reference: 'api-Measurements-getLocations' },
-    { path: `${boxesPath}/data`, method: 'post', handler: measurementsController.getDataMulti, reference: 'api-Measurements-getDataMulti' },
-    { path: `${boxesPath}/:boxId/data`, method: 'post', handler: measurementsController.postNewMeasurements, reference: 'api-Measurements-postNewMeasurements' },
-    { path: `${boxesPath}/:boxId/:sensorId`, method: 'post', handler: measurementsController.postNewMeasurement, reference: 'api-Measurements-postNewMeasurement' },
-    { path: `${usersPath}/register`, method: 'post', handler: usersController.registerUser, reference: 'api-Users-register' },
+    { path: `${boxesPath}`, method: 'get', handler: boxesController.getBoxes, reference: 'api-Boxes-getBoxes' }, // done
+    { path: `${boxesPath}/data`, method: 'get', handler: measurementsController.getDataMulti, reference: 'api-Measurements-getDataMulti' }, // done
+    { path: `${boxesPath}/data/bytag`, method: 'get', handler: measurementsController.getDataByGroupTag, reference: 'api-Measurements-getDataByGroupTag' }, // no grouptags in postgre DB yet
+    { path: `${boxesPath}/:boxId`, method: 'get', handler: boxesController.getBox, reference: 'api-Boxes-getBox' }, // done
+    { path: `${boxesPath}/:boxId/sensors`, method: 'get', handler: measurementsController.getLatestMeasurements, reference: 'api-Measurements-getLatestMeasurements' }, // done
+    { path: `${boxesPath}/:boxId/sensors/:sensorId`, method: 'get', handler: measurementsController.getLatestMeasurements, reference: 'api-Measurements-getLatestMeasurementOfSensor' }, // done
+    { path: `${boxesPath}/:boxId/data/:sensorId`, method: 'get', handler: measurementsController.getData, reference: 'api-Measurements-getData' }, // done
+    { path: `${boxesPath}/:boxId/locations`, method: 'get', handler: boxesController.getBoxLocations, reference: 'api-Measurements-getLocations' }, // done, uses updatedAt Time for timestamp (max 1 location per box, no mobile possible in new db yet)
+    { path: `${boxesPath}/data`, method: 'post', handler: measurementsController.getDataMulti, reference: 'api-Measurements-getDataMulti' }, // done 
+    { path: `${boxesPath}/:boxId/data`, method: 'post', handler: measurementsController.postNewMeasurements, reference: 'api-Measurements-postNewMeasurements' }, // works for JSON Arrays, auth is missing, other content types are not supported yet
+    { path: `${boxesPath}/:boxId/:sensorId`, method: 'post', handler: measurementsController.postNewMeasurement, reference: 'api-Measurements-postNewMeasurement' }, //done, no auth check
+    { path: `${usersPath}/register`, method: 'post', handler: usersController.registerUser, reference: 'api-Users-register' }, // done
     { path: `${usersPath}/request-password-reset`, method: 'post', handler: usersController.requestResetPassword, reference: 'api-Users-request-password-reset' },
     { path: `${usersPath}/password-reset`, method: 'post', handler: usersController.resetPassword, reference: 'api-Users-password-reset' },
     { path: `${usersPath}/confirm-email`, method: 'post', handler: usersController.confirmEmailAddress, reference: 'api-Users-confirm-email' },
-    { path: `${usersPath}/sign-in`, method: 'post', handler: usersController.signIn, reference: 'api-Users-sign-in' },
+    { path: `${usersPath}/sign-in`, method: 'post', handler: usersController.signIn, reference: 'api-Users-sign-in' }, // done
     { path: `${usersPath}/refresh-auth`, method: 'post', handler: usersController.refreshJWT, reference: 'api-Users-refresh-auth' }
   ],
   'auth': [
@@ -100,14 +100,14 @@ const routes = {
     { path: `${usersPath}/me/boxes`, method: 'get', handler: usersController.getUserBoxes, reference: 'api-Users-getUserBoxes' },
     { path: `${usersPath}/me/boxes/:boxId`, method: 'get', handler: usersController.getUserBox, reference: 'api-Users-getUserBox' },
     { path: `${boxesPath}/:boxId/script`, method: 'get', handler: boxesController.getSketch, reference: 'api-Boxes-getSketch' },
-    { path: `${boxesPath}`, method: 'post', handler: boxesController.postNewBox, reference: 'api-Boxes-postNewBox' },
+    { path: `${boxesPath}`, method: 'post', handler: boxesController.postNewBox, reference: 'api-Boxes-postNewBox' }, // done
     { path: `${boxesPath}/claim`, method: 'post', handler: boxesController.claimBox, reference: 'api-Boxes-claimBox' },
     { path: `${boxesPath}/transfer`, method: 'post', handler: boxesController.createTransfer, reference: 'api-Boxes-createTransfer' },
     { path: `${boxesPath}/transfer`, method: 'del', handler: boxesController.removeTransfer, reference: 'api-Boxes-removeTransfer' },
     { path: `${boxesPath}/transfer/:boxId`, method: 'get', handler: boxesController.getTransfer, reference: 'api-Boxes-getTransfer' },
     { path: `${boxesPath}/transfer/:boxId`, method: 'put', handler: boxesController.updateTransfer, reference: 'api-Boxes-updateTransfer' },
-    { path: `${boxesPath}/:boxId`, method: 'put', handler: boxesController.updateBox, reference: 'api-Boxes-updateBox' },
-    { path: `${boxesPath}/:boxId`, method: 'del', handler: boxesController.deleteBox, reference: 'api-Boxes-deleteBox' },
+    { path: `${boxesPath}/:boxId`, method: 'put', handler: boxesController.updateBox, reference: 'api-Boxes-updateBox' },  // done, sketch emial is missing
+    { path: `${boxesPath}/:boxId`, method: 'del', handler: boxesController.deleteBox, reference: 'api-Boxes-deleteBox' }, // done
     { path: `${boxesPath}/:boxId/:sensorId/measurements`, method: 'del', handler: sensorsController.deleteSensorData, reference: 'api-Measurements-deleteMeasurements' },
     { path: `${usersPath}/sign-out`, method: 'post', handler: usersController.signOut, reference: 'api-Users-sign-out' },
     { path: `${usersPath}/me`, method: 'del', handler: usersController.deleteUser, reference: 'api-Users-deleteUser' },

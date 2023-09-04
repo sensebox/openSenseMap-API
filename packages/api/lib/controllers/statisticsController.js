@@ -13,6 +13,9 @@ const { Box, Measurement } = require('@sensebox/opensensemap-api-models'),
   dashify = require('dashify'),
   jsonstringify = require('stringify-stream');
 
+// New PostgreSQL connector
+const db = require('../db');
+
 /**
  * @api {get} /stats Get some statistics about the database
  * @apiDescription returns an array with three numbers which denominates the count of senseBoxes, the count of measurements and the count of measurements in the last minute.
@@ -25,26 +28,79 @@ const { Box, Measurement } = require('@sensebox/opensensemap-api-models'),
  * ["318","118M","393"]
  */
 const getStatistics = async function getStatistics (req, res) {
+// ---- Postgres DB ----
+
   const { human } = req._userParams;
+
   try {
-    let results = await Promise.all([
-      Box.count({}),
-      Measurement.count({}),
-      Measurement.count({
-        createdAt: {
-          '$gt': new Date(Date.now() - 60000),
-          '$lt': new Date()
-        }
-      })
-    ]);
+
+    const query = `
+      SELECT
+        (SELECT COUNT(*) FROM "Device") AS box_count,
+        (SELECT COUNT(*) FROM "Measurement") AS total_measurement_count,
+        (SELECT COUNT(*) FROM "Measurement" WHERE "time" > NOW() - INTERVAL '1 minute') AS recent_measurement_count
+    `;
+
+    const result = await db.query(query);
+
+    let results = [
+      result.rows[0].box_count,
+      result.rows[0].total_measurement_count,
+      result.rows[0].recent_measurement_count
+    ];
+
     if (human === 'true') {
       results = results.map(r => millify.default(r).toString());
     }
-    res.send(200, results);
 
+    res.send(200, results);
   } catch (err) {
-    return err;
+    console.error(err);
+    res.send(500, 'Internal Server Error');
   }
+
+
+// ---- Mongo DB ----
+  // const { human } = req._userParams;
+  // try {
+  //   let results = await Promise.all([
+  //     Box.count({}),
+  //     Measurement.count({}),
+  //     Measurement.count({
+  //       createdAt: {
+  //         '$gt': new Date(Date.now() - 60000),
+  //         '$lt': new Date()
+  //       }
+  //     })
+  //   ]);
+  //   if (human === 'true') {
+  //     results = results.map(r => millify.default(r).toString());
+  //   }
+  //   res.send(200, results);
+
+  // } catch (err) {
+  //   return err;
+  // }
+  // const { human } = req._userParams;
+  // try {
+  //   let results = await Promise.all([
+  //     Box.count({}),
+  //     Measurement.count({}),
+  //     Measurement.count({
+  //       createdAt: {
+  //         '$gt': new Date(Date.now() - 60000),
+  //         '$lt': new Date()
+  //       }
+  //     })
+  //   ]);
+  //   if (human === 'true') {
+  //     results = results.map(r => millify.default(r).toString());
+  //   }
+  //   res.send(200, results);
+
+  // } catch (err) {
+  //   return err;
+  // }
 };
 
 /**

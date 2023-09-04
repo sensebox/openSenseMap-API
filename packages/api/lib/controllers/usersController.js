@@ -8,14 +8,25 @@ const { User } = require('@sensebox/opensensemap-api-models'),
     clearCache,
     postToMattermost,
   } = require('../helpers/apiUtils'),
-  { retrieveParameters } = require('../helpers/userParamHelpers'),
+  { retrieveParameters, postgresCheckBoxOwner } = require('../helpers/userParamHelpers'),
   handleError = require('../helpers/errorHandler'),
   {
     createToken,
     refreshJwt,
     invalidateToken,
-  } = require('../helpers/jwtHelpers');
-
+  } = require('../helpers/jwtHelpers'),
+  db = require('../db'),
+  config = require('config'),
+  bcrypt = require('bcrypt'),
+  jwt = require('jsonwebtoken'),
+  crypto = require('crypto'),
+  { v4: uuidv4 } = require('uuid'),
+  { algorithm: jwt_algorithm, secret: jwt_secret, issuer: jwt_issuer, validity_ms: jwt_validity_ms } = config.get('jwt'),
+  jwtSignOptions = {
+    algorithm: jwt_algorithm,
+    issuer: jwt_issuer,
+    expiresIn: Math.round(Number(jwt_validity_ms) / 1000)
+  };
 /**
  * define for nested user parameter for box creation request
  * @apiDefine User Parameters for creating a new openSenseMap user
@@ -53,34 +64,85 @@ const { User } = require('@sensebox/opensensemap-api-models'),
  * @apiSuccess (Created 201) {Object} data `{ "user": {"name":"fullname","email":"test@test.de","role":"user","language":"en_US","boxes":[],"emailIsConfirmed":false} }`
  */
 const registerUser = async function registerUser (req, res) {
+// ---- Postgres DB ----
+
   const { email, password, language, name } = req._userParams;
 
   try {
-    const newUser = await new User({ name, email, password, language }).save();
-    postToMattermost(
-      `New User: ${newUser.name} (${redactEmail(newUser.email)})`
-    );
+    // remove id and updatedAt for use in production
+    const id = uuidv4()
+    const updatedAt = '2023-08-17 12:34:56.789'
 
-    try {
-      const { token, refreshToken } = await createToken(newUser);
+    // Hash the password
+    const saltRounds = 13;
+    const hashedPassword = await bcrypt.hash(preparePasswordHash(password), saltRounds);
 
-      return res.send(201, {
+    // Insert user record into the 'User' table and retrieve generated id
+    const userInsertQuery = 'INSERT INTO "User" (id, name, email, language, "updatedAt") VALUES ($1, $2, $3, $4, $5) RETURNING id';
+    const userResult = await db.query(userInsertQuery, [id, name, email, language, updatedAt]);
+    const userId = userResult.rows[0].id;
+
+    // Insert hashed password into the 'Password' table
+    const passwordInsertQuery = 'INSERT INTO "Password" (hash, "userId") VALUES ($1, $2)';
+    await db.query(passwordInsertQuery, [hashedPassword, userId]);
+
+    // Generate JWT token
+    const payload = { role: userResult.rows[0].role },
+      signOptions = Object.assign({ subject: userResult.rows[0].email, jwtid: uuidv4() }, jwtSignOptions);
+    const token = jwt.sign(payload, jwt_secret, signOptions);
+
+    // Return the generated token
+    console.log('User registered successfully. Token:', token);
+    return res.send(201, {
         code: 'Created',
         message: 'Successfully registered new user',
-        data: { user: newUser },
+        data: { user: userResult.rows[0] },
         token,
-        refreshToken,
       });
-    } catch (err) {
-      return Promise.reject(
-        new InternalServerError(
-          `User successfully created but unable to create jwt token: ${err.message}`
-        )
-      );
-    }
-  } catch (err) {
-    return handleError(err);
+  } catch (error) {
+    console.error('Error registering user:', error.message);
   }
+
+// ---- Mongo DB ----
+  // const { email, password, language, name } = req._userParams;
+
+  // try {
+  //   const newUser = await new User({ name, email, password, language }).save();
+  //   postToMattermost(
+  //     `New User: ${newUser.name} (${redactEmail(newUser.email)})`
+  //   );
+
+  //   try {
+  //     const { token, refreshToken } = await createToken(newUser);
+
+  //     return res.send(201, {
+  //       code: 'Created',
+  //       message: 'Successfully registered new user',
+  //       data: { user: newUser },
+  //       token,
+  //       refreshToken,
+  //     });
+  //   } catch (err) {
+  //     return Promise.reject(
+  //       new InternalServerError(
+  //         `User successfully created but unable to create jwt token: ${err.message}`
+  //       )
+  //     );
+  //   }
+  // } catch (err) {
+  //   return handleError(err);
+  // }
+};
+
+
+// ---- Postgres DB ----
+const preparePasswordHash = function preparePasswordHash(plaintextPassword) {
+  // first round: hash plaintextPassword with sha512
+  const hash = crypto.createHash("sha512");
+  hash.update(plaintextPassword.toString(), "utf8");
+  const hashed = hash.digest("base64"); // base64 for more entropy than hex
+
+  return hashed;
 };
 
 /**
@@ -98,38 +160,85 @@ const registerUser = async function registerUser (req, res) {
  * @apiError {String} 403 Unauthorized
  */
 const signIn = async function signIn (req, res) {
+// ---- Postgres DB ----
   const { email: emailOrName, password } = req._userParams;
 
   try {
-    // lowercase for email
-    const user = await User.findOne({
-      $or: [{ email: emailOrName.toLowerCase() }, { name: emailOrName }],
-    }).exec();
+    // Find user by email or name
+    const userQuery = 'SELECT * FROM "User" WHERE email = $1 OR name = $2';
+    const userResult = await db.query(userQuery, [emailOrName.toLowerCase(), emailOrName]);
 
+    const user = userResult.rows[0];
     if (!user) {
-      return Promise.reject(
-        new ForbiddenError('User and or password not valid!')
-      );
+      return Promise.reject(new ForbiddenError('User and or password not valid!'));
     }
 
-    if (await user.checkPassword(password)) {
-      const { token, refreshToken } = await createToken(user);
+    const passwordQuery = 'SELECT * FROM "Password" WHERE "userId" = $1';
+    const passwordResult = await db.query(passwordQuery, [user.id]);
+    
+    const hashedPassword = passwordResult.rows[0];
+    if (!hashedPassword) {
+      return Promise.reject(new ForbiddenError('User and or password not valid!'));
+    }
+    
+    // Compare passwords using bcrypt
+    const isPasswordValid = await bcrypt.compare(
+      preparePasswordHash(password), hashedPassword.hash);
+
+    if (isPasswordValid) {
+      const payload = { role: user.role },
+      signOptions = Object.assign({ subject: user.email, jwtid: uuidv4() }, jwtSignOptions);
+      const token = jwt.sign(payload, jwt_secret, signOptions);
 
       return res.send(200, {
         code: 'Authorized',
         message: 'Successfully signed in',
         data: { user },
         token,
-        refreshToken,
+        // refreshToken,
       });
+    } else {
+      return Promise.reject(new ForbiddenError('User and or password not valid!'));
     }
   } catch (err) {
-    if (err.name === 'ModelError' && err.message === 'Password incorrect') {
-      return handleError(new ForbiddenError('User and or password not valid!'));
-    }
-
     return handleError(err);
   }
+
+
+// ---- Mongo DB ----
+
+  // const { email: emailOrName, password } = req._userParams;
+
+  // try {
+  //   // lowercase for email
+  //   const user = await User.findOne({
+  //     $or: [{ email: emailOrName.toLowerCase() }, { name: emailOrName }],
+  //   }).exec();
+
+  //   if (!user) {
+  //     return Promise.reject(
+  //       new ForbiddenError('User and or password not valid!')
+  //     );
+  //   }
+
+  //   if (await user.checkPassword(password)) {
+  //     const { token, refreshToken } = await createToken(user);
+
+  //     return res.send(200, {
+  //       code: 'Authorized',
+  //       message: 'Successfully signed in',
+  //       data: { user },
+  //       token,
+  //       refreshToken,
+  //     });
+  //   }
+  // } catch (err) {
+  //   if (err.name === 'ModelError' && err.message === 'Password incorrect') {
+  //     return handleError(new ForbiddenError('User and or password not valid!'));
+  //   }
+
+  //   return handleError(err);
+  // }
 };
 
 /**
@@ -275,9 +384,12 @@ const getUserBoxes = async function getUserBoxes (req, res) {
  * @apiSuccess {String} data A json object with a single `box` object field
  */
 const getUserBox = async function getUserBox (req, res) {
+// ---- Postgres DB ----
   const { boxId } = req._userParams;
   try {
-    const box = await req.user.getBox(boxId);
+    postgresCheckBoxOwner(boxId)
+    const { rows: box } = await db.query(`SELECT * FROM "Device" WHERE id = '${boxId}';`);
+
     res.send(200, {
       code: 'Ok',
       data: {
@@ -287,6 +399,21 @@ const getUserBox = async function getUserBox (req, res) {
   } catch (err) {
     return handleError(err);
   }
+  
+
+// ---- Mongo DB ----
+  // const { boxId } = req._userParams;
+  // try {
+  //   const box = await req.user.getBox(boxId);
+  //   res.send(200, {
+  //     code: 'Ok',
+  //     data: {
+  //       box
+  //     },
+  //   });
+  // } catch (err) {
+  //   return handleError(err);
+  // }
 };
 
 /**
@@ -470,4 +597,6 @@ module.exports = {
     retrieveParameters([{ predef: 'password' }]),
     deleteUser,
   ],
+  // ---- Postgres DB ----
+  preparePasswordHash
 };

@@ -7,6 +7,7 @@ const { BadRequestError, UnprocessableEntityError, InvalidArgumentError, Forbidd
   handleModelError = require('./errorHandler'),
   area = require('@turf/area').default,
   config = require('config');
+const dbClient = require('../db');
 
 const decodeBase64Image = function (dataString) {
   if (dataString === 'deleteImage: true') {
@@ -65,11 +66,13 @@ const stringParser = function stringParser (s) {
  */
 
 const idCheck = function idCheck (id) {
-  if (mongoose.Types.ObjectId.isValid(id) && id !== '00112233445566778899aabb') {
-    return id;
-  }
+  // ---- Postgres DB ---- -> stop checking for valid mongoose ids, to allow using uuidv4 ids with postgres
+  // if (mongoose.Types.ObjectId.isValid(id) && id !== '00112233445566778899aabb') {
+  //   return id;
+  // }
 
-  return false;
+  // return false;
+  return id
 };
 
 /**
@@ -542,13 +545,16 @@ const validateDateNotPast = async function validateDateNotPast (req) {
 };
 
 const checkPrivilege = async function checkPrivilege (req) {
+// ---- Postgres DB ----
+  const boxId = req._userParams.boxId
+
   if (req.user && req.user.role === config.get('management_role')) {
-    return;
+    return 'User has management role';
   }
 
-  if (req._userParams.boxId) {
+  if (boxId) {
     try {
-      req.user.checkBoxOwner(req._userParams.boxId);
+      postgresCheckBoxOwner(boxId, req.user.id);
 
       return;
     } catch (err) {
@@ -557,7 +563,36 @@ const checkPrivilege = async function checkPrivilege (req) {
   }
 
   return Promise.reject(new ForbiddenError('Not signed in or not authorized to access.'));
+
+// ---- Mongo DB ----
+  // if (req.user && req.user.role === config.get('management_role')) {
+  //   return;
+  // }
+
+  // if (req._userParams.boxId) {
+  //   try {
+  //     req.user.checkBoxOwner(req._userParams.boxId);
+
+  //     return;
+  //   } catch (err) {
+  //     return handleModelError(err);
+  //   }
+  // }
+
+  // return Promise.reject(new ForbiddenError('Not signed in or not authorized to access.'));
 };
+
+// ---- Postgres DB ----
+const postgresCheckBoxOwner = async function postgresCheckBoxOwner(boxId, userId) {
+  const checkOwnershipQuery = 'SELECT 1 FROM "Device" d WHERE d.id = $1 AND d."userId" = $2';
+  const { rowCount } = await dbClient.query(checkOwnershipQuery, [boxId, userId]);
+  if (rowCount === 1) {
+    console.log('User is the owner of the Device');
+    return true;
+  } else {
+    throw new ModelError('User does not own this senseBox', { type: 'ForbiddenError' });
+  }
+}
 
 module.exports = {
   validateFromToTimeParams,

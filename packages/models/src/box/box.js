@@ -1115,7 +1115,8 @@ const boxModel = mongoose.model('Box', boxSchema);
 boxModel.BOX_SUB_PROPS_FOR_POPULATION = BOX_SUB_PROPS_FOR_POPULATION;
 boxModel.BOX_VALID_MODELS = sensorLayouts.models;
 boxModel.BOX_VALID_ADDONS = sensorLayouts.addons;
-boxModel.BOX_VALID_EXPOSURES = ['unknown', 'indoor', 'outdoor', 'mobile'];
+// Add values corresponding to allowed Postgres schema values for Exposure
+boxModel.BOX_VALID_EXPOSURES = ['unknown', 'indoor', 'outdoor', 'mobile', 'UNKNOWN', 'INDOOR', 'OUTDOOR', 'MOBILE'];
 
 module.exports = {
   schema: boxSchema,
