@@ -13,7 +13,7 @@ jobs:
     name: Lint code
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Install Node.js 16
         uses: actions/setup-node@v3.6.0
@@ -46,7 +46,7 @@ jobs:
     name: Run tests
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Execute tests
         run: |
