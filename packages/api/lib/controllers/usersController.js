@@ -78,7 +78,7 @@ const registerUser = async function registerUser (req, res) {
     const hashedPassword = await bcrypt.hash(preparePasswordHash(password), saltRounds);
 
     // Insert user record into the 'User' table and retrieve generated id
-    const userInsertQuery = 'INSERT INTO "User" (id, name, email, language, "updatedAt") VALUES ($1, $2, $3, $4, $5) RETURNING id';
+    const userInsertQuery = 'INSERT INTO "User" (id, name, email, language, "updatedAt") VALUES ($1, $2, $3, $4, $5) RETURNING id, email';
     const userResult = await db.query(userInsertQuery, [id, name, email, language, updatedAt]);
     const userId = userResult.rows[0].id;
 
@@ -101,6 +101,7 @@ const registerUser = async function registerUser (req, res) {
       });
   } catch (error) {
     console.error('Error registering user:', error.message);
+    return handleError(error);
   }
 
 // ---- Mongo DB ----

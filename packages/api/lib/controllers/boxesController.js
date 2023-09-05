@@ -592,7 +592,7 @@ const getBox = async function getBox (req, res) {
  */
 const postNewBox = async function postNewBox (req, res) {
   // ---- Postgres DB ----
-
+  
   try {
     await db.query('BEGIN');
 
@@ -609,49 +609,49 @@ const postNewBox = async function postNewBox (req, res) {
       status: req.body.status || 'INACTIVE',
       latitude: req.body.location.lat,
       longitude: req.body.location.lng,
-      userId: req.body.user_id
+      userId: user.id
     };
-  
-  // Build dynamic SQL query
-  let query = `
-    INSERT INTO "Device" (id, name, exposure, "useAuth", public, status, latitude, longitude, "userId", "updatedAt"`;
-  
-  // Define placeholders and values for optional fields
-  const placeholders = [];
-  const values = [
-    newDevice.id,
-    newDevice.name,
-    newDevice.exposure,
-    newDevice.useAuth,
-    newDevice.public,
-    newDevice.status,
-    newDevice.latitude,
-    newDevice.longitude,
-    newDevice.userId,
-    newDevice.updatedAt,
-  ];
-  let valueString = '$1, $2, $3, $4, $5, $6, $7, $8, $9, $10'
-  
-  if (newDevice.description !== null) {
-    placeholders.push(', description');
-    valueString += `, $${values.push(newDevice.description)}`;
-  }
-  
-  if (newDevice.model !== null) {
-    placeholders.push(', model');
-    valueString += `, $${values.push(newDevice.model)}`;
-  }
     
-  query += placeholders.join('');
-  query += `
-    )
-    VALUES (
-      ${valueString}
-    )
-    RETURNING id;
-  `;
+    // Build dynamic SQL query
+    let query = `
+      INSERT INTO "Device" (id, name, exposure, "useAuth", public, status, latitude, longitude, "userId", "updatedAt"`;
+    
+    // Define placeholders and values for optional fields
+    const placeholders = [];
+    const values = [
+      newDevice.id,
+      newDevice.name,
+      newDevice.exposure,
+      newDevice.useAuth,
+      newDevice.public,
+      newDevice.status,
+      newDevice.latitude,
+      newDevice.longitude,
+      newDevice.userId,
+      newDevice.updatedAt,
+    ];
+    let valueString = '$1, $2, $3, $4, $5, $6, $7, $8, $9, $10'
+    
+    if (newDevice.description !== null) {
+      placeholders.push(', description');
+      valueString += `, $${values.push(newDevice.description)}`;
+    }
+    
+    if (newDevice.model !== null) {
+      placeholders.push(', model');
+      valueString += `, $${values.push(newDevice.model)}`;
+    }
+      
+    query += placeholders.join('');
+    query += `
+      )
+      VALUES (
+        ${valueString}
+      )
+      RETURNING id;
+    `;
 
-  console.log(query);
+    console.log(query);
 
     const newBox = await db.query(query, values);
     console.log('New device inserted with ID:', newBox.rows[0].id);
