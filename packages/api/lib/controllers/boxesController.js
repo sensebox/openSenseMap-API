@@ -424,7 +424,7 @@ const postNewBox = async function postNewBox (req, res) {
     );
     grantBadge({
       badgeClassEntityId: '4xqx4qjfTwOSiK816Lr2tg',
-      user: req.user.email,
+      user: req.user,
       issuerEntityId: 'oERPzHYrSKC8Cwxx3-IewA',
     });
   } catch (err) {
