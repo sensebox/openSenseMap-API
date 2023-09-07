@@ -37,15 +37,16 @@
  */
 
 const
-  { Box } = require('@sensebox/opensensemap-api-models'),
-  { addCache, clearCache, checkContentType, redactEmail, postToSlack } = require('../helpers/apiUtils'),
+  { Box, User, Claim } = require('@sensebox/opensensemap-api-models'),
+  { addCache, clearCache, checkContentType, redactEmail, postToMattermost } = require('../helpers/apiUtils'),
   { point } = require('@turf/helpers'),
   classifyTransformer = require('../transformers/classifyTransformer'),
   {
     retrieveParameters,
     parseAndValidateTimeParamsForFindAllBoxes,
     validateFromToTimeParams,
-    checkPrivilege
+    checkPrivilege,
+    validateDateNotPast
   } = require('../helpers/userParamHelpers'),
   handleError = require('../helpers/errorHandler'),
   jsonstringify = require('stringify-stream');
@@ -131,7 +132,7 @@ const
  * @apiUse ContentTypeJSON
  *
  */
-const updateBox = async function updateBox (req, res, next) {
+const updateBox = async function updateBox (req, res) {
   try {
     let box = await Box.findBoxById(req._userParams.boxId, { lean: false, populate: false });
     box = await box.updateBox(req._userParams);
@@ -142,7 +143,7 @@ const updateBox = async function updateBox (req, res, next) {
     res.send({ code: 'Ok', data: box.toJSON({ includeSecrets: true }) });
     clearCache(['getBoxes']);
   } catch (err) {
-    handleError(err, next);
+    return handleError(err);
   }
 };
 
@@ -166,12 +167,12 @@ const updateBox = async function updateBox (req, res, next) {
  *   { "coordinates": [7.68323, 51.9423], "type": "Point", "timestamp": "2017-07-27T12:02:00Z"}
  * ]
  */
-const getBoxLocations = async function getBoxLocations (req, res, next) {
+const getBoxLocations = async function getBoxLocations (req, res) {
   try {
     const box = await Box.findBoxById(req._userParams.boxId, { onlyLocations: true, lean: false });
     res.send(await box.getLocations(req._userParams));
   } catch (err) {
-    handleError(err, next);
+    return handleError(err);
   }
 };
 
@@ -202,7 +203,7 @@ const geoJsonStringifyReplacer = function geoJsonStringifyReplacer (key, box) {
  * @apiParam {Boolean="true","false"} [classify=false] if specified, the api will classify the boxes accordingly to their last measurements.
  * @apiParam {Boolean="true","false"} [minimal=false] if specified, the api will only return a minimal set of box metadata consisting of [_id, updatedAt, currentLocation, exposure, name] for a fast response.
  * @apiParam {Boolean="true","false"} [full=false] if true the API will return populated lastMeasurements (use this with caution for now, expensive on the database)
- * @apiParam {String} [near] A comma separated coordinate, if specified, the api will only return senseBoxes within maxDistance (in m) of this location
+ * @apiParam {Number} [near] A comma separated coordinate, if specified, the api will only return senseBoxes within maxDistance (in m) of this location
  * @apiParam {Number} [maxDistance=1000] the amount of meters around the near Parameter that the api will search for senseBoxes
  * @apiUse ExposureFilterParam
  * @apiUse BBoxParam
@@ -210,7 +211,7 @@ const geoJsonStringifyReplacer = function geoJsonStringifyReplacer (key, box) {
  * @apiSampleRequest https://api.opensensemap.org/boxes?date=2015-03-07T02:50Z&phenomenon=Temperatur
  * @apiSampleRequest https://api.opensensemap.org/boxes?date=2015-03-07T02:50Z,2015-04-07T02:50Z&phenomenon=Temperatur
  */
-const getBoxes = async function getBoxes (req, res, next) {
+const getBoxes = async function getBoxes (req, res) {
   // content-type is always application/json for this route
   res.header('Content-Type', 'application/json; charset=utf-8');
 
@@ -251,7 +252,7 @@ const getBoxes = async function getBoxes (req, res, next) {
       })
       .pipe(res);
   } catch (err) {
-    handleError(err, next);
+    return handleError(err);
   }
 };
 
@@ -356,7 +357,7 @@ const getBoxes = async function getBoxes (req, res, next) {
 }
  */
 
-const getBox = async function getBox (req, res, next) {
+const getBox = async function getBox (req, res) {
   const { format, boxId } = req._userParams;
 
   try {
@@ -371,7 +372,7 @@ const getBox = async function getBox (req, res, next) {
     }
     res.send(box);
   } catch (err) {
-    handleError(err, next);
+    return handleError(err);
   }
 };
 
@@ -392,10 +393,11 @@ const getBox = async function getBox (req, res, next) {
  * @apiParam (RequestBody) {Location} location the coordinates of this senseBox.
  * @apiParam (RequestBody) {String="homeV2Lora","homeV2Ethernet","homeV2Wifi","homeEthernet","homeWifi","homeEthernetFeinstaub","homeWifiFeinstaub","luftdaten_sds011","luftdaten_sds011_dht11","luftdaten_sds011_dht22","luftdaten_sds011_bmp180","luftdaten_sds011_bme280","hackair_home_v2"} [model] specify the model if you want to use a predefined senseBox model, autocreating sensor definitions.
  * @apiParam (RequestBody) {Sensor[]} [sensors] an array containing the sensors of this senseBox. Only use if `model` is unspecified.
- * @apiParam (RequestBody) {String[]="hdc1080","bmp280","tsl45315","veml6070","sds011","bme680","smt50","soundlevelmeter","windspeed","scd30","dps310"} [sensorTemplates] Specify which sensors should be included.
+ * @apiParam (RequestBody) {String[]="hdc1080","bmp280","tsl45315","veml6070","sds011","bme680","smt50","soundlevelmeter","windspeed","scd30","dps310","sps30"} [sensorTemplates] Specify which sensors should be included.
  * @apiParam (RequestBody) {Object} [mqtt] specify parameters of the MQTT integration for external measurement upload. Please see below for the accepted parameters
  * @apiParam (RequestBody) {Object} [ttn] specify parameters for the TTN integration for measurement from TheThingsNetwork.org upload. Please see below for the accepted parameters
  * @apiParam (RequestBody) {Boolean="true","false"} [useAuth] whether to use access_token or not for authentication
+ * @apiParam (RequestBody) {Boolean="true","false"} [sharedBox] whether to share this box (allows transfer to another user while still being able to read the secret and commit measurements)
  *
  * @apiUse LocationBody
  * @apiUse SensorBody
@@ -404,15 +406,23 @@ const getBox = async function getBox (req, res, next) {
  * @apiUse ContentTypeJSON
  * @apiUse JWTokenAuth
  */
-const postNewBox = async function postNewBox (req, res, next) {
+const postNewBox = async function postNewBox (req, res) {
   try {
     let newBox = await req.user.addBox(req._userParams);
     newBox = await Box.populate(newBox, Box.BOX_SUB_PROPS_FOR_POPULATION);
     res.send(201, { message: 'Box successfully created', data: newBox });
     clearCache(['getBoxes', 'getStats']);
-    postToSlack(`New Box: ${req.user.name} (${redactEmail(req.user.email)}) just registered "${newBox.name}" (${newBox.model}): <https://opensensemap.org/explore/${newBox._id}|link>`);
+    postToMattermost(
+      `New Box: ${req.user.name} (${redactEmail(
+        req.user.email
+      )}) just registered "${newBox.name}" (${
+        newBox.model
+      }): [https://opensensemap.org/explore/${
+        newBox._id
+      }](https://opensensemap.org/explore/${newBox._id})`
+    );
   } catch (err) {
-    handleError(err, next);
+    return handleError(err);
   }
 };
 
@@ -433,7 +443,7 @@ const postNewBox = async function postNewBox (req, res, next) {
  * @apiUse JWTokenAuth
  * @apiUse BoxIdParam
  */
-const getSketch = async function getSketch (req, res, next) {
+const getSketch = async function getSketch (req, res) {
   res.header('Content-Type', 'text/plain; charset=utf-8');
   try {
     const box = await Box.findBoxById(req._userParams.boxId, { populate: false, lean: false });
@@ -458,7 +468,7 @@ const getSketch = async function getSketch (req, res, next) {
 
     res.send(box.getSketch(params));
   } catch (err) {
-    handleError(err, next);
+    return handleError(err);
   }
 };
 
@@ -472,7 +482,7 @@ const getSketch = async function getSketch (req, res, next) {
  * @apiUse JWTokenAuth
  * @apiUse BoxIdParam
  */
-const deleteBox = async function deleteBox (req, res, next) {
+const deleteBox = async function deleteBox (req, res) {
   const { password, boxId } = req._userParams;
 
   try {
@@ -480,10 +490,118 @@ const deleteBox = async function deleteBox (req, res, next) {
     const box = await req.user.removeBox(boxId);
     res.send({ code: 'Ok', message: 'box and all associated measurements marked for deletion' });
     clearCache(['getBoxes', 'getStats']);
-    postToSlack(`Box deleted: ${req.user.name} (${redactEmail(req.user.email)}) just deleted "${box.name}" (${boxId})`);
+    postToMattermost(`Box deleted: ${req.user.name} (${redactEmail(req.user.email)}) just deleted "${box.name}" (${boxId})`);
 
   } catch (err) {
-    handleError(err, next);
+    return handleError(err);
+  }
+};
+
+/**
+ * @api {get} /boxes/transfer/:senseBoxId Get transfer information for a senseBox
+ * @apiDescription Get transfer information for a senseBox
+ * @apiName getTransfer
+ * @apiGroup Boxes
+ * @apiUse JWTokenAuth
+ * @apiUse BoxIdParam
+ */
+const getTransfer = async function getTransfer (req, res) {
+  const { boxId } = req._userParams;
+  try {
+    const transfer = await Claim.findClaimByDeviceID(boxId);
+    res.send(200, {
+      data: transfer,
+    });
+  } catch (err) {
+    return handleError(err);
+  }
+};
+
+/**
+ * @api {post} /boxes/transfer Mark a senseBox for transferring to a different user
+ * @apiDescription This will mark a senseBox for transfering it to a different user account
+ * @apiName createTransfer
+ * @apiGroup Boxes
+ * @apiParam (RequestBody) {String} boxId ID of the senseBox you want to transfer.
+ * @apiParam (RequestBody) {RFC3339Date} expiresAt Expiration date for transfer token (default: 24 hours from now).
+ * @apiUse JWTokenAuth
+ */
+const createTransfer = async function createTransfer (req, res) {
+  const { boxId, date } = req._userParams;
+  try {
+    const transferCode = await req.user.transferBox(boxId, date);
+    res.send(201, {
+      message: 'Box successfully prepared for transfer',
+      data: transferCode,
+    });
+  } catch (err) {
+    return handleError(err);
+  }
+};
+
+/**
+ * @api {put} /boxes/transfer/:senseBoxId Update a transfer token
+ * @apiDescription Update the expiration date of a transfer token
+ * @apiName updateTransfer
+ * @apiGroup Boxes
+ * @apiParam (RequestBody) {String} Transfer token you want to update.
+ * @apiParam (RequestBody) {RFC3339Date} expiresAt Expiration date for transfer token (default: 24 hours from now).
+ * @apiUse JWTokenAuth
+ * @apiUse BoxIdParam
+ */
+const updateTransfer = async function updateTransfer (req, res) {
+  const { boxId, token, date } = req._userParams;
+  try {
+    const transfer = await req.user.updateTransfer(boxId, token, date);
+    res.send(200, {
+      message: 'Transfer successfully updated',
+      data: transfer,
+    });
+  } catch (err) {
+    return handleError(err);
+  }
+};
+
+/**
+ * @api {delete} /boxes/transfer Revoke transfer token and remove senseBox from transfer
+ * @apiDescription This will revoke the transfer token and remove the senseBox from transfer
+ * @apiName removeTransfer
+ * @apiGroup Boxes
+ * @apiParam (RequestBody) {String} boxId ID of the senseBox you want to remove from transfer.
+ * @apiParam (RequestBody) {String} token Transfer token you want to revoke.
+ * @apiUse JWTokenAuth
+ */
+const removeTransfer = async function removeTransfer (req, res) {
+  const { boxId, token } = req._userParams;
+  try {
+    await req.user.removeTransfer(boxId, token);
+    res.send(204);
+  } catch (err) {
+    return handleError(err);
+  }
+};
+
+/**
+ * @api {post} /boxes/claim Claim a senseBox marked for transfer
+ * @apiDescription This will claim a senseBox marked for transfer
+ * @apiName claimBox
+ * @apiGroup Boxes
+ * @apiUse ContentTypeJSON
+ * @apiParam (RequestBody) {String} token the token to claim a senseBox
+ * @apiUse JWTokenAuth
+ */
+const claimBox = async function claimBox (req, res) {
+  const { token } = req._userParams;
+
+  try {
+    const { owner, claim } = await req.user.claimBox(token);
+    await User.transferOwnershipOfBox(owner, claim.boxId);
+
+    await claim.expireToken();
+
+    res.send(200, { message: 'Device successfully claimed!' });
+  } catch (err) {
+    return handleError(err);
   }
 };
 
@@ -505,18 +623,71 @@ module.exports = {
     checkContentType,
     retrieveParameters([
       { predef: 'boxId', required: true },
-      { predef: 'password' }
+      { predef: 'password' },
     ]),
     checkPrivilege,
-    deleteBox
+    deleteBox,
+  ],
+  getTransfer: [
+    retrieveParameters([{ predef: 'boxId', required: true }]),
+    checkPrivilege,
+    getTransfer,
+  ],
+  createTransfer: [
+    retrieveParameters([
+      { predef: 'boxId', required: true },
+      { predef: 'dateNoDefault' },
+    ]),
+    validateDateNotPast,
+    checkPrivilege,
+    createTransfer,
+  ],
+  updateTransfer: [
+    retrieveParameters([
+      { predef: 'boxId', required: true },
+      { name: 'token', dataType: 'String' },
+      { predef: 'dateNoDefault', required: true },
+    ]),
+    validateDateNotPast,
+    checkPrivilege,
+    updateTransfer,
+  ],
+  removeTransfer: [
+    retrieveParameters([
+      { predef: 'boxId', required: true },
+      { name: 'token', dataType: 'String' },
+    ]),
+    checkPrivilege,
+    removeTransfer,
+  ],
+  claimBox: [
+    checkContentType,
+    retrieveParameters([{ name: 'token', dataType: 'String' }]),
+    claimBox,
   ],
   getSketch: [
     retrieveParameters([
       { predef: 'boxId', required: true },
-      { name: 'serialPort', dataType: 'String', allowedValues: ['Serial1', 'Serial2'] },
-      { name: 'soilDigitalPort', dataType: 'String', allowedValues: ['A', 'B', 'C'] },
-      { name: 'soundMeterPort', dataType: 'String', allowedValues: ['A', 'B', 'C'] },
-      { name: 'windSpeedPort', dataType: 'String', allowedValues: ['A', 'B', 'C'] },
+      {
+        name: 'serialPort',
+        dataType: 'String',
+        allowedValues: ['Serial1', 'Serial2'],
+      },
+      {
+        name: 'soilDigitalPort',
+        dataType: 'String',
+        allowedValues: ['A', 'B', 'C'],
+      },
+      {
+        name: 'soundMeterPort',
+        dataType: 'String',
+        allowedValues: ['A', 'B', 'C'],
+      },
+      {
+        name: 'windSpeedPort',
+        dataType: 'String',
+        allowedValues: ['A', 'B', 'C'],
+      },
       { name: 'ssid', dataType: 'StringWithEmpty' },
       { name: 'password', dataType: 'StringWithEmpty' },
       { name: 'devEUI', dataType: 'StringWithEmpty' },
@@ -525,7 +696,7 @@ module.exports = {
       { name: 'display_enabled', allowedValues: ['true', 'false'] },
     ]),
     checkPrivilege,
-    getSketch
+    getSketch,
   ],
   updateBox: [
     checkContentType,
@@ -543,21 +714,25 @@ module.exports = {
       { name: 'addons', dataType: 'object' },
       { predef: 'location' },
       { name: 'useAuth', allowedValues: ['true', 'false'] },
-      { name: 'generate_access_token', allowedValues: ['true', 'false'] }
+      { name: 'generate_access_token', allowedValues: ['true', 'false'] },
     ]),
     checkPrivilege,
-    updateBox
+    updateBox,
   ],
   // no auth required
   getBoxLocations: [
     retrieveParameters([
       { predef: 'boxId', required: true },
-      { name: 'format', defaultValue: 'json', allowedValues: ['json', 'geojson'] },
+      {
+        name: 'format',
+        defaultValue: 'json',
+        allowedValues: ['json', 'geojson'],
+      },
       { predef: 'toDate' },
       { predef: 'fromDate' },
       validateFromToTimeParams,
     ]),
-    getBoxLocations
+    getBoxLocations,
   ],
   postNewBox: [
     checkContentType,
@@ -567,39 +742,97 @@ module.exports = {
       { name: 'exposure', allowedValues: Box.BOX_VALID_EXPOSURES },
       { name: 'model', allowedValues: Box.BOX_VALID_MODELS },
       { name: 'sensors', dataType: ['object'] },
-      { name: 'sensorTemplates', dataType: ['String'], allowedValues: ['hdc1080', 'bmp280', 'sds 011', 'tsl45315', 'veml6070', 'bme680', 'smt50', 'soundlevelmeter', 'windspeed', 'scd30', 'dps310'] },
-      { name: 'serialPort', dataType: 'String', defaultValue: 'Serial1', allowedValues: ['Serial1', 'Serial2'] },
-      { name: 'soilDigitalPort', dataType: 'String', defaultValue: 'A', allowedValues: ['A', 'B', 'C'] },
-      { name: 'soundMeterPort', dataType: 'String', defaultValue: 'B', allowedValues: ['A', 'B', 'C'] },
-      { name: 'windSpeedPort', dataType: 'String', defaultValue: 'C', allowedValues: ['A', 'B', 'C'] },
+      {
+        name: 'sensorTemplates',
+        dataType: ['String'],
+        allowedValues: [
+          'hdc1080',
+          'bmp280',
+          'sds 011',
+          'tsl45315',
+          'veml6070',
+          'bme680',
+          'smt50',
+          'soundlevelmeter',
+          'windspeed',
+          'scd30',
+          'dps310',
+          'sps30'
+        ],
+      },
+      {
+        name: 'serialPort',
+        dataType: 'String',
+        defaultValue: 'Serial1',
+        allowedValues: ['Serial1', 'Serial2'],
+      },
+      {
+        name: 'soilDigitalPort',
+        dataType: 'String',
+        defaultValue: 'A',
+        allowedValues: ['A', 'B', 'C'],
+      },
+      {
+        name: 'soundMeterPort',
+        dataType: 'String',
+        defaultValue: 'B',
+        allowedValues: ['A', 'B', 'C'],
+      },
+      {
+        name: 'windSpeedPort',
+        dataType: 'String',
+        defaultValue: 'C',
+        allowedValues: ['A', 'B', 'C'],
+      },
       { name: 'mqtt', dataType: 'object' },
       { name: 'ttn', dataType: 'object' },
       { name: 'useAuth', allowedValues: ['true', 'false'] },
-      { predef: 'location', required: true }
+      { predef: 'location', required: true },
+      { name: 'sharedBox', allowedValues: ['true', 'false'] }
     ]),
-    postNewBox
+    postNewBox,
   ],
   getBox: [
     retrieveParameters([
       { predef: 'boxId', required: true },
-      { name: 'format', defaultValue: 'json', allowedValues: ['json', 'geojson'] }
+      {
+        name: 'format',
+        defaultValue: 'json',
+        allowedValues: ['json', 'geojson'],
+      },
     ]),
-    getBox
+    getBox,
   ],
   getBoxes: [
     retrieveParameters([
       { name: 'name', dataType: 'String' },
       { name: 'limit', dataType: 'Number', defaultValue: 5, min: 1, max: 20 },
-      { name: 'exposure', allowedValues: Box.BOX_VALID_EXPOSURES, dataType: ['String'] },
+      {
+        name: 'exposure',
+        allowedValues: Box.BOX_VALID_EXPOSURES,
+        dataType: ['String'],
+      },
       { name: 'model', dataType: ['StringWithEmpty'] },
       { name: 'grouptag', dataType: ['StringWithEmpty'] },
       { name: 'phenomenon', dataType: 'StringWithEmpty' },
       { name: 'date', dataType: ['RFC 3339'] },
-      { name: 'format', defaultValue: 'json', allowedValues: ['json', 'geojson'] },
-      { name: 'classify', defaultValue: 'false', allowedValues: ['true', 'false'] },
-      { name: 'minimal', defaultValue: 'false', allowedValues: ['true', 'false'] },
+      {
+        name: 'format',
+        defaultValue: 'json',
+        allowedValues: ['json', 'geojson'],
+      },
+      {
+        name: 'classify',
+        defaultValue: 'false',
+        allowedValues: ['true', 'false'],
+      },
+      {
+        name: 'minimal',
+        defaultValue: 'false',
+        allowedValues: ['true', 'false'],
+      },
       { name: 'full', defaultValue: 'false', allowedValues: ['true', 'false'] },
-      { name: 'near' },
+      { predef: 'near' },
       { name: 'maxDistance' },
       { predef: 'bbox' },
     ]),

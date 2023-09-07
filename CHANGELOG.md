@@ -1,5 +1,54 @@
 # openSenseMap API Changelog
 
+## v11.1.0
+
+- Use @sensebox/opensensemap-api-models v3.1.0
+- New route `/users/me/boxes/:boxId` to get specific box of logged in user
+- New `page` parameter for `/users/me/boxes?page=<number>` for pagination of user embedded boxes. Default page size is 25.
+
+## v11.0.1
+
+- Use @sensebox/opensensemap-api-models v3.0.1
+
+## v11.0.0
+
+- Use @sensebox/opensensemap-api-models v3.0.0
+- Update Github Action dependencies
+- Update restify
+- Update Readme information
+
+## v10.2.3
+
+- Use @sensebox/opensensemap-api-models v2.0.3
+- Validate `near` parameter (#694)
+
+## v10.2.2
+
+- Use @sensebox/opensensemap-api-models v2.0.2
+
+## v10.2.1
+
+- Use @sensebox/opensensemap-api-models v2.0.1
+
+## v10.2.0
+
+- Use @sensebox/opensensemap-api-models v2.0.0
+- Add Mattermost notifications (#664)
+- Update dependencies (#629, #602, #666)
+- Fix Mattermost messages (#689)
+- Add `grouptag` parameter for downloads (#660)
+- Add `sharedBoxes` functionality (#605)
+- Add `count` parameter for getLastMeasurements (#588)
+
+## v10.1.1
+
+- Use @sensebox/opensensemap-api-models v1.2.0
+
+## v10.1.0
+
+- Update grouptag in management routes (#582)
+- Move osem mongo dev image to api repo (#614)
+
 ## v10.0.3
 
 - Use @sensebox/opensensemap-api-models v1.1.1

@@ -7,44 +7,58 @@ process.env.SUPPRESS_NO_CONFIG_WARNING = 'y';
 const config = require('config');
 
 config.util.setModuleDefaults('openSenseMap-API-models', {
-  'db': {
-    'host': 'localhost',
-    'port': 27017,
-    'user': 'admin',
-    'userpass': 'admin',
-    'authsource': 'OSeM-api',
-    'db': 'OSeM-api',
-    'mongo_uri': ''
+  db: {
+    host: 'localhost',
+    port: 27017,
+    user: 'admin',
+    userpass: 'admin',
+    authsource: 'OSeM-api',
+    db: 'OSeM-api',
+    mongo_uri: '',
   },
-  'integrations': {
-    'ca_cert': '',
-    'cert': '',
-    'key': '',
-    'mailer': {
-      'url': '',
-      'origin': ''
+  integrations: {
+    ca_cert: '',
+    cert: '',
+    key: '',
+    redis: {
+      host: '',
+      port: 6379,
+      username: '',
+      password: '',
+      db: 0,
     },
-    'mqtt': {
-      'url': ''
-    }
+    mailer: {
+      url: '',
+      origin: '',
+      queue: 'mails',
+    },
+    mqtt: {
+      url: '',
+    },
   },
-  'password': {
-    'min_length': 8,
-    'salt_factor': 13
+  password: {
+    min_length: 8,
+    salt_factor: 13,
   },
-  'image_folder': './userimages/',
+  claims_ttl: {
+    amount: 1,
+    unit: 'd',
+  },
+  image_folder: './userimages/',
 });
 
 const { model: Box } = require('./src/box/box'),
   { model: Measurement } = require('./src/measurement/measurement'),
   { model: Sensor } = require('./src/sensor/sensor'),
   { model: User } = require('./src/user/user'),
+  { model: Claim } = require('./src/box/claim'),
   utils = require('./src/utils'),
   decoding = require('./src/measurement/decoding'),
   db = require('./src/db');
 
 module.exports = {
   Box,
+  Claim,
   Measurement,
   Sensor,
   User,

@@ -419,7 +419,7 @@ describe('mails', function () {
       let hasLink = false;
       links.each(function (_, link) {
         const href = $(link).attr('href');
-        if (href.includes('luftdaten_feinstaub.html')) {
+        if (href.includes('opensensemap-luftdaten')) {
           hasLink = true;
         }
       });
@@ -443,7 +443,7 @@ describe('mails', function () {
       let hasLink = false;
       links.each(function (_, link) {
         const href = $(link).attr('href');
-        if (href.includes('hackair_home_v2.html')) {
+        if (href.includes('opensensemap-hackair')) {
           hasLink = true;
         }
       });

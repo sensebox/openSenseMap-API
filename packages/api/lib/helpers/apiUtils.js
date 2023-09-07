@@ -1,10 +1,12 @@
 'use strict';
 
+const escapeMarkdown = require('./escapeMarkdown');
+
 const { NotAuthorizedError, UnsupportedMediaTypeError } = require('restify-errors'),
   config = require('config'),
   apicache = require('apicache'),
   got = require('got'),
-  csvstringify = require('csv-stringify'),
+  { stringify } = require('csv-stringify'),
   hostname = require('os').hostname();
 
 const addCache = function addCache (duration, group) {
@@ -128,6 +130,19 @@ const postToSlack = function postToSlack (text) {
   }
 };
 
+const postToMattermost = function postToMattermost (text) {
+  if (config.get('mattermost_url')) {
+    text = `[${hostname}]: ${text}`;
+    got
+      .post(config.get('mattermost_url'), {
+        json: { text: escapeMarkdown(text) },
+        retry: 0,
+      })
+      // swallow errors, we don't care
+      .catch(() => {});
+  }
+};
+
 const redactEmail = function redactEmail (email) {
   /* eslint-disable prefer-const */
   let [name = '', domain = ''] = email.split('@');
@@ -183,7 +198,7 @@ const computeTimestampTruncationLength = function computeTimestampTruncationLeng
 };
 
 const csvStringifier = function csvStringifier (columns, delimiter) {
-  return csvstringify({
+  return stringify({
     columns, delimiter, header: 1, cast: {
       date: d => d.toISOString()
     }
@@ -198,6 +213,7 @@ module.exports = {
   preCors,
   Honeybadger,
   postToSlack,
+  postToMattermost,
   getVersion,
   redactEmail,
   createDownloadFilename,

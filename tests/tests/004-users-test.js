@@ -129,6 +129,8 @@ describe('openSenseMap API Routes: /users', function () {
   });
 
   it('should deny to change email and password at the same time', function () {
+    this.timeout(120000);
+
     return chakram.put(`${BASE_URL}/users/me`, { email: 'new-email@email.www', newPassword: '87654321' }, { headers: { 'Authorization': `Bearer ${jwt}` } })
       .then(function (response) {
         expect(response).to.have.status(400);

@@ -14,6 +14,7 @@ const { mongoose } = require('../db'),
   { min_length: password_min_length, salt_factor: password_salt_factor } = require('config').get('openSenseMap-API-models.password'),
   { v4: uuidv4 } = require('uuid'),
   { model: Box } = require('../box/box'),
+  { model: Claim } = require('../box/claim'),
   mails = require('./mails'),
   moment = require('moment'),
   timestamp = require('mongoose-timestamp'),
@@ -57,6 +58,10 @@ const userSchema = new mongoose.Schema({
     lowercase: true,
   },
   boxes: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Box'
+  }],
+  sharedBoxes: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Box'
   }],
@@ -285,6 +290,9 @@ userSchema.methods.addBox = function addBox (params) {
       // persist the saved box in the user
       savedBox.serialPort = serialPort;
       user.boxes.addToSet(savedBox._id);
+      if (params.sharedBox) {
+        user.sharedBoxes.addToSet(savedBox._id);
+      }
 
       return user.save()
         .then(function () {
@@ -349,6 +357,80 @@ userSchema.methods.removeBox = function removeBox (boxId) {
           return box;
         });
 
+    });
+};
+
+userSchema.methods.transferBox = function transferBox (boxId, date) {
+  const user = this;
+
+  // checkBoxOwner throws ModelError
+  user.checkBoxOwner(boxId);
+
+  return Claim.initClaim(boxId, date)
+    .then(function (claim) {
+      return claim;
+    });
+};
+
+userSchema.methods.updateTransfer = function updateTransfer (boxId, token, date) {
+  const user = this;
+
+  // checkBoxOwner throws ModelError
+  user.checkBoxOwner(boxId);
+
+  return Claim.findClaimByToken(token)
+    .exec()
+    .then(function (claim) {
+      if (!claim) {
+        return Promise.reject(
+          new ModelError('Coudn\'t update, token not found', {
+            type: 'NotFoundError',
+          })
+        );
+      }
+
+      claim.set('expiresAt', date);
+
+      return claim.save();
+    });
+};
+
+userSchema.methods.removeTransfer = function removeTransfer (boxId, token) {
+  const user = this;
+
+  // checkBoxOwner throws ModelError
+  user.checkBoxOwner(boxId);
+
+  return Claim.findClaimByToken(token)
+    .exec()
+    .then(function (claim) {
+      if (!claim) {
+        return Promise.reject(new ModelError('Coudn\'t remove, token not found', { type: 'NotFoundError' }));
+      }
+
+      // remove token
+      return claim.remove();
+    });
+};
+
+userSchema.methods.claimBox = function claimBox (token) {
+  const user = this;
+
+  return Claim.findClaimByToken(token)
+    .exec()
+    .then(function (claim) {
+
+      if (!claim) {
+        return Promise.reject(new ModelError('Token was not found', { type: 'NotFoundError' }));
+      }
+
+      return {
+        owner: user.id,
+        claim
+      };
+    })
+    .catch(function (error) {
+      throw new ModelError(error.message, token);
     });
 };
 
@@ -467,11 +549,34 @@ userSchema.methods.updateUser = function updateUser ({ email, language, name, cu
     });
 };
 
-userSchema.methods.getBoxes = function getBoxes () {
+userSchema.methods.getBoxes = function getBoxes (page) {
   return Box.find({ _id: { $in: this.boxes } })
+    .limit(25)
+    .skip(page * 25)
     .populate(Box.BOX_SUB_PROPS_FOR_POPULATION)
     .then(function (boxes) {
       return boxes.map(b => b.toJSON({ includeSecrets: true }));
+    });
+};
+
+userSchema.methods.getBox = function getBox (boxId) {
+  const user = this;
+
+  // checkBoxOwner throws ModelError
+  user.checkBoxOwner(boxId);
+
+  return Box.findOne({ _id: boxId })
+    .populate(Box.BOX_SUB_PROPS_FOR_POPULATION)
+    .then(function (box) {
+      return box.toJSON({ includeSecrets: true });
+    });
+};
+
+userSchema.methods.getSharedBoxes = function getSharedBoxes () {
+  return Box.find({ _id: { $in: this.sharedBoxes } })
+    .populate(Box.BOX_SUB_PROPS_FOR_POPULATION)
+    .then(function (boxes) {
+      return boxes.map((b) => b.toJSON({ includeSecrets: true }));
     });
 };
 
@@ -554,7 +659,8 @@ userSchema.statics.transferOwnershipOfBox = function transferOwnershipOfBox (new
 };
 
 userSchema.methods.mail = function mail (template, data) {
-  return mails.sendMail(template, this, data);
+  // return mails.sendMail(template, this, data);
+  return mails.addToQueue(template, this, data);
 };
 
 const handleE11000 = function (error, res, next) {

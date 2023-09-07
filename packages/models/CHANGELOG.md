@@ -2,6 +2,48 @@
 
 ## Unreleased
 
+## v3.1.0
+
+- Add `page` parameter to `getBoxes` method in user model
+- Add new `getBox` to user model for retreiving single box with secrets
+
+## v3.0.1
+
+- Update `@sensebox/sketch-templater` to fix compiling bug
+
+## v3.0.0
+
+- Upgrade `restify` to v9.0.0
+- Add SPS30 sensors
+- Remove old mailer and add Redis based queue system
+
+## v2.0.3
+
+- Change handling `near` parameter (#694)
+
+## v2.0.2
+
+- Fix `undefined` errors in findMeasurementsForSensors (#692)
+
+## v2.0.1
+
+- Fix `undefined` errors in luftdatenHandler (#691)
+
+## v2.0.0
+
+- Update dependencies (#602, #666)
+- Added `findLatestMeasurementsForSensorsWithCount` static method to Measurement schema (#588)
+- Added `sharedBoxes` functionality (#605)
+
+## v1.3.1
+- Add SPS30 sensor
+- Update @sensebox/node-sketch-templater to v1.13.0
+
+## v1.2.0
+
+- Extend `luftdatenHandler` (#578)
+- Add workflow to transfer a device to different account (#525)
+
 ## v1.1.1
 
 - Update @sensebox/node-sketch-templater to v1.12.1

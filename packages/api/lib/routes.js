@@ -26,7 +26,7 @@ const spaces = function spaces (num) {
  * @apiDescription Returns all routes of this API in human readable format
  * @apiGroup Misc
  */
-const printRoutes = function printRoutes (req, res) {
+const printRoutes = async function printRoutes (req, res) {
   res.header('Content-Type', 'text/plain; charset=utf-8');
 
   const lines = [
@@ -79,6 +79,7 @@ const routes = {
     { path: `${statisticsPath}/descriptive`, method: 'get', handler: statisticsController.descriptiveStatisticsHandler, reference: 'api-Statistics-descriptive' },
     { path: `${boxesPath}`, method: 'get', handler: boxesController.getBoxes, reference: 'api-Boxes-getBoxes' },
     { path: `${boxesPath}/data`, method: 'get', handler: measurementsController.getDataMulti, reference: 'api-Measurements-getDataMulti' },
+    { path: `${boxesPath}/data/bytag`, method: 'get', handler: measurementsController.getDataByGroupTag, reference: 'api-Measurements-getDataByGroupTag' },
     { path: `${boxesPath}/:boxId`, method: 'get', handler: boxesController.getBox, reference: 'api-Boxes-getBox' },
     { path: `${boxesPath}/:boxId/sensors`, method: 'get', handler: measurementsController.getLatestMeasurements, reference: 'api-Measurements-getLatestMeasurements' },
     { path: `${boxesPath}/:boxId/sensors/:sensorId`, method: 'get', handler: measurementsController.getLatestMeasurements, reference: 'api-Measurements-getLatestMeasurementOfSensor' },
@@ -98,8 +99,14 @@ const routes = {
     { path: `${usersPath}/me`, method: 'get', handler: usersController.getUser, reference: 'api-Users-getUser' },
     { path: `${usersPath}/me`, method: 'put', handler: usersController.updateUser, reference: 'api-Users-updateUser' },
     { path: `${usersPath}/me/boxes`, method: 'get', handler: usersController.getUserBoxes, reference: 'api-Users-getUserBoxes' },
+    { path: `${usersPath}/me/boxes/:boxId`, method: 'get', handler: usersController.getUserBox, reference: 'api-Users-getUserBox' },
     { path: `${boxesPath}/:boxId/script`, method: 'get', handler: boxesController.getSketch, reference: 'api-Boxes-getSketch' },
     { path: `${boxesPath}`, method: 'post', handler: boxesController.postNewBox, reference: 'api-Boxes-postNewBox' },
+    { path: `${boxesPath}/claim`, method: 'post', handler: boxesController.claimBox, reference: 'api-Boxes-claimBox' },
+    { path: `${boxesPath}/transfer`, method: 'post', handler: boxesController.createTransfer, reference: 'api-Boxes-createTransfer' },
+    { path: `${boxesPath}/transfer`, method: 'del', handler: boxesController.removeTransfer, reference: 'api-Boxes-removeTransfer' },
+    { path: `${boxesPath}/transfer/:boxId`, method: 'get', handler: boxesController.getTransfer, reference: 'api-Boxes-getTransfer' },
+    { path: `${boxesPath}/transfer/:boxId`, method: 'put', handler: boxesController.updateTransfer, reference: 'api-Boxes-updateTransfer' },
     { path: `${boxesPath}/:boxId`, method: 'put', handler: boxesController.updateBox, reference: 'api-Boxes-updateBox' },
     { path: `${boxesPath}/:boxId`, method: 'del', handler: boxesController.deleteBox, reference: 'api-Boxes-deleteBox' },
     { path: `${boxesPath}/:boxId/:sensorId/measurements`, method: 'del', handler: sensorsController.deleteSensorData, reference: 'api-Measurements-deleteMeasurements' },
@@ -112,13 +119,11 @@ const routes = {
     { path: `${managementPath}/boxes/:boxId`, method: 'get', handler: managementController.getBox, reference: 'api-Admin-getBox' },
     { path: `${managementPath}/boxes/:boxId`, method: 'put', handler: managementController.updateBox, reference: 'api-Admin-updateBox' },
     { path: `${managementPath}/boxes/delete`, method: 'post', handler: managementController.deleteBoxes, reference: 'api-Admin-deleteBoxes' },
-
     { path: `${managementPath}/users`, method: 'get', handler: managementController.listUsers, reference: 'api-Admin-listUsers' },
     { path: `${managementPath}/users/:userId`, method: 'get', handler: managementController.getUser, reference: 'api-Admin-getUser' },
     { path: `${managementPath}/users/:userId`, method: 'put', handler: managementController.updateUser, reference: 'api-Admin-updateUser' },
     { path: `${managementPath}/users/delete`, method: 'post', handler: managementController.deleteUsers, reference: 'api-Admin-deleteUsers' },
     { path: `${managementPath}/users/:userId/exec`, method: 'post', handler: managementController.execUserAction, reference: 'api-Admin-execUserAction' },
-
   ]
 };
 
@@ -132,16 +137,21 @@ const initRoutes = function initRoutes (server) {
   }
 
   // Attach secured routes (needs authorization through jwt)
-  server.use(verifyJwt);
-
+  // The .use() method runs now for all routes
+  // https://github.com/restify/node-restify/issues/1685
   for (const route of routes.auth) {
-    server[route.method]({ path: route.path }, route.handler);
+    server[route.method]({ path: route.path }, [verifyJwt, route.handler]);
   }
 
-  server.use(checkPrivilege);
-
+  // Attach verifyJwt and checkPrivilage routes (needs authorization through jwt)
+  // The .use() method runs now for all routes
+  // https://github.com/restify/node-restify/issues/1685
   for (const route of routes.management) {
-    server[route.method]({ path: route.path }, route.handler);
+    server[route.method]({ path: route.path }, [
+      verifyJwt,
+      checkPrivilege,
+      route.handler,
+    ]);
   }
 };
 

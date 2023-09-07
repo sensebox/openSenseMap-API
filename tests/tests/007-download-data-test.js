@@ -19,7 +19,7 @@ describe('downloading data', function () {
   let boxes = [];
   let boxIds = [];
 
-  const boxCount = 3;
+  const boxCount = 4;
 
   before(function () {
     return chakram.post(`${BASE_URL}/users/sign-in`, { email: 'tester2@test.test', password: '12345678910' })
@@ -189,6 +189,18 @@ describe('downloading data', function () {
           expect(response).to.have.status(200);
           expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
           expect(response).to.have.schema(boxSensorsSchema);
+
+          return chakram.wait();
+        });
+    });
+
+    it('should return the sensors of a box with 3 measurements for /boxes/:boxid/sensors?count=3 GET', function () {
+      return chakram.get(`${BASE_URL}/boxes/${boxIds[0]}/sensors?count=3`)
+        .then(function (response) {
+          expect(response).to.have.status(200);
+          expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
+          expect(response).to.have.schema(boxSensorsSchema);
+          expect(response.body.sensors[0].lastMeasurements.measurements.length).to.be.equal(3);
 
           return chakram.wait();
         });
@@ -570,6 +582,22 @@ describe('downloading data', function () {
         });
     });
 
+  });
+
+  describe('/boxes/data/bytag?grouptag=newgroup', function () {
+
+    const expectedMeasurementsCount = 40;
+
+    it('should allow download data by Grouptag /boxes/data/bytag=newgroup as json', function () {
+      return chakram.get(`${BASE_URL}/boxes/data/bytag?grouptag=newgroup`)
+        .then(function (response) {
+          expect(response).to.have.status(200);
+          expect(response.body.length).to.be.equal(expectedMeasurementsCount);
+          expect(response).to.have.header('content-type', 'application/json');
+
+          return chakram.wait();
+        });
+    });
   });
 
 });

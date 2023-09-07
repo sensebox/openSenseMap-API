@@ -2,10 +2,19 @@
 
 const { User } = require('@sensebox/opensensemap-api-models'),
   { InternalServerError, ForbiddenError } = require('restify-errors'),
-  { checkContentType, redactEmail, postToSlack, clearCache } = require('../helpers/apiUtils'),
+  {
+    checkContentType,
+    redactEmail,
+    clearCache,
+    postToMattermost,
+  } = require('../helpers/apiUtils'),
   { retrieveParameters } = require('../helpers/userParamHelpers'),
   handleError = require('../helpers/errorHandler'),
-  { createToken, refreshJwt, invalidateToken } = require('../helpers/jwtHelpers');
+  {
+    createToken,
+    refreshJwt,
+    invalidateToken,
+  } = require('../helpers/jwtHelpers');
 
 /**
  * define for nested user parameter for box creation request
@@ -43,23 +52,34 @@ const { User } = require('@sensebox/opensensemap-api-models'),
  * @apiSuccess (Created 201) {String} refreshToken valid refresh token
  * @apiSuccess (Created 201) {Object} data `{ "user": {"name":"fullname","email":"test@test.de","role":"user","language":"en_US","boxes":[],"emailIsConfirmed":false} }`
  */
-const registerUser = async function registerUser (req, res, next) {
+const registerUser = async function registerUser (req, res) {
   const { email, password, language, name } = req._userParams;
 
   try {
-    const newUser = await new User({ name, email, password, language })
-      .save();
-    postToSlack(`New User: ${newUser.name} (${redactEmail(newUser.email)})`);
+    const newUser = await new User({ name, email, password, language }).save();
+    postToMattermost(
+      `New User: ${newUser.name} (${redactEmail(newUser.email)})`
+    );
 
     try {
       const { token, refreshToken } = await createToken(newUser);
 
-      return res.send(201, { code: 'Created', message: 'Successfully registered new user', data: { user: newUser }, token, refreshToken });
+      return res.send(201, {
+        code: 'Created',
+        message: 'Successfully registered new user',
+        data: { user: newUser },
+        token,
+        refreshToken,
+      });
     } catch (err) {
-      return next(new InternalServerError(`User successfully created but unable to create jwt token: ${err.message}`));
+      return Promise.reject(
+        new InternalServerError(
+          `User successfully created but unable to create jwt token: ${err.message}`
+        )
+      );
     }
   } catch (err) {
-    handleError(err, next);
+    return handleError(err);
   }
 };
 
@@ -77,29 +97,38 @@ const registerUser = async function registerUser (req, res, next) {
  * @apiSuccess {Object} data `{ "user": {"name":"fullname","email":"test@test.de","role":"user","language":"en_US","boxes":[],"emailIsConfirmed":false} }`
  * @apiError {String} 403 Unauthorized
  */
-const signIn = async function signIn (req, res, next) {
+const signIn = async function signIn (req, res) {
   const { email: emailOrName, password } = req._userParams;
 
   try {
     // lowercase for email
-    const user = await User
-      .findOne({ $or: [{ email: emailOrName.toLowerCase() }, { name: emailOrName }] })
-      .exec();
+    const user = await User.findOne({
+      $or: [{ email: emailOrName.toLowerCase() }, { name: emailOrName }],
+    }).exec();
 
     if (!user) {
-      throw new ForbiddenError('User and or password not valid!');
+      return Promise.reject(
+        new ForbiddenError('User and or password not valid!')
+      );
     }
 
     if (await user.checkPassword(password)) {
       const { token, refreshToken } = await createToken(user);
 
-      return res.send(200, { code: 'Authorized', message: 'Successfully signed in', data: { user }, token, refreshToken });
+      return res.send(200, {
+        code: 'Authorized',
+        message: 'Successfully signed in',
+        data: { user },
+        token,
+        refreshToken,
+      });
     }
   } catch (err) {
     if (err.name === 'ModelError' && err.message === 'Password incorrect') {
-      return handleError(new ForbiddenError('User and or password not valid!'), next);
+      return handleError(new ForbiddenError('User and or password not valid!'));
     }
-    handleError(err, next);
+
+    return handleError(err);
   }
 };
 
@@ -116,12 +145,20 @@ const signIn = async function signIn (req, res, next) {
  * @apiSuccess {Object} data `{ "user": {"name":"fullname","email":"test@test.de","role":"user","language":"en_US","boxes":[],"emailIsConfirmed":false} }`
  * @apiError {Object} Forbidden `{"code":"ForbiddenError","message":"Refresh token invalid or too old. Please sign in with your username and password."}`
  */
-const refreshJWT = async function refreshJWT (req, res, next) {
+const refreshJWT = async function refreshJWT (req, res) {
   try {
-    const { token, refreshToken, user } = await refreshJwt(req._userParams.token);
-    res.send(200, { code: 'Authorized', message: 'Successfully refreshed auth', data: { user }, token, refreshToken });
+    const { token, refreshToken, user } = await refreshJwt(
+      req._userParams.token
+    );
+    res.send(200, {
+      code: 'Authorized',
+      message: 'Successfully refreshed auth',
+      data: { user },
+      token,
+      refreshToken,
+    });
   } catch (err) {
-    handleError(err, next);
+    return handleError(err);
   }
 };
 
@@ -134,7 +171,7 @@ const refreshJWT = async function refreshJWT (req, res, next) {
  * @apiSuccess {String} code `Ok`
  * @apiSuccess {String} message `Successfully signed out`
  */
-const signOut = function signOut (req, res) {
+const signOut = async function signOut (req, res) {
   invalidateToken(req);
 
   return res.send(200, { code: 'Ok', message: 'Successfully signed out' });
@@ -150,12 +187,12 @@ const signOut = function signOut (req, res) {
  * @apiSuccess {String} message `Password reset initiated`
  */
 // generate new password reset token and send the token to the user
-const requestResetPassword = async function requestResetPassword (req, res, next) {
+const requestResetPassword = async function requestResetPassword (req, res) {
   try {
     await User.initPasswordReset(req._userParams);
     res.send(200, { code: 'Ok', message: 'Password reset initiated' });
   } catch (err) {
-    handleError(err, next);
+    return handleError(err);
   }
 };
 
@@ -170,12 +207,16 @@ const requestResetPassword = async function requestResetPassword (req, res, next
  * @apiSuccess {String} message `Password successfully changed. You can now login with your new password`
  */
 // set new password with reset token as auth
-const resetPassword = async function resetPassword (req, res, next) {
+const resetPassword = async function resetPassword (req, res) {
   try {
     await User.resetPassword(req._userParams);
-    res.send(200, { code: 'Ok', message: 'Password successfully changed. You can now login with your new password' });
+    res.send(200, {
+      code: 'Ok',
+      message:
+        'Password successfully changed. You can now login with your new password',
+    });
   } catch (err) {
-    handleError(err, next);
+    return handleError(err);
   }
 };
 
@@ -189,29 +230,62 @@ const resetPassword = async function resetPassword (req, res, next) {
  * @apiSuccess {String} code `Ok`
  * @apiSuccess {String} message `E-Mail successfully confirmed. Thank you`
  */
-const confirmEmailAddress = async function confirmEmailAddress (req, res, next) {
+const confirmEmailAddress = async function confirmEmailAddress (req, res) {
   try {
     await User.confirmEmail(req._userParams);
-    res.send(200, { code: 'Ok', message: 'E-Mail successfully confirmed. Thank you' });
+    res.send(200, {
+      code: 'Ok',
+      message: 'E-Mail successfully confirmed. Thank you',
+    });
   } catch (err) {
-    handleError(err, next);
+    return handleError(err);
   }
 };
 
 /**
- * @api {post} /users/me/boxes list all boxes of the signed in user
+ * @api {post} /users/me/boxes list all boxes and sharedBoxes of the signed in user
  * @apiName getUserBoxes
- * @apiDescription List all boxes of the signed in user with secret fields
+ * @apiDescription List all boxes and sharedBoxes of the signed in user with secret fields
  * @apiGroup Users
+ * @apiParam {Integer} page the selected page for pagination
  * @apiSuccess {String} code `Ok`
  * @apiSuccess {String} data A json object with a single `boxes` array field
  */
-const getUserBoxes = async function getUserBoxes (req, res, next) {
+const getUserBoxes = async function getUserBoxes (req, res) {
+  const { page } = req._userParams;
   try {
-    const boxes = await req.user.getBoxes();
-    res.send(200, { code: 'Ok', data: { boxes } });
+    const boxes = await req.user.getBoxes(page);
+    const sharedBoxes = await req.user.getSharedBoxes();
+    res.send(200, {
+      code: 'Ok',
+      data: { boxes: boxes, boxes_count: req.user.boxes.length, sharedBoxes: sharedBoxes },
+    });
   } catch (err) {
-    handleError(err, next);
+    return handleError(err);
+  }
+};
+
+/**
+ * @api {get} /users/me/boxes/:boxId get specific box of the signed in user
+ * @apiName getUserBox
+ * @apiDescription Get specific box of the signed in user with secret fields
+ * @apiGroup Users
+ * @apiParam {Integer} page the selected page for pagination
+ * @apiSuccess {String} code `Ok`
+ * @apiSuccess {String} data A json object with a single `box` object field
+ */
+const getUserBox = async function getUserBox (req, res) {
+  const { boxId } = req._userParams;
+  try {
+    const box = await req.user.getBox(boxId);
+    res.send(200, {
+      code: 'Ok',
+      data: {
+        box
+      },
+    });
+  } catch (err) {
+    return handleError(err);
   }
 };
 
@@ -222,7 +296,7 @@ const getUserBoxes = async function getUserBoxes (req, res, next) {
  * @apiGroup Users
  * @apiUse JWTokenAuth
  */
-const getUser = function getUser (req, res) {
+const getUser = async function getUser (req, res) {
   res.send(200, { code: 'Ok', data: { me: req.user } });
 };
 
@@ -238,19 +312,27 @@ const getUser = function getUser (req, res) {
  * @apiParam {String} [newPassword] the new password for this user. Should be at least 8 characters long.
  * @apiParam {String} currentPassword the current password for this user.
  */
-const updateUser = async function updateUser (req, res, next) {
+const updateUser = async function updateUser (req, res) {
   try {
-    const { updated, signOut, messages, updatedUser } = await req.user.updateUser(req._userParams);
+    const { updated, signOut, messages, updatedUser } =
+      await req.user.updateUser(req._userParams);
     if (updated === false) {
-      return res.send(200, { code: 'Ok', message: 'No changed properties supplied. User remains unchanged.' });
+      return res.send(200, {
+        code: 'Ok',
+        message: 'No changed properties supplied. User remains unchanged.',
+      });
     }
 
     if (signOut === true) {
       invalidateToken(req);
     }
-    res.send(200, { code: 'Ok', message: `User successfully saved.${messages.join('.')}`, data: { me: updatedUser } });
+    res.send(200, {
+      code: 'Ok',
+      message: `User successfully saved.${messages.join('.')}`,
+      data: { me: updatedUser },
+    });
   } catch (err) {
-    handleError(err, next);
+    return handleError(err);
   }
 };
 
@@ -263,7 +345,7 @@ const updateUser = async function updateUser (req, res, next) {
  * @apiParam {String} password the current password for this user.
  */
 
-const deleteUser = async function deleteUser (req, res, next) {
+const deleteUser = async function deleteUser (req, res) {
   const { password } = req._userParams;
 
   try {
@@ -271,11 +353,16 @@ const deleteUser = async function deleteUser (req, res, next) {
     invalidateToken(req);
 
     await req.user.destroyUser();
-    res.send(200, { code: 'Ok', message: 'User and all boxes of user marked for deletion. Bye Bye!' });
+    res.send(200, {
+      code: 'Ok',
+      message: 'User and all boxes of user marked for deletion. Bye Bye!',
+    });
     clearCache(['getBoxes', 'getStats']);
-    postToSlack(`User deleted: ${req.user.name} (${redactEmail(req.user.email)})`);
+    postToMattermost(
+      `User deleted: ${req.user.name} (${redactEmail(req.user.email)})`
+    );
   } catch (err) {
-    handleError(err, next);
+    return handleError(err);
   }
 };
 
@@ -288,16 +375,22 @@ const deleteUser = async function deleteUser (req, res, next) {
  * @apiSuccess {String} code `Ok`
  * @apiSuccess {String} message `Email confirmation has been sent to <emailaddress>`
  */
-const requestEmailConfirmation = async function requestEmailConfirmation (req, res, next) {
+const requestEmailConfirmation = async function requestEmailConfirmation (
+  req,
+  res
+) {
   try {
     const result = await req.user.resendEmailConfirmation();
     let usedAddress = result.email;
     if (result.unconfirmedEmail) {
       usedAddress = result.unconfirmedEmail;
     }
-    res.send(200, { code: 'Ok', message: `Email confirmation has been sent to ${usedAddress}` });
+    res.send(200, {
+      code: 'Ok',
+      message: `Email confirmation has been sent to ${usedAddress}`,
+    });
   } catch (err) {
-    handleError(err, next);
+    return handleError(err);
   }
 };
 
@@ -308,9 +401,9 @@ module.exports = {
       { name: 'email', dataType: 'email', required: true },
       { predef: 'password' },
       { name: 'name', required: true, dataType: 'as-is' },
-      { name: 'language', defaultValue: 'en_US' }
+      { name: 'language', defaultValue: 'en_US' },
     ]),
-    registerUser
+    registerUser,
   ],
   signIn: [
     checkContentType,
@@ -318,23 +411,21 @@ module.exports = {
       { name: 'email', required: true },
       { predef: 'password' },
     ]),
-    signIn
+    signIn,
   ],
   signOut,
   resetPassword: [
     checkContentType,
     retrieveParameters([
       { name: 'token', required: true },
-      { predef: 'password' }
+      { predef: 'password' },
     ]),
-    resetPassword
+    resetPassword,
   ],
   requestResetPassword: [
     checkContentType,
-    retrieveParameters([
-      { name: 'email', dataType: 'email', required: true }
-    ]),
-    requestResetPassword
+    retrieveParameters([{ name: 'email', dataType: 'email', required: true }]),
+    requestResetPassword,
   ],
   confirmEmailAddress: [
     checkContentType,
@@ -342,10 +433,21 @@ module.exports = {
       { name: 'token', required: true },
       { name: 'email', dataType: 'email', required: true },
     ]),
-    confirmEmailAddress
+    confirmEmailAddress,
   ],
   requestEmailConfirmation,
-  getUserBoxes,
+  getUserBox: [
+    retrieveParameters([
+      { predef: 'boxId', required: true }
+    ]),
+    getUserBox,
+  ],
+  getUserBoxes: [
+    retrieveParameters([
+      { name: 'page', dataType: 'Integer', defaultValue: 0, min: 0 },
+    ]),
+    getUserBoxes,
+  ],
   updateUser: [
     checkContentType,
     retrieveParameters([
@@ -353,23 +455,19 @@ module.exports = {
       { predef: 'password', name: 'currentPassword', required: false },
       { predef: 'password', name: 'newPassword', required: false },
       { name: 'name', dataType: 'as-is' },
-      { name: 'language' }
+      { name: 'language' },
     ]),
-    updateUser
+    updateUser,
   ],
   getUser,
   refreshJWT: [
     checkContentType,
-    retrieveParameters([
-      { name: 'token', required: true }
-    ]),
-    refreshJWT
+    retrieveParameters([{ name: 'token', required: true }]),
+    refreshJWT,
   ],
   deleteUser: [
     checkContentType,
-    retrieveParameters([
-      { predef: 'password' }
-    ]),
-    deleteUser
-  ]
+    retrieveParameters([{ predef: 'password' }]),
+    deleteUser,
+  ],
 };

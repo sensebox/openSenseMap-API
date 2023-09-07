@@ -27,6 +27,10 @@
   // If not specified, Slack integration is disabled
   // No default
   "slack_url": "https://hooks.slack.com/services/A1...7/Z.....K/r....g",
+  // A valid Mattermost incoming webhook url. Used for sending restart and status messages
+  // If not specified, Mattermost integration is disabled
+  // No default
+  "mattermost_url": "https://your-mattermost-server.com/hooks/xxx-generatedkey-xxx",
   // Users with this role are allowed to management access to the API
   // Default: "admin"
   "management_role": "manager",
@@ -141,7 +145,7 @@
         // Should be the naked domain and a port
         // No Default
         "url": "mqtt-osem-integration:3925"
-      }
+      },
     },
     "password": {
       // Minimum required password length
@@ -150,6 +154,10 @@
       // Bcrypt password salt factor. Should be between 1 and 31.
       // Default: 13
       "salt_factor": 12
+    },
+    "claims_ttl": {
+      "amount": 1,
+      "unit": "d"
     },
     // Location on the filesystem where images should be saved
     // Should always end with a trailing slash
