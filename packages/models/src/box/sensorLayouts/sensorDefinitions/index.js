@@ -48,9 +48,9 @@ const veml6070_uvintensity = require('./veml6070_uvintensity'),
   sps30_pm25 = require('./sps30_pm25'),
   sps30_pm4 = require('./sps30_pm4'),
   sps30_pm10 = require('./sps30_pm10'),
-  rain_intensity = require('./rain_intensity'),
-  rain_eventAcc = require('./rain_eventacc'),
-  rain_totalAcc = require('./rain_totalacc');
+  rg15_intensity = require('./rg15_intensity'),
+  rg15_eventAcc = require('./rg15_eventacc'),
+  rg15_totalAcc = require('./rg15_totalacc');
 module.exports = {
   hdc1008_temperature,
   hdc1080_temperature,
@@ -99,7 +99,7 @@ module.exports = {
   sps30_pm25,
   sps30_pm4,
   sps30_pm10,
-  rain_intensity,
-  rain_eventAcc,
-  rain_totalAcc
+  rg15_intensity,
+  rg15_eventAcc,
+  rg15_totalAcc
 };
