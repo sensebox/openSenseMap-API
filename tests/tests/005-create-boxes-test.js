@@ -173,6 +173,20 @@ describe('openSenseMap API Routes: /boxes', function () {
       });
   });
 
+  it('should return distinct grouptags of boxes', function () {
+    return chakram.get(`${BASE_URL}/tags`)
+      .then(function (response) {
+        expect(response).to.have.status(200);
+        expect(response).to.have.header(
+          'content-type',
+          'application/json; charset=utf-8'
+        );
+
+        expect(Array.isArray(response.body.data)).to.be.true;
+        expect(response.body.data.length).to.be.equal(2);
+      });
+  });
+
   it('should allow to create a senseBox via POST used for transfering', function () {
     return chakram.post(`${BASE_URL}/boxes`, valid_sensebox({ name: 'Transfer', }), { headers: { Authorization: `Bearer ${jwt}` }, })
       .then(function (response) {
