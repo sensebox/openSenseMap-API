@@ -549,11 +549,26 @@ userSchema.methods.updateUser = function updateUser ({ email, language, name, cu
     });
 };
 
-userSchema.methods.getBoxes = function getBoxes () {
+userSchema.methods.getBoxes = function getBoxes (page) {
   return Box.find({ _id: { $in: this.boxes } })
+    .limit(25)
+    .skip(page * 25)
     .populate(Box.BOX_SUB_PROPS_FOR_POPULATION)
     .then(function (boxes) {
       return boxes.map(b => b.toJSON({ includeSecrets: true }));
+    });
+};
+
+userSchema.methods.getBox = function getBox (boxId) {
+  const user = this;
+
+  // checkBoxOwner throws ModelError
+  user.checkBoxOwner(boxId);
+
+  return Box.findOne({ _id: boxId })
+    .populate(Box.BOX_SUB_PROPS_FOR_POPULATION)
+    .then(function (box) {
+      return box.toJSON({ includeSecrets: true });
     });
 };
 
@@ -561,7 +576,7 @@ userSchema.methods.getSharedBoxes = function getSharedBoxes () {
   return Box.find({ _id: { $in: this.sharedBoxes } })
     .populate(Box.BOX_SUB_PROPS_FOR_POPULATION)
     .then(function (boxes) {
-      return boxes.map(b => b.toJSON({ includeSecrets: true }));
+      return boxes.map((b) => b.toJSON({ includeSecrets: true }));
     });
 };
 
@@ -644,7 +659,8 @@ userSchema.statics.transferOwnershipOfBox = function transferOwnershipOfBox (new
 };
 
 userSchema.methods.mail = function mail (template, data) {
-  return mails.sendMail(template, this, data);
+  // return mails.sendMail(template, this, data);
+  return mails.addToQueue(template, this, data);
 };
 
 const handleE11000 = function (error, res, next) {

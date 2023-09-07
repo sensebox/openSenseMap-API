@@ -608,6 +608,18 @@ const claimBox = async function claimBox (req, res) {
   }
 };
 
+const getAllTags = async function getAllTags (req, res) {
+  try {
+    const grouptags = await Box.find().distinct('grouptag')
+      .exec();
+
+    res.send({ code: 'Ok', data: grouptags });
+  } catch (err) {
+    return handleError(err);
+  }
+};
+
+
 module.exports = {
   // auth required
   deleteBox: [
@@ -830,6 +842,10 @@ module.exports = {
     ]),
     parseAndValidateTimeParamsForFindAllBoxes,
     addCache('5 minutes', 'getBoxes'),
-    getBoxes,
+    getBoxes
   ],
+  getAllTags: [
+    addCache('5 minutes', 'getAllTags'),
+    getAllTags
+  ]
 };
