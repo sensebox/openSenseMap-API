@@ -23,9 +23,9 @@ const {
   sps30_pm1,
   sps30_pm25,
   sps30_pm4,
-  sps30_pm10, 
-  rain_intensity, 
-  rain_eventAcc, 
+  sps30_pm10,
+  rain_intensity,
+  rain_eventAcc,
   rain_totalAcc
 } = sensorDefinitions;
 
@@ -50,8 +50,8 @@ module.exports = [
   sps30_pm1,
   sps30_pm25,
   sps30_pm4,
-  sps30_pm10, 
-  rain_intensity, 
-  rain_eventAcc, 
-  rain_totalAcc
+  sps30_pm10,
+  rain_intensity,
+  rain_eventAcc,
+  rain_totalAcc,
 ];
