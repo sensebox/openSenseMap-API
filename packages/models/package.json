@@ -19,7 +19,7 @@
     "moment": "^2.29.4",
     "mongoose": "^4.13.21",
     "mongoose-timestamp": "^0.6",
-    "pino": "^8.8.0",
+    "pino": "^8.15.0",
     "uuid": "^8.3.2"
   },
   "scripts": {
