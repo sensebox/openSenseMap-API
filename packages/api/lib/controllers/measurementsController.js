@@ -421,7 +421,6 @@ const postNewMeasurements = async function postNewMeasurements (req, res) {
       }
 
       const measurements = await Measurement.decodeMeasurements(req.body, { contentType, sensors: box.sensors });
-      console.log("🚀 ~ file: measurementsController.js:424 ~ postNewMeasurements ~ measurements:", measurements)
       await box.saveMeasurementsArray(measurements);
       res.send(201, 'Measurements saved in box');
     } catch (err) {

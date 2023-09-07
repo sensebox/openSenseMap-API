@@ -15,9 +15,7 @@ module.exports = {
 
     if (message) {
       const lines = message.split(/\r?\n/);
-      console.log("🚀 ~ file: csvHandler.js:18 ~ lines:", lines)
       const splittedLines = lines.map(csvLineHandler);
-      console.log("🚀 ~ file: csvHandler.js:20 ~ splittedLines:", splittedLines)
 
       // transform the splitted lines to an array containing measurements
       const measurementsArray = [];
@@ -44,7 +42,7 @@ module.exports = {
           }
         }
       }
-      console.log("🚀 ~ file: csvHandler.js:47 ~ transformAndValidateMeasurements:", measurementsArray)
+
       return transformAndValidateMeasurements(measurementsArray);
     }
 

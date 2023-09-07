@@ -46,9 +46,7 @@ const transformAndValidateMeasurements = function transformAndValidateMeasuremen
       }
 
       try {
-        console.log("🚀 ~ file: validators.js:49 ~ validateMeasurementPrimitives:", elem)
         validateMeasurementPrimitives(elem);
-        console.log("🚀 ~ file: validators.js:51 ~ validateMeasurementPrimitives: validated - ", elem)
 
         if (typeof elem.createdAt === 'undefined') {
           elem.createdAt = now;
@@ -73,10 +71,8 @@ const transformAndValidateMeasurements = function transformAndValidateMeasuremen
       // finally attach a mongodb objectId
       elem._id = mongoose.Types.ObjectId();
     }
-    console.log("🚀 ~ file: validator.js:74 ~ transformAndValidateMeasurements: sort array now");
     // sort measurements/locations by date
     arr.sort((a, b) => a.createdAt.diff(b.createdAt));
-    console.log("🚀 ~ file: validator.js:77 ~ transformAndValidateMeasurements: array is sorted");
 
     return resolve(arr);
   });
