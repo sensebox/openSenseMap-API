@@ -605,14 +605,14 @@ const claimBox = async function claimBox (req, res) {
   }
 };
 
-const getAllTags = async function getAllTags (req, res, next) {
+const getAllTags = async function getAllTags (req, res) {
   try {
     const grouptags = await Box.find().distinct('grouptag')
       .exec();
 
     res.send({ code: 'Ok', data: grouptags });
   } catch (err) {
-    handleError(err, next);
+    return handleError(err);
   }
 };
 
