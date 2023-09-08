@@ -13,6 +13,7 @@ module.exports = {
   },
   extends: ['@sensebox/eslint-config-sensebox', 'prettier'],
   rules: {
+    'no-loss-of-precision': ['warn'],
     complexity: ['warn', 20]
   }
 };
