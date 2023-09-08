@@ -11,7 +11,7 @@ module.exports = {
       experimentalObjectRestSpread: true
     }
   },
-  extends: ['@sensebox/eslint-config-sensebox'],
+  extends: ['@sensebox/eslint-config-sensebox', 'prettier'],
   rules: {
     complexity: ['warn', 20]
   }
