@@ -9,6 +9,7 @@ const {
     checkContentType,
     createDownloadFilename,
     csvStringifier,
+    csvStringify
   } = require('../helpers/apiUtils'),
   {
     retrieveParameters,
@@ -38,75 +39,26 @@ const db = require('../db');
  * @apiUse SensorIdParam
  * @apiParam {Boolean="true","false"} [onlyValue] If set to true only returns the measured value without information about the sensor. Requires a sensorId.
  */
-const getLatestMeasurements = async function getLatestMeasurements(req, res) {
-  // ---- Postgres DB ----
 
-  let boxId = req._userParams.boxId
+const getLatestMeasurements = async function getLatestMeasurements(req, res) {
+// ---- Postgres DB ----
+// TODO: splitted this into two seperate functions, might be even easier directly call the seperate functions from the two different routes /boxes/:senseBoxId/sensors/ and /boxes/:senseBoxId/sensors/:sensorId
+  const { boxId, onlyValue, sensorId } = req._userParams;
+
   let count = 1
+  let result;
   if (req._userParams.count) {
     count = req._userParams.count
   }
   let values = [boxId, count];
-  let sensorId = undefined
-  if (req._userParams.sensorId) {
-    sensorId = req._userParams.sensorId
+  if (sensorId) {
     values.push(sensorId);
+    result = await getLatestMeasurementOfSensor(values, onlyValue); 
+  } else {
+    result = await getBoxLatestMeasurements(values); 
   }
-  // Get latest measurements of a senseBox
-  // icon is missing for sensors
-  let query = `
-  SELECT
-    d.id AS _id,
-    d.name AS name,
-    json_agg(
-      json_build_object(
-        'title', s.title,
-        'unit', s.unit,
-        'sensorType', s."sensorType",
-        '_id', s.id,
-        'last_measurements', last_measurements.measurements,
-        'lastMeasurement', (
-          SELECT json_build_object(
-            'value', m.value,
-            'createdAt', m.time
-          )
-          FROM "Measurement" m
-          WHERE m."sensorId" = s.id
-          ORDER BY m.time DESC
-          LIMIT 1
-        )
-      )
-    ) AS sensors
-  FROM
-    "Device" d
-  JOIN
-    "Sensor" s ON d.id = s."deviceId"
-  LEFT JOIN LATERAL (
-    SELECT json_agg(json_build_object('value', m2.value, 'createdAt', m2.time)) AS measurements
-    FROM (
-      SELECT "value", "time",
-             ROW_NUMBER() OVER (ORDER BY "time" DESC) AS row_num
-      FROM "Measurement"
-      WHERE "sensorId" = s.id
-    ) m2
-    WHERE m2.row_num <= $2
-  ) last_measurements ON true
-  WHERE
-    d.id = $1
-    ${sensorId !== undefined ? 'AND s.id = $3' : ''}
-  GROUP BY
-    d.name, d.id
-`;
-
-  try {
-    const result = await db.query(query, values);
-    res.send(result.rows);
-    return result.rows;
-  } catch (err) {
-    console.log("An error.")
-    return handleError(err);
-  }
-  
+  res.send(200, result);
+  return result;
   // ---- Mongo DB ----
   // const { _userParams: params } = req;
 
@@ -163,6 +115,145 @@ const getLatestMeasurements = async function getLatestMeasurements(req, res) {
   // } else {
   //   res.send(box);
   // }
+}
+const getBoxLatestMeasurements = async function getBoxLatestMeasurements(values) {
+  // ---- Postgres DB ----
+  // TODO: quite complicated query...
+    const query = `
+        SELECT
+          d.id AS _id,
+          d.name AS name,
+          json_agg(
+            json_build_object(
+              'title', s.title,
+              'unit', s.unit,
+              'sensorType', s."sensorType",
+              'icon', s.icon,
+              '_id', s.id,
+              'lastMeasurement', (
+                SELECT json_build_object(
+                  'value', m.value,
+                  'createdAt', m.time
+                )
+                FROM "Measurement" m
+                WHERE m."sensorId" = s.id
+                ORDER BY m.time DESC
+                LIMIT 1
+              ),
+              'lastMeasurements', json_build_object(
+                '_id', s.id,
+                'measurements', last_measurements.measurements,
+                'fromDate', (SELECT MIN((m3->>'createdAt')::timestamp) FROM json_array_elements(last_measurements.measurements) AS m3),
+                'toDate', (SELECT MAX((m4->>'createdAt')::timestamp) FROM json_array_elements(last_measurements.measurements) AS m4)
+              )
+            )
+          ) AS sensors,
+          (
+            SELECT MAX(m.time)
+            FROM "Measurement" m
+            WHERE m."sensorId" IN (SELECT s.id FROM "Sensor" s WHERE s."deviceId" = d.id)
+        ) AS "lastMeasurementAt"
+        FROM
+          "Device" d
+        JOIN
+          "Sensor" s ON d.id = s."deviceId"
+        LEFT JOIN LATERAL (
+          SELECT json_agg(json_build_object('value', m2.value, 'createdAt', m2.time)) AS measurements
+          FROM (
+            SELECT "value", "time",
+                  ROW_NUMBER() OVER (ORDER BY "time" DESC) AS row_num
+            FROM "Measurement"
+            WHERE "sensorId" = s.id
+          ) m2
+          WHERE m2.row_num <= $2
+        ) last_measurements ON true
+        WHERE
+          d.id = $1
+        GROUP BY
+          d.name, d.id`;
+  
+    try {
+      const result = await db.query(query, values);
+      return result.rows;
+    } catch (err) {
+      console.log("An error.")
+      return handleError(err);
+    }
+};
+
+
+const getLatestMeasurementOfSensor = async function getLatestMeasurementOfSensor(values, onlyValue) {
+// ---- Postgres DB ----
+// TODO: Left the count in here, it also works in the Mongo API if onlyValue is false; though not specified in the docs
+  let query;
+  if (onlyValue === 'true') {
+    query = `
+      SELECT
+          m.value AS sensors
+      FROM
+          "Measurement" m
+      WHERE
+          m."sensorId" = $1
+          AND m."time" = (
+              SELECT MAX("time")
+              FROM "Measurement"
+              WHERE "sensorId" = $1
+      );`
+      values = [values[2]]
+  } else {
+    query = `
+      SELECT
+          (SELECT json_build_object(
+                      'title', s.title,
+                      'unit', s.unit,
+                      'sensorType', s."sensorType",
+                      'icon', s.icon,
+                      '_id', s.id,
+                      'lastMeasurements', json_build_object(
+                        '_id', s.id,
+                        'measurements', last_measurements.measurements,
+                        'fromDate', (SELECT MIN((m3->>'createdAt')::timestamp) FROM json_array_elements(last_measurements.measurements) AS m3),
+                        'toDate', (SELECT MAX((m4->>'createdAt')::timestamp) FROM json_array_elements(last_measurements.measurements) AS m4)
+                      ),
+                        'lastMeasurement', (
+                          SELECT json_build_object(
+                              'value', m.value,
+                              'createdAt', m.time
+                          )
+                          FROM "Measurement" m
+                          WHERE m."sensorId" = s.id
+                          ORDER BY m.time DESC
+                          LIMIT 1
+                      )
+              )
+          FROM
+              "Device" d
+          JOIN
+              "Sensor" s ON d.id = s."deviceId"
+          LEFT JOIN LATERAL (
+              SELECT json_agg(json_build_object('value', m2.value, 'createdAt', m2.time)) AS measurements
+              FROM (
+                  SELECT "value", "time",
+                      ROW_NUMBER() OVER (ORDER BY "time" DESC) AS row_num
+                  FROM "Measurement"
+                  WHERE "sensorId" = s.id
+              ) m2
+              WHERE m2.row_num <= $2
+          ) last_measurements ON true
+          WHERE
+              d.id = $1
+              AND s.id = $3
+          ) AS sensors`;
+
+  }
+  try {
+    const result = await db.query(query, values);
+    console.log(result.rows[0].sensors);
+    return result.rows[0].sensors;
+  } catch (err) {
+    console.log("An error.")
+    return handleError(err);
+  }
 };
 
 /**
@@ -199,7 +290,7 @@ const jsonLocationReplacer = function jsonLocationReplacer (k, v) {
  */
 const getData = async function getData(req, res) {
 // ---- Postgres DB ----
-
+// TODO: outlier and outlier-window parameter handling is missing
   const { sensorId, fromDate, toDate, format, download, outliers, outlierWindow, delimiter } = req._userParams;
 
   let whereClause = ''
@@ -218,9 +309,9 @@ const getData = async function getData(req, res) {
 
   const query = `
     SELECT
-        m.time AS created_at,
         m.value AS value,
-        ARRAY[d.longitude, d.latitude] AS location
+        ARRAY[d.longitude, d.latitude] AS location,
+        m.time AS "createdAt"
     FROM
         "Measurement" m
     JOIN
@@ -235,8 +326,16 @@ const getData = async function getData(req, res) {
 
   const values = [sensorId];
 
+  if (download === 'true') {
+    res.header('Content-Disposition', `attachment; filename=${sensorId}.${format}`);
+  }
+
   try {
     const result = await db.query(query, values);
+    if (format === 'csv') {
+      res.header('Content-Type', 'text/csv');
+      result.rows = csvStringify(result.rows, ['createdAt', 'value'], delimiter)
+    }
     res.send(result.rows);
     return result.rows;
   } catch (err) {
@@ -303,6 +402,7 @@ const getData = async function getData(req, res) {
  */
 const getDataMulti = async function getDataMulti(req, res) {
 // ---- Postgres DB ----
+// TODO: done
   const { boxId, bbox, exposure, delimiter, columns, fromDate, toDate, phenomenon, download, format } = req._userParams;
 
   const queryParams = [];
@@ -315,8 +415,8 @@ const getDataMulti = async function getDataMulti(req, res) {
   }
 
   if (boxId) {
-    queryParams.push(...boxId);
-    whereClause = `AND d.id IN (${queryParams.map((_, idx) => `$${idx + 1}`).join(', ')})`;
+    queryParams.push(boxId);
+    whereClause = `AND d.id = ANY($${queryParams.length}::Text[])`;
   }
 
   if (bbox && bbox.type === 'Polygon' && bbox.coordinates && bbox.coordinates[0]) {
@@ -332,11 +432,16 @@ const getDataMulti = async function getDataMulti(req, res) {
     `;
   }
 
-
   // exposure parameter
   if (exposure) {
-    queryParams.push(...exposure);
-    whereClause += ` AND d.exposure IN (${queryParams.map((_, idx) => `$${idx + 1}`).join(', ')})`;
+    queryParams.push(exposure);
+    whereClause += ` AND d.exposure = ANY($${queryParams.length}::"Exposure"[])`;
+  }
+
+  // exposure parameter
+  if (phenomenon) {
+    queryParams.push(phenomenon);
+    whereClause += ` AND s.title = $${queryParams.length}`;
   }
 
 
@@ -384,30 +489,20 @@ const getDataMulti = async function getDataMulti(req, res) {
 
     let { rows } = await db.query(query, queryParams);
 
+    if (rows.length === 0) {
+      return Promise.reject(new NotFoundError('No boxes found'));
+    }
+
     if (format === 'csv') {
-      console.log(rows);
       res.header('Content-Type', 'text/csv');
-      res.setHeader('Content-Disposition', `attachment; filename=${createDownloadFilename(req.date(), 'download', [phenomenon, ...columns], format)}`);
-      // Create header line for CSV
-      const header = Object.keys(rows[0]).join(',') + '\n';
-
-      // Create data lines for CSV
-      const csvData = rows
-        .map(item =>
-          Object.values(item)
-            .map(value => `"${value}"`)
-            .join(',')
-        )
-        .join('\n');
-
-      // Combine header and data lines
-      const csvContent = header + csvData;
-      res.send(csvContent);
+      rows = csvStringify(rows, columns, delimiter)
     } else if (format === 'json') {
       res.header('Content-Type', 'application/json');
-      console.log(rows);
-      res.send(rows);
     }
+    if (download === 'true') {
+      res.setHeader('Content-Disposition', `attachment; filename=${createDownloadFilename(req.date(), 'download', [phenomenon, ...columns], format)}`);
+    }
+    res.send(rows);
   } catch (err) {
     return handleError(err);
   }
@@ -474,10 +569,6 @@ const getDataMulti = async function getDataMulti(req, res) {
   // }
 };
 
-// ---- Postgres DB ----
-function rowToCSV(row, columns, delimiter) {
-  return columns.map(col => row[col] || '').join(delimiter);
-}
 
 /**
  * @api {get,post} /boxes/data?grouptag=:grouptag Get latest measurements for a grouptag as JSON
@@ -487,6 +578,8 @@ function rowToCSV(row, columns, delimiter) {
  * @apiParam {String} grouptag The grouptag to search by.
  */
 const getDataByGroupTag = async function getDataByGroupTag(req, res) {
+// FIXME: Grouptags are missing in db schema
+// TODO: Implement this request
 // ---- Postgres DB -> No Grouptags available yet! Just exemplary code here----
 
   // const query = `
@@ -564,28 +657,30 @@ const getDataByGroupTag = async function getDataByGroupTag(req, res) {
  * @apiHeader {String} Authorization Box' unique access_token. Will be used as authorization token if box has auth enabled (e.g. useAuth: true)
  */
 const postNewMeasurement = async function postNewMeasurement(req, res) {
-  // ---- Postgres DB ----
-
+// TODO: Authorization check and location handling is missing
+// FIXME: measurements have no location field in postgres db
+// ---- Postgres DB ----
   const { boxId, sensorId, value, createdAt, location } = req._userParams;
   // const token = req.headers.authorization;
+
   let query = ''
   let values = []
 
-if (createdAt){
-  query = `
-        INSERT INTO "Measurement" ("sensorId", value, time)
-        VALUES ($1, $2, $3);
-      `;
+  if (createdAt){
+    query = `
+          INSERT INTO "Measurement" ("sensorId", value, time)
+          VALUES ($1, $2, $3);
+        `;
 
-  values = [sensorId, value, createdAt];
-} else {
-  query = `
-        INSERT INTO "Measurement" ("sensorId", value)
-        VALUES ($1, $2);
-      `;
+    values = [sensorId, value, createdAt];
+  } else {
+    query = `
+          INSERT INTO "Measurement" ("sensorId", value)
+          VALUES ($1, $2);
+        `;
 
-  values = [sensorId, value];
-}
+    values = [sensorId, value];
+  }
 
   try {
     await db.query(query, values);
@@ -698,7 +793,9 @@ if (createdAt){
  * }
  */
 const postNewMeasurements = async function postNewMeasurements(req, res) {
-  // ---- Postgres DB ----
+// TODO: Decoders for various content types, authorization check and location handling are missing
+// FIXME: measurements have no location field in postgres db
+// ---- Postgres DB ----
 
   const { boxId, luftdaten, hackair } = req._userParams;
   let contentType = req.getContentType();
@@ -709,7 +806,6 @@ const postNewMeasurements = async function postNewMeasurements(req, res) {
     contentType = 'luftdaten';
   } 
 
-  // TODO: Decoders for various content types and authorization check
   // if (Measurement.hasDecoder(contentType)) {
     // authorization for all boxes that have not opt out
     // if ((box.useAuth || contentType === 'hackair') && box.access_token && box.access_token !== req.headers.authorization) {

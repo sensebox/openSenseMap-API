@@ -66,6 +66,7 @@ const stringParser = function stringParser (s) {
  */
 
 const idCheck = function idCheck (id) {
+  // FIXME: object ids are not self assigned in the running postgres db, the monog db id check is turned of to be able to use uuid-v4 ids  
   // ---- Postgres DB ---- -> stop checking for valid mongoose ids, to allow using uuidv4 ids with postgres
   // if (mongoose.Types.ObjectId.isValid(id) && id !== '00112233445566778899aabb') {
   //   return id;
@@ -545,6 +546,7 @@ const validateDateNotPast = async function validateDateNotPast (req) {
 };
 
 const checkPrivilege = async function checkPrivilege (req) {
+// TODO: Done, checks whether user owns a specific box 
 // ---- Postgres DB ----
   const boxId = req._userParams.boxId
 

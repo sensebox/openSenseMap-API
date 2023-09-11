@@ -29,7 +29,7 @@ const db = require('../db');
  */
 const getStatistics = async function getStatistics (req, res) {
 // ---- Postgres DB ----
-
+// TODO: Fully implemented
   const { human } = req._userParams;
 
   try {

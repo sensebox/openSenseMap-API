@@ -95,7 +95,7 @@ const routes = {
     { path: `${usersPath}/refresh-auth`, method: 'post', handler: usersController.refreshJWT, reference: 'api-Users-refresh-auth' }
   ],
   'auth': [
-    { path: `${usersPath}/me`, method: 'get', handler: usersController.getUser, reference: 'api-Users-getUser' },
+    { path: `${usersPath}/me`, method: 'get', handler: usersController.getUser, reference: 'api-Users-getUser' }, // works without changes
     { path: `${usersPath}/me`, method: 'put', handler: usersController.updateUser, reference: 'api-Users-updateUser' },
     { path: `${usersPath}/me/boxes`, method: 'get', handler: usersController.getUserBoxes, reference: 'api-Users-getUserBoxes' },
     { path: `${usersPath}/me/boxes/:boxId`, method: 'get', handler: usersController.getUserBox, reference: 'api-Users-getUserBox' },

@@ -65,10 +65,12 @@ const { User } = require('@sensebox/opensensemap-api-models'),
  */
 const registerUser = async function registerUser (req, res) {
 // ---- Postgres DB ----
-
+// TODO: evaluate whether to request data for role, boxes and emailIsConfirmed instead of hard coding
+// FIXME: no refresh token in new db scheme (user sessions instead)
   const { email, password, language, name } = req._userParams;
 
   try {
+    await db.query('BEGIN');
     // remove id and updatedAt for use in production
     const id = uuidv4()
     const updatedAt = '2023-08-17 12:34:56.789'
@@ -78,7 +80,7 @@ const registerUser = async function registerUser (req, res) {
     const hashedPassword = await bcrypt.hash(preparePasswordHash(password), saltRounds);
 
     // Insert user record into the 'User' table and retrieve generated id
-    const userInsertQuery = 'INSERT INTO "User" (id, name, email, language, "updatedAt") VALUES ($1, $2, $3, $4, $5) RETURNING id, email';
+    const userInsertQuery = 'INSERT INTO "User" (id, name, email, language, "updatedAt") VALUES ($1, $2, $3, $4, $5) RETURNING name, id, email, language';
     const userResult = await db.query(userInsertQuery, [id, name, email, language, updatedAt]);
     const userId = userResult.rows[0].id;
 
@@ -87,19 +89,38 @@ const registerUser = async function registerUser (req, res) {
     await db.query(passwordInsertQuery, [hashedPassword, userId]);
 
     // Generate JWT token
-    const payload = { role: userResult.rows[0].role },
+    const payload = { role: 'user' },
       signOptions = Object.assign({ subject: userResult.rows[0].email, jwtid: uuidv4() }, jwtSignOptions);
+      console.log(payload);
     const token = jwt.sign(payload, jwt_secret, signOptions);
+
+    // Notify mattermost
+    postToMattermost(
+      `New User: ${userResult.rows[0].name} (${redactEmail(userResult.rows[0].email)})`
+    );
+
+    // Generate response data visible to user
+    const userVisibleData = {
+      name: userResult.rows[0].name,
+      email: userResult.rows[0].email,
+      role: 'user',
+      language: userResult.rows[0].language,
+      boxes: [],
+      emailIsConfirmed: 'false',
+    }
 
     // Return the generated token
     console.log('User registered successfully. Token:', token);
+
+    await db.query('COMMIT');
     return res.send(201, {
         code: 'Created',
         message: 'Successfully registered new user',
-        data: { user: userResult.rows[0] },
+        data: { user: userVisibleData },
         token,
       });
   } catch (error) {
+    await db.query('ROLLBACK');
     console.error('Error registering user:', error.message);
     return handleError(error);
   }
@@ -161,6 +182,9 @@ const preparePasswordHash = function preparePasswordHash(plaintextPassword) {
  * @apiError {String} 403 Unauthorized
  */
 const signIn = async function signIn (req, res) {
+// FIXME: no refresh token in new db schema (user sessions instead)
+// FIXME: The user table in the Postgres DB Schema has a field "Boxes" wich is an array of strings, it is unclear how this is going to be used as tehre is no relation to the "Devices" table (whereas devices tabel has an actual relation to the user table).
+// TODO: Boxes array is always null, as it is not filled within other functions yet. Either use the boxes field of the devices or add another SQL request to get all boxes for the user id and return all resulting box ids in the boxes field. 
 // ---- Postgres DB ----
   const { email: emailOrName, password } = req._userParams;
 
@@ -189,12 +213,22 @@ const signIn = async function signIn (req, res) {
     if (isPasswordValid) {
       const payload = { role: user.role },
       signOptions = Object.assign({ subject: user.email, jwtid: uuidv4() }, jwtSignOptions);
+      console.log(user);
       const token = jwt.sign(payload, jwt_secret, signOptions);
 
       return res.send(200, {
         code: 'Authorized',
         message: 'Successfully signed in',
-        data: { user },
+        data: { 
+          user: {
+            name: user.name,
+            email: user.email,
+            role: user.role,
+            language: user.language,
+            boxes: user.Boxes,
+            emailIsConfirmed: user.emailIsConfirmed
+          } 
+        },
         token,
         // refreshToken,
       });
@@ -385,6 +419,7 @@ const getUserBoxes = async function getUserBoxes (req, res) {
  * @apiSuccess {String} data A json object with a single `box` object field
  */
 const getUserBox = async function getUserBox (req, res) {
+// TODO: Done (content of box field might differ depending on differences in data schemes of postgres and mongo db)
 // ---- Postgres DB ----
   const { boxId } = req._userParams;
   try {

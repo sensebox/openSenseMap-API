@@ -52,8 +52,8 @@ const
   jsonstringify = require('stringify-stream'),
   { v4: uuidv4 } = require('uuid'),
   bcrypt = require('bcrypt'),
-  { preparePasswordHash } = require('./usersController');
-
+  { preparePasswordHash } = require('./usersController'),
+  ModelError = require('../../../models/src/modelError');
 // New PostgreSQL connector
 const db = require('../db');
 
@@ -139,13 +139,15 @@ const db = require('../db');
  *
  */
 const updateBox = async function updateBox (req, res) {
-  // ---- Postgres DB ----
-
+// ---- Postgres DB ----
+// FIXME: updatedAt should be self assigned by Postgres Table
+// FIXME: grouptag, image, addon and weblink are missing in DEVICE Postgres Schema
+// TODO: mqtt and ttn fields are missing; new sketch will not yet be send on sensor change
+// TODO: not sure whether several fields should be editable, including: 'exposure', 'model', 'useAuth', 'public', 'status', 'userId'
   const boxId = req._userParams.boxId;
   const newBoxData = req._userParams;
 
   const updatedDevice = {
-    // updatedAt in production, should be self assigned
     name: req.body.name,
     updatedAt: new Date().toISOString(),
     description: req.body.description,
@@ -173,7 +175,7 @@ const updateBox = async function updateBox (req, res) {
 
 
 
-  const query = `
+  const updateDeviceQuery = `
       UPDATE "Device"
       SET ${setStatement}
       WHERE "id" = $1
@@ -184,11 +186,8 @@ const updateBox = async function updateBox (req, res) {
   try {
     await db.query('BEGIN');
 
-    const result = await db.query(query, values);
-    // for (sensor in req.body.sensors) {
-    //   console.log(sensor);
+    const result = await db.query(updateDeviceQuery, values);
     await updateSensor(req.body.sensors, boxId)
-    // }
     await db.query('COMMIT');
     res.send({ code: 'Ok', data: updatedDevice });
     return result.rows[0];
@@ -256,7 +255,6 @@ async function updateSensor(sensorData, boxId) {
             SET ${updateFields.join(', ')}, "updatedAt" = $${values.push(updatedAt)}
             WHERE "id" = $${values.push(_id)};
           `;
-      console.log(query)
     } else {
       throw new Error(`Invalid operation for sensor with id ${_id}`);
     }
@@ -286,15 +284,15 @@ async function updateSensor(sensorData, boxId) {
  * ]
  */
 const getBoxLocations = async function getBoxLocations (req, res) {
-  // ---- Postgres DB ----
-
+// ---- Postgres DB ----
+// FIXME: there is only a single location for each device, defined via latitude and longitude fields in the DEVICE Postgres Schema
   const { boxId, format, fromDate, toDate } = req._userParams;
 
   const query = `
     SELECT
-      d."updatedAt" as timestamp,
       ARRAY[d.longitude, d.latitude] AS coordinates,
-      'Point' AS type
+      'Point' AS type,
+      d."updatedAt" as timestamp
     FROM
       "Device" d
     WHERE
@@ -307,6 +305,12 @@ const getBoxLocations = async function getBoxLocations (req, res) {
 
   try {
     let result = await db.query(query, values);
+    
+    // if result is empty, no Box was found, return Error
+    if (result.rowCount === 0) {
+      throw new ModelError('Box not found', { type: 'NotFoundError' });
+    }
+
     if (format === 'geojson') {
       const geo = {
         type: 'Feature',
@@ -321,6 +325,7 @@ const getBoxLocations = async function getBoxLocations (req, res) {
 
       result.rows = geo;
     }
+
     res.send(result.rows);
     return result.rows;
   } catch (err) {
@@ -376,10 +381,70 @@ const getBoxes = async function getBoxes (req, res) {
   // content-type is always application/json for this route
   res.header('Content-Type', 'application/json; charset=utf-8');
   // ---- Postgres DB ----
+  // FIXME: DB Field grouptag is missing for Device, thus it can not be used to filter boxes yet
+  // TODO: format, near, maxDistance, date and bbox fields are not yet used
   try {
-    const { rows } = await db.query('SELECT * FROM "Device"');
+    const params = req._userParams;
+    let selectionString = ''
+
+    if (params.minimal === 'true') {
+      selectionString += `d.id, d."updatedAt", d.latitude, d.longitude, d.exposure, d.name`
+    } else {
+      selectionString += 'd.*'
+    }
+
+    if(params.classify === 'true') {
+      selectionString += `, 
+      CASE
+        WHEN MAX(m.time) > NOW() - INTERVAL '7 days' THEN 'active'
+        WHEN MAX(m.time) > NOW() - INTERVAL '30 days' THEN 'inactive'
+        ELSE 'old'
+      END AS state
+        `
+    }
+    
+    if (params.full === 'true') {
+      selectionString += `, 
+        json_agg(
+        json_build_object(
+          'title', s.title,
+          'unit', s.unit,
+          'sensorType', s."sensorType",
+          '_id', s.id,
+          'lastMeasurement', (
+            SELECT json_build_object(
+              'value', m.value,
+              'createdAt', m.time
+            )
+            FROM "Measurement" m
+            WHERE m."sensorId" = s.id
+            ORDER BY m.time DESC
+            LIMIT 1
+          )
+          )
+      ) as sensors`
+    }
+
+    const query = `
+    SELECT ${selectionString}
+    FROM
+        "Device" d
+    JOIN
+        "Sensor" s ON s."deviceId" = d.id
+    JOIN "Measurement" m ON m."sensorId" = s.id
+    WHERE
+    ($1::text IS NULL OR d.name = $1)
+    AND ($2::text[] IS NULL OR d.model = ANY($2::text[]))
+    AND ($3::"Exposure"[] IS NULL OR d.exposure = ANY($3::"Exposure"[]))
+    AND ($4::text IS NULL OR s.title = $4)
+    GROUP BY d.id
+    LIMIT $5
+  `
+    const values = [params.name, params.model, params.exposure, params.phenomenon, params.limit]
+    const { rows } = await db.query(query, values);
     res.send(rows);
   } catch (err) {
+    console.log(err);
     return handleError(err);
   }
   // ---- Mongo DB ---- 
@@ -526,23 +591,61 @@ const getBoxes = async function getBoxes (req, res) {
  */
 
 const getBox = async function getBox (req, res) {
+// ---- Postgres DB ----
+// FIXME: DB Field grouptag & image are missing for Device, thus not returned here
+// TODO: fields without a value are returned with value null, Mongo response omitted missing fields
   const { format, boxId } = req._userParams;
-  
-  // ---- Postgres DB ----
   try {
-    const { rows } = await db.query(`SELECT * FROM "Device" WHERE id = '${boxId}';`);
-    console.log(rows)
+    const { rows } = await db.query(`
+    SELECT 
+    d.id as "_id",
+    d."createdAt",
+    d.exposure,
+    json_build_object(
+      'coordinates', ARRAY[d.longitude, d.latitude],
+      'timestamp', d."updatedAt",
+      'type', 'Point'
+    ) as "currentLocation",
+    d.name,
+    json_agg(
+      json_build_object(
+          '_id', s.id,
+          'sensorType', s."sensorType",
+          'unit', s.unit,
+          'title', s.title,
+          'lastMeasurement', (
+            SELECT json_build_object(
+              'value', m.value,
+              'createdAt', m.time
+            )
+            FROM "Measurement" m
+            WHERE m."sensorId" = s.id
+            ORDER BY m.time DESC
+            LIMIT 1
+          ),
+          'icon', s.icon
+        )
+    ) as sensors
+    FROM "Device" d
+    JOIN
+      "Sensor" s ON s."deviceId" = d.id
+    WHERE d.id = '${boxId}'
+    GROUP BY d.id;
+    `);
+
     if (format === 'geojson') {
       const box = rows[0]
-      const coordinates = [box.longitude, box.latitude];
+      const coordinates = box.currentLocation.coordinates;
       return res.send(point(coordinates, box));
     }
+
     res.send(rows);
   } catch (err) {
     return handleError(err);
   }
 
   // ---- Mongo DB ---- 
+  // const { format, boxId } = req._userParams;
   // try {
   //   const box = await Box.findBoxById(boxId);
 
@@ -591,8 +694,9 @@ const getBox = async function getBox (req, res) {
  * @apiUse JWTokenAuth
  */
 const postNewBox = async function postNewBox (req, res) {
-  // ---- Postgres DB ----
-  
+// ---- Postgres DB ----
+// FIXME: integrations (mqtt and ttn) are missing in Postgres DB Schema; omitted here
+// TODO: integrate sensorTemplates and inference of corresponding sensors based on a given model
   try {
     await db.query('BEGIN');
 
@@ -609,7 +713,8 @@ const postNewBox = async function postNewBox (req, res) {
       status: req.body.status || 'INACTIVE',
       latitude: req.body.location.lat,
       longitude: req.body.location.lng,
-      userId: user.id
+      userId: req.user.id,
+      sensors: req.body.sensors
     };
     
     // Build dynamic SQL query
@@ -656,7 +761,7 @@ const postNewBox = async function postNewBox (req, res) {
     const newBox = await db.query(query, values);
     console.log('New device inserted with ID:', newBox.rows[0].id);
 
-    for (const sensorData of req.body.sensors) {
+    for (const sensorData of newDevice.sensors) {
       const insertSensorQuery = `
         INSERT INTO "Sensor" ("id", "title", "unit", "sensorType", "deviceId", "updatedAt")
         VALUES ($1, $2, $3, $4, $5, $6);
@@ -782,9 +887,9 @@ const getSketch = async function getSketch (req, res) {
  * @apiUse BoxIdParam
  */
 const deleteBox = async function deleteBox(req, res) {
+// ---- Postgres DB ---- 
+// FIXME: make sure every measurement is deleted, should be automatically done by cascading? currently not the case. either implement or add deletion logic here.
   const { password, boxId } = req._userParams;
-  
-  // ---- Postgres DB ---- 
   try {
     await db.query('BEGIN');
 

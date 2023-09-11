@@ -81,6 +81,7 @@ const refreshJwt = async function refreshJwt (refreshToken) {
 const jwtInvalidErrorMessage = 'Invalid JWT authorization. Please sign in to obtain new JWT.';
 
 const verifyJwt = function verifyJwt (req, res, next) {
+// TODO: Blacklisted tokens are not checked yet
 // ---- Postgres DB ----
   // Check if Authorization header is present
   const rawAuthorizationHeader = req.header('authorization');
@@ -165,7 +166,8 @@ const verifyJwt = function verifyJwt (req, res, next) {
   // });
 };
 
-// ---- Postgres DB -> TODO: Check for blacklisted tokens ----
+// ---- Postgres DB ----
+// TODO: Check for blacklisted tokens
 // const isTokenBlacklisted = async (decodedJwt, jwtString) => {
 //   const query = `
 //     SELECT EXISTS (
