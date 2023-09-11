@@ -23,6 +23,10 @@ module.exports = function ({ bbox, model, sensors, lonlat, name = '', sensorTemp
   const box = {
     'name': `senseBox${name}`,
     'model': model,
+    'grouptag': [
+      'tag1',
+      'tag2'
+    ],
     'exposure': 'indoor',
     'weblink': 'https://api.opensensemap.org',
     'location': loc,
