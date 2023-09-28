@@ -244,11 +244,13 @@ const getDataMulti = async function getDataMulti (req, res) {
 
 
 /**
- * @api {get,post} /boxes/data?grouptag=:grouptag Get latest measurements for a grouptag as JSON
+ * @api {get} /boxes/data/bytag Get latest measurements for a grouptag as JSON
  * @apiDescription Download data of a given grouptag from multiple senseBoxes as JSON
+ * @apiDeprecated Will change in the upcoming release to /boxes/data?grouptag=:grouptag
  * @apiGroup Measurements
  * @apiName getDataByGroupTag
  * @apiParam {String} grouptag The grouptag to search by.
+ * @apiParam {String=json} format=json
  */
 const getDataByGroupTag = async function getDataByGroupTag (req, res) {
   const { grouptag, format } = req._userParams;
