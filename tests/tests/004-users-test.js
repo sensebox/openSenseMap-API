@@ -197,6 +197,24 @@ describe('openSenseMap API Routes: /users', function () {
       });
   });
 
+  it('should return that no changed properties are applied and user remains unchanged', function () {
+    return chakram
+      .put(
+        `${BASE_URL}/users/me`,
+        { name: 'new Name' },
+        { headers: { Authorization: `Bearer ${jwt}` } }
+      )
+      .then(function (response) {
+        expect(response).to.have.status(200);
+        expect(response).to.have.json(
+          'message',
+          'No changed properties supplied. User remains unchanged.'
+        );
+
+        return chakram.wait();
+      });
+  });
+
   it('should deny to change name to existing name', function () {
     return chakram.put(`${BASE_URL}/users/me`, { name: 'this is just a nickname', currentPassword: '12345678' }, { headers: { 'Authorization': `Bearer ${jwt}` } })
       .then(function (response) {

@@ -539,6 +539,10 @@ userSchema.methods.updateUser = function updateUser ({ email, language, name, cu
       return user.save();
     })
     .then(function (updatedUser) {
+      if (updatedUser.updated === false) {
+        return updatedUser;
+      }
+
       return { updated: true, signOut, messages: msgs, updatedUser };
     })
     .catch(function (err) {
