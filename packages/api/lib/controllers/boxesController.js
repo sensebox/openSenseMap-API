@@ -36,6 +36,26 @@
  * @apiParam (TTNOption) {Number} [port] The TTN port to listen for messages. Optional, if not provided, all ports are used.
  */
 
+/**
+ * @apiDefine BoxSuccessResponse
+ *
+ * @apiSuccess {String} _id
+ * @apiSuccess {String} name
+ * @apiSuccess {String} exposure
+ * @apiSuccess {String} model
+ * @apiSuccess {RFC3339Date} lastMeasurementAt
+ * @apiSuccess {String} weblink
+ * @apiSuccess {String} description
+ * @apiSuccess {RFC3339Date} createdAt
+ * @apiSuccess {RFC3339Date} updatedAt
+ * @apiSuccess {String[]} grouptag
+ * @apiSuccess {Object} currentLocation
+ * @apiSuccess {Coordinates[]} currentLocation.coordinates
+ * @apiSuccess {RFC3339Date} currentLocation.timestamp
+ * @apiSuccess {String} currentLocation.coordinates.type
+ * @apiSuccess {String} image
+ */
+
 const
   { Box, User, Claim } = require('@sensebox/opensensemap-api-models'),
   { addCache, clearCache, checkContentType, redactEmail, postToMattermost } = require('../helpers/apiUtils'),
@@ -210,6 +230,72 @@ const geoJsonStringifyReplacer = function geoJsonStringifyReplacer (key, box) {
  * @apiSampleRequest https://api.opensensemap.org/boxes
  * @apiSampleRequest https://api.opensensemap.org/boxes?date=2015-03-07T02:50Z&phenomenon=Temperatur
  * @apiSampleRequest https://api.opensensemap.org/boxes?date=2015-03-07T02:50Z,2015-04-07T02:50Z&phenomenon=Temperatur
+ *
+ * @apiSuccessExample {application/json} Example response for :minimal=true
+ * [
+ *  {
+      "_id": "5ee91626dc1438001b473b52",
+      "name": "Lucht sensor",
+      "currentLocation": {
+        "timestamp": "2020-06-16T18:57:42.322Z",
+        "coordinates": [
+          5.38517,
+          51.426135
+        ],
+        "type": "Point"
+      },
+      "exposure": "outdoor",
+      "lastMeasurementAt": "2020-06-16T20:51:23.414Z"
+    },
+    {
+      "_id": "5ee92557dc1438001b4d3eee",
+      "name": "BabCity",
+      "currentLocation": {
+        "timestamp": "2020-06-16T20:02:31.083Z",
+        "coordinates": [
+          4.78833,
+          51.936062
+        ],
+        "type": "Point"
+      },
+      "exposure": "outdoor",
+      "lastMeasurementAt": "2022-01-23T20:14:48.808Z"
+    }
+ * ]
+
+ * @apiSuccessExample {application/json} Example response for :minimal=true and :classify=true
+ * [
+ *  {
+      "_id": "5ee91626dc1438001b473b52",
+      "name": "Lucht sensor",
+      "currentLocation": {
+        "timestamp": "2020-06-16T18:57:42.322Z",
+        "coordinates": [
+          5.38517,
+          51.426135
+        ],
+        "type": "Point"
+      },
+      "exposure": "outdoor",
+      "lastMeasurementAt": "2020-06-16T20:51:23.414Z",
+      "state": "old"
+    },
+    {
+      "_id": "5ee92557dc1438001b4d3eee",
+      "name": "BabCity",
+      "currentLocation": {
+        "timestamp": "2020-06-16T20:02:31.083Z",
+        "coordinates": [
+          4.78833,
+          51.936062
+        ],
+        "type": "Point"
+      },
+      "exposure": "outdoor",
+      "lastMeasurementAt": "2022-01-23T20:14:48.808Z",
+      "state": "old"
+    }
+ * ]
  */
 const getBoxes = async function getBoxes (req, res) {
   // content-type is always application/json for this route
@@ -263,6 +349,10 @@ const getBoxes = async function getBoxes (req, res) {
  *
  * @apiUse BoxIdParam
  * @apiParam {String=json,geojson} [format=json] The format the sensor data is returned in. If `geojson`, a GeoJSON Point Feature is returned.
+ *
+ * @apiUse BoxSuccessResponse
+ * @apiUse SensorsArray
+ * @apiUse SensorLastMeasurement
  *
  * @apiSuccessExample Example data on success:
  * {

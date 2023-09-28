@@ -21,6 +21,17 @@ const { Box } = require('@sensebox/opensensemap-api-models'),
  */
 
 /**
+ * @apiDefine SensorsArray
+ *
+ * @apiSuccess {Sensor[]} sensors
+ * @apiSuccess {String} sensors._id
+ * @apiSuccess {String} sensors.title
+ * @apiSuccess {String} sensors.sensorType
+ * @apiSuccess {String} sensors.unit
+ * @apiSuccess {String} sensors.icon
+ */
+
+/**
  * @apiDefine SensorIdParam
  *
  * @apiParam {String} sensorId the ID of the sensor you are referring to.

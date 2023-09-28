@@ -20,6 +20,14 @@ const {
   { UnauthorizedError, NotFoundError } = require('restify-errors');
 
 /**
+ * @apiDefine SensorLastMeasurement
+ *
+ * @apiSuccess {Object} sensors.lastMeasurement
+ * @apiSuccess {String} sensors.lastMeasurement.value
+ * @apiSuccess {RFC3339Date} sensor.lastMeasurement.createdAt
+ */
+
+/**
  * @api {get} /boxes/:senseBoxId/sensors Get latest measurements of a senseBox
  * @apiDescription Get the latest measurements of all sensors of the specified senseBox.
  * @apiGroup Measurements
