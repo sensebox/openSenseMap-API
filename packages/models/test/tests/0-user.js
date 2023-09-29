@@ -512,7 +512,9 @@ describe('User model', function () {
       return User.findOne({ name: 'Valid Username 2' })
         .then(function (user) {
           return Promise.all(boxes.map(function (box) {
-            return user.addBox(box);
+            user.addBox(box).then(function (newBox) {
+              return newBox;
+            });
           }));
         });
     });
