@@ -39,21 +39,21 @@
 /**
  * @apiDefine BoxSuccessResponse
  *
- * @apiSuccess {String} _id
- * @apiSuccess {String} name
- * @apiSuccess {String} exposure
- * @apiSuccess {String} model
- * @apiSuccess {RFC3339Date} lastMeasurementAt
- * @apiSuccess {String} weblink
- * @apiSuccess {String} description
- * @apiSuccess {RFC3339Date} createdAt
- * @apiSuccess {RFC3339Date} updatedAt
- * @apiSuccess {String[]} grouptag
- * @apiSuccess {Object} currentLocation
- * @apiSuccess {Coordinates[]} currentLocation.coordinates
- * @apiSuccess {RFC3339Date} currentLocation.timestamp
- * @apiSuccess {String} currentLocation.coordinates.type
- * @apiSuccess {String} image
+ * @apiSuccess {String} _id unique identifier of this senseBox
+ * @apiSuccess {String} name the name of this senseBox
+ * @apiSuccess {String} exposure the exposure of this senseBox
+ * @apiSuccess {String} model the model of this senseBox
+ * @apiSuccess {RFC3339Date} lastMeasurementAt timestamp of the lastest measurement of one of the sensors of this senseBox
+ * @apiSuccess {String} [weblink] external weblink
+ * @apiSuccess {String} [description] detailed description of the senseBox
+ * @apiSuccess {RFC3339Date} createdAt timestamp of the creation date of the senseBox
+ * @apiSuccess {RFC3339Date} updatedAt timestamp of last update of the senseBox
+ * @apiSuccess {String[]} grouptag the grouptags of this senseBox
+ * @apiSuccess {Object} currentLocation the coordinates of this senseBox
+ * @apiSuccess {Coordinates[]} currentLocation.coordinates of the latest location of the senseBox
+ * @apiSuccess {RFC3339Date} currentLocation.timestamp timestamp of the location
+ * @apiSuccess {String} currentLocation.coordinates.type type of the coordinates
+ * @apiSuccess {String} [image] image showing the senseBox
  */
 
 const

@@ -22,9 +22,18 @@ const {
 /**
  * @apiDefine SensorLastMeasurement
  *
- * @apiSuccess {Object} sensors.lastMeasurement
- * @apiSuccess {String} sensors.lastMeasurement.value
- * @apiSuccess {RFC3339Date} sensor.lastMeasurement.createdAt
+ * @apiSuccess {Object} sensors.lastMeasurement Object representing the latest measruement
+ * @apiSuccess {String} sensors.lastMeasurement.value the measured value of the sensor
+ * @apiSuccess {RFC3339Date} sensor.lastMeasurement.createdAt the timestamp of the measurement
+ */
+
+/**
+ * @apiDefine MeasurementArray
+ *
+ * @apiSuccess {Measurement[]} measurement Array containing queried measurements
+ * @apiSuccess {String[]} measurement.location
+ * @apiSuccess {String} measurement.value the measured value of the sensor
+ * @apiSuccess {RFC3339Date} measurement.createdAt timestamp of the measurement
  */
 
 /**
@@ -34,6 +43,10 @@ const {
  * @apiName getLatestMeasurements
  * @apiUse BoxIdParam
  * @apiParam {NumberNumber=1-100} [count] Number of measurements to be retrieved for every sensor.
+ *
+ * @apiSuccess {String} _id unique identifier of this senseBox
+ * @apiUse SensorsArray
+ * @apiUse SensorLastMeasurement
  */
 /**
  * @api {get} /boxes/:senseBoxId/sensors/:sensorId Get latest measurements of a sensor
@@ -43,6 +56,9 @@ const {
  * @apiUse BoxIdParam
  * @apiUse SensorIdParam
  * @apiParam {Boolean="true","false"} [onlyValue] If set to true only returns the measured value without information about the sensor. Requires a sensorId.
+ *
+ * @apiUse SensorSuccessResponse
+ * @apiUse SensorLastMeasurement
  */
 const getLatestMeasurements = async function getLatestMeasurements (req, res) {
   const { _userParams: params } = req;
@@ -133,6 +149,36 @@ const jsonLocationReplacer = function jsonLocationReplacer (k, v) {
  * @apiParam {String="json","csv"} [format=json] Can be 'json' (default) or 'csv' (default: json)
  * @apiParam {Boolean="true","false"} [download] if specified, the api will set the `content-disposition` header thus forcing browsers to download instead of displaying. Is always true for format csv.
  * @apiUse SeparatorParam
+ *
+ * @apiUse MeasurementArray
+ * @apiSuccessExample Example data for :format=json
+ * [
+    {
+        "location": [
+            7,
+            52
+        ],
+        "createdAt": "2023-09-29T08:06:13.254Z",
+        "value": "6.38"
+    },
+    {
+        "location": [
+            7,
+            52
+        ],
+        "createdAt": "2023-09-29T08:06:12.312Z",
+        "value": "6.38"
+    }
+  ]
+ *
+ * @apiSuccessExample Example data for :format=csv
+ * createdAt,value
+2023-09-29T08:06:13.254Z,6.38
+2023-09-29T08:06:12.312Z,6.38
+2023-09-29T08:06:11.513Z,6.38
+2023-09-29T08:06:10.380Z,6.38
+2023-09-29T08:06:09.569Z,6.38
+2023-09-29T08:06:05.967Z,6.38
  */
 const getData = async function getData (req, res) {
   const { sensorId, format, download, outliers, outlierWindow, delimiter } = req._userParams;
