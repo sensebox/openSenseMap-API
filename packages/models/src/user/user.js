@@ -12,6 +12,7 @@ const { mongoose } = require('../db'),
   bcrypt = require('bcrypt'),
   crypto = require('crypto'),
   { min_length: password_min_length, salt_factor: password_salt_factor } = require('config').get('openSenseMap-API-models.password'),
+  { max_boxes: pagination_max_boxes } = require('config').get('openSenseMap-API-models.pagination'),
   { v4: uuidv4 } = require('uuid'),
   { model: Box } = require('../box/box'),
   { model: Claim } = require('../box/claim'),
@@ -538,6 +539,10 @@ userSchema.methods.updateUser = function updateUser ({ email, language, name, cu
       return user.save();
     })
     .then(function (updatedUser) {
+      if (updatedUser.updated === false) {
+        return updatedUser;
+      }
+
       return { updated: true, signOut, messages: msgs, updatedUser };
     })
     .catch(function (err) {
@@ -549,11 +554,26 @@ userSchema.methods.updateUser = function updateUser ({ email, language, name, cu
     });
 };
 
-userSchema.methods.getBoxes = function getBoxes () {
+userSchema.methods.getBoxes = function getBoxes (page) {
   return Box.find({ _id: { $in: this.boxes } })
+    .limit(pagination_max_boxes)
+    .skip(page * pagination_max_boxes)
     .populate(Box.BOX_SUB_PROPS_FOR_POPULATION)
     .then(function (boxes) {
       return boxes.map(b => b.toJSON({ includeSecrets: true }));
+    });
+};
+
+userSchema.methods.getBox = function getBox (boxId) {
+  const user = this;
+
+  // checkBoxOwner throws ModelError
+  user.checkBoxOwner(boxId);
+
+  return Box.findOne({ _id: boxId })
+    // .populate(Box.BOX_SUB_PROPS_FOR_POPULATION)
+    .then(function (box) {
+      return box.toJSON({ includeSecrets: true });
     });
 };
 
@@ -561,7 +581,7 @@ userSchema.methods.getSharedBoxes = function getSharedBoxes () {
   return Box.find({ _id: { $in: this.sharedBoxes } })
     .populate(Box.BOX_SUB_PROPS_FOR_POPULATION)
     .then(function (boxes) {
-      return boxes.map(b => b.toJSON({ includeSecrets: true }));
+      return boxes.map((b) => b.toJSON({ includeSecrets: true }));
     });
 };
 
