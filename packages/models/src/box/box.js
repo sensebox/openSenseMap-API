@@ -44,95 +44,113 @@ const locationSchema = new Schema({
 });
 
 //senseBox schema
-const boxSchema = new Schema({
-  name: {
-    type: String,
-    required: true,
-    trim: true
-  },
-  locations: {
-    type: [locationSchema],
-    required: true,
-  },
-  currentLocation: {
-    type: locationSchema,
-    required: true,
-  },
-  exposure: {
-    type: String,
-    trim: true,
-    required: true,
-    enum: ['unknown', 'indoor', 'outdoor', 'mobile']
-  },
-  grouptag: {
-    type: [String], // Default value for array is [] (empty array)
-    trim: true,
-    required: false
-  },
-  model: {
-    type: String,
-    required: true,
-    trim: true,
-    default: 'custom',
-    enum: ['custom', ...sensorLayouts.models]
-  },
-  weblink: {
-    type: String,
-    trim: true,
-    required: false
-  },
-  description: {
-    type: String,
-    trim: true,
-    required: false
-  },
-  image: {
-    type: String,
-    trim: true,
-    required: false,
-    /* eslint-disable func-name-matching */
-    set: function imageSetter ({ type, data, deleteImage }) {
-      /* eslint-enable func-name-matching */
-      if (type && data) {
-        const filename = `${this._id}_${Math.round(Date.now() / 1000).toString(36)}.${type}`;
-        try {
-          fs.writeFileSync(`${imageFolder}${filename}`, data);
-        } catch (err) {
-          log.warn(err);
+const boxSchema = new Schema(
+  {
+    name: {
+      type: String,
+      required: true,
+      trim: true
+    },
+    locations: {
+      type: [locationSchema],
+      required: true
+    },
+    currentLocation: {
+      type: locationSchema,
+      required: true
+    },
+    exposure: {
+      type: String,
+      trim: true,
+      required: true,
+      enum: ['unknown', 'indoor', 'outdoor', 'mobile']
+    },
+    grouptag: {
+      type: [String], // Default value for array is [] (empty array)
+      trim: true,
+      required: false
+    },
+    model: {
+      type: String,
+      required: true,
+      trim: true,
+      default: 'custom',
+      enum: ['custom', ...sensorLayouts.models]
+    },
+    weblink: {
+      type: String,
+      trim: true,
+      required: false
+    },
+    description: {
+      type: String,
+      trim: true,
+      required: false
+    },
+    image: {
+      type: String,
+      trim: true,
+      required: false,
+      /* eslint-disable func-name-matching */
+      set: function imageSetter ({ type, data, deleteImage }) {
+        /* eslint-enable func-name-matching */
+        if (type && data) {
+          const filename = `${this._id}_${Math.round(
+            Date.now() / 1000
+          ).toString(36)}.${type}`;
+          try {
+            fs.writeFileSync(`${imageFolder}${filename}`, data);
+          } catch (err) {
+            log.warn(err);
 
-          return;
-        }
+            return;
+          }
 
-        return filename;
-      } else if (deleteImage === true) {
-        if (this.image) {
-          const oldFilename = `${imageFolder}${this.image}`;
-          const extensionToUse = this.image.slice(this.image.lastIndexOf('.'));
-          const newFilename = `${imageFolder}${Buffer.from((Buffer.from(`${Math.random().toString(36)
-            .slice(2)}${Date.now()}`).toString('base64'))).toString('hex')}${extensionToUse}`;
-          fs.rename(oldFilename, newFilename, () => {});
+          return filename;
+        } else if (deleteImage === true) {
+          if (this.image) {
+            const oldFilename = `${imageFolder}${this.image}`;
+            const extensionToUse = this.image.slice(
+              this.image.lastIndexOf('.')
+            );
+            const newFilename = `${imageFolder}${Buffer.from(
+              Buffer.from(
+                `${Math.random().toString(36)
+                  .slice(2)}${Date.now()}`
+              ).toString('base64')
+            ).toString('hex')}${extensionToUse}`;
+            fs.rename(oldFilename, newFilename, () => {});
+          }
         }
       }
+    },
+    sensors: {
+      type: [sensorSchema],
+      // required: [true, 'sensors are required if model is invalid or missing.'],
+      // https://github.com/Automattic/mongoose/issues/5139#issuecomment-429990002
+      validate: {
+        validator: (v) => {
+          return v === null || v.length > 0;
+        },
+        message: () => 'sensors are required if model is invalid or missing.'
+      }
+    },
+    lastMeasurementAt: {
+      type: Date,
+      required: false
+    },
+    access_token: {
+      type: String,
+      required: true
+    },
+    useAuth: {
+      type: Boolean,
+      required: true,
+      default: false
     }
   },
-  sensors: {
-    type: [sensorSchema],
-    required: [true, 'sensors are required if model is invalid or missing.'],
-  },
-  lastMeasurementAt: {
-    type: Date,
-    required: false
-  },
-  access_token: {
-    type: String,
-    required: true
-  },
-  useAuth: {
-    type: Boolean,
-    required: true,
-    default: false,
-  }
-}, { usePushEach: true });
+  { usePushEach: true }
+);
 boxSchema.plugin(timestamp);
 
 const BOX_PROPS_FOR_POPULATION = {
