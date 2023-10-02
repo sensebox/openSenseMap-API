@@ -478,6 +478,7 @@ const getBox = async function getBox (req, res) {
  * measurements in. The accepted formats are listed under `Measurements/Post mutliple new Measurements`
  *
  * @apiParam (RequestBody) {String} name the name of this senseBox.
+ * @apiParam (RequestBody) {String} [description] detailed description of this senseBox.
  * @apiParam (RequestBody) {String} [grouptag] the grouptag of this senseBox.
  * @apiParam (RequestBody) {String="indoor","outdoor","mobile","unknown"} exposure the exposure of this senseBox.
  * @apiParam (RequestBody) {Location} location the coordinates of this senseBox.
@@ -713,47 +714,47 @@ module.exports = {
     checkContentType,
     retrieveParameters([
       { predef: 'boxId', required: true },
-      { predef: 'password' },
+      { predef: 'password' }
     ]),
     checkPrivilege,
-    deleteBox,
+    deleteBox
   ],
   getTransfer: [
     retrieveParameters([{ predef: 'boxId', required: true }]),
     checkPrivilege,
-    getTransfer,
+    getTransfer
   ],
   createTransfer: [
     retrieveParameters([
       { predef: 'boxId', required: true },
-      { predef: 'dateNoDefault' },
+      { predef: 'dateNoDefault' }
     ]),
     validateDateNotPast,
     checkPrivilege,
-    createTransfer,
+    createTransfer
   ],
   updateTransfer: [
     retrieveParameters([
       { predef: 'boxId', required: true },
       { name: 'token', dataType: 'String' },
-      { predef: 'dateNoDefault', required: true },
+      { predef: 'dateNoDefault', required: true }
     ]),
     validateDateNotPast,
     checkPrivilege,
-    updateTransfer,
+    updateTransfer
   ],
   removeTransfer: [
     retrieveParameters([
       { predef: 'boxId', required: true },
-      { name: 'token', dataType: 'String' },
+      { name: 'token', dataType: 'String' }
     ]),
     checkPrivilege,
-    removeTransfer,
+    removeTransfer
   ],
   claimBox: [
     checkContentType,
     retrieveParameters([{ name: 'token', dataType: 'String' }]),
-    claimBox,
+    claimBox
   ],
   getSketch: [
     retrieveParameters([
@@ -761,32 +762,32 @@ module.exports = {
       {
         name: 'serialPort',
         dataType: 'String',
-        allowedValues: ['Serial1', 'Serial2'],
+        allowedValues: ['Serial1', 'Serial2']
       },
       {
         name: 'soilDigitalPort',
         dataType: 'String',
-        allowedValues: ['A', 'B', 'C'],
+        allowedValues: ['A', 'B', 'C']
       },
       {
         name: 'soundMeterPort',
         dataType: 'String',
-        allowedValues: ['A', 'B', 'C'],
+        allowedValues: ['A', 'B', 'C']
       },
       {
         name: 'windSpeedPort',
         dataType: 'String',
-        allowedValues: ['A', 'B', 'C'],
+        allowedValues: ['A', 'B', 'C']
       },
       { name: 'ssid', dataType: 'StringWithEmpty' },
       { name: 'password', dataType: 'StringWithEmpty' },
       { name: 'devEUI', dataType: 'StringWithEmpty' },
       { name: 'appEUI', dataType: 'StringWithEmpty' },
       { name: 'appKey', dataType: 'StringWithEmpty' },
-      { name: 'display_enabled', allowedValues: ['true', 'false'] },
+      { name: 'display_enabled', allowedValues: ['true', 'false'] }
     ]),
     checkPrivilege,
-    getSketch,
+    getSketch
   ],
   updateBox: [
     checkContentType,
@@ -804,10 +805,10 @@ module.exports = {
       { name: 'addons', dataType: 'object' },
       { predef: 'location' },
       { name: 'useAuth', allowedValues: ['true', 'false'] },
-      { name: 'generate_access_token', allowedValues: ['true', 'false'] },
+      { name: 'generate_access_token', allowedValues: ['true', 'false'] }
     ]),
     checkPrivilege,
-    updateBox,
+    updateBox
   ],
   // no auth required
   getBoxLocations: [
@@ -816,18 +817,19 @@ module.exports = {
       {
         name: 'format',
         defaultValue: 'json',
-        allowedValues: ['json', 'geojson'],
+        allowedValues: ['json', 'geojson']
       },
       { predef: 'toDate' },
       { predef: 'fromDate' },
-      validateFromToTimeParams,
+      validateFromToTimeParams
     ]),
-    getBoxLocations,
+    getBoxLocations
   ],
   postNewBox: [
     checkContentType,
     retrieveParameters([
       { name: 'name', required: true },
+      { name: 'description', dataType: 'StringWithEmpty' },
       { name: 'grouptag', dataType: ['String'], aliases: ['tag'] },
       { name: 'exposure', allowedValues: Box.BOX_VALID_EXPOSURES },
       { name: 'model', allowedValues: Box.BOX_VALID_MODELS },
@@ -848,31 +850,31 @@ module.exports = {
           'scd30',
           'dps310',
           'sps30'
-        ],
+        ]
       },
       {
         name: 'serialPort',
         dataType: 'String',
         defaultValue: 'Serial1',
-        allowedValues: ['Serial1', 'Serial2'],
+        allowedValues: ['Serial1', 'Serial2']
       },
       {
         name: 'soilDigitalPort',
         dataType: 'String',
         defaultValue: 'A',
-        allowedValues: ['A', 'B', 'C'],
+        allowedValues: ['A', 'B', 'C']
       },
       {
         name: 'soundMeterPort',
         dataType: 'String',
         defaultValue: 'B',
-        allowedValues: ['A', 'B', 'C'],
+        allowedValues: ['A', 'B', 'C']
       },
       {
         name: 'windSpeedPort',
         dataType: 'String',
         defaultValue: 'C',
-        allowedValues: ['A', 'B', 'C'],
+        allowedValues: ['A', 'B', 'C']
       },
       { name: 'mqtt', dataType: 'object' },
       { name: 'ttn', dataType: 'object' },
@@ -880,7 +882,7 @@ module.exports = {
       { predef: 'location', required: true },
       { name: 'sharedBox', allowedValues: ['true', 'false'] }
     ]),
-    postNewBox,
+    postNewBox
   ],
   getBox: [
     retrieveParameters([
@@ -888,10 +890,10 @@ module.exports = {
       {
         name: 'format',
         defaultValue: 'json',
-        allowedValues: ['json', 'geojson'],
-      },
+        allowedValues: ['json', 'geojson']
+      }
     ]),
-    getBox,
+    getBox
   ],
   getBoxes: [
     retrieveParameters([
@@ -900,7 +902,7 @@ module.exports = {
       {
         name: 'exposure',
         allowedValues: Box.BOX_VALID_EXPOSURES,
-        dataType: ['String'],
+        dataType: ['String']
       },
       { name: 'model', dataType: ['StringWithEmpty'] },
       { name: 'grouptag', dataType: ['StringWithEmpty'] },
@@ -909,29 +911,26 @@ module.exports = {
       {
         name: 'format',
         defaultValue: 'json',
-        allowedValues: ['json', 'geojson'],
+        allowedValues: ['json', 'geojson']
       },
       {
         name: 'classify',
         defaultValue: 'false',
-        allowedValues: ['true', 'false'],
+        allowedValues: ['true', 'false']
       },
       {
         name: 'minimal',
         defaultValue: 'false',
-        allowedValues: ['true', 'false'],
+        allowedValues: ['true', 'false']
       },
       { name: 'full', defaultValue: 'false', allowedValues: ['true', 'false'] },
       { predef: 'near' },
       { name: 'maxDistance' },
-      { predef: 'bbox' },
+      { predef: 'bbox' }
     ]),
     parseAndValidateTimeParamsForFindAllBoxes,
     addCache('5 minutes', 'getBoxes'),
     getBoxes
   ],
-  getAllTags: [
-    addCache('5 minutes', 'getAllTags'),
-    getAllTags
-  ]
+  getAllTags: [addCache('5 minutes', 'getAllTags'), getAllTags]
 };

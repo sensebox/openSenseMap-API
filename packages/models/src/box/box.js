@@ -238,6 +238,7 @@ boxSchema.post('save', function boxPostSave (savedBox) {
 // initializes and saves new box document
 boxSchema.statics.initNew = function ({
   name,
+  description,
   location,
   grouptag,
   exposure,
@@ -297,6 +298,7 @@ boxSchema.statics.initNew = function ({
   // create box document and persist in database
   return this.create({
     name,
+    description,
     currentLocation: boxLocation,
     locations: [boxLocation],
     grouptag,
