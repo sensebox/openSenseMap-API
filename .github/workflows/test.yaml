@@ -13,10 +13,10 @@ jobs:
     name: Lint code
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Install Node.js 16
-        uses: actions/setup-node@v3.6.0
+        uses: actions/setup-node@v3.8.1
         with:
           node-version: 16
 
@@ -26,7 +26,7 @@ jobs:
           echo "##[set-output name=dir;]$(yarn cache dir)"
 
       - name: Restore yarn cache
-        uses: actions/cache@v3.3.1
+        uses: actions/cache@v3.3.2
         id: yarn-cache
         with:
           path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
@@ -46,7 +46,7 @@ jobs:
     name: Run tests
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Execute tests
         run: |

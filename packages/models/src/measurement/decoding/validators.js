@@ -71,7 +71,6 @@ const transformAndValidateMeasurements = function transformAndValidateMeasuremen
       // finally attach a mongodb objectId
       elem._id = mongoose.Types.ObjectId();
     }
-
     // sort measurements/locations by date
     arr.sort((a, b) => a.createdAt.diff(b.createdAt));
 
