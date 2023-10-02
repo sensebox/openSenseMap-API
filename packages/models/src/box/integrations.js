@@ -57,7 +57,7 @@ const integrationSchema = new mongoose.Schema({
       validator: function validTTNDecodeOptions (ttn) {
         /* eslint-enable func-name-matching */
         if (['debug', 'lora-serialization', 'cayenne-lpp'].indexOf(ttn.profile) !== -1) {
-          return (ttn.decodeOptions && ttn.decodeOptions.constructor === Array);
+          return (ttn.decodeOptions && Array.isArray(ttn.decodeOptions));
         }
       },
       msg: 'this profile requires an array \'decodeOptions\''

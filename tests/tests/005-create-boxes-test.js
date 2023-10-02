@@ -12,6 +12,7 @@ const BASE_URL = process.env.OSEM_TEST_BASE_URL,
   senseBoxSchema = require('../data/senseBoxSchema'),
   getUserSchema = require('../data/getUserSchema'),
   getUserBoxesSchema = require('../data/getUserBoxesSchema'),
+  getUserBoxSchema = require('../data/getUserBoxSchema'),
   custom_valid_sensebox = require('../data/custom_valid_sensebox');
 
 describe('openSenseMap API Routes: /boxes', function () {
@@ -172,6 +173,20 @@ describe('openSenseMap API Routes: /boxes', function () {
       });
   });
 
+  it('should return distinct grouptags of boxes', function () {
+    return chakram.get(`${BASE_URL}/tags`)
+      .then(function (response) {
+        expect(response).to.have.status(200);
+        expect(response).to.have.header(
+          'content-type',
+          'application/json; charset=utf-8'
+        );
+
+        expect(Array.isArray(response.body.data)).to.be.true;
+        expect(response.body.data.length).to.be.equal(2);
+      });
+  });
+
   it('should allow to create a senseBox via POST used for transfering', function () {
     return chakram.post(`${BASE_URL}/boxes`, valid_sensebox({ name: 'Transfer', }), { headers: { Authorization: `Bearer ${jwt}` }, })
       .then(function (response) {
@@ -208,6 +223,32 @@ describe('openSenseMap API Routes: /boxes', function () {
         expect(response).to.comprise.of.json('data.sharedBoxes.0.integrations.mqtt', { enabled: false });
 
         return chakram.wait();
+      });
+  });
+
+  it('should let users retrieve one of their boxes with all fields', function () {
+    let boxId;
+
+    return chakram
+      .get(`${BASE_URL}/users/me/boxes`, {
+        headers: { Authorization: `Bearer ${jwt}` },
+      })
+      .then(function (response) {
+        expect(response).to.have.status(200);
+        expect(response).to.have.schema(getUserBoxesSchema);
+
+        return response;
+      })
+      .then(function (response) {
+        boxId = response.body.data.boxes[0]._id;
+
+        return chakram.get(`${BASE_URL}/users/me/boxes/${boxId}`, {
+          headers: { Authorization: `Bearer ${jwt}` },
+        });
+      })
+      .then(function (response) {
+        expect(response).to.have.status(200);
+        expect(response).to.have.schema(getUserBoxSchema);
       });
   });
 
@@ -704,6 +745,46 @@ describe('openSenseMap API Routes: /boxes', function () {
       .then(function (response) {
         expect(response).to.have.status(403);
         expect(response).to.have.json({ code: 'Forbidden', message: 'User does not own this senseBox' });
+      });
+  });
+
+  it('should deny to retrieve a box of other user', function () {
+    let otherJwt, otherBoxId;
+
+    return chakram
+      .post(`${BASE_URL}/users/sign-in`, {
+        name: 'mrtest2',
+        email: 'tester3@test.test',
+        password: '12345678',
+      })
+      .then(function (response) {
+        expect(response).to.have.status(200);
+        expect(response).to.have.header(
+          'content-type',
+          'application/json; charset=utf-8'
+        );
+
+        expect(response.body.token).to.exist;
+
+        otherJwt = response.body.token;
+
+        return chakram.get(`${BASE_URL}/users/me/boxes`, {
+          headers: { Authorization: `Bearer ${otherJwt}` },
+        });
+      })
+      .then(function (response) {
+        otherBoxId = response.body.data.boxes[0]._id;
+
+        return chakram.get(`${BASE_URL}/users/me/boxes/${otherBoxId}`, {
+          headers: { Authorization: `Bearer ${jwt}` },
+        });
+      })
+      .then(function (response) {
+        expect(response).to.have.status(403);
+        expect(response).to.have.json({
+          code: 'Forbidden',
+          message: 'User does not own this senseBox',
+        });
       });
   });
 
