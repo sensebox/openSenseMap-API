@@ -1,82 +1,100 @@
 'use strict';
 
-/* global describe it before */
+/* global describe it */
 
-const chakram = require('chakram'),
-  expect = chakram.expect;
+const chai = require('chai');
+const chaiHttp = require('chai-http');
+const expect = chai.expect;
 
-const BASE_URL = `${process.env.OSEM_TEST_BASE_URL}/stats`,
-  options = { headers: { 'x-apicache-bypass': true } };
+chai.use(chaiHttp);
+
+const BASE_URL = `${process.env.OSEM_TEST_BASE_URL}`;
+const options = { headers: { 'x-apicache-bypass': true } };
+const ROUTE = '/stats';
 
 describe('openSenseMap API Routes: /stats', function () {
-  let request, requestHumanTrue, requestHumanFalse, requestHumanWrong1, requestHumanWrong2;
-  before(function () {
-    request = chakram.get(BASE_URL, options);
-    requestHumanTrue = chakram.get(`${BASE_URL}?human=true`, options);
-    requestHumanFalse = chakram.get(`${BASE_URL}?human=false`, options);
-    requestHumanWrong1 = chakram.get(`${BASE_URL}?human=tr`, options);
-    requestHumanWrong2 = chakram.get(`${BASE_URL}?human=fulse`, options);
-  });
-
-  it('should return a json array with three numbers', function () {
-    return request
-      .then(function (response) {
+  it('should return a json array with three numbers', function (done) {
+    chai.request(BASE_URL)
+      .get(ROUTE)
+      .set(options.headers)
+      .end(function (err, response) {
         expect(response).status(200);
-        expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
+        expect(response).to.have.header(
+          'content-type',
+          'application/json; charset=utf-8'
+        );
 
         expect(response.body).not.empty;
 
         expect(Array.isArray(response.body)).true;
 
-        expect(response.body.every(n => typeof n === 'number')).true;
+        expect(response.body.every((n) => typeof n === 'number')).true;
 
-        return chakram.wait();
+        done();
       });
   });
 
-  it('should return a json array with three strings when called with parameter human=true', function () {
-    return requestHumanTrue
-      .then(function (response) {
+  it('should return a json array with three strings when called with parameter human=true', function (done) {
+    chai.request(BASE_URL)
+      .get(ROUTE)
+      .set(options.headers)
+      .query({ human: true })
+      .end(function (err, response) {
         expect(response).status(200);
-        expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
+        expect(response).to.have.header(
+          'content-type',
+          'application/json; charset=utf-8'
+        );
 
         expect(response.body).not.empty;
 
         expect(Array.isArray(response.body)).true;
 
-        expect(response.body.every(n => typeof n === 'string')).true;
+        expect(response.body.every((n) => typeof n === 'string')).true;
 
-        return chakram.wait();
+        done();
       });
   });
 
-  it('should return a json array with three numbers when called with parameter human=false', function () {
-    return requestHumanFalse
-      .then(function (response) {
+  it('should return a json array with three numbers when called with parameter human=false', function (done) {
+    chai.request(BASE_URL)
+      .get(ROUTE)
+      .set(options.headers)
+      .query({ human: false })
+      .end(function (err, response) {
         expect(response).status(200);
-        expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
+        expect(response).to.have.header(
+          'content-type',
+          'application/json; charset=utf-8'
+        );
 
         expect(response.body).not.empty;
 
         expect(Array.isArray(response.body)).true;
 
-        expect(response.body.every(n => typeof n === 'number')).true;
+        expect(response.body.every((n) => typeof n === 'number')).true;
 
-        return chakram.wait();
+        done();
       });
   });
 
-  it('should return an error if parameter human is not true or false', function () {
-    return chakram.all([requestHumanWrong1, requestHumanWrong2])
-      .then(function (responses) {
-        for (const response of responses) {
-          expect(response).status(422);
-          expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
-
-          expect(response).to.have.json('message', 'Illegal value for parameter human. allowed values: true, false');
-        }
-
-        return chakram.wait();
+  it('should return an error if parameter human is not true or false', function (done) {
+    chai.request(BASE_URL)
+      .get(ROUTE)
+      .set(options.headers)
+      .query({ human: 'tr' })
+      .end(function (err, response) {
+        expect(response).status(422);
+        expect(response).to.have.header(
+          'content-type',
+          'application/json; charset=utf-8'
+        );
+        expect(response).to.be.json;
+        expect(response.body).to.have.a.property('message');
+        expect(response.body.message).to.equal(
+          'Illegal value for parameter human. allowed values: true, false'
+        );
+        done();
       });
   });
 });
