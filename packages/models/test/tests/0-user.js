@@ -15,6 +15,18 @@ const shouldNotHappenThenner = function (err) {
   expect(false).true;
 };
 
+const getDevices = function () {
+  const boxes = [
+    senseBox({ name: 'sb1' }),
+    senseBox({ name: 'sb2' }),
+    senseBox({ name: 'sb3' })
+  ];
+
+  return new Promise((resolve) => {
+    setTimeout(() => resolve(boxes), 200);
+  });
+};
+
 describe('User model', function () {
   before(function () {
     return connect(dbConnectionString({ db: 'userTest' }))
@@ -506,17 +518,23 @@ describe('User model', function () {
   });
 
   describe('Box management', function () {
-    const boxes = [senseBox({ name: 'sb1' }), senseBox({ name: 'sb2' }), senseBox({ name: 'sb3' })];
+    // const boxes = [senseBox({ name: 'sb1' }), senseBox({ name: 'sb2' }), senseBox({ name: 'sb3' })];
     let userBoxes;
-    before(function () {
-      return User.findOne({ name: 'Valid Username 2' })
-        .then(function (user) {
-          return Promise.all(boxes.map(function (box) {
-            return user.addBox(box).then(function (newBox) {
-              return newBox;
-            });
-          }));
-        });
+    before(async function () {
+      const user = await User.findOne({ name: 'Valid Username 2' });
+
+      const devices = await getDevices();
+      for (const device of devices) {
+        await user.addBox(device);
+      }
+      // return User.findOne({ name: 'Valid Username 2' })
+      //   .then(function (user) {
+      //     return Promise.all(boxes.map(function (box) {
+      //       return user.addBox(box).then(function (newBox) {
+      //         return newBox;
+      //       });
+      //     }));
+      //   });
     });
 
     it('should allow to get all boxes with all details of a user', function () {
