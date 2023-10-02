@@ -518,7 +518,6 @@ describe('User model', function () {
   });
 
   describe('Box management', function () {
-    // const boxes = [senseBox({ name: 'sb1' }), senseBox({ name: 'sb2' }), senseBox({ name: 'sb3' })];
     let userBoxes;
     before(async function () {
       const user = await User.findOne({ name: 'Valid Username 2' });
@@ -527,14 +526,6 @@ describe('User model', function () {
       for (const device of devices) {
         await user.addBox(device);
       }
-      // return User.findOne({ name: 'Valid Username 2' })
-      //   .then(function (user) {
-      //     return Promise.all(boxes.map(function (box) {
-      //       return user.addBox(box).then(function (newBox) {
-      //         return newBox;
-      //       });
-      //     }));
-      //   });
     });
 
     it('should allow to get all boxes with all details of a user', function () {
