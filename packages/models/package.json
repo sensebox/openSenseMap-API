@@ -10,7 +10,7 @@
     "@sensebox/osem-protos": "^1.1.0",
     "@sensebox/sketch-templater": "1.13.1",
     "bcrypt": "^5.1.0",
-    "bullmq": "^3.10.1",
+    "bullmq": "^4.12.2",
     "config": "^3.3.6",
     "got": "^11.8.2",
     "isemail": "^3.0.0",
