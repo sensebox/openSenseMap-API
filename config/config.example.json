@@ -84,6 +84,18 @@
     // Default: 604800000 // 1 Week
     "validity_ms": 302400000
   },
+  "integrations": {
+    "mybadges": {
+      "queue": "",
+      "redis": {
+        "host": "",
+        "port": 6379,
+        "username": "",
+        "password": "",
+        "db": 0
+      }
+    }
+  },
   // Configuration for the @sensebox/opensensemap-api-models package
   "openSenseMap-API-models": {
     // Keys for configuring the mongo db connection
