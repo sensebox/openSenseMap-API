@@ -47,7 +47,9 @@ const veml6070_uvintensity = require('./veml6070_uvintensity'),
   sps30_pm1 = require('./sps30_pm1'),
   sps30_pm25 = require('./sps30_pm25'),
   sps30_pm4 = require('./sps30_pm4'),
-  sps30_pm10 = require('./sps30_pm10');
+  sps30_pm10 = require('./sps30_pm10'),
+  sht3x_temperature = require('./sht3x_temperature'),
+  sht3x_humidity = require('./sht3x_humidity');
 module.exports = {
   hdc1008_temperature,
   hdc1080_temperature,
@@ -95,5 +97,7 @@ module.exports = {
   sps30_pm1,
   sps30_pm25,
   sps30_pm4,
-  sps30_pm10
+  sps30_pm10,
+  sht3x_temperature,
+  sht3x_humidity
 };
