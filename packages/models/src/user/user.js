@@ -1,5 +1,7 @@
 'use strict';
 
+const integrations = require('./integrations');
+
 /**
  * Interesting reads:
  * https://blogs.dropbox.com/tech/2016/09/how-dropbox-securely-stores-your-passwords/
@@ -103,7 +105,7 @@ const userSchema = new mongoose.Schema({
 }, { usePushEach: true });
 userSchema.plugin(timestamp);
 
-const toJSONProps = ['name', 'email', 'role', 'language', 'boxes', 'emailIsConfirmed'],
+const toJSONProps = ['name', 'email', 'role', 'language', 'boxes', 'emailIsConfirmed', 'integrations'],
   toJSONSecretProps = ['_id', 'unconfirmedEmail', 'lastUpdatedBy', 'createdAt', 'updatedAt'];
 
 // only send out names and email..
@@ -469,7 +471,7 @@ userSchema.methods.resendEmailConfirmation = function resendEmailConfirmation ()
     });
 };
 
-userSchema.methods.updateUser = function updateUser ({ email, language, name, currentPassword, newPassword }) {
+userSchema.methods.updateUser = function updateUser ({ email, language, name, currentPassword, newPassword, integrations }) {
   const user = this;
 
   // don't allow email and password change in one request
@@ -528,6 +530,11 @@ userSchema.methods.updateUser = function updateUser ({ email, language, name, cu
         user.set('password', newPassword);
         msgs.push(' Password changed. Please sign in with your new password');
         signOut = true;
+        somethingsChanged = true;
+      }
+
+      if (integrations && user.integrations !== integrations) {
+        user.set('integrations', integrations);
         somethingsChanged = true;
       }
 
@@ -679,6 +686,9 @@ userSchema.post('save', handleE11000);
 userSchema.post('update', handleE11000);
 userSchema.post('findOneAndUpdate', handleE11000);
 userSchema.post('insertMany', handleE11000);
+
+// add integrations schema as user.integrations
+integrations.addToSchema(userSchema);
 
 const userModel = mongoose.model('User', userSchema);
 

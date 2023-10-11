@@ -53,10 +53,10 @@ const { User } = require('@sensebox/opensensemap-api-models'),
  * @apiSuccess (Created 201) {Object} data `{ "user": {"name":"fullname","email":"test@test.de","role":"user","language":"en_US","boxes":[],"emailIsConfirmed":false} }`
  */
 const registerUser = async function registerUser (req, res) {
-  const { email, password, language, name } = req._userParams;
+  const { email, password, language, name, integrations } = req._userParams;
 
   try {
-    const newUser = await new User({ name, email, password, language }).save();
+    const newUser = await new User({ name, email, password, language, integrations }).save();
     postToMattermost(
       `New User: ${newUser.name} (${redactEmail(newUser.email)})`
     );
@@ -402,51 +402,50 @@ module.exports = {
       { predef: 'password' },
       { name: 'name', required: true, dataType: 'as-is' },
       { name: 'language', defaultValue: 'en_US' },
+      { name: 'integrations', dataType: 'object' }
     ]),
-    registerUser,
+    registerUser
   ],
   signIn: [
     checkContentType,
     retrieveParameters([
       { name: 'email', required: true },
-      { predef: 'password' },
+      { predef: 'password' }
     ]),
-    signIn,
+    signIn
   ],
   signOut,
   resetPassword: [
     checkContentType,
     retrieveParameters([
       { name: 'token', required: true },
-      { predef: 'password' },
+      { predef: 'password' }
     ]),
-    resetPassword,
+    resetPassword
   ],
   requestResetPassword: [
     checkContentType,
     retrieveParameters([{ name: 'email', dataType: 'email', required: true }]),
-    requestResetPassword,
+    requestResetPassword
   ],
   confirmEmailAddress: [
     checkContentType,
     retrieveParameters([
       { name: 'token', required: true },
-      { name: 'email', dataType: 'email', required: true },
+      { name: 'email', dataType: 'email', required: true }
     ]),
-    confirmEmailAddress,
+    confirmEmailAddress
   ],
   requestEmailConfirmation,
   getUserBox: [
-    retrieveParameters([
-      { predef: 'boxId', required: true }
-    ]),
-    getUserBox,
+    retrieveParameters([{ predef: 'boxId', required: true }]),
+    getUserBox
   ],
   getUserBoxes: [
     retrieveParameters([
-      { name: 'page', dataType: 'Integer', defaultValue: 0, min: 0 },
+      { name: 'page', dataType: 'Integer', defaultValue: 0, min: 0 }
     ]),
-    getUserBoxes,
+    getUserBoxes
   ],
   updateUser: [
     checkContentType,
@@ -456,18 +455,19 @@ module.exports = {
       { predef: 'password', name: 'newPassword', required: false },
       { name: 'name', dataType: 'as-is' },
       { name: 'language' },
+      { name: 'integrations', dataType: 'object' }
     ]),
-    updateUser,
+    updateUser
   ],
   getUser,
   refreshJWT: [
     checkContentType,
     retrieveParameters([{ name: 'token', required: true }]),
-    refreshJWT,
+    refreshJWT
   ],
   deleteUser: [
     checkContentType,
     retrieveParameters([{ predef: 'password' }]),
-    deleteUser,
-  ],
+    deleteUser
+  ]
 };
