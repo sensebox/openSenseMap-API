@@ -16,6 +16,8 @@ const senseboxhome = require('./sensebox.home'),
   luftdaten_pms5003_bme280 = require('./luftdaten/pms5003.bme280'),
   luftdaten_pms7003 = require('./luftdaten/pms7003'),
   luftdaten_pms7003_bme280 = require('./luftdaten/pms7003.bme280'),
+  luftdaten_sps30_bme280 = require('./luftdaten/sps30.bme280'),
+  luftdaten_sps30_sht3x = require('./luftdaten/sps30.shtx3'),
   hackair_home_v2 = require('./hackair/home.v2'),
   addonFeinstaub = require('./addons/feinstaubAddon');
 
@@ -52,6 +54,8 @@ const modelDefinitions = {
   'luftdaten_pms5003_bme280': luftdaten_pms5003_bme280,
   'luftdaten_pms7003': luftdaten_pms7003,
   'luftdaten_pms7003_bme280': luftdaten_pms7003_bme280,
+  'luftdaten_sps30_bme280': luftdaten_sps30_bme280,
+  'luftdaten_sps30_sht3x': luftdaten_sps30_sht3x,
   'hackair_home_v2': hackair_home_v2
 };
 
