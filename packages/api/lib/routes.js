@@ -79,7 +79,7 @@ const routes = {
     { path: `${statisticsPath}/descriptive`, method: 'get', handler: statisticsController.descriptiveStatisticsHandler, reference: 'api-Statistics-descriptive' },
     { path: `${boxesPath}`, method: 'get', handler: boxesController.getBoxes, reference: 'api-Boxes-getBoxes' },
     { path: `${boxesPath}/data`, method: 'get', handler: measurementsController.getDataMulti, reference: 'api-Measurements-getDataMulti' },
-    { path: `${boxesPath}/data/bytag`, method: 'get', handler: measurementsController.getDataByGroupTag, reference: 'api-Measurements-getDataByGroupTag' },
+    // { path: `${boxesPath}/data/bytag`, method: 'get', handler: measurementsController.getDataByGroupTag, reference: 'api-Measurements-getDataByGroupTag' },
     { path: `${boxesPath}/:boxId`, method: 'get', handler: boxesController.getBox, reference: 'api-Boxes-getBox' },
     { path: `${boxesPath}/:boxId/sensors`, method: 'get', handler: measurementsController.getLatestMeasurements, reference: 'api-Measurements-getLatestMeasurements' },
     { path: `${boxesPath}/:boxId/sensors/:sensorId`, method: 'get', handler: measurementsController.getLatestMeasurements, reference: 'api-Measurements-getLatestMeasurementOfSensor' },
