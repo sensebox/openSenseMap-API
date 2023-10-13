@@ -1,4 +1,4 @@
-name: Purge Pull Request Image
+name: 🗑️ Purge Pull Request Image
 
 # https://docs.github.com/en/actions/reference/events-that-trigger-workflows#registry_package
 # Purge Pull Request Image
@@ -10,7 +10,7 @@ jobs:
   purge_pr_image:
     runs-on: ubuntu-latest
     steps:
-      - name: Purge Pull Request Image
+      - name: 💣 Purge Pull Request Image
         uses: vlaurin/action-ghcr-prune@v0.5.0
         with:
           token: ${{ secrets.GHCR_TOKEN}}
