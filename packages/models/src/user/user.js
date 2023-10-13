@@ -13,6 +13,7 @@ const integrations = require('./integrations');
 const { mongoose } = require('../db'),
   bcrypt = require('bcrypt'),
   crypto = require('crypto'),
+  util = require('util'),
   { min_length: password_min_length, salt_factor: password_salt_factor } = require('config').get('openSenseMap-API-models.password'),
   { max_boxes: pagination_max_boxes } = require('config').get('openSenseMap-API-models.pagination'),
   { v4: uuidv4 } = require('uuid'),
@@ -105,8 +106,22 @@ const userSchema = new mongoose.Schema({
 }, { usePushEach: true });
 userSchema.plugin(timestamp);
 
-const toJSONProps = ['name', 'email', 'role', 'language', 'boxes', 'emailIsConfirmed', 'integrations'],
-  toJSONSecretProps = ['_id', 'unconfirmedEmail', 'lastUpdatedBy', 'createdAt', 'updatedAt'];
+const toJSONProps = [
+    'name',
+    'email',
+    'role',
+    'language',
+    'boxes',
+    'emailIsConfirmed',
+    'integrations'
+  ],
+  toJSONSecretProps = [
+    '_id',
+    'unconfirmedEmail',
+    'lastUpdatedBy',
+    'createdAt',
+    'updatedAt'
+  ];
 
 // only send out names and email..
 userSchema.set('toJSON', {
@@ -533,9 +548,17 @@ userSchema.methods.updateUser = function updateUser ({ email, language, name, cu
         somethingsChanged = true;
       }
 
-      // TODO: check object equality
-      if (integrations && user.integrations !== integrations) {
+      const existingUserIntegrations = user.get('integrations').toObject();
+      if (integrations && !existingUserIntegrations) {
         user.set('integrations', integrations);
+        somethingsChanged = true;
+      } else if (integrations && !util.isDeepStrictEqual(existingUserIntegrations, integrations)) {
+        const mergedProperties = {
+          ...existingUserIntegrations,
+          ...integrations
+        };
+        user.set('integrations', mergedProperties);
+
         somethingsChanged = true;
       }
 
