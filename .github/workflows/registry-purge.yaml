@@ -1,4 +1,4 @@
-name: Purge untagged images
+name: 🗑️ Purge untagged images
 
 # https://docs.github.com/en/actions/reference/events-that-trigger-workflows#registry_package
 # Run cleanup job if a new package was published or updated
@@ -9,10 +9,10 @@ jobs:
   purge_untagged_images:
     runs-on: ubuntu-latest
     steps:
-      - name: clean packages
+      - name: 🧹 clean packages
         uses: vlaurin/action-ghcr-prune@v0.5.0
         with:
           token: ${{ secrets.GHCR_TOKEN}}
           organization: ${{ github.repository_owner}}
           container: ${{ github.event.repository.name }}
-          untagged: true
+          prune-untagged: true
