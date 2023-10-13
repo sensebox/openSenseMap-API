@@ -548,7 +548,7 @@ userSchema.methods.updateUser = function updateUser ({ email, language, name, cu
         somethingsChanged = true;
       }
 
-      const existingUserIntegrations = user.get('integrations').toObject();
+      const existingUserIntegrations = user.get('integrations') ? user.get('integrations').toObject() : undefined;
       if (integrations && !existingUserIntegrations) {
         user.set('integrations', integrations);
         somethingsChanged = true;
