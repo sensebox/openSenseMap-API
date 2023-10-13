@@ -24,6 +24,11 @@ const requestQueue = () => {
 };
 
 const grantBadge = async function (req) {
+
+  const integrationEnabled = req.user.get('integrations.mybadges.enabled');
+
+  if (!integrationEnabled) {return;}
+
   const payload = {
     email: req.user.email,
     route: req.route

@@ -533,6 +533,7 @@ userSchema.methods.updateUser = function updateUser ({ email, language, name, cu
         somethingsChanged = true;
       }
 
+      // TODO: check object equality
       if (integrations && user.integrations !== integrations) {
         user.set('integrations', integrations);
         somethingsChanged = true;
