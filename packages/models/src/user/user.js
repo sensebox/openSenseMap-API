@@ -1,5 +1,7 @@
 'use strict';
 
+const integrations = require('./integrations');
+
 /**
  * Interesting reads:
  * https://blogs.dropbox.com/tech/2016/09/how-dropbox-securely-stores-your-passwords/
@@ -11,6 +13,7 @@
 const { mongoose } = require('../db'),
   bcrypt = require('bcrypt'),
   crypto = require('crypto'),
+  util = require('util'),
   { min_length: password_min_length, salt_factor: password_salt_factor } = require('config').get('openSenseMap-API-models.password'),
   { max_boxes: pagination_max_boxes } = require('config').get('openSenseMap-API-models.pagination'),
   { v4: uuidv4 } = require('uuid'),
@@ -103,8 +106,22 @@ const userSchema = new mongoose.Schema({
 }, { usePushEach: true });
 userSchema.plugin(timestamp);
 
-const toJSONProps = ['name', 'email', 'role', 'language', 'boxes', 'emailIsConfirmed'],
-  toJSONSecretProps = ['_id', 'unconfirmedEmail', 'lastUpdatedBy', 'createdAt', 'updatedAt'];
+const toJSONProps = [
+    'name',
+    'email',
+    'role',
+    'language',
+    'boxes',
+    'emailIsConfirmed',
+    'integrations'
+  ],
+  toJSONSecretProps = [
+    '_id',
+    'unconfirmedEmail',
+    'lastUpdatedBy',
+    'createdAt',
+    'updatedAt'
+  ];
 
 // only send out names and email..
 userSchema.set('toJSON', {
@@ -469,7 +486,7 @@ userSchema.methods.resendEmailConfirmation = function resendEmailConfirmation ()
     });
 };
 
-userSchema.methods.updateUser = function updateUser ({ email, language, name, currentPassword, newPassword }) {
+userSchema.methods.updateUser = function updateUser ({ email, language, name, currentPassword, newPassword, integrations }) {
   const user = this;
 
   // don't allow email and password change in one request
@@ -528,6 +545,20 @@ userSchema.methods.updateUser = function updateUser ({ email, language, name, cu
         user.set('password', newPassword);
         msgs.push(' Password changed. Please sign in with your new password');
         signOut = true;
+        somethingsChanged = true;
+      }
+
+      const existingUserIntegrations = user.get('integrations') ? user.get('integrations').toObject() : undefined;
+      if (integrations && !existingUserIntegrations) {
+        user.set('integrations', integrations);
+        somethingsChanged = true;
+      } else if (integrations && !util.isDeepStrictEqual(existingUserIntegrations, integrations)) {
+        const mergedProperties = {
+          ...existingUserIntegrations,
+          ...integrations
+        };
+        user.set('integrations', mergedProperties);
+
         somethingsChanged = true;
       }
 
@@ -679,6 +710,9 @@ userSchema.post('save', handleE11000);
 userSchema.post('update', handleE11000);
 userSchema.post('findOneAndUpdate', handleE11000);
 userSchema.post('insertMany', handleE11000);
+
+// add integrations schema as user.integrations
+integrations.addToSchema(userSchema);
 
 const userModel = mongoose.model('User', userSchema);
 

@@ -9,7 +9,8 @@ const { usersController,
   config = require('config'),
   { getVersion } = require('./helpers/apiUtils'),
   { verifyJwt } = require('./helpers/jwtHelpers'),
-  { initUserParams, checkPrivilege } = require('./helpers/userParamHelpers');
+  { initUserParams, checkPrivilege } = require('./helpers/userParamHelpers'),
+  { grantBadge } = require('./helpers/badgrQuery');
 
 const spaces = function spaces (num) {
   let str = ' ';
@@ -140,7 +141,11 @@ const initRoutes = function initRoutes (server) {
   // The .use() method runs now for all routes
   // https://github.com/restify/node-restify/issues/1685
   for (const route of routes.auth) {
-    server[route.method]({ path: route.path }, [verifyJwt, route.handler]);
+    server[route.method]({ path: route.path }, [
+      verifyJwt,
+      route.handler,
+      grantBadge
+    ]);
   }
 
   // Attach verifyJwt and checkPrivilage routes (needs authorization through jwt)
