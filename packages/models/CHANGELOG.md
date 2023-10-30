@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+## v3.2.0
+
+- Add `user` integrations (myBadges) (#834)
+- Add new Sensor.Community device templates (#837)
+- Fix response if user was not updated (#820)
+- Update `mongoose` dependency (#813)
+- Update `bcrypt` dependency (#839)
+- Update `bullmq` dependency (#835)
+- Update `grpc` dependencies (#824)
+
 ## v3.1.0
 
 - Add `page` parameter to `getBoxes` method in user model
