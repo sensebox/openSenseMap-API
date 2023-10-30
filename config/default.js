@@ -34,6 +34,7 @@ const defaults = {
   },
   integrations: {
     mybadges: {
+      enabled: false,
       queue: 'badgr',
       redis: {
         host: 'localhost',

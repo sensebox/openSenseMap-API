@@ -86,6 +86,7 @@
   },
   "integrations": {
     "mybadges": {
+      "enabled": false,
       "queue": "",
       "redis": {
         "host": "",
