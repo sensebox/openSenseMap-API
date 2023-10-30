@@ -23,7 +23,7 @@
     "@turf/triangle-grid": "^6.5.0",
     "apicache": "^1.6.2",
     "config": "^3.3.6",
-    "csv-stringify": "^6.2.3",
+    "csv-stringify": "^6.4.4",
     "dashify": "^2.0.0",
     "got": "^11.8.2",
     "honeybadger": "^1.4.0",
