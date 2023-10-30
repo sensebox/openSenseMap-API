@@ -53,10 +53,10 @@ const { User } = require('@sensebox/opensensemap-api-models'),
  * @apiSuccess (Created 201) {Object} data `{ "user": {"name":"fullname","email":"test@test.de","role":"user","language":"en_US","boxes":[],"emailIsConfirmed":false} }`
  */
 const registerUser = async function registerUser (req, res) {
-  const { email, password, language, name } = req._userParams;
+  const { email, password, language, name, integrations } = req._userParams;
 
   try {
-    const newUser = await new User({ name, email, password, language }).save();
+    const newUser = await new User({ name, email, password, language, integrations }).save();
     postToMattermost(
       `New User: ${newUser.name} (${redactEmail(newUser.email)})`
     );
@@ -247,16 +247,42 @@ const confirmEmailAddress = async function confirmEmailAddress (req, res) {
  * @apiName getUserBoxes
  * @apiDescription List all boxes and sharedBoxes of the signed in user with secret fields
  * @apiGroup Users
+ * @apiParam {Integer} page the selected page for pagination
  * @apiSuccess {String} code `Ok`
  * @apiSuccess {String} data A json object with a single `boxes` array field
  */
 const getUserBoxes = async function getUserBoxes (req, res) {
+  const { page } = req._userParams;
   try {
-    const boxes = await req.user.getBoxes();
+    const boxes = await req.user.getBoxes(page);
     const sharedBoxes = await req.user.getSharedBoxes();
     res.send(200, {
       code: 'Ok',
-      data: { boxes: boxes, sharedBoxes: sharedBoxes },
+      data: { boxes: boxes, boxes_count: req.user.boxes.length, sharedBoxes: sharedBoxes },
+    });
+  } catch (err) {
+    return handleError(err);
+  }
+};
+
+/**
+ * @api {get} /users/me/boxes/:boxId get specific box of the signed in user
+ * @apiName getUserBox
+ * @apiDescription Get specific box of the signed in user with secret fields
+ * @apiGroup Users
+ * @apiParam {Integer} page the selected page for pagination
+ * @apiSuccess {String} code `Ok`
+ * @apiSuccess {String} data A json object with a single `box` object field
+ */
+const getUserBox = async function getUserBox (req, res) {
+  const { boxId } = req._userParams;
+  try {
+    const box = await req.user.getBox(boxId);
+    res.send(200, {
+      code: 'Ok',
+      data: {
+        box
+      },
     });
   } catch (err) {
     return handleError(err);
@@ -376,41 +402,51 @@ module.exports = {
       { predef: 'password' },
       { name: 'name', required: true, dataType: 'as-is' },
       { name: 'language', defaultValue: 'en_US' },
+      { name: 'integrations', dataType: 'object' }
     ]),
-    registerUser,
+    registerUser
   ],
   signIn: [
     checkContentType,
     retrieveParameters([
       { name: 'email', required: true },
-      { predef: 'password' },
+      { predef: 'password' }
     ]),
-    signIn,
+    signIn
   ],
   signOut,
   resetPassword: [
     checkContentType,
     retrieveParameters([
       { name: 'token', required: true },
-      { predef: 'password' },
+      { predef: 'password' }
     ]),
-    resetPassword,
+    resetPassword
   ],
   requestResetPassword: [
     checkContentType,
     retrieveParameters([{ name: 'email', dataType: 'email', required: true }]),
-    requestResetPassword,
+    requestResetPassword
   ],
   confirmEmailAddress: [
     checkContentType,
     retrieveParameters([
       { name: 'token', required: true },
-      { name: 'email', dataType: 'email', required: true },
+      { name: 'email', dataType: 'email', required: true }
     ]),
-    confirmEmailAddress,
+    confirmEmailAddress
   ],
   requestEmailConfirmation,
-  getUserBoxes,
+  getUserBox: [
+    retrieveParameters([{ predef: 'boxId', required: true }]),
+    getUserBox
+  ],
+  getUserBoxes: [
+    retrieveParameters([
+      { name: 'page', dataType: 'Integer', defaultValue: 0, min: 0 }
+    ]),
+    getUserBoxes
+  ],
   updateUser: [
     checkContentType,
     retrieveParameters([
@@ -419,18 +455,19 @@ module.exports = {
       { predef: 'password', name: 'newPassword', required: false },
       { name: 'name', dataType: 'as-is' },
       { name: 'language' },
+      { name: 'integrations', dataType: 'object' }
     ]),
-    updateUser,
+    updateUser
   ],
   getUser,
   refreshJWT: [
     checkContentType,
     retrieveParameters([{ name: 'token', required: true }]),
-    refreshJWT,
+    refreshJWT
   ],
   deleteUser: [
     checkContentType,
     retrieveParameters([{ predef: 'password' }]),
-    deleteUser,
-  ],
+    deleteUser
+  ]
 };

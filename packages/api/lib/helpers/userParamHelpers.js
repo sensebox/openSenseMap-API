@@ -330,7 +330,7 @@ const validateAndCastParam = function validateAndCastParam ({ value, dataType, a
  * @apiParam (LocationOption) {Number} [height] Height above ground in meters.
  *
  * @apiParamExample {application/json} Location Object:
- * { "lat": 51.972, "lng": 7.684, "height": 66.6 }
+ * { "lng": 7.684, "lat": 51.972, "height": 66.6 }
  *
  * @apiParamExample {application/json} Location Array:
  * [7.684, 51.972, 66.6]

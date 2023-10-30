@@ -44,6 +44,9 @@ config.util.setModuleDefaults('openSenseMap-API-models', {
     amount: 1,
     unit: 'd',
   },
+  pagination: {
+    max_boxes: 3
+  },
   image_folder: './userimages/',
 });
 

@@ -1,5 +1,25 @@
 # openSenseMap API Changelog
 
+## v11.2.0
+
+- Use @sensebox/opensensemap-api-models v3.2.0
+- Add `myBadges` integration (#834)
+- Update `restify` dependency (#801)
+- Update `mocha` dependency (#825)
+- Update `chai` dependency (#829)
+- Update `mqtt` dependency (#826)
+- Update `turf` dependency (#828)
+
+## v11.1.0
+
+- Use @sensebox/opensensemap-api-models v3.1.0
+- New route `/users/me/boxes/:boxId` to get specific box of logged in user
+- New `page` parameter for `/users/me/boxes?page=<number>` for pagination of user embedded boxes. Default page size is 25.
+
+## v11.0.1
+
+- Use @sensebox/opensensemap-api-models v3.0.1
+
 ## v11.0.0
 
 - Use @sensebox/opensensemap-api-models v3.0.0

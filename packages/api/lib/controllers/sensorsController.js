@@ -21,6 +21,27 @@ const { Box } = require('@sensebox/opensensemap-api-models'),
  */
 
 /**
+ * @apiDefine SensorSuccessResponse
+ *
+ * @apiSuccess {String} sensors._id unique identifier of the sensor
+ * @apiSuccess {String} sensors.title the title of the phenomenon the sensor observes.
+ * @apiSuccess {String} sensors.sensorType sensorType the type of the sensor.
+ * @apiSuccess {String} sensors.unit the unit of the phenomenon the sensor observes.
+ * @apiSuccess {String} [sensors.icon] the visual representation for the openSenseMap of this sensor.
+ */
+
+/**
+ * @apiDefine SensorsArray
+ *
+ * @apiSuccess {Sensor[]} sensors Array containing sensor objects
+ * @apiSuccess {String} sensors._id unique identifier of the sensor
+ * @apiSuccess {String} sensors.title the title of the phenomenon the sensor observes.
+ * @apiSuccess {String} sensors.sensorType sensorType the type of the sensor.
+ * @apiSuccess {String} sensors.unit the unit of the phenomenon the sensor observes.
+ * @apiSuccess {String} [sensors.icon] the visual representation for the openSenseMap of this sensor.
+ */
+
+/**
  * @apiDefine SensorIdParam
  *
  * @apiParam {String} sensorId the ID of the sensor you are referring to.

@@ -1,4 +1,4 @@
-name: Build and publish to Github Container Registry
+name: 🏗️ Build and publish to Github Container Registry
 
 on:
   push:
@@ -20,19 +20,19 @@ jobs:
       packages: write
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
+      - name: ⬇️ Checkout repository
+        uses: actions/checkout@v4
 
-      - name: Log in to the Container registry
-        uses: docker/login-action@v2.1.0
+      - name: 🔑 Log in to the Container registry
+        uses: docker/login-action@v3.0.0
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GHCR_TOKEN }}
 
-      - name: Extract metadata (tags, labels) for Docker
+      - name: 📋 Extract metadata (tags, labels) for Docker
         id: meta
-        uses: docker/metadata-action@v4.3.0
+        uses: docker/metadata-action@v5.0.0
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           flavor: |
@@ -40,8 +40,8 @@ jobs:
             prefix=
             suffix=
 
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v4.0.0
+      - name: 🐳 Build and push Docker image
+        uses: docker/build-push-action@v5.0.0
         with:
           context: .
           push: true

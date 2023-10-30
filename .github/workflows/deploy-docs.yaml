@@ -1,4 +1,4 @@
-name: Deploy docs
+name: 🚀 Deploy docs
 
 on:
   release:
@@ -12,12 +12,12 @@ on:
 
 jobs:
   test:
-    name: Deploy docs
+    name: 🚀 Deploy docs
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
-      - name: Gather branch information
+      - name: 📋 Gather branch information
         id: version_info
         continue-on-error: true
         run: |
@@ -26,15 +26,15 @@ jobs:
 
           echo "We're running on version ${version}"
 
-      - name: Append the current version to the introduction document
+      - name: 🛠️ Append the current version to the introduction document
         run: |
           sed -i "1 s|$| ${{ steps.version_info.outputs.version }}|" apidoc/introduction.md
 
-      - name: Run apidoc
+      - name: 🏃🏼 Run apidoc
         run: |
           npx apidoc@0.17.6 -i . -f js -e node_modules
 
-      - name: Deploy apidocs for git tags
+      - name: 🚀 Deploy apidocs for git tags
         if: ${{ github.event_name == 'release' && github.event.action == 'published' }}
         run: |
           set -e

@@ -1,5 +1,7 @@
 'use strict';
 
+const integrations = require('./integrations');
+
 /**
  * Interesting reads:
  * https://blogs.dropbox.com/tech/2016/09/how-dropbox-securely-stores-your-passwords/
@@ -11,7 +13,9 @@
 const { mongoose } = require('../db'),
   bcrypt = require('bcrypt'),
   crypto = require('crypto'),
+  util = require('util'),
   { min_length: password_min_length, salt_factor: password_salt_factor } = require('config').get('openSenseMap-API-models.password'),
+  { max_boxes: pagination_max_boxes } = require('config').get('openSenseMap-API-models.pagination'),
   { v4: uuidv4 } = require('uuid'),
   { model: Box } = require('../box/box'),
   { model: Claim } = require('../box/claim'),
@@ -102,8 +106,22 @@ const userSchema = new mongoose.Schema({
 }, { usePushEach: true });
 userSchema.plugin(timestamp);
 
-const toJSONProps = ['name', 'email', 'role', 'language', 'boxes', 'emailIsConfirmed'],
-  toJSONSecretProps = ['_id', 'unconfirmedEmail', 'lastUpdatedBy', 'createdAt', 'updatedAt'];
+const toJSONProps = [
+    'name',
+    'email',
+    'role',
+    'language',
+    'boxes',
+    'emailIsConfirmed',
+    'integrations'
+  ],
+  toJSONSecretProps = [
+    '_id',
+    'unconfirmedEmail',
+    'lastUpdatedBy',
+    'createdAt',
+    'updatedAt'
+  ];
 
 // only send out names and email..
 userSchema.set('toJSON', {
@@ -468,7 +486,7 @@ userSchema.methods.resendEmailConfirmation = function resendEmailConfirmation ()
     });
 };
 
-userSchema.methods.updateUser = function updateUser ({ email, language, name, currentPassword, newPassword }) {
+userSchema.methods.updateUser = function updateUser ({ email, language, name, currentPassword, newPassword, integrations }) {
   const user = this;
 
   // don't allow email and password change in one request
@@ -530,6 +548,20 @@ userSchema.methods.updateUser = function updateUser ({ email, language, name, cu
         somethingsChanged = true;
       }
 
+      const existingUserIntegrations = user.get('integrations') ? user.get('integrations').toObject() : undefined;
+      if (integrations && !existingUserIntegrations) {
+        user.set('integrations', integrations);
+        somethingsChanged = true;
+      } else if (integrations && !util.isDeepStrictEqual(existingUserIntegrations, integrations)) {
+        const mergedProperties = {
+          ...existingUserIntegrations,
+          ...integrations
+        };
+        user.set('integrations', mergedProperties);
+
+        somethingsChanged = true;
+      }
+
       if (somethingsChanged === false) {
         return { updated: false };
       }
@@ -538,6 +570,10 @@ userSchema.methods.updateUser = function updateUser ({ email, language, name, cu
       return user.save();
     })
     .then(function (updatedUser) {
+      if (updatedUser.updated === false) {
+        return updatedUser;
+      }
+
       return { updated: true, signOut, messages: msgs, updatedUser };
     })
     .catch(function (err) {
@@ -549,11 +585,26 @@ userSchema.methods.updateUser = function updateUser ({ email, language, name, cu
     });
 };
 
-userSchema.methods.getBoxes = function getBoxes () {
+userSchema.methods.getBoxes = function getBoxes (page) {
   return Box.find({ _id: { $in: this.boxes } })
+    .limit(pagination_max_boxes)
+    .skip(page * pagination_max_boxes)
     .populate(Box.BOX_SUB_PROPS_FOR_POPULATION)
     .then(function (boxes) {
       return boxes.map(b => b.toJSON({ includeSecrets: true }));
+    });
+};
+
+userSchema.methods.getBox = function getBox (boxId) {
+  const user = this;
+
+  // checkBoxOwner throws ModelError
+  user.checkBoxOwner(boxId);
+
+  return Box.findOne({ _id: boxId })
+    // .populate(Box.BOX_SUB_PROPS_FOR_POPULATION)
+    .then(function (box) {
+      return box.toJSON({ includeSecrets: true });
     });
 };
 
@@ -561,7 +612,7 @@ userSchema.methods.getSharedBoxes = function getSharedBoxes () {
   return Box.find({ _id: { $in: this.sharedBoxes } })
     .populate(Box.BOX_SUB_PROPS_FOR_POPULATION)
     .then(function (boxes) {
-      return boxes.map(b => b.toJSON({ includeSecrets: true }));
+      return boxes.map((b) => b.toJSON({ includeSecrets: true }));
     });
 };
 
@@ -659,6 +710,9 @@ userSchema.post('save', handleE11000);
 userSchema.post('update', handleE11000);
 userSchema.post('findOneAndUpdate', handleE11000);
 userSchema.post('insertMany', handleE11000);
+
+// add integrations schema as user.integrations
+integrations.addToSchema(userSchema);
 
 const userModel = mongoose.model('User', userSchema);
 

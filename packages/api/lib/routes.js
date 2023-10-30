@@ -9,7 +9,8 @@ const { usersController,
   config = require('config'),
   { getVersion } = require('./helpers/apiUtils'),
   { verifyJwt } = require('./helpers/jwtHelpers'),
-  { initUserParams, checkPrivilege } = require('./helpers/userParamHelpers');
+  { initUserParams, checkPrivilege } = require('./helpers/userParamHelpers'),
+  { grantBadge } = require('./helpers/badgrQuery');
 
 const spaces = function spaces (num) {
   let str = ' ';
@@ -74,6 +75,7 @@ const routes = {
   'noauth': [
     { path: '/', method: 'get', handler: printRoutes, reference: 'api-Misc-printRoutes' },
     { path: '/stats', method: 'get', handler: statisticsController.getStatistics, reference: 'api-Misc-getStatistics' },
+    { path: '/tags', method: 'get', handler: boxesController.getAllTags, reference: 'api-Boxes-getAllTags' },
     { path: `${statisticsPath}/idw`, method: 'get', handler: statisticsController.getIdw, reference: 'api-Interpolation-calculateIdw' },
     { path: `${statisticsPath}/descriptive`, method: 'get', handler: statisticsController.descriptiveStatisticsHandler, reference: 'api-Statistics-descriptive' },
     { path: `${boxesPath}`, method: 'get', handler: boxesController.getBoxes, reference: 'api-Boxes-getBoxes' },
@@ -98,6 +100,7 @@ const routes = {
     { path: `${usersPath}/me`, method: 'get', handler: usersController.getUser, reference: 'api-Users-getUser' },
     { path: `${usersPath}/me`, method: 'put', handler: usersController.updateUser, reference: 'api-Users-updateUser' },
     { path: `${usersPath}/me/boxes`, method: 'get', handler: usersController.getUserBoxes, reference: 'api-Users-getUserBoxes' },
+    { path: `${usersPath}/me/boxes/:boxId`, method: 'get', handler: usersController.getUserBox, reference: 'api-Users-getUserBox' },
     { path: `${boxesPath}/:boxId/script`, method: 'get', handler: boxesController.getSketch, reference: 'api-Boxes-getSketch' },
     { path: `${boxesPath}`, method: 'post', handler: boxesController.postNewBox, reference: 'api-Boxes-postNewBox' },
     { path: `${boxesPath}/claim`, method: 'post', handler: boxesController.claimBox, reference: 'api-Boxes-claimBox' },
@@ -138,7 +141,11 @@ const initRoutes = function initRoutes (server) {
   // The .use() method runs now for all routes
   // https://github.com/restify/node-restify/issues/1685
   for (const route of routes.auth) {
-    server[route.method]({ path: route.path }, [verifyJwt, route.handler]);
+    server[route.method]({ path: route.path }, [
+      verifyJwt,
+      route.handler,
+      grantBadge
+    ]);
   }
 
   // Attach verifyJwt and checkPrivilage routes (needs authorization through jwt)
