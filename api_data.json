@@ -272,7 +272,179 @@
           "content": "{\n  \"_id\": \"57000b8745fd40c8196ad04c\",\n  \"createdAt\": \"2016-06-02T11:22:51.817Z\",\n  \"exposure\": \"outdoor\",\n  \"grouptag\": \"\",\n  \"image\": \"57000b8745fd40c8196ad04c.png?1466435154159\",\n  \"currentLocation\": {\n    \"coordinates\": [\n      7.64568,\n      51.962372\n    ],\n    \"timestamp\": \"2016-06-02T11:22:51.817Z\",\n    \"type\": \"Point\"\n  },\n  \"name\": \"Oststr/Mauritzsteinpfad\",\n  \"sensors\": [\n    {\n      \"_id\": \"57000b8745fd40c8196ad04e\",\n      \"lastMeasurement\": {\n        \"value\": \"0\",\n        \"createdAt\": \"2016-11-11T21:22:01.675Z\"\n      },\n      \"sensorType\": \"VEML6070\",\n      \"title\": \"UV-Intensität\",\n      \"unit\": \"μW/cm²\"\n    },\n    {\n      \"_id\": \"57000b8745fd40c8196ad04f\",\n      \"lastMeasurement\": {\n        \"value\": \"0\",\n        \"createdAt\": \"2016-11-11T21:22:01.675Z\"\n      },\n      \"sensorType\": \"TSL45315\",\n      \"title\": \"Beleuchtungsstärke\",\n      \"unit\": \"lx\"\n    },\n    {\n      \"_id\": \"57000b8745fd40c8196ad050\",\n      \"lastMeasurement\": {\n        \"value\": \"1019.21\",\n        \"createdAt\": \"2016-11-11T21:22:01.675Z\"\n      },\n      \"sensorType\": \"BMP280\",\n      \"title\": \"Luftdruck\",\n      \"unit\": \"hPa\"\n    },\n    {\n      \"_id\": \"57000b8745fd40c8196ad051\",\n      \"lastMeasurement\": {\n        \"value\": \"99.38\",\n        \"createdAt\": \"2016-11-11T21:22:01.675Z\"\n      },\n      \"sensorType\": \"HDC1008\",\n      \"title\": \"rel. Luftfeuchte\",\n      \"unit\": \"%\"\n    },\n    {\n      \"_id\": \"57000b8745fd40c8196ad052\",\n      \"lastMeasurement\": {\n        \"value\": \"0.21\",\n        \"createdAt\": \"2016-11-11T21:22:01.675Z\"\n      },\n      \"sensorType\": \"HDC1008\",\n      \"title\": \"Temperatur\",\n      \"unit\": \"°C\"\n    },\n    {\n      \"_id\": \"576996be6c521810002479dd\",\n      \"sensorType\": \"WiFi\",\n      \"unit\": \"dBm\",\n      \"title\": \"Wifi-Stärke\",\n      \"lastMeasurement\": {\n        \"value\": \"-66\",\n        \"createdAt\": \"2016-11-11T21:22:01.675Z\"\n      }\n    },\n    {\n      \"_id\": \"579f9eae68b4a2120069edc8\",\n      \"sensorType\": \"VCC\",\n      \"unit\": \"V\",\n      \"title\": \"Eingangsspannung\",\n      \"lastMeasurement\": {\n        \"value\": \"2.73\",\n        \"createdAt\": \"2016-11-11T21:22:01.675Z\"\n      },\n      \"icon\": \"osem-shock\"\n    }\n  ],\n  \"updatedAt\": \"2016-11-11T21:22:01.686Z\"\n}",
           "type": "json"
         }
-      ]
+      ],
+      "fields": {
+        "Success 200": [
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": false,
+            "field": "_id",
+            "description": "<p>unique identifier of this senseBox</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": false,
+            "field": "name",
+            "description": "<p>the name of this senseBox</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": false,
+            "field": "exposure",
+            "description": "<p>the exposure of this senseBox</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": false,
+            "field": "model",
+            "description": "<p>the model of this senseBox</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "RFC3339Date",
+            "optional": false,
+            "field": "lastMeasurementAt",
+            "description": "<p>timestamp of the lastest measurement of one of the sensors of this senseBox</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": true,
+            "field": "weblink",
+            "description": "<p>external weblink</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": true,
+            "field": "description",
+            "description": "<p>detailed description of the senseBox</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "RFC3339Date",
+            "optional": false,
+            "field": "createdAt",
+            "description": "<p>timestamp of the creation date of the senseBox</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "RFC3339Date",
+            "optional": false,
+            "field": "updatedAt",
+            "description": "<p>timestamp of last update of the senseBox</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "String[]",
+            "optional": false,
+            "field": "grouptag",
+            "description": "<p>the grouptags of this senseBox</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "Object",
+            "optional": false,
+            "field": "currentLocation",
+            "description": "<p>the coordinates of this senseBox</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "Coordinates[]",
+            "optional": false,
+            "field": "currentLocation.coordinates",
+            "description": "<p>of the latest location of the senseBox</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "RFC3339Date",
+            "optional": false,
+            "field": "currentLocation.timestamp",
+            "description": "<p>timestamp of the location</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": false,
+            "field": "currentLocation.coordinates.type",
+            "description": "<p>type of the coordinates</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": true,
+            "field": "image",
+            "description": "<p>image showing the senseBox</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "Sensor[]",
+            "optional": false,
+            "field": "sensors",
+            "description": "<p>Array containing sensor objects</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": false,
+            "field": "sensors._id",
+            "description": "<p>unique identifier of the sensor</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": false,
+            "field": "sensors.title",
+            "description": "<p>the title of the phenomenon the sensor observes.</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": false,
+            "field": "sensors.sensorType",
+            "description": "<p>sensorType the type of the sensor.</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": false,
+            "field": "sensors.unit",
+            "description": "<p>the unit of the phenomenon the sensor observes.</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": true,
+            "field": "sensors.icon",
+            "description": "<p>the visual representation for the openSenseMap of this sensor.</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "Object",
+            "optional": false,
+            "field": "sensors.lastMeasurement",
+            "description": "<p>Object representing the latest measruement</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": false,
+            "field": "sensors.lastMeasurement.value",
+            "description": "<p>the measured value of the sensor</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "RFC3339Date",
+            "optional": false,
+            "field": "sensor.lastMeasurement.createdAt",
+            "description": "<p>the timestamp of the measurement</p>"
+          }
+        ]
+      }
     },
     "version": "0.0.0",
     "filename": "./packages/api/lib/controllers/boxesController.js",
@@ -498,6 +670,20 @@
         "url": "https://api.opensensemap.org/boxes?date=2015-03-07T02:50Z,2015-04-07T02:50Z&phenomenon=Temperatur"
       }
     ],
+    "success": {
+      "examples": [
+        {
+          "title": "Example response for :minimal=true",
+          "content": "[\n {\n      \"_id\": \"5ee91626dc1438001b473b52\",\n      \"name\": \"Lucht sensor\",\n      \"currentLocation\": {\n        \"timestamp\": \"2020-06-16T18:57:42.322Z\",\n        \"coordinates\": [\n          5.38517,\n          51.426135\n        ],\n        \"type\": \"Point\"\n      },\n      \"exposure\": \"outdoor\",\n      \"lastMeasurementAt\": \"2020-06-16T20:51:23.414Z\"\n    },\n    {\n      \"_id\": \"5ee92557dc1438001b4d3eee\",\n      \"name\": \"BabCity\",\n      \"currentLocation\": {\n        \"timestamp\": \"2020-06-16T20:02:31.083Z\",\n        \"coordinates\": [\n          4.78833,\n          51.936062\n        ],\n        \"type\": \"Point\"\n      },\n      \"exposure\": \"outdoor\",\n      \"lastMeasurementAt\": \"2022-01-23T20:14:48.808Z\"\n    }\n]",
+          "type": "application/json"
+        },
+        {
+          "title": "Example response for :minimal=true and :classify=true",
+          "content": "[\n {\n      \"_id\": \"5ee91626dc1438001b473b52\",\n      \"name\": \"Lucht sensor\",\n      \"currentLocation\": {\n        \"timestamp\": \"2020-06-16T18:57:42.322Z\",\n        \"coordinates\": [\n          5.38517,\n          51.426135\n        ],\n        \"type\": \"Point\"\n      },\n      \"exposure\": \"outdoor\",\n      \"lastMeasurementAt\": \"2020-06-16T20:51:23.414Z\",\n      \"state\": \"old\"\n    },\n    {\n      \"_id\": \"5ee92557dc1438001b4d3eee\",\n      \"name\": \"BabCity\",\n      \"currentLocation\": {\n        \"timestamp\": \"2020-06-16T20:02:31.083Z\",\n        \"coordinates\": [\n          4.78833,\n          51.936062\n        ],\n        \"type\": \"Point\"\n      },\n      \"exposure\": \"outdoor\",\n      \"lastMeasurementAt\": \"2022-01-23T20:14:48.808Z\",\n      \"state\": \"old\"\n    }\n]",
+          "type": "application/json"
+        }
+      ]
+    },
     "version": "0.0.0",
     "filename": "./packages/api/lib/controllers/boxesController.js",
     "groupTitle": "Boxes"
@@ -724,6 +910,13 @@
             "optional": false,
             "field": "name",
             "description": "<p>the name of this senseBox.</p>"
+          },
+          {
+            "group": "RequestBody",
+            "type": "String",
+            "optional": true,
+            "field": "description",
+            "description": "<p>detailed description of this senseBox.</p>"
           },
           {
             "group": "RequestBody",
@@ -989,7 +1182,7 @@
       "examples": [
         {
           "title": "Location Object:",
-          "content": "{ \"lat\": 51.972, \"lng\": 7.684, \"height\": 66.6 }",
+          "content": "{ \"lng\": 7.684, \"lat\": 51.972, \"height\": 66.6 }",
           "type": "application/json"
         },
         {
@@ -1382,7 +1575,7 @@
         },
         {
           "title": "Location Object:",
-          "content": "{ \"lat\": 51.972, \"lng\": 7.684, \"height\": 66.6 }",
+          "content": "{ \"lng\": 7.684, \"lat\": 51.972, \"height\": 66.6 }",
           "type": "application/json"
         },
         {
@@ -1860,15 +2053,64 @@
         ]
       }
     },
+    "success": {
+      "examples": [
+        {
+          "title": "Example data for :format=json",
+          "content": "[\n    {\n        \"location\": [\n            7,\n            52\n        ],\n        \"createdAt\": \"2023-09-29T08:06:13.254Z\",\n        \"value\": \"6.38\"\n    },\n    {\n        \"location\": [\n            7,\n            52\n        ],\n        \"createdAt\": \"2023-09-29T08:06:12.312Z\",\n        \"value\": \"6.38\"\n    }\n  ]",
+          "type": "json"
+        },
+        {
+          "title": "Example data for :format=csv",
+          "content": "createdAt,value\n2023-09-29T08:06:13.254Z,6.38\n2023-09-29T08:06:12.312Z,6.38\n2023-09-29T08:06:11.513Z,6.38\n2023-09-29T08:06:10.380Z,6.38\n2023-09-29T08:06:09.569Z,6.38\n2023-09-29T08:06:05.967Z,6.38",
+          "type": "json"
+        }
+      ],
+      "fields": {
+        "Success 200": [
+          {
+            "group": "Success 200",
+            "type": "Measurement[]",
+            "optional": false,
+            "field": "measurement",
+            "description": "<p>Array containing queried measurements</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "String[]",
+            "optional": false,
+            "field": "measurement.location",
+            "description": ""
+          },
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": false,
+            "field": "measurement.value",
+            "description": "<p>the measured value of the sensor</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "RFC3339Date",
+            "optional": false,
+            "field": "measurement.createdAt",
+            "description": "<p>timestamp of the measurement</p>"
+          }
+        ]
+      }
+    },
     "version": "0.0.0",
     "filename": "./packages/api/lib/controllers/measurementsController.js",
     "groupTitle": "Measurements"
   },
   {
-    "type": "get,post",
-    "url": "/boxes/data?grouptag=:grouptag",
+    "type": "get",
+    "url": "/boxes/data/bytag",
     "title": "Get latest measurements for a grouptag as JSON",
     "description": "<p>Download data of a given grouptag from multiple senseBoxes as JSON</p>",
+    "deprecated": {
+      "content": "Will change in the upcoming release to /boxes/data?grouptag=:grouptag"
+    },
     "group": "Measurements",
     "name": "getDataByGroupTag",
     "parameter": {
@@ -1880,6 +2122,17 @@
             "optional": false,
             "field": "grouptag",
             "description": "<p>The grouptag to search by.</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "String",
+            "allowedValues": [
+              "json"
+            ],
+            "optional": false,
+            "field": "format",
+            "defaultValue": "json",
+            "description": ""
           }
         ]
       }
@@ -2051,7 +2304,69 @@
     },
     "version": "0.0.0",
     "filename": "./packages/api/lib/controllers/measurementsController.js",
-    "groupTitle": "Measurements"
+    "groupTitle": "Measurements",
+    "success": {
+      "fields": {
+        "Success 200": [
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": false,
+            "field": "sensors._id",
+            "description": "<p>unique identifier of the sensor</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": false,
+            "field": "sensors.title",
+            "description": "<p>the title of the phenomenon the sensor observes.</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": false,
+            "field": "sensors.sensorType",
+            "description": "<p>sensorType the type of the sensor.</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": false,
+            "field": "sensors.unit",
+            "description": "<p>the unit of the phenomenon the sensor observes.</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": true,
+            "field": "sensors.icon",
+            "description": "<p>the visual representation for the openSenseMap of this sensor.</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "Object",
+            "optional": false,
+            "field": "sensors.lastMeasurement",
+            "description": "<p>Object representing the latest measruement</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": false,
+            "field": "sensors.lastMeasurement.value",
+            "description": "<p>the measured value of the sensor</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "RFC3339Date",
+            "optional": false,
+            "field": "sensor.lastMeasurement.createdAt",
+            "description": "<p>the timestamp of the measurement</p>"
+          }
+        ]
+      }
+    }
   },
   {
     "type": "get",
@@ -2079,6 +2394,82 @@
             "optional": false,
             "field": "senseBoxId",
             "description": "<p>the ID of the senseBox you are referring to.</p>"
+          }
+        ]
+      }
+    },
+    "success": {
+      "fields": {
+        "Success 200": [
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": false,
+            "field": "_id",
+            "description": "<p>unique identifier of this senseBox</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "Sensor[]",
+            "optional": false,
+            "field": "sensors",
+            "description": "<p>Array containing sensor objects</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": false,
+            "field": "sensors._id",
+            "description": "<p>unique identifier of the sensor</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": false,
+            "field": "sensors.title",
+            "description": "<p>the title of the phenomenon the sensor observes.</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": false,
+            "field": "sensors.sensorType",
+            "description": "<p>sensorType the type of the sensor.</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": false,
+            "field": "sensors.unit",
+            "description": "<p>the unit of the phenomenon the sensor observes.</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": true,
+            "field": "sensors.icon",
+            "description": "<p>the visual representation for the openSenseMap of this sensor.</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "Object",
+            "optional": false,
+            "field": "sensors.lastMeasurement",
+            "description": "<p>Object representing the latest measruement</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": false,
+            "field": "sensors.lastMeasurement.value",
+            "description": "<p>the measured value of the sensor</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "RFC3339Date",
+            "optional": false,
+            "field": "sensor.lastMeasurement.createdAt",
+            "description": "<p>the timestamp of the measurement</p>"
           }
         ]
       }
@@ -2162,7 +2553,7 @@
       "examples": [
         {
           "title": "Location Object:",
-          "content": "{ \"lat\": 51.972, \"lng\": 7.684, \"height\": 66.6 }",
+          "content": "{ \"lng\": 7.684, \"lat\": 51.972, \"height\": 66.6 }",
           "type": "application/json"
         },
         {
@@ -2304,7 +2695,7 @@
         },
         {
           "title": "Location Object:",
-          "content": "{ \"lat\": 51.972, \"lng\": 7.684, \"height\": 66.6 }",
+          "content": "{ \"lng\": 7.684, \"lat\": 51.972, \"height\": 66.6 }",
           "type": "application/json"
         },
         {
