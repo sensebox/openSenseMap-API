@@ -22,7 +22,7 @@ const {
 /**
  * @apiDefine SensorLastMeasurement
  *
- * @apiSuccess {Object} sensors.lastMeasurement Object representing the latest measruement
+ * @apiSuccess {Object} sensors.lastMeasurement Object representing the latest measurement
  * @apiSuccess {String} sensors.lastMeasurement.value the measured value of the sensor
  * @apiSuccess {RFC3339Date} sensor.lastMeasurement.createdAt the timestamp of the measurement
  */
