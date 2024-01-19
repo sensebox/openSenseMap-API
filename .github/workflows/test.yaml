@@ -1,4 +1,4 @@
-name: Test and build
+name: 👷🏼 Test and build
 
 on:
   push:
@@ -10,22 +10,22 @@ on:
 
 jobs:
   lint:
-    name: Lint code
+    name: 🔬 Lint code
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install Node.js 16
-        uses: actions/setup-node@v3.8.1
+      - name: ⬣ Install Node.js
+        uses: actions/setup-node@v4.0.0
         with:
-          node-version: 16
+          node-version: 18
 
-      - name: Get yarn cache directory path
+      - name: 📁 Get yarn cache directory path
         id: yarn-cache-dir-path
         run: |
           echo "##[set-output name=dir;]$(yarn cache dir)"
 
-      - name: Restore yarn cache
+      - name: 🔧 Restore yarn cache
         uses: actions/cache@v3.3.2
         id: yarn-cache
         with:
@@ -34,20 +34,20 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-yarn-
 
-      - name: Install project dependencies
+      - name: ⬇️ Install project dependencies
         run: |
           yarn --prefer-offline --pure-lockfile
 
-      - name: Run eslint
+      - name: 🔬 Run eslint
         run: |
           yarn run lint:ci
 
   test:
-    name: Run tests
+    name: ⚡ Run tests
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v4
 
-      - name: Execute tests
+      - name: ⚡ Execute tests
         run: |
           yarn test

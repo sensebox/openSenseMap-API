@@ -19,19 +19,32 @@ const defaults = {
     boxes: '/boxes',
     users: '/users',
     statistics: '/statistics',
-    management: '/management',
+    management: '/management'
   },
   jwt: {
     secret: 'OH GOD THIS IS SO INSECURE PLS CHANGE ME', // should be at least 32 characters
     algorithm: 'HS256',
     validity_ms: 3600000, // 1 hour
-    issuer: '', // usually the base url of the api. generated if not set from api_protocol and api_base_domain. for example https://api.opensensemap.org
+    issuer: '' // usually the base url of the api. generated if not set from api_protocol and api_base_domain. for example https://api.opensensemap.org
   },
   refresh_token: {
     secret: 'I ALSO WANT TO BE CHANGED',
     algorithm: 'sha256',
-    validity_ms: 604800000, // 1 week
+    validity_ms: 604800000 // 1 week
   },
+  integrations: {
+    mybadges: {
+      enabled: false,
+      queue: 'badgr',
+      redis: {
+        host: 'localhost',
+        port: 6379,
+        username: 'queue',
+        password: 'somepassword',
+        db: 0
+      }
+    }
+  }
 };
 
 // computed keys

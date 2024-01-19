@@ -1,5 +1,15 @@
 # openSenseMap API Changelog
 
+## v11.2.0
+
+- Use @sensebox/opensensemap-api-models v3.2.0
+- Add `myBadges` integration (#834)
+- Update `restify` dependency (#801)
+- Update `mocha` dependency (#825)
+- Update `chai` dependency (#829)
+- Update `mqtt` dependency (#826)
+- Update `turf` dependency (#828)
+
 ## v11.1.0
 
 - Use @sensebox/opensensemap-api-models v3.1.0
