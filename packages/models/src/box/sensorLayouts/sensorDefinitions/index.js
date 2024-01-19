@@ -1,6 +1,5 @@
 'use strict';
 
-
 const veml6070_uvintensity = require('./veml6070_uvintensity'),
   tsl45315_lightintensity = require('./tsl45315_lightintensity'),
   bmp280_pressure = require('./bmp280_pressure'),
@@ -48,6 +47,9 @@ const veml6070_uvintensity = require('./veml6070_uvintensity'),
   sps30_pm25 = require('./sps30_pm25'),
   sps30_pm4 = require('./sps30_pm4'),
   sps30_pm10 = require('./sps30_pm10'),
+  rg15_intensity = require('./rg15_intensity'),
+  rg15_eventAcc = require('./rg15_eventacc'),
+  rg15_totalAcc = require('./rg15_totalacc'),
   sht3x_temperature = require('./sht3x_temperature'),
   sht3x_humidity = require('./sht3x_humidity');
 module.exports = {
@@ -98,6 +100,9 @@ module.exports = {
   sps30_pm25,
   sps30_pm4,
   sps30_pm10,
+  rg15_intensity,
+  rg15_eventAcc,
+  rg15_totalAcc,
   sht3x_temperature,
-  sht3x_humidity
+  sht3x_humidity,
 };
