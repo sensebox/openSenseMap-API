@@ -90,11 +90,16 @@ const findSensorId = function findSensorId (sensors, value_type) {
   // are named either directly or with a prefix
   // separated by underscores. The last element
   // should be the the desired phenomenon
+  let [vt_sensortype, vt_phenomenon] = [];
   const splitAtIndex = value_type.toLowerCase().indexOf('_');
-  let [vt_sensortype, vt_phenomenon] = [
-    value_type.toLowerCase().slice(0, splitAtIndex),
-    value_type.toLowerCase().slice(splitAtIndex + 1),
-  ];
+  if (splitAtIndex > 0) {
+    [vt_sensortype, vt_phenomenon] = [
+      value_type.toLowerCase().slice(0, splitAtIndex),
+      value_type.toLowerCase().slice(splitAtIndex + 1),
+    ];
+  } else {
+    [vt_sensortype, vt_phenomenon] = value_type.toLowerCase().split('_');
+  }
 
   // DHT11 and DHT22 sensors have no underscore prefix
   if (!vt_phenomenon && ['temperature', 'humidity'].includes(vt_sensortype)) {
