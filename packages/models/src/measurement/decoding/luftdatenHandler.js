@@ -82,6 +82,7 @@ const matchings = {
   humidity: ['rel. luftfeuchte', 'luftfeuchtigkeit', 'luftfeuchte'],
   pressure: ['luftdruck', 'druck'],
   signal: ['stärke', 'signal'],
+  noise_laeq: ['schallpegel', 'geräuschpegel'],
 };
 
 const findSensorId = function findSensorId (sensors, value_type) {
@@ -89,9 +90,11 @@ const findSensorId = function findSensorId (sensors, value_type) {
   // are named either directly or with a prefix
   // separated by underscores. The last element
   // should be the the desired phenomenon
-  let [vt_sensortype, vt_phenomenon] = value_type
-    .toLowerCase()
-    .split('_');
+  const splitAtIndex = value_type.toLowerCase().indexOf('_');
+  let [vt_sensortype, vt_phenomenon] = [
+    value_type.toLowerCase().slice(0, splitAtIndex),
+    value_type.toLowerCase().slice(splitAtIndex + 1),
+  ];
 
   // DHT11 and DHT22 sensors have no underscore prefix
   if (!vt_phenomenon && ['temperature', 'humidity'].includes(vt_sensortype)) {
@@ -110,9 +113,10 @@ const findSensorId = function findSensorId (sensors, value_type) {
         const title = sensor.title.toLowerCase();
         const type = sensor.sensorType.toLowerCase();
         if (
-          (title === vt_phenomenon || matchings[vt_phenomenon].includes(title) || matchings[vt_phenomenon].some(alias => title.includes(alias)))
-          &&
-          (type.startsWith(vt_sensortype))
+          (title === vt_phenomenon ||
+            matchings[vt_phenomenon].includes(title) ||
+            matchings[vt_phenomenon].some((alias) => title.includes(alias))) &&
+          type.startsWith(vt_sensortype)
         ) {
           sensorId = sensor._id.toString();
           break;
@@ -137,7 +141,6 @@ const transformLuftdatenJson = function transformLuftdatenJson (json, sensors) {
   return outArray;
 };
 
-
 module.exports = {
   decodeMessage: function (message, { sensors } = {}) {
     if (!sensors) {
@@ -159,7 +162,9 @@ module.exports = {
       }
 
       if (!json.sensordatavalues) {
-        return Promise.reject(new Error('Invalid luftdaten json. Missing `sensordatavalues`'));
+        return Promise.reject(
+          new Error('Invalid luftdaten json. Missing `sensordatavalues`')
+        );
       }
 
       const transformedMeasurements = transformLuftdatenJson(json, sensors);
@@ -170,6 +175,8 @@ module.exports = {
       return transformAndValidateMeasurements(transformedMeasurements);
     }
 
-    return Promise.reject(new Error('Cannot decode empty message (luftdaten decoder)'));
-  }
+    return Promise.reject(
+      new Error('Cannot decode empty message (luftdaten decoder)')
+    );
+  },
 };
