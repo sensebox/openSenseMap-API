@@ -427,7 +427,7 @@
             "type": "Object",
             "optional": false,
             "field": "sensors.lastMeasurement",
-            "description": "<p>Object representing the latest measruement</p>"
+            "description": "<p>Object representing the latest measurement</p>"
           },
           {
             "group": "Success 200",
@@ -2348,7 +2348,7 @@
             "type": "Object",
             "optional": false,
             "field": "sensors.lastMeasurement",
-            "description": "<p>Object representing the latest measruement</p>"
+            "description": "<p>Object representing the latest measurement</p>"
           },
           {
             "group": "Success 200",
@@ -2455,7 +2455,7 @@
             "type": "Object",
             "optional": false,
             "field": "sensors.lastMeasurement",
-            "description": "<p>Object representing the latest measruement</p>"
+            "description": "<p>Object representing the latest measurement</p>"
           },
           {
             "group": "Success 200",
