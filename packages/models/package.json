@@ -5,7 +5,7 @@
   "main": "index.js",
   "license": "MIT",
   "dependencies": {
-    "@grpc/grpc-js": "^1.9.4",
+    "@grpc/grpc-js": "^1.11.1",
     "@grpc/proto-loader": "^0.7.10",
     "@sensebox/osem-protos": "^1.1.0",
     "@sensebox/sketch-templater": "1.13.1",
