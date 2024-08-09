@@ -17,10 +17,7 @@ const
   config = require('config'),
   { preRequest, preCors, Honeybadger, getVersion, postToMattermost } = require('./lib/helpers/apiUtils'),
   routes = require('./lib/routes'),
-  pino = require('pino');
-
-// const log = bunyan.createLogger({ name: 'opensensemap-api', serializers: bunyan.stdSerializers });
-const log = pino({ name: 'opensensemap-api', sserializers: pino.stdSerializers });
+  log = require('pino')({ name: 'opensensemap-api' });
 
 const server = restify.createServer({
   name: `opensensemap-api (${getVersion})`,
@@ -55,8 +52,7 @@ db.connect()
     });
   })
   .catch(function (err) {
-    log.fatal(err, `Couldn't connect to MongoDB.
-    Exiting...`);
+    log.fatal(err, 'Couldn\'t connect to MongoDB. Exiting...');
     process.exit(1);
   });
 
