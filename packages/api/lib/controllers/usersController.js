@@ -64,7 +64,7 @@ const registerUser = async function registerUser (req, res) {
     try {
       const { token, refreshToken } = await createToken(newUser);
 
-      return res.send(201, {
+      res.send(201, {
         code: 'Created',
         message: 'Successfully registered new user',
         data: { user: newUser },
@@ -115,7 +115,7 @@ const signIn = async function signIn (req, res) {
     if (await user.checkPassword(password)) {
       const { token, refreshToken } = await createToken(user);
 
-      return res.send(200, {
+      res.send(200, {
         code: 'Authorized',
         message: 'Successfully signed in',
         data: { user },
