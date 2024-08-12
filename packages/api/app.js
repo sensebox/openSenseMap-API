@@ -10,21 +10,27 @@
 
 'use strict';
 
-const
-  { db } = require('@sensebox/opensensemap-api-models'),
+const { db } = require('@sensebox/opensensemap-api-models'),
   restify = require('restify'),
-  { fullResponse, queryParser, jsonBodyParser, pre: { sanitizePath } } = restify.plugins,
+  {
+    fullResponse,
+    queryParser,
+    jsonBodyParser,
+    pre: { sanitizePath }
+  } = restify.plugins,
   config = require('config'),
-  { preRequest, preCors, Honeybadger, getVersion, postToMattermost } = require('./lib/helpers/apiUtils'),
+  {
+    preRequest,
+    preCors,
+    Honeybadger,
+    getVersion,
+    postToMattermost
+  } = require('./lib/helpers/apiUtils'),
   routes = require('./lib/routes'),
-  pino = require('pino');
-
-// const log = bunyan.createLogger({ name: 'opensensemap-api', serializers: bunyan.stdSerializers });
-const log = pino({ name: 'opensensemap-api', sserializers: pino.stdSerializers });
+  { stdLogger, debugLogger } = require('./logger');
 
 const server = restify.createServer({
   name: `opensensemap-api (${getVersion})`,
-  log,
   onceNext: true,
   strictNext: false,
 });
@@ -43,6 +49,10 @@ server.use(fullResponse());
 server.use(queryParser());
 server.use(jsonBodyParser());
 
+if (config.get('logLevel') === 'debug') {
+  server.use(debugLogger);
+}
+
 db.connect()
   .then(function () {
     // attach Routes
@@ -50,13 +60,12 @@ db.connect()
 
     // start the server
     server.listen(Number(config.get('port')), function () {
-      log.info(`${server.name} listening at ${server.url}`);
+      stdLogger.logger.info(`${server.name} listening at ${server.url}`);
       postToMattermost(`openSenseMap API started. Version: ${getVersion}`);
     });
   })
   .catch(function (err) {
-    log.fatal(err, `Couldn't connect to MongoDB.
-    Exiting...`);
+    stdLogger.logger.fatal(err, 'Couldn\'t connect to MongoDB. Exiting...');
     process.exit(1);
   });
 
@@ -75,7 +84,7 @@ server.on('InternalServer', function (req, res, err, callback) {
     query: req.query,
     _userParams: req._userParams
   });
-  log.error(err);
+  stdLogger.logger.error(err);
   // and notify
   Honeybadger.notify(err);
 

@@ -2928,6 +2928,14 @@ pidusage@^3.0.2:
   dependencies:
     safe-buffer "^5.2.1"
 
+pino-abstract-transport@^1.2.0:
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/pino-abstract-transport/-/pino-abstract-transport-1.2.0.tgz#97f9f2631931e242da531b5c66d3079c12c9d1b5"
+  integrity sha512-Guhh8EZfPCfH+PMXAb6rKOjGQEoy0xlAIn+irODG5kgfYV+BQ0rGYYWTIel3P5mmyXqkYkPmdIkywsn6QKUR1Q==
+  dependencies:
+    readable-stream "^4.0.0"
+    split2 "^4.0.0"
+
 pino-abstract-transport@v1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/pino-abstract-transport/-/pino-abstract-transport-1.0.0.tgz#cc0d6955fffcadb91b7b49ef220a6cc111d48bb3"
@@ -2936,10 +2944,25 @@ pino-abstract-transport@v1.0.0:
     readable-stream "^4.0.0"
     split2 "^4.0.0"
 
+pino-http@^10.2.0:
+  version "10.2.0"
+  resolved "https://registry.yarnpkg.com/pino-http/-/pino-http-10.2.0.tgz#157b799e84ee4f6fe5a862fa3758f10d25376fed"
+  integrity sha512-am03BxnV3Ckx68OkbH0iZs3indsrH78wncQ6w1w51KroIbvJZNImBKX2X1wjdY8lSyaJ0UrX/dnO2DY3cTeCRw==
+  dependencies:
+    get-caller-file "^2.0.5"
+    pino "^9.0.0"
+    pino-std-serializers "^7.0.0"
+    process-warning "^3.0.0"
+
 pino-std-serializers@^6.0.0:
   version "6.1.0"
   resolved "https://registry.yarnpkg.com/pino-std-serializers/-/pino-std-serializers-6.1.0.tgz#307490fd426eefc95e06067e85d8558603e8e844"
   integrity sha512-KO0m2f1HkrPe9S0ldjx7za9BJjeHqBku5Ch8JyxETxT8dEFGz1PwgrHaOQupVYitpzbFSYm7nnljxD8dik2c+g==
+
+pino-std-serializers@^7.0.0:
+  version "7.0.0"
+  resolved "https://registry.yarnpkg.com/pino-std-serializers/-/pino-std-serializers-7.0.0.tgz#7c625038b13718dbbd84ab446bd673dc52259e3b"
+  integrity sha512-e906FRY0+tV27iq4juKzSYPbUj2do2X2JX4EzSca1631EB2QJQUqGbDuERal7LCtOpxl6x3+nvo9NPZcmjkiFA==
 
 pino@^8.7.0:
   version "8.15.0"
@@ -2975,6 +2998,23 @@ pino@^8.8.0:
     sonic-boom "^3.1.0"
     thread-stream "^2.0.0"
 
+pino@^9.0.0, pino@^9.3.2:
+  version "9.3.2"
+  resolved "https://registry.yarnpkg.com/pino/-/pino-9.3.2.tgz#a530d6d28f1d954b6f54416a218cbb616f52f901"
+  integrity sha512-WtARBjgZ7LNEkrGWxMBN/jvlFiE17LTbBoH0konmBU684Kd0uIiDwBXlcTCW7iJnA6HfIKwUssS/2AC6cDEanw==
+  dependencies:
+    atomic-sleep "^1.0.0"
+    fast-redact "^3.1.1"
+    on-exit-leak-free "^2.1.0"
+    pino-abstract-transport "^1.2.0"
+    pino-std-serializers "^7.0.0"
+    process-warning "^4.0.0"
+    quick-format-unescaped "^4.0.3"
+    real-require "^0.2.0"
+    safe-stable-stringify "^2.3.1"
+    sonic-boom "^4.0.1"
+    thread-stream "^3.0.0"
+
 polygon-clipping@^0.15.3:
   version "0.15.3"
   resolved "https://registry.yarnpkg.com/polygon-clipping/-/polygon-clipping-0.15.3.tgz#0215840438470ba2e9e6593625e4ea5c1087b4b7"
@@ -3006,6 +3046,16 @@ process-warning@^2.0.0:
   version "2.1.0"
   resolved "https://registry.yarnpkg.com/process-warning/-/process-warning-2.1.0.tgz#1e60e3bfe8183033bbc1e702c2da74f099422d1a"
   integrity sha512-9C20RLxrZU/rFnxWncDkuF6O999NdIf3E1ws4B0ZeY3sRVPzWBMsYDE2lxjxhiXxg464cQTgKUGm8/i6y2YGXg==
+
+process-warning@^3.0.0:
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/process-warning/-/process-warning-3.0.0.tgz#96e5b88884187a1dce6f5c3166d611132058710b"
+  integrity sha512-mqn0kFRl0EoqhnL0GQ0veqFHyIN1yig9RHh/InzORTUiZHFRAur+aMtRkELNwGs9aNwKS6tg/An4NYBPGwvtzQ==
+
+process-warning@^4.0.0:
+  version "4.0.0"
+  resolved "https://registry.yarnpkg.com/process-warning/-/process-warning-4.0.0.tgz#581e3a7a1fb456c5f4fd239f76bce75897682d5a"
+  integrity sha512-/MyYDxttz7DfGMMHiysAsFE4qF+pQYAA8ziO/3NcRVrQ5fSk+Mns4QZA/oRPFzvcqNoVJXQNWNAsdwBXLUkQKw==
 
 process@^0.11.10:
   version "0.11.10"
@@ -3482,6 +3532,13 @@ sonic-boom@^3.1.0:
   dependencies:
     atomic-sleep "^1.0.0"
 
+sonic-boom@^4.0.1:
+  version "4.0.1"
+  resolved "https://registry.yarnpkg.com/sonic-boom/-/sonic-boom-4.0.1.tgz#515b7cef2c9290cb362c4536388ddeece07aed30"
+  integrity sha512-hTSD/6JMLyT4r9zeof6UtuBDpjJ9sO08/nmS5djaA9eozT9oOlNdpXSnzcgj4FTqpk3nkLrs61l4gip9r1HCrQ==
+  dependencies:
+    atomic-sleep "^1.0.0"
+
 source-map@~0.6.1:
   version "0.6.1"
   resolved "https://registry.yarnpkg.com/source-map/-/source-map-0.6.1.tgz#74722af32e9614e9c287a8d0bbde48b5e2f1a263"
@@ -3735,6 +3792,13 @@ thread-stream@^2.0.0:
   version "2.2.0"
   resolved "https://registry.yarnpkg.com/thread-stream/-/thread-stream-2.2.0.tgz#310c03a253f729094ce5d4638ef5186dfa80a9e8"
   integrity sha512-rUkv4/fnb4rqy/gGy7VuqK6wE1+1DOCOWy4RMeaV69ZHMP11tQKZvZSip1yTgrKCMZzEMcCL/bKfHvSfDHx+iQ==
+  dependencies:
+    real-require "^0.2.0"
+
+thread-stream@^3.0.0:
+  version "3.1.0"
+  resolved "https://registry.yarnpkg.com/thread-stream/-/thread-stream-3.1.0.tgz#4b2ef252a7c215064507d4ef70c05a5e2d34c4f1"
+  integrity sha512-OqyPZ9u96VohAyMfJykzmivOrY2wfMSf3C5TtFJVgN+Hm6aj+voFhlK+kZEIv2FBh1X6Xp3DlnCOfEQ3B2J86A==
   dependencies:
     real-require "^0.2.0"
 
