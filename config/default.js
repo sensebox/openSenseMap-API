@@ -15,6 +15,7 @@ const defaults = {
   slack_url: '',
   mattermost_url: '',
   management_role: 'admin',
+  logLevel: 'info',
   routes: {
     boxes: '/boxes',
     users: '/users',
