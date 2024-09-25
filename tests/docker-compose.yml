@@ -1,4 +1,3 @@
-version: "2.1"
 volumes:
   userimages:
 services:
@@ -20,7 +19,7 @@ services:
           "slack_url": "http://127.0.0.1/bla/bli/blu",
           "openSenseMap-API-models": {
             "db": {
-              "mongo_uri": "mongodb://db/api-test"
+              "database_url": "postgresql://postgres:postgres@db:5432/opensensemap"
             },
             "password": {
               "salt_factor": 1
@@ -97,7 +96,7 @@ services:
           },
           "openSenseMap-API-models": {
             "db": {
-              "mongo_uri": "mongodb://db/api-test"
+              "database_url": "postgresql://postgres:postgres@db:5432/opensensemap"
             }
           }
         }
@@ -117,4 +116,13 @@ services:
       - 6379:6379
 
   db:
-    image: mongo:${MONGO_TAG:-5}
+    image: timescale/timescaledb-ha:pg15-latest
+    command:
+      - -cshared_preload_libraries=timescaledb,pg_cron
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=opensensemap
+    ports:
+      - 5432:5432
