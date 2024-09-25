@@ -3,6 +3,8 @@
 const { pgTable, text, boolean, timestamp, doublePrecision, json } = require('drizzle-orm/pg-core');
 const { relations } = require('drizzle-orm');
 const { createId } = require('@paralleldrive/cuid2');
+const { v4: uuidv4 } = require('uuid');
+const moment = require('moment');
 const { exposure, status, deviceModel } = require('./enum');
 const { bytea } = require('./types');
 
@@ -80,6 +82,19 @@ const password = pgTable('password', {
     .notNull()
 });
 
+const passwordReset = pgTable('password_reset', {
+  userId: text('user_id').unique()
+    .notNull()
+    .references(() => user.id, {
+      onDelete: 'cascade',
+    }),
+  token: text('token').notNull()
+    .$defaultFn(() => uuidv4()),
+  expiresAt: timestamp('expires_at').notNull()
+    .$defaultFn(() => moment.utc().add(12, 'hours')
+      .toDate())
+});
+
 const profile = pgTable('profile', {
   id: text('id')
     .primaryKey()
@@ -131,6 +146,10 @@ const userRelations = relations(user, ({ one, many }) => ({
     fields: [user.id],
     references: [password.userId]
   }),
+  passwordReset: one(passwordReset, {
+    fields: [user.id],
+    references: [passwordReset.userId]
+  }),
   profile: one(profile, {
     fields: [user.id],
     references: [profile.userId]
@@ -153,6 +172,7 @@ module.exports.deviceTable = device;
 module.exports.sensorTable = sensor;
 module.exports.userTable = user;
 module.exports.passwordTable = password;
+module.exports.passwordResetTable = passwordReset;
 module.exports.profileTable = profile;
 module.exports.profileImageTable = profileImage;
 module.exports.deviceRelations = deviceRelations;

@@ -15,6 +15,13 @@
       "when": 1727196569376,
       "tag": "0001_init_tsdb",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1727299848109,
+      "tag": "0002_add_password_reset_table",
+      "breakpoints": true
     }
   ]
 }

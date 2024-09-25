@@ -26,6 +26,7 @@
     "uuid": "^8.3.2"
   },
   "scripts": {
+    "db:drop": "drizzle-kit drop",
     "db:generate": "drizzle-kit generate",
     "db:generate-custom": "drizzle-kit generate --custom",
     "db:migrate": "drizzle-kit migrate",

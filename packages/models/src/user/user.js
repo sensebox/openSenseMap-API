@@ -27,7 +27,7 @@ const { mongoose } = require('../db'),
   isemail = require('isemail');
 
 const { createProfile } = require('../profile/profile');
-const { userTable, passwordTable } = require('../../schema/schema');
+const { userTable, passwordTable, passwordResetTable } = require('../../schema/schema');
 
 const userNameRequirementsText = 'Parameter name must consist of at least 3 and up to 40 alphanumerics (a-zA-Z0-9), dot (.), dash (-), underscore (_) and spaces.',
   userEmailRequirementsText = 'Parameter {PATH} is not a valid email address.';
@@ -765,6 +765,25 @@ const checkPassword = function checkPassword (plaintextPassword, hashedPassword)
     });
 };
 
+const initPasswordReset = async function initPasswordReset ({ email }) {
+
+  const user = await db.query.userTable.findFirst({
+    where: (user, { eq }) => eq(user.email, email.toLowerCase())
+  });
+
+  if (!user) {
+    throw new ModelError('Password reset for this user not possible', { type: 'ForbiddenError' });
+  }
+
+  // Create entry with default values
+  await db.insert(passwordResetTable).values({ userId: user.id })
+    .onConflictDoUpdate({ target: passwordResetTable.userId, set: {
+      token: uuidv4(),
+      expiresAt: moment.utc().add(12, 'hours')
+        .toDate()
+    } });
+};
+
 module.exports = {
   schema: userSchema,
   model: userModel,
@@ -772,5 +791,6 @@ module.exports = {
   deleteUser,
   updateUser,
   findUserByNameOrEmail,
-  checkPassword
+  checkPassword,
+  initPasswordReset
 };
