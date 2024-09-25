@@ -15,6 +15,7 @@ const { User } = require('@sensebox/opensensemap-api-models'),
     refreshJwt,
     invalidateToken,
   } = require('../helpers/jwtHelpers');
+const { createUser, findUserByNameOrEmail, checkPassword } = require('@sensebox/opensensemap-api-models/src/user/user');
 
 /**
  * define for nested user parameter for box creation request
@@ -53,10 +54,11 @@ const { User } = require('@sensebox/opensensemap-api-models'),
  * @apiSuccess (Created 201) {Object} data `{ "user": {"name":"fullname","email":"test@test.de","role":"user","language":"en_US","boxes":[],"emailIsConfirmed":false} }`
  */
 const registerUser = async function registerUser (req, res) {
-  const { email, password, language, name, integrations } = req._userParams;
+  const { email, password, language, name } = req._userParams;
 
   try {
-    const newUser = await new User({ name, email, password, language, integrations }).save();
+    const newUser = await createUser(name, email, password, language);
+
     postToMattermost(
       `New User: ${newUser.name} (${redactEmail(newUser.email)})`
     );
@@ -101,10 +103,7 @@ const signIn = async function signIn (req, res) {
   const { email: emailOrName, password } = req._userParams;
 
   try {
-    // lowercase for email
-    const user = await User.findOne({
-      $or: [{ email: emailOrName.toLowerCase() }, { name: emailOrName }],
-    }).exec();
+    const user = await findUserByNameOrEmail(emailOrName);
 
     if (!user) {
       return Promise.reject(
@@ -112,7 +111,7 @@ const signIn = async function signIn (req, res) {
       );
     }
 
-    if (await user.checkPassword(password)) {
+    if (await checkPassword(password, user.password)) {
       const { token, refreshToken } = await createToken(user);
 
       res.send(200, {

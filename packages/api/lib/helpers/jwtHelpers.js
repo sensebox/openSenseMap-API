@@ -39,14 +39,18 @@ const createToken = function createToken (user) {
       // it is a HMAC of the jwt string
       const refreshToken = hashJWT(token);
       try {
-        await user.update({
-          $set: {
-            refreshToken,
-            refreshTokenExpires: moment.utc()
-              .add(Number(refresh_token_validity_ms), 'ms')
-              .toDate()
-          }
-        }).exec();
+        // TODO: do we need a new table for tokens???
+        user.refreshToken = refreshToken;
+        user.refreshTokenExpires = moment.utc().add(Number(refresh_token_validity_ms), 'ms')
+          .toDate();
+        // await user.update({
+        //   $set: {
+        //     refreshToken,
+        //     refreshTokenExpires: moment.utc()
+        //       .add(Number(refresh_token_validity_ms), 'ms')
+        //       .toDate()
+        //   }
+        // }).exec();
 
         return resolve({ token, refreshToken });
       } catch (err) {

@@ -1,5 +1,6 @@
 'use strict';
 
+const { db } = require('../drizzle');
 const integrations = require('./integrations');
 
 /**
@@ -24,6 +25,9 @@ const { mongoose } = require('../db'),
   timestamp = require('mongoose-timestamp'),
   ModelError = require('../modelError'),
   isemail = require('isemail');
+
+const { createProfile } = require('../profile/profile');
+const { userTable, passwordTable } = require('../../schema/schema');
 
 const userNameRequirementsText = 'Parameter name must consist of at least 3 and up to 40 alphanumerics (a-zA-Z0-9), dot (.), dash (-), underscore (_) and spaces.',
   userEmailRequirementsText = 'Parameter {PATH} is not a valid email address.';
@@ -301,7 +305,7 @@ userSchema.methods.addBox = function addBox (params) {
   const user = this;
   const serialPort = params.serialPort;
 
-  // initialize new box
+  //  ialize new box
   return Box.initNew(params)
     .then(function (savedBox) {
       // request is valid
@@ -716,7 +720,57 @@ integrations.addToSchema(userSchema);
 
 const userModel = mongoose.model('User', userSchema);
 
+const createUser = async function createUser (name, email, password, language) {
+  try {
+    const hashedPassword = await passwordHasher(password);
+    const user = await db.insert(userTable).values({ name, email, language })
+      .returning();
+
+    await db.insert(passwordTable).values({
+      hash: hashedPassword,
+      userId: user[0].id
+    });
+
+    await createProfile(user[0]);
+
+    // TODO: Only return specific fields
+    return user[0];
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+const deleteUser = async function deleteUser () {};
+
+const updateUser = async function updateUser () {};
+
+const findUserByNameOrEmail = async function findUserByNameOrEmail (emailOrName) {
+  return db.query.userTable.findFirst({
+    where: (user, { eq, or }) => or(eq(user.email, emailOrName.toLowerCase()), eq(user.name, emailOrName)),
+    with: {
+      password: true
+    }
+  });
+};
+
+const checkPassword = function checkPassword (plaintextPassword, hashedPassword) {
+  return bcrypt
+    .compare(preparePasswordHash(plaintextPassword), hashedPassword.hash)
+    .then(function (passwordIsCorrect) {
+      if (passwordIsCorrect === false) {
+        throw new ModelError('Password incorrect', { type: 'ForbiddenError' });
+      }
+
+      return true;
+    });
+};
+
 module.exports = {
   schema: userSchema,
-  model: userModel
+  model: userModel,
+  createUser,
+  deleteUser,
+  updateUser,
+  findUserByNameOrEmail,
+  checkPassword
 };
