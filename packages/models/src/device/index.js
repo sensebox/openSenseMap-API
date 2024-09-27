@@ -7,7 +7,7 @@ const { db } = require('../drizzle');
 const ModelError = require('../modelError');
 
 const createDevice = async function createDevice (userId, params) {
-  const { model, sensorTemplates } = params;
+  const { name, exposure, description, location, model, sensorTemplates } = params;
   let { sensors, useAuth } = params;
 
   // if model is not empty, get sensor definitions from products
@@ -36,15 +36,16 @@ const createDevice = async function createDevice (userId, params) {
     }
   }
 
+  // TODO: handle in transaction
   const [device] = await db.insert(deviceTable).values({
     userId,
-    name: params.name,
-    exposure: params.exposure,
-    description: params.description,
-    latitude: params.location[1],
-    longitude: params.location[0],
+    name,
+    exposure,
+    description,
+    latitude: location[1],
+    longitude: location[0],
     useAuth,
-    model: 'HOME_V2_LORA'
+    model
   })
     .returning();
 
@@ -69,6 +70,21 @@ const createDevice = async function createDevice (userId, params) {
   return device;
 };
 
+const deleteDevice = async function (filter) {
+  return await db.delete(deviceTable).where(filter)
+    .returning();
+};
+
+const findById = async function findById (deviceId) {
+  const device = await db.query.deviceTable.findFirst({
+    where: (device, { eq }) => eq(device.id, deviceId)
+  });
+
+  return device;
+};
+
 module.exports = {
-  createDevice
+  createDevice,
+  deleteDevice,
+  findById
 };

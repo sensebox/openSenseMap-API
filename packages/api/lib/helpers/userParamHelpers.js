@@ -1,5 +1,7 @@
 'use strict';
 
+const { checkDeviceOwner } = require('@sensebox/opensensemap-api-models/src/user/user');
+
 const { BadRequestError, UnprocessableEntityError, InvalidArgumentError, ForbiddenError } = require('restify-errors'),
   { utils: { parseAndValidateTimestamp }, db: { mongoose }, decoding: { validators: { transformAndValidateCoords } } } = require('@sensebox/opensensemap-api-models'),
   moment = require('moment'),
@@ -548,7 +550,8 @@ const checkPrivilege = async function checkPrivilege (req) {
 
   if (req._userParams.boxId) {
     try {
-      req.user.checkBoxOwner(req._userParams.boxId);
+      await checkDeviceOwner(req.user.id, req._userParams.boxId);
+      // req.user.checkBoxOwner(req._userParams.boxId);
 
       return;
     } catch (err) {

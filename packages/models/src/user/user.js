@@ -27,8 +27,9 @@ const { mongoose } = require('../db'),
   isemail = require('isemail');
 
 const { createProfile } = require('../profile/profile');
-const { userTable, passwordTable, passwordResetTable } = require('../../schema/schema');
+const { userTable, passwordTable, passwordResetTable, deviceTable } = require('../../schema/schema');
 const { eq } = require('drizzle-orm');
+const { findById, deleteDevice } = require('../device');
 
 const userNameRequirementsText = 'Parameter name must consist of at least 3 and up to 40 alphanumerics (a-zA-Z0-9), dot (.), dash (-), underscore (_) and spaces.',
   userEmailRequirementsText = 'Parameter {PATH} is not a valid email address.';
@@ -827,6 +828,39 @@ const findUserByEmailAndRole = async function findUserByEmailAndRole ({ email, r
   return user;
 };
 
+const checkDeviceOwner = async function checkDeviceOwner (userId, deviceId) {
+
+  const device = await findById(deviceId);
+
+  if (!device || device.userId !== userId) {
+    throw new ModelError('User does not own this senseBox', { type: 'ForbiddenError' });
+  }
+
+  return true;
+};
+
+const removeDevice = async function removeDevice (deviceId) {
+
+  const device = await findById(deviceId);
+
+  if (!device) {
+    return Promise.reject(new ModelError('coudn\'t remove, device not found', { type: 'NotFoundError' }));
+  }
+
+  // TODO: remove all measurements
+  //     // remove box and measurements
+  //     box.removeSelfAndMeasurements()
+  //       .catch(function (err) {
+  //         throw err;
+  //       });
+
+  const [deletedDevice] = await deleteDevice(eq(device.id, deviceId));
+
+  return deletedDevice;
+};
+
+
+
 module.exports = {
   schema: userSchema,
   model: userModel,
@@ -837,5 +871,7 @@ module.exports = {
   findUserByEmailAndRole,
   checkPassword,
   initPasswordReset,
-  resetOldPassword
+  resetOldPassword,
+  removeDevice,
+  checkDeviceOwner
 };

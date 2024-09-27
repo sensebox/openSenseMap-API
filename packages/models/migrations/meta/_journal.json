@@ -50,6 +50,13 @@
       "when": 1727430508941,
       "tag": "0006_add_ref_sensor_device",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1727431399829,
+      "tag": "0007_add_device_models",
+      "breakpoints": true
     }
   ]
 }

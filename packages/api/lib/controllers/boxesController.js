@@ -71,6 +71,8 @@ const
   handleError = require('../helpers/errorHandler'),
   jsonstringify = require('stringify-stream');
 const { createDevice } = require('@sensebox/opensensemap-api-models/src/device');
+const { findByUserId } = require('@sensebox/opensensemap-api-models/src/password');
+const { removeDevice, checkPassword } = require('@sensebox/opensensemap-api-models/src/user/user');
 
 /**
  * @apiDefine Addons
@@ -500,10 +502,8 @@ const getBox = async function getBox (req, res) {
  */
 const postNewBox = async function postNewBox (req, res) {
   try {
-    // let newBox = await req.user.addBox(req._userParams);
-    // newBox = await Box.populate(newBox, Box.BOX_SUB_PROPS_FOR_POPULATION);
-
     const newDevice = await createDevice(req.user.id, req._userParams);
+    // TODO: only return specific fields newBox = await Box.populate(newBox, Box.BOX_SUB_PROPS_FOR_POPULATION);
 
     res.send(201, { message: 'Box successfully created', data: newDevice });
     clearCache(['getBoxes', 'getStats']);
@@ -581,11 +581,14 @@ const deleteBox = async function deleteBox (req, res) {
   const { password, boxId } = req._userParams;
 
   try {
-    await req.user.checkPassword(password);
-    const box = await req.user.removeBox(boxId);
-    res.send({ code: 'Ok', message: 'box and all associated measurements marked for deletion' });
+    const hashedPassword = await findByUserId(req.user.id);
+
+    await checkPassword(password, hashedPassword);
+    const device = await removeDevice(boxId);
+
+    res.send({ code: 'Ok', message: 'device and all associated measurements marked for deletion' });
     clearCache(['getBoxes', 'getStats']);
-    postToMattermost(`Box deleted: ${req.user.name} (${redactEmail(req.user.email)}) just deleted "${box.name}" (${boxId})`);
+    postToMattermost(`Device deleted: ${req.user.name} (${redactEmail(req.user.email)}) just deleted "${device.name}" (${boxId})`);
 
   } catch (err) {
     return handleError(err);
@@ -717,7 +720,8 @@ module.exports = {
   deleteBox: [
     checkContentType,
     retrieveParameters([
-      { predef: 'boxId', required: true },
+      { name: 'boxId', required: true, dataType: 'String' },
+      // { predef: 'boxId', required: true },
       { predef: 'password' }
     ]),
     checkPrivilege,
