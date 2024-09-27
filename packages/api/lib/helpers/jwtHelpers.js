@@ -1,5 +1,7 @@
 'use strict';
 
+const { addRefreshToken, deleteRefreshToken } = require('@sensebox/opensensemap-api-models/src/token/refresh');
+const { findUserByEmailAndRole } = require('@sensebox/opensensemap-api-models/src/user/user');
 const config = require('config'),
   jwt = require('jsonwebtoken'),
   hashJWT = require('./jwtRefreshTokenHasher'),
@@ -38,19 +40,10 @@ const createToken = function createToken (user) {
       // and set the refreshTokenExpires to 1 week
       // it is a HMAC of the jwt string
       const refreshToken = hashJWT(token);
+      const refreshTokenExpiresAt = moment.utc().add(Number(refresh_token_validity_ms), 'ms')
+        .toDate();
       try {
-        // TODO: do we need a new table for tokens???
-        user.refreshToken = refreshToken;
-        user.refreshTokenExpires = moment.utc().add(Number(refresh_token_validity_ms), 'ms')
-          .toDate();
-        // await user.update({
-        //   $set: {
-        //     refreshToken,
-        //     refreshTokenExpires: moment.utc()
-        //       .add(Number(refresh_token_validity_ms), 'ms')
-        //       .toDate()
-        //   }
-        // }).exec();
+        await addRefreshToken(user.id, refreshToken, refreshTokenExpiresAt);
 
         return resolve({ token, refreshToken });
       } catch (err) {
@@ -60,9 +53,11 @@ const createToken = function createToken (user) {
   });
 };
 
-const invalidateToken = function invalidateToken ({ user, _jwt, _jwtString } = {}) {
-  createToken(user);
-  addTokenToBlacklist(_jwt, _jwtString);
+const invalidateToken = async function invalidateToken ({ user, _jwt, _jwtString } = {}) {
+  // createToken(user); // TODO: why do we create a new token here?!?!
+  const hash = hashJWT(_jwtString);
+  await deleteRefreshToken(hash);
+  // addTokenToBlacklist(_jwt, _jwtString);
 };
 
 const refreshJwt = async function refreshJwt (refreshToken) {
@@ -105,8 +100,7 @@ const verifyJwt = function verifyJwt (req, res, next) {
       return next(new ForbiddenError(jwtInvalidErrorMessage));
     }
 
-    User.findOne({ email: decodedJwt.sub.toLowerCase(), role: decodedJwt.role })
-      .exec()
+    findUserByEmailAndRole({ email: decodedJwt.sub.toLowerCase(), role: decodedJwt.role })
       .then(function (user) {
         if (!user) {
           throw new Error();

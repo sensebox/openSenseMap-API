@@ -70,6 +70,7 @@ const
   } = require('../helpers/userParamHelpers'),
   handleError = require('../helpers/errorHandler'),
   jsonstringify = require('stringify-stream');
+const { createDevice } = require('@sensebox/opensensemap-api-models/src/device');
 
 /**
  * @apiDefine Addons
@@ -499,18 +500,21 @@ const getBox = async function getBox (req, res) {
  */
 const postNewBox = async function postNewBox (req, res) {
   try {
-    let newBox = await req.user.addBox(req._userParams);
-    newBox = await Box.populate(newBox, Box.BOX_SUB_PROPS_FOR_POPULATION);
-    res.send(201, { message: 'Box successfully created', data: newBox });
+    // let newBox = await req.user.addBox(req._userParams);
+    // newBox = await Box.populate(newBox, Box.BOX_SUB_PROPS_FOR_POPULATION);
+
+    const newDevice = await createDevice(req.user.id, req._userParams);
+
+    res.send(201, { message: 'Box successfully created', data: newDevice });
     clearCache(['getBoxes', 'getStats']);
     postToMattermost(
       `New Box: ${req.user.name} (${redactEmail(
         req.user.email
-      )}) just registered "${newBox.name}" (${
-        newBox.model
+      )}) just registered "${newDevice.name}" (${
+        newDevice.model
       }): [https://opensensemap.org/explore/${
-        newBox._id
-      }](https://opensensemap.org/explore/${newBox._id})`
+        newDevice.id
+      }](https://opensensemap.org/explore/${newDevice.id})`
     );
   } catch (err) {
     return handleError(err);

@@ -15,7 +15,7 @@ const { User } = require('@sensebox/opensensemap-api-models'),
     refreshJwt,
     invalidateToken,
   } = require('../helpers/jwtHelpers');
-const { createUser, findUserByNameOrEmail, checkPassword, initPasswordReset } = require('@sensebox/opensensemap-api-models/src/user/user');
+const { createUser, findUserByNameOrEmail, checkPassword, initPasswordReset, resetOldPassword } = require('@sensebox/opensensemap-api-models/src/user/user');
 
 /**
  * define for nested user parameter for box creation request
@@ -208,7 +208,8 @@ const requestResetPassword = async function requestResetPassword (req, res) {
 // set new password with reset token as auth
 const resetPassword = async function resetPassword (req, res) {
   try {
-    await User.resetPassword(req._userParams);
+    // await User.resetPassword(req._userParams);
+    await resetOldPassword(req._userParams);
     res.send(200, {
       code: 'Ok',
       message:

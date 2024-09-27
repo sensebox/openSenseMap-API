@@ -27,7 +27,8 @@ const device = pgTable('device', {
   createdAt: timestamp('created_at').defaultNow()
     .notNull(),
   updatedAt: timestamp('updated_at').defaultNow()
-    .notNull(),
+    .notNull()
+    .$onUpdateFn(() => new Date()),
   latitude: doublePrecision('latitude').notNull(),
   longitude: doublePrecision('longitude').notNull(),
   userId: text('user_id').notNull(),
@@ -46,8 +47,12 @@ const sensor = pgTable('sensor', {
   createdAt: timestamp('created_at').defaultNow()
     .notNull(),
   updatedAt: timestamp('updated_at').defaultNow()
-    .notNull(),
-  deviceId: text('device_id').notNull(),
+    .notNull()
+    .$onUpdateFn(() => new Date()),
+  deviceId: text('device_id').notNull()
+    .references(() => device.id, {
+      onDelete: 'cascade',
+    }),
   sensorWikiType: text('sensor_wiki_type'),
   sensorWikiPhenomenon: text('sensor_wiki_phenomenon'),
   sensorWikiUnit: text('sensor_wiki_unit'),
@@ -70,6 +75,7 @@ const user = pgTable('user', {
     .notNull(),
   updatedAt: timestamp('updated_at').defaultNow()
     .notNull()
+    .$onUpdateFn(() => new Date())
 });
 
 const password = pgTable('password', {
@@ -79,7 +85,12 @@ const password = pgTable('password', {
       onDelete: 'cascade',
       onUpdate: 'cascade'
     })
+    .notNull(),
+  createdAt: timestamp('created_at').defaultNow()
+    .notNull(),
+  updatedAt: timestamp('updated_at').defaultNow()
     .notNull()
+    .$onUpdateFn(() => new Date()),
 });
 
 const passwordReset = pgTable('password_reset', {
@@ -106,7 +117,12 @@ const profile = pgTable('profile', {
   userId: text('user_id').references(() => user.id, {
     onDelete: 'cascade',
     onUpdate: 'cascade'
-  })
+  }),
+  createdAt: timestamp('created_at').defaultNow()
+    .notNull(),
+  updatedAt: timestamp('updated_at').defaultNow()
+    .notNull()
+    .$onUpdateFn(() => new Date()),
 });
 
 const profileImage = pgTable('profile_image', {
@@ -120,18 +136,38 @@ const profileImage = pgTable('profile_image', {
   createdAt: timestamp('created_at').defaultNow()
     .notNull(),
   updatedAt: timestamp('updated_at').defaultNow()
-    .notNull(),
+    .notNull()
+    .$onUpdateFn(() => new Date()),
   profileId: text('profile_id').references(() => profile.id, {
     onDelete: 'cascade',
     onUpdate: 'cascade'
   })
 });
 
+const refreshToken = pgTable('refresh_token', {
+  userId: text('user_id')
+    .notNull()
+    .references(() => user.id, {
+      onDelete: 'cascade',
+    }),
+  token: text('token'),
+  expiresAt: timestamp('expires_at')
+});
+
+const accessToken = pgTable('access_token', {
+  deviceId: text('device_id').notNull()
+    .references(() => device.id, {
+      onDelete: 'cascade'
+    }),
+  token: text('token'),
+});
+
 /**
  * Relations
  */
-const deviceRelations = relations(device, ({ many }) => ({
-  sensors: many(sensor)
+const deviceRelations = relations(device, ({ many, one }) => ({
+  sensors: many(sensor),
+  accessToken: one(accessToken)
 }));
 
 const sensorRelations = relations(sensor, ({ one }) => ({
@@ -154,7 +190,8 @@ const userRelations = relations(user, ({ one, many }) => ({
     fields: [user.id],
     references: [profile.userId]
   }),
-  devices: many(device)
+  devices: many(device),
+  refreshToken: many(refreshToken)
 }));
 
 const profileRelations = relations(profile, ({ one }) => ({
@@ -168,6 +205,21 @@ const profileRelations = relations(profile, ({ one }) => ({
   })
 }));
 
+const refreshTokenRelations = relations(refreshToken, ({ one }) => ({
+  user: one(user, {
+    fields: [refreshToken.userId],
+    references: [user.id]
+  })
+}));
+
+const accessTokenRelations = relations(accessToken, ({ one }) => ({
+  user: one(device, {
+    fields: [accessToken.deviceId],
+    references: [device.id]
+  })
+}));
+
+module.exports.accessTokenTable = accessToken;
 module.exports.deviceTable = device;
 module.exports.sensorTable = sensor;
 module.exports.userTable = user;
@@ -175,7 +227,10 @@ module.exports.passwordTable = password;
 module.exports.passwordResetTable = passwordReset;
 module.exports.profileTable = profile;
 module.exports.profileImageTable = profileImage;
+module.exports.refreshTokenTable = refreshToken;
+module.exports.accessTokenRelations = accessTokenRelations;
 module.exports.deviceRelations = deviceRelations;
 module.exports.sensorRelations = sensorRelations;
 module.exports.userRelations = userRelations;
 module.exports.profileRelations = profileRelations;
+module.exports.refreshTokenRelations = refreshTokenRelations;

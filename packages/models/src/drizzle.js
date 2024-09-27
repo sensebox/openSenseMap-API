@@ -13,7 +13,9 @@ const {
   deviceRelations,
   sensorRelations,
   userRelations,
-  profileRelations
+  profileRelations,
+  accessTokenRelations,
+  accessTokenTable
 } = require('../schema/schema');
 
 
@@ -22,6 +24,7 @@ const pool = new Pool({
 });
 
 const schema = {
+  accessTokenTable,
   deviceTable,
   sensorTable,
   userTable,
@@ -32,7 +35,8 @@ const schema = {
   deviceRelations,
   sensorRelations,
   userRelations,
-  profileRelations
+  profileRelations,
+  accessTokenRelations
 };
 
 const db = drizzle(pool, {

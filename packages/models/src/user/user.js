@@ -28,6 +28,7 @@ const { mongoose } = require('../db'),
 
 const { createProfile } = require('../profile/profile');
 const { userTable, passwordTable, passwordResetTable } = require('../../schema/schema');
+const { eq } = require('drizzle-orm');
 
 const userNameRequirementsText = 'Parameter name must consist of at least 3 and up to 40 alphanumerics (a-zA-Z0-9), dot (.), dash (-), underscore (_) and spaces.',
   userEmailRequirementsText = 'Parameter {PATH} is not a valid email address.';
@@ -784,6 +785,48 @@ const initPasswordReset = async function initPasswordReset ({ email }) {
     } });
 };
 
+const validatePassword = function validatePassword (newPassword) {
+  return newPassword.length >= Number(password_min_length);
+};
+
+const resetOldPassword = async function resetOldPassword ({ password, token }) {
+  const passwordReset = await db.query.passwordResetTable.findFirst({
+    where: (reset, { eq }) => eq(reset.token, token)
+  });
+
+  if (!passwordReset) {
+    throw new ModelError('Password reset for this user not possible', { type: 'ForbiddenError' });
+  }
+
+  if (moment.utc().isAfter(moment.utc(passwordReset.expiresAt))) {
+    throw new ModelError('Password reset token expired', { type: 'ForbiddenError' });
+  }
+
+  // Validate new Password
+  if (validatePassword(password) === false) {
+    throw new ModelError(`Password must be at least ${password_min_length} characters.`);
+  }
+
+  // Update reset password
+  const hashedPassword = await passwordHasher(password);
+  await db.update(passwordTable)
+    .set({ hash: hashedPassword })
+    .where(eq(passwordTable.userId, passwordReset.userId));
+
+  // invalidate password reset token
+  await db.delete(passwordResetTable).where(eq(passwordResetTable.token, token));
+
+  // TODO: invalidate refreshToken and active accessTokens
+};
+
+const findUserByEmailAndRole = async function findUserByEmailAndRole ({ email, role }) {
+  const user = await db.query.userTable.findFirst({
+    where: (user, { eq, and }) => and(eq(user.email, email.toLowerCase(), eq(user.role, role)))
+  });
+
+  return user;
+};
+
 module.exports = {
   schema: userSchema,
   model: userModel,
@@ -791,6 +834,8 @@ module.exports = {
   deleteUser,
   updateUser,
   findUserByNameOrEmail,
+  findUserByEmailAndRole,
   checkPassword,
-  initPasswordReset
+  initPasswordReset,
+  resetOldPassword
 };
