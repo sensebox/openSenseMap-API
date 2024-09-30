@@ -1,9 +1,10 @@
 'use strict';
 
+const { isCuid } = require('@paralleldrive/cuid2');
 const { checkDeviceOwner } = require('@sensebox/opensensemap-api-models/src/user/user');
 
 const { BadRequestError, UnprocessableEntityError, InvalidArgumentError, ForbiddenError } = require('restify-errors'),
-  { utils: { parseAndValidateTimestamp }, db: { mongoose }, decoding: { validators: { transformAndValidateCoords } } } = require('@sensebox/opensensemap-api-models'),
+  { utils: { parseAndValidateTimestamp }, decoding: { validators: { transformAndValidateCoords } } } = require('@sensebox/opensensemap-api-models'),
   moment = require('moment'),
   isemail = require('isemail'),
   handleModelError = require('./errorHandler'),
@@ -67,7 +68,7 @@ const stringParser = function stringParser (s) {
  */
 
 const idCheck = function idCheck (id) {
-  if (mongoose.Types.ObjectId.isValid(id) && id !== '00112233445566778899aabb') {
+  if (isCuid(id) && id !== '00112233445566778899aabb') {
     return id;
   }
 

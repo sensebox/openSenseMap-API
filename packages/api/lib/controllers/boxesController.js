@@ -70,6 +70,7 @@ const
   } = require('../helpers/userParamHelpers'),
   handleError = require('../helpers/errorHandler'),
   jsonstringify = require('stringify-stream');
+const { findDeviceById } = require('@sensebox/opensensemap-api-models/src/box/box');
 const { createDevice } = require('@sensebox/opensensemap-api-models/src/device');
 const { findByUserId } = require('@sensebox/opensensemap-api-models/src/password');
 const { removeDevice, checkPassword } = require('@sensebox/opensensemap-api-models/src/user/user');
@@ -454,16 +455,14 @@ const getBox = async function getBox (req, res) {
   const { format, boxId } = req._userParams;
 
   try {
-    const box = await Box.findBoxById(boxId);
+    const device = await findDeviceById(boxId);
 
-    if (format === 'geojson') {
-      const coordinates = box.currentLocation.coordinates;
-      box.currentLocation = undefined;
-      box.loc = undefined;
+    if (format === 'geojson') { // Handle with PostGIS Extension
+      const coordinates = [device.longitude, device.latitude];
 
-      return res.send(point(coordinates, box));
+      return res.send(point(coordinates, device));
     }
-    res.send(box);
+    res.send(device);
   } catch (err) {
     return handleError(err);
   }
@@ -720,8 +719,7 @@ module.exports = {
   deleteBox: [
     checkContentType,
     retrieveParameters([
-      { name: 'boxId', required: true, dataType: 'String' },
-      // { predef: 'boxId', required: true },
+      { predef: 'boxId', required: true },
       { predef: 'password' }
     ]),
     checkPrivilege,

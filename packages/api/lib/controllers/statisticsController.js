@@ -1,6 +1,6 @@
 'use strict';
 
-const { count } = require('@sensebox/opensensemap-api-models/src/stats');
+const { count, countTimeBucket } = require('@sensebox/opensensemap-api-models/src/stats');
 
 const { Box } = require('@sensebox/opensensemap-api-models'),
   { UnprocessableEntityError, BadRequestError } = require('restify-errors'),
@@ -33,12 +33,7 @@ const getStatistics = async function getStatistics (req, res) {
       count('device'),
       count('sensor'),
       count('measurement'),
-      // Measurement.count({
-      //   createdAt: {
-      //     '$gt': new Date(Date.now() - 60000),
-      //     '$lt': new Date()
-      //   }
-      // })
+      countTimeBucket('measurement', '1 minute')
     ]);
     if (human === 'true') {
       results = results.map(r => millify.default(r).toString());

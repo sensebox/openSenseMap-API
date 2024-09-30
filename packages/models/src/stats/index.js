@@ -11,6 +11,11 @@ const count = async function count (table) {
   return count.approximate_row_count;
 };
 
+const countTimeBucket = async function countTimeBucket (table, interval) {
+  // TODO: implement
+};
+
 module.exports = {
-  count
+  count,
+  countTimeBucket
 };

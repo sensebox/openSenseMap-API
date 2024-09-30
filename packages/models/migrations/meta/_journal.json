@@ -57,6 +57,20 @@
       "when": 1727431399829,
       "tag": "0007_add_device_models",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1727688805009,
+      "tag": "0008_init_postgis",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1727689770873,
+      "tag": "0009_add_geometry_column",
+      "breakpoints": true
     }
   ]
 }

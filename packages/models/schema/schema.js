@@ -1,6 +1,6 @@
 'use strict';
 
-const { pgTable, text, boolean, timestamp, doublePrecision, json } = require('drizzle-orm/pg-core');
+const { pgTable, text, boolean, timestamp, doublePrecision, json, geometry, index } = require('drizzle-orm/pg-core');
 const { relations } = require('drizzle-orm');
 const { createId } = require('@paralleldrive/cuid2');
 const { v4: uuidv4 } = require('uuid');
@@ -31,9 +31,12 @@ const device = pgTable('device', {
     .$onUpdateFn(() => new Date()),
   latitude: doublePrecision('latitude').notNull(),
   longitude: doublePrecision('longitude').notNull(),
+  location: geometry('location', { type: 'point', mode: 'xy', srid: 4326 }).notNull(),
   userId: text('user_id').notNull(),
   sensorWikiModel: text('sensor_wiki_model'),
-});
+}, (t) => ({
+  spatialIndex: index('spatial_index').using('gist', t.location),
+}),);
 
 const sensor = pgTable('sensor', {
   id: text('id')

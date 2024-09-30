@@ -44,6 +44,7 @@ const createDevice = async function createDevice (userId, params) {
     description,
     latitude: location[1],
     longitude: location[0],
+    location: { x: location[1], y: location[0] },
     useAuth,
     model
   })
