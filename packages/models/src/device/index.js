@@ -5,7 +5,7 @@ const { deviceTable, sensorTable, accessTokenTable } = require('../../schema/sch
 const sensorLayouts = require('../box/sensorLayouts');
 const { db } = require('../drizzle');
 const ModelError = require('../modelError');
-const { inArray } = require('drizzle-orm');
+const { inArray, arrayContains } = require('drizzle-orm');
 
 const buildWhereClause = function buildWhereClause (opts = {}) {
   const { phenomenon, fromDate, toDate, bbox, near, maxDistance, grouptag } = opts;
@@ -19,9 +19,10 @@ const buildWhereClause = function buildWhereClause (opts = {}) {
   }
 
   if (grouptag) {
-    // TODO: implement
+    clause.push(arrayContains(deviceTable['tags'], opts['grouptag']));
   }
 
+  // https://orm.drizzle.team/learn/guides/postgis-geometry-point
   if (bbox) {
     // TODO: checkout postgis bbox queries
   }
@@ -40,7 +41,7 @@ const buildWhereClause = function buildWhereClause (opts = {}) {
 };
 
 const createDevice = async function createDevice (userId, params) {
-  const { name, exposure, description, location, model, sensorTemplates } = params;
+  const { name, exposure, description, location, model, grouptag, sensorTemplates } = params;
   let { sensors, useAuth } = params;
 
   // if model is not empty, get sensor definitions from products
@@ -79,7 +80,8 @@ const createDevice = async function createDevice (userId, params) {
     longitude: location[0],
     location: { x: location[1], y: location[0] },
     useAuth,
-    model
+    model,
+    tags: grouptag
   })
     .returning();
 

@@ -71,6 +71,13 @@
       "when": 1727689770873,
       "tag": "0009_add_geometry_column",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1727701542050,
+      "tag": "0010_add_device_tags",
+      "breakpoints": true
     }
   ]
 }
