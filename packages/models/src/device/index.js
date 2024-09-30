@@ -5,6 +5,39 @@ const { deviceTable, sensorTable, accessTokenTable } = require('../../schema/sch
 const sensorLayouts = require('../box/sensorLayouts');
 const { db } = require('../drizzle');
 const ModelError = require('../modelError');
+const { inArray } = require('drizzle-orm');
+
+const buildWhereClause = function buildWhereClause (opts = {}) {
+  const { phenomenon, fromDate, toDate, bbox, near, maxDistance, grouptag } = opts;
+  const clause = [];
+
+  // simple string parameters
+  for (const param of ['exposure', 'model']) {
+    if (opts[param]) {
+      clause.push(inArray(deviceTable[param], opts[param]));
+    }
+  }
+
+  if (grouptag) {
+    // TODO: implement
+  }
+
+  if (bbox) {
+    // TODO: checkout postgis bbox queries
+  }
+
+  if (near) {
+    // TODO: implement
+  }
+
+  if (fromDate || toDate) {
+    if (phenomenon) {
+      // TODO: implement
+    }
+  }
+
+  return clause;
+};
 
 const createDevice = async function createDevice (userId, params) {
   const { name, exposure, description, location, model, sensorTemplates } = params;
@@ -84,8 +117,32 @@ const findById = async function findById (deviceId) {
   return device;
 };
 
+const findDevices = async function findDevices (opts = {}, columns = {}) {
+  const { name, limit } = opts;
+  const devices = await db.query.deviceTable.findMany({
+    ...(Object.keys(columns).length !== 0 && { columns }),
+    where: (device, { ilike }) => ilike(device.name, `%${name}%`),
+    limit
+  });
+
+  return devices;
+};
+
+// TODO: merge with findDevices
+const findDevicesMinimal = async function findDevicesMinimal (opts = {}, columns = {}) {
+  const whereClause = buildWhereClause(opts);
+  const devices = await db.query.deviceTable.findMany({
+    ...(Object.keys(columns).length !== 0 && { columns }),
+    ...(Object.keys(whereClause).length !== 0 && { where: (_, { and }) => and(...whereClause) })
+  });
+
+  return devices;
+};
+
 module.exports = {
   createDevice,
   deleteDevice,
-  findById
+  findById,
+  findDevices,
+  findDevicesMinimal
 };

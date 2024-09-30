@@ -1,5 +1,6 @@
 'use strict';
 
+const { exposure } = require('../../schema/enum');
 const { db } = require('../drizzle');
 
 const { mongoose } = require('../db'),
@@ -168,6 +169,20 @@ const BOX_PROPS_FOR_POPULATION = {
   description: 1,
   weblink: 1,
   lastMeasurementAt: 1
+};
+
+const DEVICE_COLUMNS_FOR_RETURNING = {
+  id: true,
+  name: true,
+  exposure: true,
+  model: true,
+  description: true,
+  image: true,
+  link: true,
+  createdAt: true,
+  updatedAt: true,
+  location: true,
+  status: true
 };
 
 const BOX_SUB_PROPS_FOR_POPULATION = [
@@ -1139,56 +1154,13 @@ boxModel.BOX_VALID_MODELS = sensorLayouts.models;
 boxModel.BOX_VALID_ADDONS = sensorLayouts.addons;
 boxModel.BOX_VALID_EXPOSURES = ['unknown', 'indoor', 'outdoor', 'mobile'];
 
-// let fullBox = populate;
-// if (populate) {
-//   Object.assign(projection, BOX_PROPS_FOR_POPULATION);
-// }
-// if (includeSecrets) {
-//   projection.integrations = 1;
-//   projection.access_token = 1;
-// }
-// if (onlyLastMeasurements) {
-//   projection = {
-//     sensors: 1
-//   };
-//   fullBox = false;
-// }
-// if (onlyLocations) {
-//   projection = {
-//     locations: 1
-//   };
-//   fullBox = false;
-// }
-
-// let findPromise = this.findById(id, projection);
-
-// if (fullBox === true || onlyLastMeasurements === true || Object.prototype.hasOwnProperty.call(projection, 'sensors')) {
-//   findPromise = findPromise
-//     .populate(BOX_SUB_PROPS_FOR_POPULATION);
-// }
-
-// if (lean === true) {
-//   findPromise = findPromise
-//     .lean();
-// }
-
-// return findPromise
-//   .then(function (box) {
-//     if (!box) {
-//       throw new ModelError('Box not found', { type: 'NotFoundError' });
-//     }
-
-//     if (fullBox === true) {
-//       // fill in box.loc manually, as toJSON & virtuals are not supported in lean queries.
-//       box.loc = [{ geometry: box.currentLocation, type: 'Feature' }];
-//     }
-
-//     return box;
-//   });
-
 const findDeviceById = async function findDeviceById (deviceId, { populate = true, includeSecrets = false, onlyLastMeasurements = false, onlyLocations = false, projection = {} } = {}) {
   const device = await db.query.deviceTable.findFirst({
-    where: (device, { eq }) => eq(device.id, deviceId)
+    columns: DEVICE_COLUMNS_FOR_RETURNING,
+    where: (device, { eq }) => eq(device.id, deviceId),
+    with: {
+      sensors: true
+    }
   });
 
   if (!device) {

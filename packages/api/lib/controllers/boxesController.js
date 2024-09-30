@@ -71,7 +71,7 @@ const
   handleError = require('../helpers/errorHandler'),
   jsonstringify = require('stringify-stream');
 const { findDeviceById } = require('@sensebox/opensensemap-api-models/src/box/box');
-const { createDevice } = require('@sensebox/opensensemap-api-models/src/device');
+const { createDevice, findDevices, findDevicesMinimal } = require('@sensebox/opensensemap-api-models/src/device');
 const { findByUserId } = require('@sensebox/opensensemap-api-models/src/password');
 const { removeDevice, checkPassword } = require('@sensebox/opensensemap-api-models/src/user/user');
 
@@ -224,7 +224,7 @@ const geoJsonStringifyReplacer = function geoJsonStringifyReplacer (key, box) {
  * @apiParam {String=json,geojson} [format=json] the format the sensor data is returned in.
  * @apiParam {String} [grouptag] only return boxes with this grouptag, allows to specify multiple separated with a comma
  * @apiParam {String="homeEthernet","homeWifi","homeEthernetFeinstaub","homeWifiFeinstaub","luftdaten_sds011","luftdaten_sds011_dht11","luftdaten_sds011_dht22","luftdaten_sds011_bmp180","luftdaten_sds011_bme280"} [model] only return boxes with this model, allows to specify multiple separated with a comma
- * @apiParam {Boolean="true","false"} [classify=false] if specified, the api will classify the boxes accordingly to their last measurements.
+ * @apiParam @deprecated {Boolean="true","false"} [classify=false] if specified, the api will classify the boxes accordingly to their last measurements.
  * @apiParam {Boolean="true","false"} [minimal=false] if specified, the api will only return a minimal set of box metadata consisting of [_id, updatedAt, currentLocation, exposure, name] for a fast response.
  * @apiParam {Boolean="true","false"} [full=false] if true the API will return populated lastMeasurements (use this with caution for now, expensive on the database)
  * @apiParam {Number} [near] A comma separated coordinate, if specified, the api will only return senseBoxes within maxDistance (in m) of this location
@@ -313,34 +313,37 @@ const getBoxes = async function getBoxes (req, res) {
   }
 
   try {
-    let stream;
+    let devices;
 
     // Search boxes by name
     // Directly return results and do nothing else
     if (req._userParams.name) {
-      stream = await Box.findBoxes(req._userParams);
+      // stream = await Box.findBoxes(req._userParams);
+      devices = await findDevices(req._userParams, { id: true, name: true, location: true });
+    } else if (req._userParams.minimal === 'true') {
+      devices = await findDevicesMinimal(req._userParams, { id: true, name: true, exposure: true, location: true, status: true });
+      // stream = await Box.findBoxesMinimal(req._userParams);
     } else {
-      if (req._userParams.minimal === 'true') {
-        stream = await Box.findBoxesMinimal(req._userParams);
-      } else {
-        stream = await Box.findBoxesLastMeasurements(req._userParams);
-      }
-
-      if (req._userParams.classify === 'true') {
-        stream = stream
-          .pipe(new classifyTransformer())
-          .on('error', function (err) {
-            res.end(`Error: ${err.message}`);
-          });
-      }
+      // stream = await Box.findBoxesLastMeasurements(req._userParams);
     }
 
-    stream
-      .pipe(stringifier)
-      .on('error', function (err) {
-        res.end(`Error: ${err.message}`);
-      })
-      .pipe(res);
+    // Deprecated: classify is performed by database
+    // if (req._userParams.classify === 'true') {
+    //   stream = stream
+    //     .pipe(new classifyTransformer())
+    //     .on('error', function (err) {
+    //       res.end(`Error: ${err.message}`);
+    //     });
+    // }
+    // }
+
+    // stream
+    //   .pipe(stringifier)
+    //   .on('error', function (err) {
+    //     res.end(`Error: ${err.message}`);
+    //   })
+    //   .pipe(res);
+    res.send(devices);
   } catch (err) {
     return handleError(err);
   }
