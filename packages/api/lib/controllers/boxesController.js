@@ -71,7 +71,7 @@ const
   handleError = require('../helpers/errorHandler'),
   jsonstringify = require('stringify-stream');
 const { findDeviceById } = require('@sensebox/opensensemap-api-models/src/box/box');
-const { createDevice, findDevices, findDevicesMinimal } = require('@sensebox/opensensemap-api-models/src/device');
+const { createDevice, findDevices, findDevicesMinimal, findTags } = require('@sensebox/opensensemap-api-models/src/device');
 const { findByUserId } = require('@sensebox/opensensemap-api-models/src/password');
 const { removeDevice, checkPassword } = require('@sensebox/opensensemap-api-models/src/user/user');
 
@@ -707,10 +707,11 @@ const claimBox = async function claimBox (req, res) {
 
 const getAllTags = async function getAllTags (req, res) {
   try {
-    const grouptags = await Box.find().distinct('grouptag')
-      .exec();
+    const tags = await findTags();
+    // const grouptags = await Box.find().distinct('grouptag')
+    //   .exec();
 
-    res.send({ code: 'Ok', data: grouptags });
+    res.send({ code: 'Ok', data: tags });
   } catch (err) {
     return handleError(err);
   }

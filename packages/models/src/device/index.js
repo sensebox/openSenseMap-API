@@ -5,7 +5,7 @@ const { deviceTable, sensorTable, accessTokenTable } = require('../../schema/sch
 const sensorLayouts = require('../box/sensorLayouts');
 const { db } = require('../drizzle');
 const ModelError = require('../modelError');
-const { inArray, arrayContains } = require('drizzle-orm');
+const { inArray, arrayContains, sql } = require('drizzle-orm');
 
 const buildWhereClause = function buildWhereClause (opts = {}) {
   const { phenomenon, fromDate, toDate, bbox, near, maxDistance, grouptag } = opts;
@@ -141,10 +141,17 @@ const findDevicesMinimal = async function findDevicesMinimal (opts = {}, columns
   return devices;
 };
 
+const findTags = async function findTags () {
+  const tags = await db.execute(sql`SELECT array_agg(DISTINCT u.val) tags FROM device d CROSS JOIN LATERAL unnest(d.tags) AS u(val);`);
+
+  return tags.rows[0].tags;
+};
+
 module.exports = {
   createDevice,
   deleteDevice,
   findById,
   findDevices,
-  findDevicesMinimal
+  findDevicesMinimal,
+  findTags
 };

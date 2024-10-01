@@ -15,7 +15,8 @@ const {
   userRelations,
   profileRelations,
   accessTokenRelations,
-  accessTokenTable
+  accessTokenTable,
+  measurementTable
 } = require('../schema/schema');
 
 
@@ -30,6 +31,7 @@ const schema = {
   userTable,
   passwordTable,
   passwordResetTable,
+  measurementTable,
   profileTable,
   profileImageTable,
   deviceRelations,

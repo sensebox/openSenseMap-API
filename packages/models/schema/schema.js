@@ -1,6 +1,6 @@
 'use strict';
 
-const { pgTable, text, boolean, timestamp, doublePrecision, json, geometry, index } = require('drizzle-orm/pg-core');
+const { pgTable, text, boolean, timestamp, doublePrecision, json, geometry, index, unique } = require('drizzle-orm/pg-core');
 const { relations, sql } = require('drizzle-orm');
 const { createId } = require('@paralleldrive/cuid2');
 const { v4: uuidv4 } = require('uuid');
@@ -167,6 +167,15 @@ const accessToken = pgTable('access_token', {
   token: text('token'),
 });
 
+const measurement = pgTable('measurement', {
+  sensorId: text('sensor_id').notNull(),
+  time: timestamp('time', { precision: 3, withTimezone: true }).defaultNow()
+    .notNull(),
+  value: doublePrecision('value')
+}, (t) => ({
+  unq: unique().on(t.sensorId, t.time)
+}));
+
 /**
  * Relations
  */
@@ -228,6 +237,7 @@ module.exports.accessTokenTable = accessToken;
 module.exports.deviceTable = device;
 module.exports.sensorTable = sensor;
 module.exports.userTable = user;
+module.exports.measurementTable = measurement;
 module.exports.passwordTable = password;
 module.exports.passwordResetTable = passwordReset;
 module.exports.profileTable = profile;

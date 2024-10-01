@@ -1,21 +1,26 @@
 'use strict';
 
-const { sql } = require('drizzle-orm');
+const { sql, and, count, gt, lt } = require('drizzle-orm');
 const { db } = require('../drizzle');
 
-const count = async function count (table) {
+const rowCount = async function rowCount (table) {
   const { rows } = await db.execute(sql`SELECT * FROM approximate_row_count(${table});`);
 
   const [count] = rows;
 
-  return count.approximate_row_count;
+  return Number(count.approximate_row_count);
 };
 
-const countTimeBucket = async function countTimeBucket (table, interval) {
-  // TODO: implement
+const rowCountTimeBucket = async function rowCountTimeBucket (table, timeColumn, interval) {
+  const result = await db.select({ count: count() }).from(table)
+    .where(and(gt(table[timeColumn], new Date(Date.now() - interval), lt(table[timeColumn], new Date()))));
+
+  const [rowCount] = result;
+
+  return Number(rowCount.count);
 };
 
 module.exports = {
-  count,
-  countTimeBucket
+  rowCount,
+  rowCountTimeBucket
 };
