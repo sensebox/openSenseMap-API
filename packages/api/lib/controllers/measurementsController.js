@@ -1,5 +1,6 @@
 'use strict';
 
+const { findAccessToken, findById, saveMeasurement } = require('@sensebox/opensensemap-api-models/src/device');
 const {
     BadRequestError,
     UnsupportedMediaTypeError,
@@ -353,12 +354,13 @@ const getDataByGroupTag = async function getDataByGroupTag (req, res) {
  * @apiHeader {String} Authorization Box' unique access_token. Will be used as authorization token if box has auth enabled (e.g. useAuth: true)
  */
 const postNewMeasurement = async function postNewMeasurement (req, res) {
-  const { boxId, sensorId, value, createdAt, location } = req._userParams;
+  const { boxId: deviceId, sensorId, value, createdAt, location } = req._userParams;
 
   try {
-    const box = await Box.findBoxById(boxId, { populate: false, lean: false });
-    if (box.useAuth && box.access_token && box.access_token !== req.headers.authorization) {
-      return Promise.reject(new UnauthorizedError('Box access token not valid!'));
+    const device = await findById(deviceId, { sensors: true });
+    const deviceAccessToken = await findAccessToken(deviceId);
+    if (device.useAuth && deviceAccessToken.token && deviceAccessToken.token !== req.headers.authorization) {
+      return Promise.reject(new UnauthorizedError('Device access token not valid!'));
     }
 
     const [measurement] = await Measurement.decodeMeasurements([{
@@ -367,8 +369,9 @@ const postNewMeasurement = async function postNewMeasurement (req, res) {
       createdAt,
       location
     }]);
-    await box.saveMeasurement(measurement);
-    res.send(201, 'Measurement saved in box');
+    // await box.saveMeasurement(measurement);
+    await saveMeasurement(device, measurement);
+    res.send(201, 'Measurement saved in device');
   } catch (err) {
     return handleError(err);
   }

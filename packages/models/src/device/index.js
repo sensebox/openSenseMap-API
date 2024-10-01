@@ -6,6 +6,7 @@ const sensorLayouts = require('../box/sensorLayouts');
 const { db } = require('../drizzle');
 const ModelError = require('../modelError');
 const { inArray, arrayContains, sql } = require('drizzle-orm');
+const { insertMeasurement } = require('../measurement');
 
 const buildWhereClause = function buildWhereClause (opts = {}) {
   const { phenomenon, fromDate, toDate, bbox, near, maxDistance, grouptag } = opts;
@@ -111,9 +112,10 @@ const deleteDevice = async function (filter) {
     .returning();
 };
 
-const findById = async function findById (deviceId) {
+const findById = async function findById (deviceId, relations) {
   const device = await db.query.deviceTable.findFirst({
-    where: (device, { eq }) => eq(device.id, deviceId)
+    where: (device, { eq }) => eq(device.id, deviceId),
+    ...(Object.keys(relations).length !== 0 && { with: relations })
   });
 
   return device;
@@ -147,11 +149,32 @@ const findTags = async function findTags () {
   return tags.rows[0].tags;
 };
 
+const findAccessToken = async function findAccessToken (deviceId) {
+  const token = await db.query.accessTokenTable.findFirst({
+    where: (token, { eq }) => eq(token.deviceId, deviceId)
+  });
+
+  return token;
+};
+
+const saveMeasurement = async function saveMeasurement (device, measurement) {
+
+  const sensor = device.sensors.find(sensor => sensor.id === measurement.sensor_id);
+
+  if (!sensor) {
+    throw new ModelError(`Sensor not found: Sensor ${measurement.sensor_id} of box ${device.id} not found`, { type: 'NotFoundError' });
+  }
+
+  await insertMeasurement(measurement);
+};
+
 module.exports = {
   createDevice,
   deleteDevice,
   findById,
   findDevices,
   findDevicesMinimal,
-  findTags
+  findTags,
+  findAccessToken,
+  saveMeasurement
 };
