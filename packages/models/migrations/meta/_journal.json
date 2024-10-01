@@ -78,6 +78,13 @@
       "when": 1727701542050,
       "tag": "0010_add_device_tags",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1727774100701,
+      "tag": "0011_drop_unused_columns_sensor",
+      "breakpoints": true
     }
   ]
 }

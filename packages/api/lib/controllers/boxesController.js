@@ -73,6 +73,7 @@ const
 const { findDeviceById } = require('@sensebox/opensensemap-api-models/src/box/box');
 const { createDevice, findDevices, findDevicesMinimal, findTags } = require('@sensebox/opensensemap-api-models/src/device');
 const { findByUserId } = require('@sensebox/opensensemap-api-models/src/password');
+const { getSensorsWithLastMeasurement } = require('@sensebox/opensensemap-api-models/src/sensor');
 const { removeDevice, checkPassword } = require('@sensebox/opensensemap-api-models/src/user/user');
 
 /**
@@ -459,6 +460,9 @@ const getBox = async function getBox (req, res) {
 
   try {
     const device = await findDeviceById(boxId);
+    const sensorsWithMeasurements = await getSensorsWithLastMeasurement(boxId);
+
+    device.sensors = sensorsWithMeasurements;
 
     if (format === 'geojson') { // Handle with PostGIS Extension
       const coordinates = [device.longitude, device.latitude];
