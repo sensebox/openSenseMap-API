@@ -1,6 +1,7 @@
 'use strict';
 
-const { findAccessToken, findById, saveMeasurement } = require('@sensebox/opensensemap-api-models/src/device');
+const { findAccessToken, findById, saveMeasurement, saveMeasurements } = require('@sensebox/opensensemap-api-models/src/device');
+const { hasDecoder, decodeMeasurements } = require('@sensebox/opensensemap-api-models/src/measurement');
 const {
     BadRequestError,
     UnsupportedMediaTypeError,
@@ -363,7 +364,7 @@ const postNewMeasurement = async function postNewMeasurement (req, res) {
       return Promise.reject(new UnauthorizedError('Device access token not valid!'));
     }
 
-    const [measurement] = await Measurement.decodeMeasurements([{
+    const [measurement] = await decodeMeasurements([{
       sensor_id: sensorId,
       value,
       createdAt,
@@ -457,7 +458,7 @@ const postNewMeasurement = async function postNewMeasurement (req, res) {
  * }
  */
 const postNewMeasurements = async function postNewMeasurements (req, res) {
-  const { boxId, luftdaten, hackair } = req._userParams;
+  const { boxId: deviceId, luftdaten, hackair } = req._userParams;
   let contentType = req.getContentType();
 
   if (hackair) {
@@ -466,21 +467,24 @@ const postNewMeasurements = async function postNewMeasurements (req, res) {
     contentType = 'luftdaten';
   }
 
-  if (Measurement.hasDecoder(contentType)) {
+  if (hasDecoder(contentType)) {
     try {
-      const box = await Box.findBoxById(boxId, { populate: false, lean: false, projection: { sensors: 1, locations: 1, lastMeasurementAt: 1, currentLocation: 1, model: 1, access_token: 1, useAuth: 1 } });
+      const device = await findById(deviceId, { sensors: true });
+      const deviceAccessToken = await findAccessToken(deviceId);
+      // const box = await Box.findBoxById(boxId, { populate: false, lean: false, projection: { sensors: 1, locations: 1, lastMeasurementAt: 1, currentLocation: 1, model: 1, access_token: 1, useAuth: 1 } });
 
       // if (contentType === 'hackair' && box.access_token !== req.headers.authorization) {
       //   throw new UnauthorizedError('Box access token not valid!');
       // }
 
       // authorization for all boxes that have not opt out
-      if ((box.useAuth || contentType === 'hackair') && box.access_token && box.access_token !== req.headers.authorization) {
-        return Promise.reject(new UnauthorizedError('Box access token not valid!'));
+      if ((device.useAuth || contentType === 'hackair') && deviceAccessToken.token && deviceAccessToken.token !== req.headers.authorization) {
+        return Promise.reject(new UnauthorizedError('Device access token not valid!'));
       }
 
-      const measurements = await Measurement.decodeMeasurements(req.body, { contentType, sensors: box.sensors });
-      await box.saveMeasurementsArray(measurements);
+      const measurements = await decodeMeasurements(req.body, { contentType, sensors: device.sensors });
+      // await box.saveMeasurementsArray(measurements);
+      await saveMeasurements(device, measurements);
       res.send(201, 'Measurements saved in box');
     } catch (err) {
       return handleError(err);

@@ -6,7 +6,7 @@ const sensorLayouts = require('../box/sensorLayouts');
 const { db } = require('../drizzle');
 const ModelError = require('../modelError');
 const { inArray, arrayContains, sql } = require('drizzle-orm');
-const { insertMeasurement } = require('../measurement');
+const { insertMeasurement, insertMeasurements } = require('../measurement');
 
 const buildWhereClause = function buildWhereClause (opts = {}) {
   const { phenomenon, fromDate, toDate, bbox, near, maxDistance, grouptag } = opts;
@@ -168,6 +168,33 @@ const saveMeasurement = async function saveMeasurement (device, measurement) {
   await insertMeasurement(measurement);
 };
 
+const saveMeasurements = async function saveMeasurements (device, measurements) {
+
+  if (!Array.isArray(measurements)) {
+    return Promise.reject(new Error('Array expected'));
+  }
+
+  const sensorIds = this.sensorIds(),
+    lastMeasurements = {};
+
+  // TODO: refactor
+  // find new lastMeasurements
+  // check if all the measurements belong to this box
+  for (let i = measurements.length - 1; i >= 0; i--) {
+    if (!sensorIds.includes(measurements[i].sensor_id)) {
+      return Promise.reject(new ModelError(`Measurement for sensor with id ${measurements[i].sensor_id} does not belong to box`));
+    }
+
+    if (!lastMeasurements[measurements[i].sensor_id]) {
+      lastMeasurements[measurements[i].sensor_id] = measurements[i];
+    }
+  }
+
+  // TODO: check if we can merge this with `saveMeasurement`
+
+  await insertMeasurements(measurements);
+};
+
 module.exports = {
   createDevice,
   deleteDevice,
@@ -176,5 +203,6 @@ module.exports = {
   findDevicesMinimal,
   findTags,
   findAccessToken,
-  saveMeasurement
+  saveMeasurement,
+  saveMeasurements
 };
