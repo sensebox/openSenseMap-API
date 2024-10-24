@@ -1,5 +1,7 @@
 'use strict';
 
+const { db } = require('../drizzle');
+
 const { mongoose } = require('../db'),
   timestamp = require('mongoose-timestamp'),
   Schema = mongoose.Schema,
@@ -166,6 +168,20 @@ const BOX_PROPS_FOR_POPULATION = {
   description: 1,
   weblink: 1,
   lastMeasurementAt: 1
+};
+
+const DEVICE_COLUMNS_FOR_RETURNING = {
+  id: true,
+  name: true,
+  exposure: true,
+  model: true,
+  description: true,
+  image: true,
+  link: true,
+  createdAt: true,
+  updatedAt: true,
+  location: true,
+  status: true
 };
 
 const BOX_SUB_PROPS_FOR_POPULATION = [
@@ -1137,7 +1153,24 @@ boxModel.BOX_VALID_MODELS = sensorLayouts.models;
 boxModel.BOX_VALID_ADDONS = sensorLayouts.addons;
 boxModel.BOX_VALID_EXPOSURES = ['unknown', 'indoor', 'outdoor', 'mobile'];
 
+const findDeviceById = async function findDeviceById (deviceId, { populate = true, includeSecrets = false, onlyLastMeasurements = false, onlyLocations = false, projection = {} } = {}) {
+  const device = await db.query.deviceTable.findFirst({
+    columns: DEVICE_COLUMNS_FOR_RETURNING,
+    where: (device, { eq }) => eq(device.id, deviceId),
+    with: {
+      sensors: true
+    }
+  });
+
+  if (!device) {
+    throw new ModelError('Device not found', { type: 'NotFoundError' });
+  }
+
+  return device;
+};
+
 module.exports = {
   schema: boxSchema,
-  model: boxModel
+  model: boxModel,
+  findDeviceById
 };

@@ -1,5 +1,6 @@
 'use strict';
 
+const { db } = require('../drizzle');
 const integrations = require('./integrations');
 
 /**
@@ -24,6 +25,10 @@ const { mongoose } = require('../db'),
   timestamp = require('mongoose-timestamp'),
   ModelError = require('../modelError'),
   isemail = require('isemail');
+
+const { passwordTable, passwordResetTable } = require('../../schema/schema');
+const { eq } = require('drizzle-orm');
+const { findById, deleteDevice } = require('../device');
 
 const userNameRequirementsText = 'Parameter name must consist of at least 3 and up to 40 alphanumerics (a-zA-Z0-9), dot (.), dash (-), underscore (_) and spaces.',
   userEmailRequirementsText = 'Parameter {PATH} is not a valid email address.';
@@ -301,7 +306,7 @@ userSchema.methods.addBox = function addBox (params) {
   const user = this;
   const serialPort = params.serialPort;
 
-  // initialize new box
+  //  ialize new box
   return Box.initNew(params)
     .then(function (savedBox) {
       // request is valid
@@ -716,7 +721,116 @@ integrations.addToSchema(userSchema);
 
 const userModel = mongoose.model('User', userSchema);
 
+const findUserByNameOrEmail = async function findUserByNameOrEmail (emailOrName) {
+  return db.query.userTable.findFirst({
+    where: (user, { eq, or }) => or(eq(user.email, emailOrName.toLowerCase()), eq(user.name, emailOrName)),
+    with: {
+      password: true
+    }
+  });
+};
+
+const initPasswordReset = async function initPasswordReset ({ email }) {
+
+  const user = await db.query.userTable.findFirst({
+    where: (user, { eq }) => eq(user.email, email.toLowerCase())
+  });
+
+  if (!user) {
+    throw new ModelError('Password reset for this user not possible', { type: 'ForbiddenError' });
+  }
+
+  // Create entry with default values
+  await db.insert(passwordResetTable).values({ userId: user.id })
+    .onConflictDoUpdate({ target: passwordResetTable.userId, set: {
+      token: uuidv4(),
+      expiresAt: moment.utc().add(12, 'hours')
+        .toDate()
+    } });
+};
+
+const validatePassword = function validatePassword (newPassword) {
+  return newPassword.length >= Number(password_min_length);
+};
+
+const resetOldPassword = async function resetOldPassword ({ password, token }) {
+  const passwordReset = await db.query.passwordResetTable.findFirst({
+    where: (reset, { eq }) => eq(reset.token, token)
+  });
+
+  if (!passwordReset) {
+    throw new ModelError('Password reset for this user not possible', { type: 'ForbiddenError' });
+  }
+
+  if (moment.utc().isAfter(moment.utc(passwordReset.expiresAt))) {
+    throw new ModelError('Password reset token expired', { type: 'ForbiddenError' });
+  }
+
+  // Validate new Password
+  if (validatePassword(password) === false) {
+    throw new ModelError(`Password must be at least ${password_min_length} characters.`);
+  }
+
+  // Update reset password
+  const hashedPassword = await passwordHasher(password);
+  await db.update(passwordTable)
+    .set({ hash: hashedPassword })
+    .where(eq(passwordTable.userId, passwordReset.userId));
+
+  // invalidate password reset token
+  await db.delete(passwordResetTable).where(eq(passwordResetTable.token, token));
+
+  // TODO: invalidate refreshToken and active accessTokens
+};
+
+const findUserByEmailAndRole = async function findUserByEmailAndRole ({ email, role }) {
+  const user = await db.query.userTable.findFirst({
+    where: (user, { eq, and }) => and(eq(user.email, email.toLowerCase(), eq(user.role, role)))
+  });
+
+  return user;
+};
+
+const checkDeviceOwner = async function checkDeviceOwner (userId, deviceId) {
+
+  const device = await findById(deviceId);
+
+  if (!device || device.userId !== userId) {
+    throw new ModelError('User does not own this senseBox', { type: 'ForbiddenError' });
+  }
+
+  return true;
+};
+
+const removeDevice = async function removeDevice (deviceId) {
+
+  const device = await findById(deviceId);
+
+  if (!device) {
+    return Promise.reject(new ModelError('coudn\'t remove, device not found', { type: 'NotFoundError' }));
+  }
+
+  // TODO: remove all measurements
+  //     // remove box and measurements
+  //     box.removeSelfAndMeasurements()
+  //       .catch(function (err) {
+  //         throw err;
+  //       });
+
+  const [deletedDevice] = await deleteDevice(eq(device.id, deviceId));
+
+  return deletedDevice;
+};
+
+
+
 module.exports = {
   schema: userSchema,
-  model: userModel
+  model: userModel,
+  findUserByNameOrEmail,
+  findUserByEmailAndRole,
+  initPasswordReset,
+  resetOldPassword,
+  removeDevice,
+  checkDeviceOwner
 };

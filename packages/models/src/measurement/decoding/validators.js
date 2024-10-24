@@ -1,5 +1,6 @@
 'use strict';
 
+const { isCuid } = require('@paralleldrive/cuid2');
 const { parseAndValidateTimestamp, isNonEmptyString, isNumeric, utcNow } = require('../../utils'),
   { mongoose } = require('../../db');
 
@@ -12,7 +13,7 @@ const validateMeasurementPrimitives = function validateMeasurementPrimitives ({ 
     throw new Error('Missing sensor id');
   }
 
-  if (!mongoose.Types.ObjectId.isValid(sensor_id) || sensor_id === '00112233445566778899aabb') {
+  if (!isCuid(sensor_id) || sensor_id === '00112233445566778899aabb') {
     throw new Error('Invalid sensor id');
   }
 
@@ -69,7 +70,7 @@ const transformAndValidateMeasurements = function transformAndValidateMeasuremen
       }
 
       // finally attach a mongodb objectId
-      elem._id = mongoose.Types.ObjectId();
+      // elem._id = mongoose.Types.ObjectId();
     }
     // sort measurements/locations by date
     arr.sort((a, b) => a.createdAt.diff(b.createdAt));

@@ -16,6 +16,7 @@ const cleanupExpiredTokens = function cleanupExpiredTokens () {
   }
 };
 
+// TODO: rework this function
 const isTokenBlacklisted = function isTokenBlacklisted (token, tokenString) {
   cleanupExpiredTokens();
 
