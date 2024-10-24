@@ -71,7 +71,7 @@ const
   handleError = require('../helpers/errorHandler'),
   jsonstringify = require('stringify-stream');
 const { findDeviceById } = require('@sensebox/opensensemap-api-models/src/box/box');
-const { createDevice, findDevices, findDevicesMinimal, findTags } = require('@sensebox/opensensemap-api-models/src/device');
+const { createDevice, findDevices, findDevicesMinimal, findTags, updateDevice } = require('@sensebox/opensensemap-api-models/src/device');
 const { findByUserId } = require('@sensebox/opensensemap-api-models/src/password');
 const { getSensorsWithLastMeasurement } = require('@sensebox/opensensemap-api-models/src/sensor');
 const { removeDevice, checkPassword } = require('@sensebox/opensensemap-api-models/src/user/user');
@@ -159,13 +159,14 @@ const { removeDevice, checkPassword } = require('@sensebox/opensensemap-api-mode
  */
 const updateBox = async function updateBox (req, res) {
   try {
-    let box = await Box.findBoxById(req._userParams.boxId, { lean: false, populate: false });
-    box = await box.updateBox(req._userParams);
-    if (box._sensorsChanged === true) {
-      req.user.mail('newSketch', box);
-    }
+    let device = await findDeviceById(req._userParams.boxId);
+    device = await updateDevice(device.id, req._userParams);
+    // if (box._sensorsChanged === true) {
+    //   req.user.mail('newSketch', box);
+    // }
 
-    res.send({ code: 'Ok', data: box.toJSON({ includeSecrets: true }) });
+    // res.send({ code: 'Ok', data: box.toJSON({ includeSecrets: true }) });
+    res.send({ code: 'Ok', data: device });
     clearCache(['getBoxes']);
   } catch (err) {
     return handleError(err);

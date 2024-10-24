@@ -1,6 +1,5 @@
 'use strict';
 
-const { exposure } = require('../../schema/enum');
 const { db } = require('../drizzle');
 
 const { mongoose } = require('../db'),

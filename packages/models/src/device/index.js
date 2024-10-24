@@ -5,7 +5,7 @@ const { deviceTable, sensorTable, accessTokenTable } = require('../../schema/sch
 const sensorLayouts = require('../box/sensorLayouts');
 const { db } = require('../drizzle');
 const ModelError = require('../modelError');
-const { inArray, arrayContains, sql } = require('drizzle-orm');
+const { inArray, arrayContains, sql, eq } = require('drizzle-orm');
 const { insertMeasurement, insertMeasurements } = require('../measurement');
 
 const buildWhereClause = function buildWhereClause (opts = {}) {
@@ -112,7 +112,7 @@ const deleteDevice = async function (filter) {
     .returning();
 };
 
-const findById = async function findById (deviceId, relations) {
+const findById = async function findById (deviceId, relations = {}) {
   const device = await db.query.deviceTable.findFirst({
     where: (device, { eq }) => eq(device.id, deviceId),
     ...(Object.keys(relations).length !== 0 && { with: relations })
@@ -195,8 +195,126 @@ const saveMeasurements = async function saveMeasurements (device, measurements) 
   await insertMeasurements(measurements);
 };
 
+const updateDevice = async function updateDevice (deviceId, args) {
+  const {
+    mqtt: {
+      enabled,
+      url,
+      topic,
+      decodeOptions: mqttDecodeOptions,
+      connectionOptions,
+      messageFormat
+    } = {},
+    ttn: {
+      app_id,
+      dev_id,
+      port,
+      profile,
+      decodeOptions: ttnDecodeOptions
+    } = {},
+    location,
+    sensors,
+    addons: { add: addonToAdd } = {}
+  } = args;
+
+  if (args.mqtt) {
+    args['integrations.mqtt'] = {
+      enabled,
+      url,
+      topic,
+      decodeOptions: mqttDecodeOptions,
+      connectionOptions,
+      messageFormat
+    };
+  }
+  if (args.ttn) {
+    args['integrations.ttn'] = {
+      app_id,
+      dev_id,
+      port,
+      profile,
+      decodeOptions: ttnDecodeOptions
+    };
+  }
+
+  if (args.mqtt) {
+    args['integrations.mqtt'] = {
+      enabled,
+      url,
+      topic,
+      decodeOptions: mqttDecodeOptions,
+      connectionOptions,
+      messageFormat
+    };
+  }
+  if (args.ttn) {
+    args['integrations.ttn'] = {
+      app_id,
+      dev_id,
+      port,
+      profile,
+      decodeOptions: ttnDecodeOptions
+    };
+  }
+
+  const setColumns = {};
+  for (const prop of [
+    'name',
+    'exposure',
+    'grouptag',
+    'description',
+    'weblink',
+    'image',
+    // 'integrations.mqtt',
+    // 'integrations.ttn',
+    'model',
+    'useAuth'
+  ]) {
+    if (typeof args[prop] !== 'undefined') {
+      setColumns[prop] = args[prop];
+
+      if (prop === 'grouptag') {
+        setColumns['tags'] = args[prop];
+      }
+    }
+  }
+
+  // TODO: generate new access token
+  // if user wants a new access_token
+  // if (typeof args['generate_access_token'] !== 'undefined') {
+  //   if (args['generate_access_token'] === 'true') {
+  //     // Create new acces token for box
+  //     const access_token = crypto.randomBytes(32).toString('hex');
+  //     box.set('access_token', access_token);
+  //   }
+  // }
+
+  // TODO update sensors
+  // if (sensors) {
+  //   box.updateSensors(sensors);
+  // } else if (addonToAdd) {
+  //   box.addAddon(addonToAdd);
+  // }
+
+  // TODO: run location update logic, if a location was provided.
+  // const locPromise = location
+  //   ? box
+  //       .updateLocation(location)
+  //       .then((loc) => box.set({ currentLocation: loc }))
+  //   : Promise.resolve();
+
+  const device = await db
+    .update(deviceTable)
+    .set(setColumns)
+    .where(eq(deviceTable.id, deviceId))
+    .returning();
+
+  return device[0];
+};
+
 module.exports = {
   createDevice,
+  updateDevice,
   deleteDevice,
   findById,
   findDevices,

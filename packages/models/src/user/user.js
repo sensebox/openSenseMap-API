@@ -26,8 +26,7 @@ const { mongoose } = require('../db'),
   ModelError = require('../modelError'),
   isemail = require('isemail');
 
-const { createProfile } = require('../profile/profile');
-const { userTable, passwordTable, passwordResetTable, deviceTable } = require('../../schema/schema');
+const { passwordTable, passwordResetTable } = require('../../schema/schema');
 const { eq } = require('drizzle-orm');
 const { findById, deleteDevice } = require('../device');
 
@@ -722,30 +721,6 @@ integrations.addToSchema(userSchema);
 
 const userModel = mongoose.model('User', userSchema);
 
-const createUser = async function createUser (name, email, password, language) {
-  try {
-    const hashedPassword = await passwordHasher(password);
-    const user = await db.insert(userTable).values({ name, email, language })
-      .returning();
-
-    await db.insert(passwordTable).values({
-      hash: hashedPassword,
-      userId: user[0].id
-    });
-
-    await createProfile(user[0]);
-
-    // TODO: Only return specific fields
-    return user[0];
-  } catch (error) {
-    console.log(error);
-  }
-};
-
-const deleteUser = async function deleteUser () {};
-
-const updateUser = async function updateUser () {};
-
 const findUserByNameOrEmail = async function findUserByNameOrEmail (emailOrName) {
   return db.query.userTable.findFirst({
     where: (user, { eq, or }) => or(eq(user.email, emailOrName.toLowerCase()), eq(user.name, emailOrName)),
@@ -753,18 +728,6 @@ const findUserByNameOrEmail = async function findUserByNameOrEmail (emailOrName)
       password: true
     }
   });
-};
-
-const checkPassword = function checkPassword (plaintextPassword, hashedPassword) {
-  return bcrypt
-    .compare(preparePasswordHash(plaintextPassword), hashedPassword.hash)
-    .then(function (passwordIsCorrect) {
-      if (passwordIsCorrect === false) {
-        throw new ModelError('Password incorrect', { type: 'ForbiddenError' });
-      }
-
-      return true;
-    });
 };
 
 const initPasswordReset = async function initPasswordReset ({ email }) {
@@ -864,12 +827,8 @@ const removeDevice = async function removeDevice (deviceId) {
 module.exports = {
   schema: userSchema,
   model: userModel,
-  createUser,
-  deleteUser,
-  updateUser,
   findUserByNameOrEmail,
   findUserByEmailAndRole,
-  checkPassword,
   initPasswordReset,
   resetOldPassword,
   removeDevice,

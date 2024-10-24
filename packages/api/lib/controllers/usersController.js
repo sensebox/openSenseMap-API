@@ -15,7 +15,9 @@ const { User } = require('@sensebox/opensensemap-api-models'),
     refreshJwt,
     invalidateToken,
   } = require('../helpers/jwtHelpers');
-const { createUser, findUserByNameOrEmail, checkPassword, initPasswordReset, resetOldPassword } = require('@sensebox/opensensemap-api-models/src/user/user');
+const { checkPassword } = require('@sensebox/opensensemap-api-models/src/password/utils');
+const { createUser } = require('@sensebox/opensensemap-api-models/src/user');
+const { findUserByNameOrEmail, initPasswordReset, resetOldPassword } = require('@sensebox/opensensemap-api-models/src/user/user');
 
 /**
  * define for nested user parameter for box creation request

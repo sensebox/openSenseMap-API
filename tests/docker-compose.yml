@@ -116,7 +116,7 @@ services:
       - 6379:6379
 
   db:
-    image: timescale/timescaledb-ha:pg15-latest
+    image: timescale/timescaledb-ha:pg15.8-ts2.17.1
     command:
       - -cshared_preload_libraries=timescaledb,pg_cron
     restart: always
