@@ -71,7 +71,7 @@ const
   handleError = require('../helpers/errorHandler'),
   jsonstringify = require('stringify-stream');
 const { findDeviceById } = require('@sensebox/opensensemap-api-models/src/box/box');
-const { createDevice, findDevices, findDevicesMinimal, findTags, updateDevice } = require('@sensebox/opensensemap-api-models/src/device');
+const { createDevice, findDevices, findDevicesMinimal, findTags, updateDevice, findById, generateSketch } = require('@sensebox/opensensemap-api-models/src/device');
 const { findByUserId } = require('@sensebox/opensensemap-api-models/src/password');
 const { getSensorsWithLastMeasurement } = require('@sensebox/opensensemap-api-models/src/sensor');
 const { removeDevice, checkPassword } = require('@sensebox/opensensemap-api-models/src/user/user');
@@ -548,7 +548,7 @@ const postNewBox = async function postNewBox (req, res) {
 const getSketch = async function getSketch (req, res) {
   res.header('Content-Type', 'text/plain; charset=utf-8');
   try {
-    const box = await Box.findBoxById(req._userParams.boxId, { populate: false, lean: false });
+    const device = await findById(req._userParams.boxId, { accessToken: true, sensors: true });
 
     const params = {
       serialPort: req._userParams.serialPort,
@@ -564,11 +564,11 @@ const getSketch = async function getSketch (req, res) {
     };
 
     // pass access token only if useAuth is true and access_token is available
-    if (box.access_token) {
-      params.access_token = box.access_token;
+    if (device.useAuth && device.accessToken) {
+      params.access_token = device.accessToken.token;
     }
 
-    res.send(box.getSketch(params));
+    res.send(generateSketch(device, params));
   } catch (err) {
     return handleError(err);
   }

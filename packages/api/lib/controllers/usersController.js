@@ -15,9 +15,11 @@ const { User } = require('@sensebox/opensensemap-api-models'),
     refreshJwt,
     invalidateToken,
   } = require('../helpers/jwtHelpers');
+const { findDeviceById } = require('@sensebox/opensensemap-api-models/src/box/box');
+const { findDevices, findDevicesByUserId } = require('@sensebox/opensensemap-api-models/src/device');
+const { initPasswordReset, resetOldPassword } = require('@sensebox/opensensemap-api-models/src/password');
 const { checkPassword } = require('@sensebox/opensensemap-api-models/src/password/utils');
-const { createUser } = require('@sensebox/opensensemap-api-models/src/user');
-const { findUserByNameOrEmail, initPasswordReset, resetOldPassword } = require('@sensebox/opensensemap-api-models/src/user/user');
+const { createUser, findUserByNameOrEmail } = require('@sensebox/opensensemap-api-models/src/user');
 
 /**
  * define for nested user parameter for box creation request
@@ -256,11 +258,15 @@ const confirmEmailAddress = async function confirmEmailAddress (req, res) {
 const getUserBoxes = async function getUserBoxes (req, res) {
   const { page } = req._userParams;
   try {
-    const boxes = await req.user.getBoxes(page);
-    const sharedBoxes = await req.user.getSharedBoxes();
+    const devices = await findDevicesByUserId(req.user.id, { page });
+    // const sharedBoxes = await req.user.getSharedBoxes();
     res.send(200, {
       code: 'Ok',
-      data: { boxes: boxes, boxes_count: req.user.boxes.length, sharedBoxes: sharedBoxes },
+      data: {
+        boxes: devices,
+        boxes_count: devices.length,
+        sharedBoxes: []
+      },
     });
   } catch (err) {
     return handleError(err);
@@ -279,11 +285,11 @@ const getUserBoxes = async function getUserBoxes (req, res) {
 const getUserBox = async function getUserBox (req, res) {
   const { boxId } = req._userParams;
   try {
-    const box = await req.user.getBox(boxId);
+    const device = await findDeviceById(boxId);
     res.send(200, {
       code: 'Ok',
       data: {
-        box
+        box: device
       },
     });
   } catch (err) {

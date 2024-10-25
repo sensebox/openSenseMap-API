@@ -165,6 +165,15 @@ const accessToken = pgTable('access_token', {
   token: text('token'),
 });
 
+const tokenBlacklist = pgTable('token_blacklist', {
+  hash: text('hash').notNull(),
+  token: text('token').notNull(),
+  expiresAt: timestamp('expires_at')
+    .notNull()
+    .$defaultFn(() => moment.utc().add(1, 'week')
+      .toDate())
+});
+
 const measurement = pgTable('measurement', {
   sensorId: text('sensor_id').notNull(),
   time: timestamp('time', { precision: 3, withTimezone: true }).defaultNow()
@@ -203,6 +212,7 @@ const userRelations = relations(user, ({ one, many }) => ({
     references: [profile.userId]
   }),
   devices: many(device),
+  // TODO: model shared devices sharedDevices: many(device),
   refreshToken: many(refreshToken)
 }));
 
@@ -241,6 +251,7 @@ module.exports.passwordResetTable = passwordReset;
 module.exports.profileTable = profile;
 module.exports.profileImageTable = profileImage;
 module.exports.refreshTokenTable = refreshToken;
+module.exports.tokenBlacklistTable = tokenBlacklist;
 module.exports.accessTokenRelations = accessTokenRelations;
 module.exports.deviceRelations = deviceRelations;
 module.exports.sensorRelations = sensorRelations;

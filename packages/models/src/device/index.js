@@ -5,8 +5,13 @@ const { deviceTable, sensorTable, accessTokenTable } = require('../../schema/sch
 const sensorLayouts = require('../box/sensorLayouts');
 const { db } = require('../drizzle');
 const ModelError = require('../modelError');
-const { inArray, arrayContains, sql, eq } = require('drizzle-orm');
+const { inArray, arrayContains, sql, eq, asc } = require('drizzle-orm');
 const { insertMeasurement, insertMeasurements } = require('../measurement');
+const SketchTemplater = require('@sensebox/sketch-templater');
+
+const { max_boxes: pagination_max_boxes } = require('config').get('openSenseMap-API-models.pagination');
+
+const templateSketcher = new SketchTemplater();
 
 const buildWhereClause = function buildWhereClause (opts = {}) {
   const { phenomenon, fromDate, toDate, bbox, near, maxDistance, grouptag } = opts;
@@ -119,6 +124,18 @@ const findById = async function findById (deviceId, relations = {}) {
   });
 
   return device;
+};
+
+const findDevicesByUserId = async function findDevicesByUserId (userId, opts = {}) {
+  const { page } = opts;
+  const devices = await db.query.deviceTable.findMany({
+    where: (device, { eq }) => eq(device.userId, userId),
+    orderBy: (asc(deviceTable.createdAt)),
+    limit: pagination_max_boxes,
+    offset: pagination_max_boxes * page
+  });
+
+  return devices;
 };
 
 const findDevices = async function findDevices (opts = {}, columns = {}) {
@@ -312,6 +329,44 @@ const updateDevice = async function updateDevice (deviceId, args) {
   return device[0];
 };
 
+const generateSketch = function generateSketch (device, {
+  encoding,
+  serialPort,
+  soilDigitalPort,
+  soundMeterPort,
+  windSpeedPort,
+  ssid,
+  password,
+  devEUI,
+  appEUI,
+  appKey,
+  access_token,
+  display_enabled
+} = {}) {
+  if (serialPort) {
+    device.serialPort = serialPort;
+  }
+  if (soilDigitalPort) {
+    device.soilDigitalPort = soilDigitalPort;
+  }
+  if (soundMeterPort) {
+    device.soundMeterPort = soundMeterPort;
+  }
+  if (windSpeedPort) {
+    device.windSpeedPort = windSpeedPort;
+  }
+
+  device.ssid = ssid || '';
+  device.password = password || '';
+  device.devEUI = devEUI || '';
+  device.appEUI = appEUI || '';
+  device.appKey = appKey || '';
+  device.access_token = access_token || '';
+  device.display_enabled = display_enabled || '';
+
+  return templateSketcher.generateSketch(device, { encoding });
+};
+
 module.exports = {
   createDevice,
   updateDevice,
@@ -319,8 +374,10 @@ module.exports = {
   findById,
   findDevices,
   findDevicesMinimal,
+  findDevicesByUserId,
   findTags,
   findAccessToken,
   saveMeasurement,
-  saveMeasurements
+  saveMeasurements,
+  generateSketch
 };

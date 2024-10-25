@@ -1,32 +1,34 @@
 'use strict';
 
-const bcrypt = require('bcrypt');
-const crypto = require('crypto');
-
 const { userTable, passwordTable } = require('../../schema/schema');
 const { db } = require('../drizzle');
 const { createProfile } = require('../profile/profile');
 const { eq } = require('drizzle-orm');
 const ModelError = require('../modelError');
-const { checkPassword, validatePassword } = require('../password/utils');
+const { checkPassword, validatePassword, passwordHasher } = require('../password/utils');
 
-// Configuration
-const { min_length: password_min_length, salt_factor: password_salt_factor } = require('config').get('openSenseMap-API-models.password');
-
-const preparePasswordHash = function preparePasswordHash (plaintextPassword) {
-  // first round: hash plaintextPassword with sha512
-  const hash = crypto.createHash('sha512');
-  hash.update(plaintextPassword.toString(), 'utf8');
-  const hashed = hash.digest('base64'); // base64 for more entropy than hex
-
-  return hashed;
+const findUserByNameOrEmail = async function findUserByNameOrEmail (
+  emailOrName
+) {
+  return db.query.userTable.findFirst({
+    where: (user, { eq, or }) =>
+      or(eq(user.email, emailOrName.toLowerCase()), eq(user.name, emailOrName)),
+    with: {
+      password: true
+    }
+  });
 };
 
-const passwordHasher = function passwordHasher (plaintextPassword) {
-  return bcrypt.hash(
-    preparePasswordHash(plaintextPassword),
-    Number(password_salt_factor)
-  ); // signature <String, Number> generates a salt and hashes in one step
+const findUserByEmailAndRole = async function findUserByEmailAndRole ({
+  email,
+  role
+}) {
+  const user = await db.query.userTable.findFirst({
+    where: (user, { eq, and }) =>
+      and(eq(user.email, email.toLowerCase(), eq(user.role, role)))
+  });
+
+  return user;
 };
 
 const createUser = async function createUser (name, email, password, language) {
@@ -131,6 +133,8 @@ const updateUser = async function updateUser (
 };
 
 module.exports = {
+  findUserByNameOrEmail,
+  findUserByEmailAndRole,
   createUser,
   deleteUser,
   updateUser

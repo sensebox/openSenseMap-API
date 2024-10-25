@@ -35,7 +35,15 @@ const validatePassword = function validatePassword (newPassword) {
   return newPassword.length >= Number(password_min_length);
 };
 
+const passwordHasher = function passwordHasher (plaintextPassword) {
+  return bcrypt.hash(
+    preparePasswordHash(plaintextPassword),
+    Number(password_salt_factor)
+  ); // signature <String, Number> generates a salt and hashes in one step
+};
+
 module.exports = {
   checkPassword,
-  validatePassword
+  validatePassword,
+  passwordHasher
 };

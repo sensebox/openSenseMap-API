@@ -1,7 +1,7 @@
 'use strict';
 
 const { addRefreshToken, deleteRefreshToken } = require('@sensebox/opensensemap-api-models/src/token/refresh');
-const { findUserByEmailAndRole } = require('@sensebox/opensensemap-api-models/src/user/user');
+const { findUserByEmailAndRole } = require('@sensebox/opensensemap-api-models/src/user');
 const config = require('config'),
   jwt = require('jsonwebtoken'),
   hashJWT = require('./jwtRefreshTokenHasher'),
@@ -57,7 +57,7 @@ const invalidateToken = async function invalidateToken ({ user, _jwt, _jwtString
   // createToken(user); // TODO: why do we create a new token here?!?!
   const hash = hashJWT(_jwtString);
   await deleteRefreshToken(hash);
-  // addTokenToBlacklist(_jwt, _jwtString);
+  addTokenToBlacklist(_jwt, _jwtString);
 };
 
 const refreshJwt = async function refreshJwt (refreshToken) {
@@ -89,14 +89,14 @@ const verifyJwt = function verifyJwt (req, res, next) {
     return next(new ForbiddenError(jwtInvalidErrorMessage));
   }
 
-  jwt.verify(jwtString, jwt_secret, jwtVerifyOptions, function (err, decodedJwt) {
+  jwt.verify(jwtString, jwt_secret, jwtVerifyOptions, async function (err, decodedJwt) {
     if (err) {
       return next(new ForbiddenError(jwtInvalidErrorMessage));
     }
 
     // check if the token is blacklisted by performing a hmac digest on the string representation of the jwt.
     // also checks the existence of the jti claim
-    if (isTokenBlacklisted(decodedJwt, jwtString)) {
+    if (await isTokenBlacklisted(decodedJwt, jwtString)) {
       return next(new ForbiddenError(jwtInvalidErrorMessage));
     }
 
