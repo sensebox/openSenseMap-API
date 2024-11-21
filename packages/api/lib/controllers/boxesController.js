@@ -71,7 +71,7 @@ const
   handleError = require('../helpers/errorHandler'),
   jsonstringify = require('stringify-stream');
 const { findDeviceById } = require('@sensebox/opensensemap-api-models/src/box/box');
-const { createDevice, findDevices, findDevicesMinimal, findTags, updateDevice, findById, generateSketch } = require('@sensebox/opensensemap-api-models/src/device');
+const { createDevice, findDevices, findTags, updateDevice, findById, generateSketch } = require('@sensebox/opensensemap-api-models/src/device');
 const { findByUserId } = require('@sensebox/opensensemap-api-models/src/password');
 const { getSensorsWithLastMeasurement } = require('@sensebox/opensensemap-api-models/src/sensor');
 const { removeDevice, checkPassword } = require('@sensebox/opensensemap-api-models/src/user/user');
@@ -315,19 +315,36 @@ const getBoxes = async function getBoxes (req, res) {
   }
 
   try {
-    let devices;
+    // let devices;
 
     // Search boxes by name
     // Directly return results and do nothing else
-    if (req._userParams.name) {
-      // stream = await Box.findBoxes(req._userParams);
-      devices = await findDevices(req._userParams, { id: true, name: true, location: true });
-    } else if (req._userParams.minimal === 'true') {
-      devices = await findDevicesMinimal(req._userParams, { id: true, name: true, exposure: true, location: true, status: true });
-      // stream = await Box.findBoxesMinimal(req._userParams);
-    } else {
-      // stream = await Box.findBoxesLastMeasurements(req._userParams);
-    }
+    // if (req._userParams.name) {
+    //   // stream = await Box.findBoxes(req._userParams);
+    //   devices = await findDevices(req._userParams, { id: true, name: true, location: true });
+    // } else if (req._userParams.minimal === 'true') {
+    //   devices = await findDevicesMinimal(req._userParams, { id: true, name: true, exposure: true, location: true, status: true });
+    //   // stream = await Box.findBoxesMinimal(req._userParams);
+    // } else {
+    //   // stream = await Box.findBoxesLastMeasurements(req._userParams);
+    //   devices = await findDevicesMinimal(req._userParams);
+    // }
+
+    // if (req._userParams.minimal === 'true') {
+    //   devices = await findDevices(req._userParams, {
+    //     id: true,
+    //     name: true,
+    //     exposure: true,
+    //     location: true,
+    //     status: true
+    //   });
+    //   // stream = await Box.findBoxesMinimal(req._userParams);
+    // } else {
+    //   // stream = await Box.findBoxesLastMeasurements(req._userParams);
+    //   devices = await findDevices(req._userParams);
+    // }
+
+    const devices = await findDevices(req._userParams, {}, { sensors: { columns: { deviceId: false, sensorWikiType: false, sensorWikiPhenomenon: false, sensorWikiUnit: false } } });
 
     // Deprecated: classify is performed by database
     // if (req._userParams.classify === 'true') {
@@ -940,7 +957,7 @@ module.exports = {
       },
       { name: 'full', defaultValue: 'false', allowedValues: ['true', 'false'] },
       { predef: 'near' },
-      { name: 'maxDistance' },
+      { name: 'maxDistance', dataType: Number, defaultValue: 1000 },
       { predef: 'bbox' }
     ]),
     parseAndValidateTimeParamsForFindAllBoxes,

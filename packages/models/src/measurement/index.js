@@ -1,5 +1,6 @@
 'use strict';
 
+const { desc } = require('drizzle-orm');
 const { measurementTable } = require('../../schema/schema');
 const { db } = require('../drizzle');
 const ModelError = require('../modelError');
@@ -28,6 +29,16 @@ const insertMeasurement = async function insertMeasurement (measurement) {
   });
 };
 
+const getMeasurements = async function getMeasurements (sensorId, limit = 1) {
+  const measurements = await db.query.measurementTable.findMany({
+    where: (measurement, { eq }) => eq(measurement.sensorId, sensorId),
+    orderBy: desc(measurementTable.time),
+    limit: limit,
+  });
+
+  return measurements;
+};
+
 const insertMeasurements = async function insertMeasurements (measurements) {
   return db.insert(measurementTable).values(measurements);
 };
@@ -35,6 +46,7 @@ const insertMeasurements = async function insertMeasurements (measurements) {
 module.exports = {
   decodeMeasurements,
   hasDecoder,
+  getMeasurements,
   insertMeasurement,
   insertMeasurements
 };

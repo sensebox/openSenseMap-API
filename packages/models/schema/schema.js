@@ -74,6 +74,7 @@ const user = pgTable('user', {
   role: text('role', { enum: ['admin', 'user'] }).default('user'),
   language: text('language').default('en_US'),
   emailIsConfirmed: boolean('email_is_confirmed').default(false),
+  emailConfirmationToken: text('email_confirmation_token').$defaultFn(() => uuidv4()),
   createdAt: timestamp('created_at').defaultNow()
     .notNull(),
   updatedAt: timestamp('updated_at').defaultNow()

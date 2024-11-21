@@ -92,6 +92,13 @@
       "when": 1729843974723,
       "tag": "0012_add_token_blacklist",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1729860468725,
+      "tag": "0013_add_email_confirmation",
+      "breakpoints": true
     }
   ]
 }

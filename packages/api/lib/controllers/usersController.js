@@ -19,7 +19,7 @@ const { findDeviceById } = require('@sensebox/opensensemap-api-models/src/box/bo
 const { findDevices, findDevicesByUserId } = require('@sensebox/opensensemap-api-models/src/device');
 const { initPasswordReset, resetOldPassword } = require('@sensebox/opensensemap-api-models/src/password');
 const { checkPassword } = require('@sensebox/opensensemap-api-models/src/password/utils');
-const { createUser, findUserByNameOrEmail } = require('@sensebox/opensensemap-api-models/src/user');
+const { createUser, findUserByNameOrEmail, resendEmailConfirmation, confirmEmail } = require('@sensebox/opensensemap-api-models/src/user');
 
 /**
  * define for nested user parameter for box creation request
@@ -236,7 +236,8 @@ const resetPassword = async function resetPassword (req, res) {
  */
 const confirmEmailAddress = async function confirmEmailAddress (req, res) {
   try {
-    await User.confirmEmail(req._userParams);
+    await confirmEmail(req._userParams);
+    // await User.confirmEmail(req._userParams);
     res.send(200, {
       code: 'Ok',
       message: 'E-Mail successfully confirmed. Thank you',
@@ -388,7 +389,8 @@ const requestEmailConfirmation = async function requestEmailConfirmation (
   res
 ) {
   try {
-    const result = await req.user.resendEmailConfirmation();
+    // const result = await req.user.resendEmailConfirmation();
+    const result = await resendEmailConfirmation(req.user);
     let usedAddress = result.email;
     if (result.unconfirmedEmail) {
       usedAddress = result.unconfirmedEmail;

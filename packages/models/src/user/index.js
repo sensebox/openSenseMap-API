@@ -1,5 +1,7 @@
 'use strict';
 
+const { v4: uuidv4 } = require('uuid');
+
 const { userTable, passwordTable } = require('../../schema/schema');
 const { db } = require('../drizzle');
 const { createProfile } = require('../profile/profile');
@@ -132,10 +134,81 @@ const updateUser = async function updateUser (
   return user[0];
 };
 
+const confirmEmail = async function confirmEmail ({ token, email }) {
+
+  const user = await findUserByNameOrEmail(email);
+
+  if (!user) {
+    throw new ModelError('invalid email confirmation token', {
+      type: 'ForbiddenError'
+    });
+  }
+
+  const updatedUser = await db.update(userTable).set({
+    emailIsConfirmed: true,
+    emailConfirmationToken: null
+  })
+    .where()
+    .returning();
+
+  return updatedUser[0];
+
+  // return this.findOne({
+  //   $and: [
+  //     { $or: [{ email: email }, { unconfirmedEmail: email }] },
+  //     { emailConfirmationToken: token }
+  //   ]
+  // })
+  //   .exec()
+  //   .then(function (user) {
+  //     if (!user) {
+  //       throw new ModelError('invalid email confirmation token', {
+  //         type: 'ForbiddenError'
+  //       });
+  //     }
+
+  //     // set email to email address from request
+  //     user.set('email', email);
+
+  //     // mark user as confirmed
+  //     user.set('emailConfirmationToken', undefined);
+  //     user.set('emailIsConfirmed', true);
+  //     user.set('unconfirmedEmail', undefined);
+
+  //     return user.save();
+  //   });
+};
+
+const resendEmailConfirmation = async function resendEmailConfirmation (user) {
+  if (user.emailIsConfirmed === true) {
+    return Promise.reject(
+      new ModelError(`Email address ${user.email} is already confirmed.`, {
+        type: 'UnprocessableEntityError'
+      })
+    );
+  }
+
+  const savedUser = await db.update(userTable).set({
+    emailConfirmationToken: uuidv4()
+  })
+    .returning();
+
+  return savedUser[0];
+  // user.set('emailConfirmationToken', uuidv4());
+
+  // return user.save().then(function (savedUser) {
+  //   savedUser.mail('resendEmailConfirmation');
+
+  //   return savedUser;
+  // });
+};
+
 module.exports = {
   findUserByNameOrEmail,
   findUserByEmailAndRole,
   createUser,
   deleteUser,
-  updateUser
+  updateUser,
+  confirmEmail,
+  resendEmailConfirmation
 };

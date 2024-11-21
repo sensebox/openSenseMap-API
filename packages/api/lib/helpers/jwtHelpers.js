@@ -1,6 +1,6 @@
 'use strict';
 
-const { addRefreshToken, deleteRefreshToken } = require('@sensebox/opensensemap-api-models/src/token/refresh');
+const { addRefreshToken, deleteRefreshToken, findRefreshToken, findRefreshTokenUser } = require('@sensebox/opensensemap-api-models/src/token/refresh');
 const { findUserByEmailAndRole } = require('@sensebox/opensensemap-api-models/src/user');
 const config = require('config'),
   jwt = require('jsonwebtoken'),
@@ -61,14 +61,15 @@ const invalidateToken = async function invalidateToken ({ user, _jwt, _jwtString
 };
 
 const refreshJwt = async function refreshJwt (refreshToken) {
-  const user = await User.findOne({ refreshToken, refreshTokenExpires: { $gte: moment.utc().toDate() } });
+  // const user = await User.findOne({ refreshToken, refreshTokenExpires: { $gte: moment.utc().toDate() } });
+  const user = await findRefreshTokenUser(refreshToken);
 
   if (!user) {
     throw new ForbiddenError('Refresh token invalid or too old. Please sign in with your username and password.');
   }
 
-  // invalidate old token
-  addTokenHashToBlacklist(refreshToken);
+  // TODO: invalidate old token
+  // addTokenHashToBlacklist(refreshToken);
 
   const { token, refreshToken: newRefreshToken } = await createToken(user);
 

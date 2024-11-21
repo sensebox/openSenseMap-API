@@ -5,7 +5,7 @@ const { deviceTable, sensorTable, accessTokenTable } = require('../../schema/sch
 const sensorLayouts = require('../box/sensorLayouts');
 const { db } = require('../drizzle');
 const ModelError = require('../modelError');
-const { inArray, arrayContains, sql, eq, asc } = require('drizzle-orm');
+const { inArray, arrayContains, sql, eq, asc, ilike, getTableColumns } = require('drizzle-orm');
 const { insertMeasurement, insertMeasurements } = require('../measurement');
 const SketchTemplater = require('@sensebox/sketch-templater');
 
@@ -14,8 +14,19 @@ const { max_boxes: pagination_max_boxes } = require('config').get('openSenseMap-
 const templateSketcher = new SketchTemplater();
 
 const buildWhereClause = function buildWhereClause (opts = {}) {
-  const { phenomenon, fromDate, toDate, bbox, near, maxDistance, grouptag } = opts;
+  const { name, phenomenon, fromDate, toDate, bbox, near, maxDistance, grouptag } = opts;
   const clause = [];
+  const columns = {};
+
+  if (name) {
+    clause.push(ilike(deviceTable['name'], `%${name}%`));
+  }
+
+  if (phenomenon) {
+    columns['sensors'] = {
+      where: (sensor, { ilike }) => ilike(sensorTable['title'], `%${phenomenon}%`)
+    };
+  }
 
   // simple string parameters
   for (const param of ['exposure', 'model']) {
@@ -30,11 +41,15 @@ const buildWhereClause = function buildWhereClause (opts = {}) {
 
   // https://orm.drizzle.team/learn/guides/postgis-geometry-point
   if (bbox) {
-    // TODO: checkout postgis bbox queries
+    const [latSW, lngSW] = bbox.coordinates[0][0];
+    const [latNE, lngNE] = bbox.coordinates[0][2];
+    clause.push(
+      sql`st_within(${deviceTable['location']}, st_makeenvelope(${lngSW}, ${latSW}, ${lngNE}, ${latNE}, 4326))`
+    );
   }
 
   if (near) {
-    // TODO: implement
+    clause.push(sql`st_dwithin(${deviceTable['location']}, ST_SetSRID(ST_MakePoint(${near[1]}, ${near[0]}), 4326), ${maxDistance})`);
   }
 
   if (fromDate || toDate) {
@@ -43,7 +58,10 @@ const buildWhereClause = function buildWhereClause (opts = {}) {
     }
   }
 
-  return clause;
+  return {
+    includeColumns: columns,
+    whereClause: clause
+  };
 };
 
 const createDevice = async function createDevice (userId, params) {
@@ -77,18 +95,20 @@ const createDevice = async function createDevice (userId, params) {
   }
 
   // TODO: handle in transaction
-  const [device] = await db.insert(deviceTable).values({
-    userId,
-    name,
-    exposure,
-    description,
-    latitude: location[1],
-    longitude: location[0],
-    location: { x: location[1], y: location[0] },
-    useAuth,
-    model,
-    tags: grouptag
-  })
+  const [device] = await db
+    .insert(deviceTable)
+    .values({
+      userId,
+      name,
+      exposure,
+      description,
+      latitude: location[1],
+      longitude: location[0],
+      location: sql`ST_SetSRID(ST_MakePoint(${location[1]}, ${location[0]}), 4326)`,
+      useAuth,
+      model,
+      tags: grouptag
+    })
     .returning();
 
   const [accessToken] = await db.insert(accessTokenTable).values({
@@ -119,6 +139,9 @@ const deleteDevice = async function (filter) {
 
 const findById = async function findById (deviceId, relations = {}) {
   const device = await db.query.deviceTable.findFirst({
+    columns: {
+      ...DEFAULT_COLUMNS
+    },
     where: (device, { eq }) => eq(device.id, deviceId),
     ...(Object.keys(relations).length !== 0 && { with: relations })
   });
@@ -138,23 +161,27 @@ const findDevicesByUserId = async function findDevicesByUserId (userId, opts = {
   return devices;
 };
 
-const findDevices = async function findDevices (opts = {}, columns = {}) {
-  const { name, limit } = opts;
+const findDevices = async function findDevices (
+  opts = {},
+  columns = {},
+  relations = {}
+) {
+  const { minimal, limit } = opts;
+  const { includeColumns, whereClause } = buildWhereClause(opts);
+
+  columns = (minimal === 'true') ? MINIMAL_COLUMNS : { ...DEFAULT_COLUMNS, ...columns };
+
+  relations = {
+    ...relations,
+    ...includeColumns
+  };
   const devices = await db.query.deviceTable.findMany({
     ...(Object.keys(columns).length !== 0 && { columns }),
-    where: (device, { ilike }) => ilike(device.name, `%${name}%`),
+    ...(Object.keys(relations).length !== 0 && { with: relations }),
+    ...(Object.keys(whereClause).length !== 0 && {
+      where: (_, { and }) => and(...whereClause)
+    }),
     limit
-  });
-
-  return devices;
-};
-
-// TODO: merge with findDevices
-const findDevicesMinimal = async function findDevicesMinimal (opts = {}, columns = {}) {
-  const whereClause = buildWhereClause(opts);
-  const devices = await db.query.deviceTable.findMany({
-    ...(Object.keys(columns).length !== 0 && { columns }),
-    ...(Object.keys(whereClause).length !== 0 && { where: (_, { and }) => and(...whereClause) })
   });
 
   return devices;
@@ -367,13 +394,32 @@ const generateSketch = function generateSketch (device, {
   return templateSketcher.generateSketch(device, { encoding });
 };
 
+const MINIMAL_COLUMNS = {
+  id: true,
+  name: true,
+  exposure: true,
+  location: true
+};
+
+const DEFAULT_COLUMNS = {
+  id: true,
+  name: true,
+  model: true,
+  exposure: true,
+  grouptag: true,
+  image: true,
+  description: true,
+  link: true,
+  createdAt: true,
+  updatedAt: true,
+};
+
 module.exports = {
   createDevice,
   updateDevice,
   deleteDevice,
   findById,
   findDevices,
-  findDevicesMinimal,
   findDevicesByUserId,
   findTags,
   findAccessToken,
