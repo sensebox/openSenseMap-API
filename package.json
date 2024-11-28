@@ -24,7 +24,7 @@
     "chai": "^4.3.10",
     "chai-http": "^4.4.0",
     "chakram": "^1.5.0",
-    "cheerio": "^1.0.0-rc.6",
+    "cheerio": "^1.0.0",
     "csv-parse": "^4.15.4",
     "eslint": "7.26.0",
     "mimelib": "^0.3.1",
