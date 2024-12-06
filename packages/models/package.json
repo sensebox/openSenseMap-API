@@ -17,7 +17,7 @@
     "jsonpath": "^1.1.1",
     "lodash.isequal": "^4.5.0",
     "moment": "^2.29.4",
-    "mongoose": "^5.13.20",
+    "mongoose": "^8.8.4",
     "mongoose-timestamp": "^0.6",
     "pino": "^8.8.0",
     "uuid": "^8.3.2"
