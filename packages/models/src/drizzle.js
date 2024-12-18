@@ -1,5 +1,7 @@
 'use strict';
 
+const config = require('config').get('openSenseMap-API-models.db');
+
 const { drizzle } = require('drizzle-orm/node-postgres');
 const { Pool } = require('pg');
 const {
@@ -21,9 +23,26 @@ const {
   measurementTable
 } = require('../schema/schema');
 
+const getDBUri = function getDBUri (uri) {
+  // if available, use user specified db connection uri
+  if (uri) {
+    return uri;
+  }
+
+  // get uri from config
+  uri = config.get('database_url');
+  if (uri) {
+    return uri;
+  }
+
+  // otherwise build uri from config supplied values
+  const { user, userpass, host, port, db } = config;
+
+  return `postgresql://${user}:${userpass}@${host}:${port}/${db}`;
+};
 
 const pool = new Pool({
-  connectionString: 'postgresql://postgres:postgres@localhost:5432/opensensemap'
+  connectionString: getDBUri()
 });
 
 const schema = {
