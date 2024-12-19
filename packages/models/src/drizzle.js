@@ -29,6 +29,7 @@ const {
   logEntryRelations,
   tokenBlacklistTable
 } = require('../schema/schema');
+const { sql } = require('drizzle-orm');
 
 const getDBUri = function getDBUri (uri) {
   // if available, use user specified db connection uri
@@ -48,10 +49,23 @@ const getDBUri = function getDBUri (uri) {
   return `postgresql://${user}:${userpass}@${host}:${port}/${db}`;
 };
 
+const isReady = async function isReady () {
+  try {
+    await db.execute(sql`select 1`);
+  } catch (error) {
+    throw new Error(error);
+  }
+};
+
 const pool = new Pool({
   connectionString: getDBUri(),
-  ssl: false
+  ssl: config.get('ssl') === 'true' ? true : false
 });
+
+// TODO: attach event listener
+// pool.on('connect', () => {
+//   console.log('connected to the db');
+// });
 
 const schema = {
   accessTokenTable,
@@ -83,4 +97,9 @@ const db = drizzle(pool, {
   schema
 });
 
-module.exports.db = db;
+module.exports = {
+  db,
+  isReady
+};
+// module.exports.db = db;
+// module.exports.isReady = isReady;

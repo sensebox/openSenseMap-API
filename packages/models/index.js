@@ -13,7 +13,8 @@ config.util.setModuleDefaults('openSenseMap-API-models', {
     user: 'postgres',
     userpass: 'postgres',
     db: 'opensensemap',
-    database_url: ''
+    database_url: '',
+    ssl: false
   },
   integrations: {
     ca_cert: '',
@@ -56,7 +57,8 @@ const { model: Box } = require('./src/box/box'),
   { model: Claim } = require('./src/box/claim'),
   utils = require('./src/utils'),
   decoding = require('./src/measurement/decoding'),
-  db = require('./src/db');
+  db = require('./src/db'),
+  isReady = require('./src/drizzle').isReady;
 
 module.exports = {
   Box,
@@ -66,5 +68,6 @@ module.exports = {
   User,
   utils,
   decoding,
-  db
+  db,
+  isReady
 };

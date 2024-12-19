@@ -10,7 +10,7 @@
 
 'use strict';
 
-const { db } = require('@sensebox/opensensemap-api-models'),
+const { isReady } = require('@sensebox/opensensemap-api-models'),
   restify = require('restify'),
   {
     fullResponse,
@@ -55,9 +55,10 @@ if (config.get('logLevel') === 'debug') {
 
 const run = async function () {
   try {
-    // TODO: Get a client from the Pool and test connection
-    await db.connect();
+    // Check if the database is ready
+    await isReady();
 
+    // Load routes
     routes(server);
 
     // start the server
