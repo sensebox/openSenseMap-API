@@ -8,6 +8,7 @@ lib-cov
 *.gz
 .vscode
 .yarn-cache
+.DS_Store
 
 pids
 logs
