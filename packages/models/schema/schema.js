@@ -5,40 +5,66 @@ const { relations, sql } = require('drizzle-orm');
 const { createId } = require('@paralleldrive/cuid2');
 const { v4: uuidv4 } = require('uuid');
 const moment = require('moment');
-const { exposure, status, deviceModel } = require('./enum');
+const { DeviceExposureEnum, DeviceStatusEnum, DeviceModelEnum } = require('./enum');
 const { bytea } = require('./types');
+const { date } = require('drizzle-orm/pg-core');
+const { integer } = require('drizzle-orm/pg-core');
+const { primaryKey } = require('drizzle-orm/pg-core');
+const { serial } = require('drizzle-orm/pg-core');
 
 /**
  * Table definition
  */
 const device = pgTable('device', {
-  id: text('id').primaryKey()
+  id: text('id')
+    .primaryKey()
     .notNull()
     .$defaultFn(() => createId()),
   name: text('name').notNull(),
   image: text('image'),
   description: text('description'),
+  tags: text('tags')
+    .array()
+    .default(sql`ARRAY[]::text[]`),
   link: text('link'),
   useAuth: boolean('use_auth'),
-  exposure: exposure('exposure'),
-  status: status('status').default('inactive'),
-  model: deviceModel('model'),
+  exposure: DeviceExposureEnum('exposure'),
+  status: DeviceStatusEnum('status').default('inactive'),
+  model: DeviceModelEnum('model'),
   public: boolean('public').default(false),
   createdAt: timestamp('created_at').defaultNow()
     .notNull(),
   updatedAt: timestamp('updated_at').defaultNow()
-    .notNull()
-    .$onUpdateFn(() => new Date()),
+    .notNull(),
+  expiresAt: date('expires_at', { mode: 'date' }),
   latitude: doublePrecision('latitude').notNull(),
   longitude: doublePrecision('longitude').notNull(),
-  location: geometry('location', { type: 'point', mode: 'xy', srid: 4326 }).notNull(),
-  tags: text('tags').array()
-    .default(sql`ARRAY[]::text[]`),
   userId: text('user_id').notNull(),
-  sensorWikiModel: text('sensor_wiki_model'),
-}, (t) => ({
-  spatialIndex: index('spatial_index').using('gist', t.location),
-}),);
+  sensorWikiModel: text('sensor_wiki_model')
+});
+
+// Many-to-many relation between device - location
+// https://orm.drizzle.team/docs/rqb#many-to-many
+const deviceToLocation = pgTable(
+  'device_to_location',
+  {
+    deviceId: text('device_id')
+      .notNull()
+      .references(() => device.id, {
+        onDelete: 'cascade',
+        onUpdate: 'cascade',
+      }),
+    locationId: integer('location_id')
+      .notNull()
+      .references(() => location.id),
+    time: timestamp('time').defaultNow()
+      .notNull(),
+  },
+  (t) => ({
+    pk: primaryKey({ columns: [t.deviceId, t.locationId, t.time] }),
+    unique: unique().on(t.deviceId, t.locationId, t.time), // Device can only be at one location at the same time
+  }),
+);
 
 const sensor = pgTable('sensor', {
   id: text('id')
@@ -48,15 +74,17 @@ const sensor = pgTable('sensor', {
   title: text('title'),
   unit: text('unit'),
   sensorType: text('sensor_type'),
-  status: status('status').default('inactive'),
+  status: DeviceStatusEnum('status').default('inactive'),
   createdAt: timestamp('created_at').defaultNow()
     .notNull(),
-  updatedAt: timestamp('updated_at').defaultNow()
+  updatedAt: timestamp('updated_at')
+    .defaultNow()
     .notNull()
     .$onUpdateFn(() => new Date()),
-  deviceId: text('device_id').notNull()
+  deviceId: text('device_id')
+    .notNull()
     .references(() => device.id, {
-      onDelete: 'cascade',
+      onDelete: 'cascade'
     }),
   sensorWikiType: text('sensor_wiki_type'),
   sensorWikiPhenomenon: text('sensor_wiki_phenomenon'),
@@ -188,9 +216,30 @@ const measurement = pgTable('measurement', {
  * Relations
  */
 const deviceRelations = relations(device, ({ many, one }) => ({
+  user: one(user, {
+    fields: [device.userId],
+    references: [user.id]
+  }),
   sensors: many(sensor),
+  locations: many(deviceToLocation),
+  logEntries: many(logEntry),
   accessToken: one(accessToken)
 }));
+
+// Many-to-many
+const deviceToLocationRelations = relations(
+  deviceToLocation,
+  ({ one }) => ({
+    device: one(device, {
+      fields: [deviceToLocation.deviceId],
+      references: [device.id],
+    }),
+    geometry: one(location, {
+      fields: [deviceToLocation.locationId],
+      references: [location.id],
+    }),
+  }),
+);
 
 const sensorRelations = relations(sensor, ({ one }) => ({
   device: one(device, {
@@ -242,6 +291,52 @@ const accessTokenRelations = relations(accessToken, ({ one }) => ({
   })
 }));
 
+const location = pgTable(
+  'location',
+  {
+    id: serial('id').primaryKey(),
+    location: geometry('location', {
+      type: 'point',
+      mode: 'xy',
+      srid: 4326
+    }).notNull()
+  },
+  (t) => ({
+    locationIndex: index('location_index').using('gist', t.location),
+    unique_location: unique().on(t.location)
+  })
+);
+
+/**
+ * Relations
+ * 1. One-to-many: Location - Measurement (One location can have many measurements)
+ */
+const locationRelations = relations(location, ({ many }) => ({
+  measurements: many(measurement)
+}));
+
+// Table definition
+const logEntry = pgTable('log_entry', {
+  id: text('id')
+    .primaryKey()
+    .notNull()
+    .$defaultFn(() => createId()),
+  content: text('content').notNull(),
+  createdAt: timestamp('created_at').defaultNow()
+    .notNull(),
+  public: boolean('public').default(false)
+    .notNull(),
+  deviceId: text('device_id').notNull(),
+});
+
+// Relations definition
+const logEntryRelations = relations(logEntry, ({ one }) => ({
+  device: one(device, {
+    fields: [logEntry.deviceId],
+    references: [device.id],
+  }),
+}));
+
 module.exports.accessTokenTable = accessToken;
 module.exports.deviceTable = device;
 module.exports.sensorTable = sensor;
@@ -259,3 +354,9 @@ module.exports.sensorRelations = sensorRelations;
 module.exports.userRelations = userRelations;
 module.exports.profileRelations = profileRelations;
 module.exports.refreshTokenRelations = refreshTokenRelations;
+module.exports.locationTable = location;
+module.exports.locationRelations = locationRelations;
+module.exports.deviceToLocationTable = deviceToLocation;
+module.exports.deviceToLocationRelations = deviceToLocationRelations;
+module.exports.logEntryTable = logEntry;
+module.exports.logEntryRelations = logEntryRelations;

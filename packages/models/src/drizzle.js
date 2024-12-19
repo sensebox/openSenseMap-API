@@ -20,7 +20,14 @@ const {
   accessTokenTable,
   refreshTokenRelations,
   refreshTokenTable,
-  measurementTable
+  measurementTable,
+  locationTable,
+  locationRelations,
+  deviceToLocationTable,
+  deviceToLocationRelations,
+  logEntryTable,
+  logEntryRelations,
+  tokenBlacklistTable
 } = require('../schema/schema');
 
 const getDBUri = function getDBUri (uri) {
@@ -42,7 +49,8 @@ const getDBUri = function getDBUri (uri) {
 };
 
 const pool = new Pool({
-  connectionString: getDBUri()
+  connectionString: getDBUri(),
+  ssl: false
 });
 
 const schema = {
@@ -61,7 +69,14 @@ const schema = {
   userRelations,
   profileRelations,
   accessTokenRelations,
-  refreshTokenRelations
+  refreshTokenRelations,
+  locationTable,
+  locationRelations,
+  deviceToLocationTable,
+  deviceToLocationRelations,
+  logEntryTable,
+  logEntryRelations,
+  tokenBlacklistTable
 };
 
 const db = drizzle(pool, {

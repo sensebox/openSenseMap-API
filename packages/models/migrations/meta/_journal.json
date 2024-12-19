@@ -99,6 +99,13 @@
       "when": 1729860468725,
       "tag": "0013_add_email_confirmation",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1734606789875,
+      "tag": "0014_update_tables_and_relations",
+      "breakpoints": true
     }
   ]
 }

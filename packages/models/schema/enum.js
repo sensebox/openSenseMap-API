@@ -2,7 +2,7 @@
 
 const { pgEnum } = require('drizzle-orm/pg-core');
 
-const deviceModel = pgEnum('model', [
+const DeviceModelEnum = pgEnum('model', [
   'home_v2_lora',
   'home_v2_ethernet',
   'home_v2_ethernet_feinstaub',
@@ -28,24 +28,21 @@ const deviceModel = pgEnum('model', [
   'luftdaten_sps30_bme280',
   'luftdaten_sps30_sht3x',
   'hackair_home_v2',
-  'custom',
+  'custom'
 ]);
 
-const exposure = pgEnum('exposure', [
+// Enum for device exposure types
+const DeviceExposureEnum = pgEnum('exposure', [
   'indoor',
   'outdoor',
   'mobile',
-  'unknown'
+  'unknown',
 ]);
 
-const status = pgEnum('status', [
-  'active',
-  'inactive',
-  'old'
-]);
+const DeviceStatusEnum = pgEnum('status', ['active', 'inactive', 'old']);
 
 module.exports = {
-  deviceModel,
-  exposure,
-  status
+  DeviceModelEnum,
+  DeviceExposureEnum,
+  DeviceStatusEnum
 };
