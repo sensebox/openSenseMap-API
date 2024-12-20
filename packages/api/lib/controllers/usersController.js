@@ -5,7 +5,7 @@ const { InternalServerError, ForbiddenError } = require('restify-errors'),
   {
     checkContentType,
     redactEmail,
-    postToMattermost,
+    postToMattermost
   } = require('../helpers/apiUtils'),
   { retrieveParameters } = require('../helpers/userParamHelpers'),
   handleError = require('../helpers/errorHandler'),
@@ -13,6 +13,7 @@ const { InternalServerError, ForbiddenError } = require('restify-errors'),
     createToken,
     refreshJwt,
     invalidateToken,
+    verifyJwtAndRefreshToken
   } = require('../helpers/jwtHelpers');
 const { findDeviceById } = require('@sensebox/opensensemap-api-models/src/box/box');
 const { findDevicesByUserId } = require('@sensebox/opensensemap-api-models/src/device');
@@ -149,6 +150,10 @@ const signIn = async function signIn (req, res) {
  */
 const refreshJWT = async function refreshJWT (req, res) {
   try {
+    // Check if refreshToken matches JWT Token
+    await verifyJwtAndRefreshToken(req._userParams.token, req._jwtString);
+
+    // Now it´s time to refresh the JWT and invalidate the old one
     const { token, refreshToken, user } = await refreshJwt(
       req._userParams.token
     );

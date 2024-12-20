@@ -89,7 +89,10 @@ const verifyJwt = function verifyJwt (req, res, next) {
     return next(new ForbiddenError(jwtInvalidErrorMessage));
   }
 
-  jwt.verify(jwtString, jwt_secret, jwtVerifyOptions, async function (err, decodedJwt) {
+  jwt.verify(jwtString, jwt_secret, {
+    ...jwtVerifyOptions,
+    ignoreExpiration: req.url === '/users/refresh-auth' ? true : false // ignore expiration for refresh endpoint
+  }, async function (err, decodedJwt) {
     if (err) {
       return next(new ForbiddenError(jwtInvalidErrorMessage));
     }
@@ -118,9 +121,20 @@ const verifyJwt = function verifyJwt (req, res, next) {
   });
 };
 
+const verifyJwtAndRefreshToken = async function verifyJwtAndRefreshToken (refreshToken, jwtString) {
+  if (refreshToken !== hashJWT(jwtString)) {
+    return Promise.reject(
+      new ForbiddenError(
+        'Refresh token invalid or too old. Please sign in with your username and password.'
+      )
+    );
+  }
+};
+
 module.exports = {
   createToken,
   invalidateToken,
   refreshJwt,
-  verifyJwt
+  verifyJwt,
+  verifyJwtAndRefreshToken
 };
