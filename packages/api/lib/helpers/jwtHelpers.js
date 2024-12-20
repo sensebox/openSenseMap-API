@@ -1,14 +1,13 @@
 'use strict';
 
-const { addRefreshToken, deleteRefreshToken, findRefreshToken, findRefreshTokenUser } = require('@sensebox/opensensemap-api-models/src/token/refresh');
+const { addRefreshToken, deleteRefreshToken, findRefreshTokenUser } = require('@sensebox/opensensemap-api-models/src/token/refresh');
 const { findUserByEmailAndRole } = require('@sensebox/opensensemap-api-models/src/user');
 const config = require('config'),
   jwt = require('jsonwebtoken'),
   hashJWT = require('./jwtRefreshTokenHasher'),
-  { addTokenToBlacklist, addTokenHashToBlacklist, isTokenBlacklisted, addRefreshTokenToBlacklist } = require('./tokenBlacklist'),
+  { addTokenToBlacklist, isTokenBlacklisted, addRefreshTokenToBlacklist } = require('./tokenBlacklist'),
   { v4: uuidv4 } = require('uuid'),
   moment = require('moment'),
-  { User } = require('@sensebox/opensensemap-api-models'),
   { ForbiddenError } = require('restify-errors');
 
 const { algorithm: jwt_algorithm, secret: jwt_secret, issuer: jwt_issuer, validity_ms: jwt_validity_ms } = config.get('jwt');

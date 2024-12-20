@@ -1,11 +1,10 @@
 'use strict';
 
-const { User } = require('@sensebox/opensensemap-api-models'),
-  { InternalServerError, ForbiddenError } = require('restify-errors'),
+
+const { InternalServerError, ForbiddenError } = require('restify-errors'),
   {
     checkContentType,
     redactEmail,
-    clearCache,
     postToMattermost,
   } = require('../helpers/apiUtils'),
   { retrieveParameters } = require('../helpers/userParamHelpers'),
@@ -16,7 +15,7 @@ const { User } = require('@sensebox/opensensemap-api-models'),
     invalidateToken,
   } = require('../helpers/jwtHelpers');
 const { findDeviceById } = require('@sensebox/opensensemap-api-models/src/box/box');
-const { findDevices, findDevicesByUserId } = require('@sensebox/opensensemap-api-models/src/device');
+const { findDevicesByUserId } = require('@sensebox/opensensemap-api-models/src/device');
 const { initPasswordReset, resetOldPassword } = require('@sensebox/opensensemap-api-models/src/password');
 const { checkPassword } = require('@sensebox/opensensemap-api-models/src/password/utils');
 const { createUser, findUserByNameOrEmail, resendEmailConfirmation, confirmEmail, destroyUser } = require('@sensebox/opensensemap-api-models/src/user');
@@ -366,7 +365,6 @@ const deleteUser = async function deleteUser (req, res) {
       code: 'Ok',
       message: `User and all boxes of user marked for deletion. Bye Bye ${deletedUser[0].name}!`,
     });
-    // clearCache(['getBoxes', 'getStats']);
     postToMattermost(
       `User deleted: ${req.user.name} (${redactEmail(req.user.email)})`
     );
