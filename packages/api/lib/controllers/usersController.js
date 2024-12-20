@@ -19,7 +19,7 @@ const { findDeviceById } = require('@sensebox/opensensemap-api-models/src/box/bo
 const { findDevices, findDevicesByUserId } = require('@sensebox/opensensemap-api-models/src/device');
 const { initPasswordReset, resetOldPassword } = require('@sensebox/opensensemap-api-models/src/password');
 const { checkPassword } = require('@sensebox/opensensemap-api-models/src/password/utils');
-const { createUser, findUserByNameOrEmail, resendEmailConfirmation, confirmEmail } = require('@sensebox/opensensemap-api-models/src/user');
+const { createUser, findUserByNameOrEmail, resendEmailConfirmation, confirmEmail, destroyUser } = require('@sensebox/opensensemap-api-models/src/user');
 
 /**
  * define for nested user parameter for box creation request
@@ -358,15 +358,15 @@ const deleteUser = async function deleteUser (req, res) {
   const { password } = req._userParams;
 
   try {
-    await req.user.checkPassword(password);
-    invalidateToken(req);
+    await checkPassword(password, req.user.password);
+    await invalidateToken(req);
 
-    await req.user.destroyUser();
+    const deletedUser = await destroyUser(req.user);
     res.send(200, {
       code: 'Ok',
-      message: 'User and all boxes of user marked for deletion. Bye Bye!',
+      message: `User and all boxes of user marked for deletion. Bye Bye ${deletedUser[0].name}!`,
     });
-    clearCache(['getBoxes', 'getStats']);
+    // clearCache(['getBoxes', 'getStats']);
     postToMattermost(
       `User deleted: ${req.user.name} (${redactEmail(req.user.email)})`
     );

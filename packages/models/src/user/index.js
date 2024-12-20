@@ -26,6 +26,9 @@ const findUserByEmailAndRole = async function findUserByEmailAndRole ({
   role
 }) {
   const user = await db.query.userTable.findFirst({
+    with: {
+      password: true
+    },
     where: (user, { eq, and }) =>
       and(eq(user.email, email.toLowerCase(), eq(user.role, role)))
   });
@@ -55,8 +58,12 @@ const createUser = async function createUser (name, email, password, language) {
   }
 };
 
-// TODO: delete User
-const deleteUser = async function deleteUser () {};
+const destroyUser = async function destroyUser (user) {
+  return await db
+    .delete(userTable)
+    .where(eq(userTable.id, user.id))
+    .returning({ name: userTable.name });
+};
 
 const updateUser = async function updateUser (
   userId,
@@ -207,7 +214,7 @@ module.exports = {
   findUserByNameOrEmail,
   findUserByEmailAndRole,
   createUser,
-  deleteUser,
+  destroyUser,
   updateUser,
   confirmEmail,
   resendEmailConfirmation
