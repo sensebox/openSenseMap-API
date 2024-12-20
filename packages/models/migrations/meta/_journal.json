@@ -1,0 +1,118 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1727183815665,
+      "tag": "0000_init_table",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1727196569376,
+      "tag": "0001_init_tsdb",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1727299848109,
+      "tag": "0002_add_password_reset_table",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1727300042343,
+      "tag": "0003_add_cronjob_reset_password_expires",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1727340849500,
+      "tag": "0004_add_updateOn",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1727429631691,
+      "tag": "0005_add_device_access_token",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1727430508941,
+      "tag": "0006_add_ref_sensor_device",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1727431399829,
+      "tag": "0007_add_device_models",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1727688805009,
+      "tag": "0008_init_postgis",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1727689770873,
+      "tag": "0009_add_geometry_column",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1727701542050,
+      "tag": "0010_add_device_tags",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1727774100701,
+      "tag": "0011_drop_unused_columns_sensor",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1729843974723,
+      "tag": "0012_add_token_blacklist",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1729860468725,
+      "tag": "0013_add_email_confirmation",
+      "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1734606789875,
+      "tag": "0014_update_tables_and_relations",
+      "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "7",
+      "when": 1734691173637,
+      "tag": "0015_cascade_user_device",
+      "breakpoints": true
+    }
+  ]
+}

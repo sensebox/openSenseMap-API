@@ -12,6 +12,7 @@
     "Felix Erdmann"
   ],
   "dependencies": {
+    "@paralleldrive/cuid2": "^2.2.2",
     "@sensebox/opensensemap-api-models": "3.3.0",
     "@turf/area": "^6.5.0",
     "@turf/bbox": "^6.5.0",

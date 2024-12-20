@@ -1,12 +1,13 @@
 'use strict';
 
+const { addRefreshToken, deleteRefreshToken, findRefreshTokenUser } = require('@sensebox/opensensemap-api-models/src/token/refresh');
+const { findUserByEmailAndRole } = require('@sensebox/opensensemap-api-models/src/user');
 const config = require('config'),
   jwt = require('jsonwebtoken'),
   hashJWT = require('./jwtRefreshTokenHasher'),
-  { addTokenToBlacklist, addTokenHashToBlacklist, isTokenBlacklisted } = require('./tokenBlacklist'),
+  { addTokenToBlacklist, isTokenBlacklisted, addRefreshTokenToBlacklist } = require('./tokenBlacklist'),
   { v4: uuidv4 } = require('uuid'),
   moment = require('moment'),
-  { User } = require('@sensebox/opensensemap-api-models'),
   { ForbiddenError } = require('restify-errors');
 
 const { algorithm: jwt_algorithm, secret: jwt_secret, issuer: jwt_issuer, validity_ms: jwt_validity_ms } = config.get('jwt');
@@ -38,15 +39,10 @@ const createToken = function createToken (user) {
       // and set the refreshTokenExpires to 1 week
       // it is a HMAC of the jwt string
       const refreshToken = hashJWT(token);
+      const refreshTokenExpiresAt = moment.utc().add(Number(refresh_token_validity_ms), 'ms')
+        .toDate();
       try {
-        await user.update({
-          $set: {
-            refreshToken,
-            refreshTokenExpires: moment.utc()
-              .add(Number(refresh_token_validity_ms), 'ms')
-              .toDate()
-          }
-        }).exec();
+        await addRefreshToken(user.id, refreshToken, refreshTokenExpiresAt);
 
         return resolve({ token, refreshToken });
       } catch (err) {
@@ -56,20 +52,23 @@ const createToken = function createToken (user) {
   });
 };
 
-const invalidateToken = function invalidateToken ({ user, _jwt, _jwtString } = {}) {
-  createToken(user);
+const invalidateToken = async function invalidateToken ({ user, _jwt, _jwtString } = {}) {
+  // createToken(user); // TODO: why do we create a new token here?!?!
+  const hash = hashJWT(_jwtString);
+  await deleteRefreshToken(hash);
   addTokenToBlacklist(_jwt, _jwtString);
 };
 
 const refreshJwt = async function refreshJwt (refreshToken) {
-  const user = await User.findOne({ refreshToken, refreshTokenExpires: { $gte: moment.utc().toDate() } });
+  // const user = await User.findOne({ refreshToken, refreshTokenExpires: { $gte: moment.utc().toDate() } });
+  const user = await findRefreshTokenUser(refreshToken);
 
   if (!user) {
     throw new ForbiddenError('Refresh token invalid or too old. Please sign in with your username and password.');
   }
 
-  // invalidate old token
-  addTokenHashToBlacklist(refreshToken);
+  // Add the old refresh token to the blacklist
+  addRefreshTokenToBlacklist(refreshToken);
 
   const { token, refreshToken: newRefreshToken } = await createToken(user);
 
@@ -90,19 +89,21 @@ const verifyJwt = function verifyJwt (req, res, next) {
     return next(new ForbiddenError(jwtInvalidErrorMessage));
   }
 
-  jwt.verify(jwtString, jwt_secret, jwtVerifyOptions, function (err, decodedJwt) {
+  jwt.verify(jwtString, jwt_secret, {
+    ...jwtVerifyOptions,
+    ignoreExpiration: req.url === '/users/refresh-auth' ? true : false // ignore expiration for refresh endpoint
+  }, async function (err, decodedJwt) {
     if (err) {
       return next(new ForbiddenError(jwtInvalidErrorMessage));
     }
 
     // check if the token is blacklisted by performing a hmac digest on the string representation of the jwt.
     // also checks the existence of the jti claim
-    if (isTokenBlacklisted(decodedJwt, jwtString)) {
+    if (await isTokenBlacklisted(decodedJwt, jwtString)) {
       return next(new ForbiddenError(jwtInvalidErrorMessage));
     }
 
-    User.findOne({ email: decodedJwt.sub.toLowerCase(), role: decodedJwt.role })
-      .exec()
+    findUserByEmailAndRole({ email: decodedJwt.sub.toLowerCase(), role: decodedJwt.role })
       .then(function (user) {
         if (!user) {
           throw new Error();
@@ -120,9 +121,20 @@ const verifyJwt = function verifyJwt (req, res, next) {
   });
 };
 
+const verifyJwtAndRefreshToken = async function verifyJwtAndRefreshToken (refreshToken, jwtString) {
+  if (refreshToken !== hashJWT(jwtString)) {
+    return Promise.reject(
+      new ForbiddenError(
+        'Refresh token invalid or too old. Please sign in with your username and password.'
+      )
+    );
+  }
+};
+
 module.exports = {
   createToken,
   invalidateToken,
   refreshJwt,
-  verifyJwt
+  verifyJwt,
+  verifyJwtAndRefreshToken
 };
