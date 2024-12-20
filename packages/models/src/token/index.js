@@ -13,6 +13,14 @@ const insertTokenToBlacklist = async function (hash, token) {
   });
 };
 
+const insertTokenToBlacklistWithExpiresAt = async function (hash, token, expiresAt) {
+  await db.insert(tokenBlacklistTable).values({
+    hash,
+    token,
+    expiresAt: moment.unix(expiresAt)
+  });
+};
+
 const findToken = async function (hash) {
   const blacklistedToken = await db.select().from(tokenBlacklistTable)
     .where(eq(tokenBlacklistTable.hash, hash));
@@ -22,5 +30,6 @@ const findToken = async function (hash) {
 
 module.exports = {
   findToken,
-  insertTokenToBlacklist
+  insertTokenToBlacklist,
+  insertTokenToBlacklistWithExpiresAt
 };

@@ -5,7 +5,7 @@ const { findUserByEmailAndRole } = require('@sensebox/opensensemap-api-models/sr
 const config = require('config'),
   jwt = require('jsonwebtoken'),
   hashJWT = require('./jwtRefreshTokenHasher'),
-  { addTokenToBlacklist, addTokenHashToBlacklist, isTokenBlacklisted } = require('./tokenBlacklist'),
+  { addTokenToBlacklist, addTokenHashToBlacklist, isTokenBlacklisted, addRefreshTokenToBlacklist } = require('./tokenBlacklist'),
   { v4: uuidv4 } = require('uuid'),
   moment = require('moment'),
   { User } = require('@sensebox/opensensemap-api-models'),
@@ -68,8 +68,8 @@ const refreshJwt = async function refreshJwt (refreshToken) {
     throw new ForbiddenError('Refresh token invalid or too old. Please sign in with your username and password.');
   }
 
-  // TODO: invalidate old token
-  // addTokenHashToBlacklist(refreshToken);
+  // Add the old refresh token to the blacklist
+  addRefreshTokenToBlacklist(refreshToken);
 
   const { token, refreshToken: newRefreshToken } = await createToken(user);
 

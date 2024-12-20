@@ -1,11 +1,11 @@
 'use strict';
 
 const crypto = require('crypto');
-const { deviceTable, sensorTable, accessTokenTable } = require('../../schema/schema');
+const { deviceTable, sensorTable, accessTokenTable, deviceToLocationTable, locationTable } = require('../../schema/schema');
 const sensorLayouts = require('../box/sensorLayouts');
 const { db } = require('../drizzle');
 const ModelError = require('../modelError');
-const { inArray, arrayContains, sql, eq, asc, ilike, getTableColumns } = require('drizzle-orm');
+const { inArray, arrayContains, sql, eq, asc, ilike } = require('drizzle-orm');
 const { insertMeasurement, insertMeasurements } = require('../measurement');
 const SketchTemplater = require('@sensebox/sketch-templater');
 
@@ -94,42 +94,78 @@ const createDevice = async function createDevice (userId, params) {
     }
   }
 
-  // TODO: handle in transaction
-  const [device] = await db
-    .insert(deviceTable)
-    .values({
-      userId,
-      name,
-      exposure,
-      description,
-      latitude: location[1],
-      longitude: location[0],
-      location: sql`ST_SetSRID(ST_MakePoint(${location[1]}, ${location[0]}), 4326)`,
-      useAuth,
-      model,
-      tags: grouptag
-    })
-    .returning();
+  // Handle everything in a transaction to ensure consistency
+  const device = await db.transaction(async (tx) => {
+    const [device] = await tx
+      .insert(deviceTable)
+      .values({
+        userId,
+        name,
+        exposure,
+        description,
+        useAuth,
+        model,
+        latitude: location[1],
+        longitude: location[0],
+        tags: grouptag
+      })
+      .returning();
 
-  const [accessToken] = await db.insert(accessTokenTable).values({
-    deviceId: device.id,
-    token: crypto.randomBytes(32).toString('hex')
-  })
-    .returning({ token: accessTokenTable.token });
+    const [geometry] = await tx
+      .insert(locationTable)
+      .values({
+        location: sql`ST_SetSRID(ST_MakePoint(${location[1]}, ${location[0]}), 4326)`
+      })
+      .onConflictDoNothing()
+      .returning({ id: locationTable.id });
 
-  // Iterate over sensors and add device id
-  sensors = sensors.map((sensor) => ({
-    deviceId: device.id,
-    ...sensor
-  }));
+    if (geometry) {
+      // Create location relation
+      await tx
+        .insert(deviceToLocationTable)
+        .values({ deviceId: device.id, locationId: geometry.id });
+    } else {
+      // Get location id
+      const geom = await tx.query.locationTable.findFirst({
+        columns: {
+          id: true
+        },
+        where: sql`ST_Equals(${locationTable.location}, ST_SetSRID(ST_MakePoint(${location[1]}, ${location[0]}), 4326))`
+      });
 
-  const deviceSensors = await db.insert(sensorTable).values(sensors)
-    .returning();
+      // Create location relation
+      await tx
+        .insert(deviceToLocationTable)
+        .values({ deviceId: device.id, locationId: geom.id });
+    }
 
-  device['accessToken'] = accessToken.token;
-  device['sensors'] = deviceSensors;
+    const [accessToken] = await tx
+      .insert(accessTokenTable)
+      .values({
+        deviceId: device.id,
+        token: crypto.randomBytes(32).toString('hex')
+      })
+      .returning({ token: accessTokenTable.token });
+
+    // Iterate over sensors and add device id
+    sensors = sensors.map((sensor) => ({
+      deviceId: device.id,
+      ...sensor
+    }));
+
+    const deviceSensors = await tx
+      .insert(sensorTable)
+      .values(sensors)
+      .returning();
+
+    device['accessToken'] = accessToken.token;
+    device['sensors'] = deviceSensors;
+
+    return device;
+  });
 
   return device;
+
 };
 
 const deleteDevice = async function (filter) {

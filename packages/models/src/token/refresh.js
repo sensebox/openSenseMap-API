@@ -24,7 +24,7 @@ const findRefreshTokenUser = async function findRefreshTokenUser (token) {
     }
   });
 
-  return token1.user;
+  return token1 ? token1.user : token1;
 };
 
 module.exports = {
