@@ -29,7 +29,7 @@ const addTokenToBlacklist = function addTokenToBlacklist (token, tokenString) {
 };
 
 const addRefreshTokenToBlacklist = function addRefreshTokenToBlacklist (refreshToken) {
-  insertTokenToBlacklistWithExpiresAt('', refreshToken, moment.utc().add(1, 'week')
+  insertTokenToBlacklistWithExpiresAt(refreshToken, '', moment.utc().add(1, 'week')
     .unix());
 };
 
