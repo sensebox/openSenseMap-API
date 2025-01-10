@@ -54,24 +54,24 @@ services:
       - db
       - redis-stack
 
-  mailer:
-    image: ghcr.io/opensensemap/mailer:main
-    platform: linux/amd64
-    environment:
-      - SMTP_HOST=mailhog
-      - SMTP_PORT=1025
-      - SMTP_SECURE=false
-      - SMTP_USERNAME=ignored
-      - SMTP_PASSWORD=ignored
-      - REDIS_HOST=redis-stack
-      - REDIS_PORT=6379
-      - REDIS_USERNAME=queue
-      - REDIS_PASSWORD=somepassword
-      - REDIS_DB=0
-      - BULLMQ_QUEUE_NAME=mails
-    depends_on:
-      - mailhog
-      - redis-stack
+  # mailer:
+  #   image: ghcr.io/opensensemap/mailer:main
+  #   platform: linux/amd64
+  #   environment:
+  #     - SMTP_HOST=mailhog
+  #     - SMTP_PORT=1025
+  #     - SMTP_SECURE=false
+  #     - SMTP_USERNAME=ignored
+  #     - SMTP_PASSWORD=ignored
+  #     - REDIS_HOST=redis-stack
+  #     - REDIS_PORT=6379
+  #     - REDIS_USERNAME=queue
+  #     - REDIS_PASSWORD=somepassword
+  #     - REDIS_DB=0
+  #     - BULLMQ_QUEUE_NAME=mails
+  #   depends_on:
+  #     - mailhog
+  #     - redis-stack
 
   mailhog:
     image: mailhog/mailhog:v1.0.1
@@ -79,27 +79,27 @@ services:
     ports:
       - "8025:8025"
 
-  mqtt-osem-integration:
-    image: ghcr.io/sensebox/mqtt-osem-integration:v0.1.0
-    platform: linux/amd64
-    depends_on:
-      - db
-    environment:
-      NODE_CONFIG: |-
-        {
-          "grpc": {
-            "certificates": {
-              "ca_cert": "-----BEGIN CERTIFICATE-----\nMIIE8jCCAtqgAwIBAgIBATANBgkqhkiG9w0BAQsFADAZMRcwFQYDVQQDEw5vcGVu\nU2Vuc2VNYXBDQTAeFw0xODAxMjQxMzQ1NDlaFw0yODAxMjQxMzQ1NDlaMBkxFzAV\nBgNVBAMTDm9wZW5TZW5zZU1hcENBMIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIIC\nCgKCAgEAtRv1MmOOMnL1vqaFF1uf6XzHvUUkFoQsktRMQgr4Kq4TpBJdt2yrEWAf\ngBup20//Hb3pu1tGHnINRlrfnRbu/0Twq0iXP+zjzrn1TIppbQb8Hr5gci25vY8e\nfc3ZRhYDrPyf+Z+F3U5Skr2itvBEshSiy3L53YG+JJ6ohPeVW3ePoBOIZvFYEGNV\nDsEbt3DVAjdFOfB4SypZG9UyX8xNUw7aAbjLib9CkdT2hEDiZ6iiKDklxZnNt1fm\nYQ/FGJRMd3ZTMddrGcexPSY1dQOJHrnlf+fVkahfqLD4RmVaL0O4cc/e/YIJQEZi\nblD+cUduKl0itkeXj1PEbYyngGixkJ+9+WuZvOwTqNrCgWU1uXrRH3UKn2XGYQau\nauq4AqnEgvMSev7nxdXEznzey1ugEeNSHXyyvj70KrUEHJ1kL4aL53YD0Xd8Y0hL\n88MHl3GkjkojZ68U0a/0TUSfTuv+JdP19HfZY5qVKst1309tlgaOiQXafAsiVBRr\ncieFHXxvoruQy/6pTwGRtfWbyujib+xXaTX36y08IXK0Jb45WJDoVgPswsHYqF6E\n/AH0NSRZrXckfMQviUea27/lOD1M96cwslDjvOngJdUu1zBGLdfQ8SWcs1HqdG7i\nq+Iuh/UGq4aJgRTENEBrc4kjQQyZszXBJmRxAWKIgN0h+jEzGIsCAwEAAaNFMEMw\nDgYDVR0PAQH/BAQDAgEGMBIGA1UdEwEB/wQIMAYBAf8CAQAwHQYDVR0OBBYEFJl6\n7zgZ/9GRVgb1dBglkSyXfGNRMA0GCSqGSIb3DQEBCwUAA4ICAQBYJIxwwt+/C1+6\nyjIDzQ6wkfdDWzBj9kfV90plp4zX7rhT+M2t/en0/lN2BgK3J1fw+PWbku6A19hA\nniZ/mBZrKki0UzzqGO1/ovh3izC2zeRL1lqwxdxj29+2waPk2vH/sy97AuY3q/5G\nE+H96RReOJZxysIAg2UxXpvgdupnTGMrh+fuU7iGm9NYLSLuD2SaZY/ZThSPFXOh\nb59W6gMmNKo6rN09jj994rJQfsxH2JOkqiTHfwXp3Ch4Zg80XC9RvvRk6S4dtnLe\npQy+Bg3YjQ+sSUIaNrvWoP8ut+9aHdfSlQi/7aYD7tYEhdTK7G++4RWZ0C31G9an\n6Yjcg1lJDWkP+ii91danhisdCwP2xteRXzpFM/uJ/dY+xBaX/Kp12bhF8PzbgJHa\nrsDApLlywVSrZtglSJ5eBhDbuLPEGqATWCExvlPO2R4MF1CID/+aybj5o9Zfmok4\nU8Z1QwLZElpTh1OhkYCyIzRJ2eG1Hx6svLh6nx4ai3iumbjzWh+E4xrncdTBA6hk\nRKF+yZKDfpFF8iwemKExthQwCSjqEGi6bYf02Gw6A226FSqdD2Tw0TghnXtT9fQ6\nyBx1uNSDDXdCFWmPzvZIMLe335mP2RKQrcGIbAUi0WgTuqFNyCshnoWmQigP6lqK\nC5m4Hth2wvbwzeqDD2kvRQfpipy9Cw==\n-----END CERTIFICATE-----\n",
-              "server_cert": "-----BEGIN CERTIFICATE-----\nMIIFajCCA1KgAwIBAgIQBVxnXzVjuOz8ThLtyglyfDANBgkqhkiG9w0BAQsFADAZ\nMRcwFQYDVQQDEw5vcGVuU2Vuc2VNYXBDQTAeFw0xODAxMjQxMzQ2MTFaFw0yODAx\nMjQxMzQ1NDhaMCcxJTAjBgNVBAMMHG1xdHQtb3NlbS1pbnRlZ3JhdGlvbl9zZXJ2\nZXIwggIiMA0GCSqGSIb3DQEBAQUAA4ICDwAwggIKAoICAQC1G/UyY44ycvW+poUX\nW5/pfMe9RSQWhCyS1ExCCvgqrhOkEl23bKsRYB+AG6nbT/8dvem7W0Yecg1GWt+d\nFu7/RPCrSJc/7OPOufVMimltBvwevmByLbm9jx59zdlGFgOs/J/5n4XdTlKSvaK2\n8ESyFKLLcvndgb4knqiE95Vbd4+gE4hm8VgQY1UOwRu3cNUCN0U58HhLKlkb1TJf\nzE1TDtoBuMuJv0KR1PaEQOJnqKIoOSXFmc23V+ZhD8UYlEx3dlMx12sZx7E9JjV1\nA4keueV/59WRqF+osPhGZVovQ7hxz979gglARmJuUP5xR24qXSK2R5ePU8RtjKeA\naLGQn735a5m87BOo2sKBZTW5etEfdQqfZcZhBq5q6rgCqcSC8xJ6/ufF1cTOfN7L\nW6AR41IdfLK+PvQqtQQcnWQvhovndgPRd3xjSEvzwweXcaSOSiNnrxTRr/RNRJ9O\n6/4l0/X0d9ljmpUqy3XfT22WBo6JBdp8CyJUFGtyJ4UdfG+iu5DL/qlPAZG19ZvK\n6OJv7FdpNffrLTwhcrQlvjlYkOhWA+zCwdioXoT8AfQ1JFmtdyR8xC+JR5rbv+U4\nPUz3pzCyUOO86eAl1S7XMEYt19DxJZyzUep0buKr4i6H9QarhomBFMQ0QGtziSNB\nDJmzNcEmZHEBYoiA3SH6MTMYiwIDAQABo4GfMIGcMA4GA1UdDwEB/wQEAwIDuDAd\nBgNVHSUEFjAUBggrBgEFBQcDAQYIKwYBBQUHAwIwHQYDVR0OBBYEFJl67zgZ/9GR\nVgb1dBglkSyXfGNRMB8GA1UdIwQYMBaAFJl67zgZ/9GRVgb1dBglkSyXfGNRMCsG\nA1UdEQQkMCKCFW1xdHQtb3NlbS1pbnRlZ3JhdGlvboIJbG9jYWxob3N0MA0GCSqG\nSIb3DQEBCwUAA4ICAQA0AUViYK7DpfljVsmQG6S5S94pXHtUvG3qO8zHZu/NIkVA\nqZS+1DNN0ER9n0WNQuoFwUSgMEPFG++lrCMYFLFfGT1kHEILx8RD5Zk1n3LbInVc\n/fZOpfYqDQo6dw+J9nq1tKAVYajKq267EfmrOmoGnyR7mg+3kA21Nxm6vkzFEEBM\nQKjN35wbpjC5VV71wB7ERy/9WCwkzxOe+Da5xAN0fEW9aNSp1+VBMKUOugMlRAbF\n5SSO1lHFClsPGhUGrTk4Ng/gja77llPr3yMGP5TDyJKUvLU/6LAzLQGWyz8IPl4f\nnHRi0+wHnI7TN8jmBkoDd5Mf9TXIqAEAo3HuiQs0tGaVCPWksj8u8gzL5YcuOaN/\nypQVHqh69m8XRMHyffz3pqKK8s/3zg1jsZQcZlDB8BtBaRmagX5ZxT+hw4Flgi/w\nYNr5greSdRM9mSFzPqy+God23OGvZCcqS/KI1r8fsThf18xavD5ThI2Pb6NXxQ1l\nu1Lz38J0WPH9XUnMQsDw4D+Kycjt+FD67U6VOOQsStm578spNQoDA1dtfMZfUxAx\nFn22CSqwyEpkSpA2b1c0XYMyO0iUwuFPVM2EIpD9cYeqTuo8my4o6ad0nqMRV+oo\nys16TAfoKOlivdSKrHZOVRLdJS/GWn8GAtxhHdv+aNo5EoiFFKtYMsbpKyzQtQ==\n-----END CERTIFICATE-----\n",
-              "server_key": "-----BEGIN RSA PRIVATE KEY-----\n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\n-----END RSA PRIVATE KEY-----\n"
-            }
-          },
-          "openSenseMap-API-models": {
-            "db": {
-              "database_url": "postgresql://postgres:postgres@db:5432/opensensemap"
-            }
-          }
-        }
+  # mqtt-osem-integration:
+  #   image: ghcr.io/sensebox/mqtt-osem-integration:v0.1.0
+  #   platform: linux/amd64
+  #   depends_on:
+  #     - db
+  #   environment:
+  #     NODE_CONFIG: |-
+  #       {
+  #         "grpc": {
+  #           "certificates": {
+  #             "ca_cert": "-----BEGIN CERTIFICATE-----\nMIIE8jCCAtqgAwIBAgIBATANBgkqhkiG9w0BAQsFADAZMRcwFQYDVQQDEw5vcGVu\nU2Vuc2VNYXBDQTAeFw0xODAxMjQxMzQ1NDlaFw0yODAxMjQxMzQ1NDlaMBkxFzAV\nBgNVBAMTDm9wZW5TZW5zZU1hcENBMIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIIC\nCgKCAgEAtRv1MmOOMnL1vqaFF1uf6XzHvUUkFoQsktRMQgr4Kq4TpBJdt2yrEWAf\ngBup20//Hb3pu1tGHnINRlrfnRbu/0Twq0iXP+zjzrn1TIppbQb8Hr5gci25vY8e\nfc3ZRhYDrPyf+Z+F3U5Skr2itvBEshSiy3L53YG+JJ6ohPeVW3ePoBOIZvFYEGNV\nDsEbt3DVAjdFOfB4SypZG9UyX8xNUw7aAbjLib9CkdT2hEDiZ6iiKDklxZnNt1fm\nYQ/FGJRMd3ZTMddrGcexPSY1dQOJHrnlf+fVkahfqLD4RmVaL0O4cc/e/YIJQEZi\nblD+cUduKl0itkeXj1PEbYyngGixkJ+9+WuZvOwTqNrCgWU1uXrRH3UKn2XGYQau\nauq4AqnEgvMSev7nxdXEznzey1ugEeNSHXyyvj70KrUEHJ1kL4aL53YD0Xd8Y0hL\n88MHl3GkjkojZ68U0a/0TUSfTuv+JdP19HfZY5qVKst1309tlgaOiQXafAsiVBRr\ncieFHXxvoruQy/6pTwGRtfWbyujib+xXaTX36y08IXK0Jb45WJDoVgPswsHYqF6E\n/AH0NSRZrXckfMQviUea27/lOD1M96cwslDjvOngJdUu1zBGLdfQ8SWcs1HqdG7i\nq+Iuh/UGq4aJgRTENEBrc4kjQQyZszXBJmRxAWKIgN0h+jEzGIsCAwEAAaNFMEMw\nDgYDVR0PAQH/BAQDAgEGMBIGA1UdEwEB/wQIMAYBAf8CAQAwHQYDVR0OBBYEFJl6\n7zgZ/9GRVgb1dBglkSyXfGNRMA0GCSqGSIb3DQEBCwUAA4ICAQBYJIxwwt+/C1+6\nyjIDzQ6wkfdDWzBj9kfV90plp4zX7rhT+M2t/en0/lN2BgK3J1fw+PWbku6A19hA\nniZ/mBZrKki0UzzqGO1/ovh3izC2zeRL1lqwxdxj29+2waPk2vH/sy97AuY3q/5G\nE+H96RReOJZxysIAg2UxXpvgdupnTGMrh+fuU7iGm9NYLSLuD2SaZY/ZThSPFXOh\nb59W6gMmNKo6rN09jj994rJQfsxH2JOkqiTHfwXp3Ch4Zg80XC9RvvRk6S4dtnLe\npQy+Bg3YjQ+sSUIaNrvWoP8ut+9aHdfSlQi/7aYD7tYEhdTK7G++4RWZ0C31G9an\n6Yjcg1lJDWkP+ii91danhisdCwP2xteRXzpFM/uJ/dY+xBaX/Kp12bhF8PzbgJHa\nrsDApLlywVSrZtglSJ5eBhDbuLPEGqATWCExvlPO2R4MF1CID/+aybj5o9Zfmok4\nU8Z1QwLZElpTh1OhkYCyIzRJ2eG1Hx6svLh6nx4ai3iumbjzWh+E4xrncdTBA6hk\nRKF+yZKDfpFF8iwemKExthQwCSjqEGi6bYf02Gw6A226FSqdD2Tw0TghnXtT9fQ6\nyBx1uNSDDXdCFWmPzvZIMLe335mP2RKQrcGIbAUi0WgTuqFNyCshnoWmQigP6lqK\nC5m4Hth2wvbwzeqDD2kvRQfpipy9Cw==\n-----END CERTIFICATE-----\n",
+  #             "server_cert": "-----BEGIN CERTIFICATE-----\nMIIFajCCA1KgAwIBAgIQBVxnXzVjuOz8ThLtyglyfDANBgkqhkiG9w0BAQsFADAZ\nMRcwFQYDVQQDEw5vcGVuU2Vuc2VNYXBDQTAeFw0xODAxMjQxMzQ2MTFaFw0yODAx\nMjQxMzQ1NDhaMCcxJTAjBgNVBAMMHG1xdHQtb3NlbS1pbnRlZ3JhdGlvbl9zZXJ2\nZXIwggIiMA0GCSqGSIb3DQEBAQUAA4ICDwAwggIKAoICAQC1G/UyY44ycvW+poUX\nW5/pfMe9RSQWhCyS1ExCCvgqrhOkEl23bKsRYB+AG6nbT/8dvem7W0Yecg1GWt+d\nFu7/RPCrSJc/7OPOufVMimltBvwevmByLbm9jx59zdlGFgOs/J/5n4XdTlKSvaK2\n8ESyFKLLcvndgb4knqiE95Vbd4+gE4hm8VgQY1UOwRu3cNUCN0U58HhLKlkb1TJf\nzE1TDtoBuMuJv0KR1PaEQOJnqKIoOSXFmc23V+ZhD8UYlEx3dlMx12sZx7E9JjV1\nA4keueV/59WRqF+osPhGZVovQ7hxz979gglARmJuUP5xR24qXSK2R5ePU8RtjKeA\naLGQn735a5m87BOo2sKBZTW5etEfdQqfZcZhBq5q6rgCqcSC8xJ6/ufF1cTOfN7L\nW6AR41IdfLK+PvQqtQQcnWQvhovndgPRd3xjSEvzwweXcaSOSiNnrxTRr/RNRJ9O\n6/4l0/X0d9ljmpUqy3XfT22WBo6JBdp8CyJUFGtyJ4UdfG+iu5DL/qlPAZG19ZvK\n6OJv7FdpNffrLTwhcrQlvjlYkOhWA+zCwdioXoT8AfQ1JFmtdyR8xC+JR5rbv+U4\nPUz3pzCyUOO86eAl1S7XMEYt19DxJZyzUep0buKr4i6H9QarhomBFMQ0QGtziSNB\nDJmzNcEmZHEBYoiA3SH6MTMYiwIDAQABo4GfMIGcMA4GA1UdDwEB/wQEAwIDuDAd\nBgNVHSUEFjAUBggrBgEFBQcDAQYIKwYBBQUHAwIwHQYDVR0OBBYEFJl67zgZ/9GR\nVgb1dBglkSyXfGNRMB8GA1UdIwQYMBaAFJl67zgZ/9GRVgb1dBglkSyXfGNRMCsG\nA1UdEQQkMCKCFW1xdHQtb3NlbS1pbnRlZ3JhdGlvboIJbG9jYWxob3N0MA0GCSqG\nSIb3DQEBCwUAA4ICAQA0AUViYK7DpfljVsmQG6S5S94pXHtUvG3qO8zHZu/NIkVA\nqZS+1DNN0ER9n0WNQuoFwUSgMEPFG++lrCMYFLFfGT1kHEILx8RD5Zk1n3LbInVc\n/fZOpfYqDQo6dw+J9nq1tKAVYajKq267EfmrOmoGnyR7mg+3kA21Nxm6vkzFEEBM\nQKjN35wbpjC5VV71wB7ERy/9WCwkzxOe+Da5xAN0fEW9aNSp1+VBMKUOugMlRAbF\n5SSO1lHFClsPGhUGrTk4Ng/gja77llPr3yMGP5TDyJKUvLU/6LAzLQGWyz8IPl4f\nnHRi0+wHnI7TN8jmBkoDd5Mf9TXIqAEAo3HuiQs0tGaVCPWksj8u8gzL5YcuOaN/\nypQVHqh69m8XRMHyffz3pqKK8s/3zg1jsZQcZlDB8BtBaRmagX5ZxT+hw4Flgi/w\nYNr5greSdRM9mSFzPqy+God23OGvZCcqS/KI1r8fsThf18xavD5ThI2Pb6NXxQ1l\nu1Lz38J0WPH9XUnMQsDw4D+Kycjt+FD67U6VOOQsStm578spNQoDA1dtfMZfUxAx\nFn22CSqwyEpkSpA2b1c0XYMyO0iUwuFPVM2EIpD9cYeqTuo8my4o6ad0nqMRV+oo\nys16TAfoKOlivdSKrHZOVRLdJS/GWn8GAtxhHdv+aNo5EoiFFKtYMsbpKyzQtQ==\n-----END CERTIFICATE-----\n",
+  #             "server_key": "-----BEGIN RSA PRIVATE KEY-----\n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\n-----END RSA PRIVATE KEY-----\n"
+  #           }
+  #         },
+  #         "openSenseMap-API-models": {
+  #           "db": {
+  #             "database_url": "postgresql://postgres:postgres@db:5432/opensensemap"
+  #           }
+  #         }
+  #       }
 
   mosquitto:
     image: eclipse-mosquitto:2.0.12
