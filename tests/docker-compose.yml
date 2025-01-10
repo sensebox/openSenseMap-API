@@ -48,6 +48,11 @@ services:
           },
           "sketch-templater": {
             "ingress_domain": "test.ingress.domain"
+          },
+          "opensensemap-migrations": {
+            "db": {
+              "database_url": "postgresql://postgres:postgres@db:5432/opensensemap"
+            }
           }
         }
     depends_on:
