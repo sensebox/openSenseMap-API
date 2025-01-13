@@ -1,6 +1,7 @@
 'use strict';
 
 const { v4: uuidv4 } = require('uuid');
+const invariant = require('tiny-invariant');
 
 const { userTable, passwordTable } = require('../../schema/schema');
 const { db } = require('../drizzle');
@@ -8,6 +9,18 @@ const { createProfile } = require('../profile/profile');
 const { eq } = require('drizzle-orm');
 const ModelError = require('../modelError');
 const { checkPassword, validatePassword, passwordHasher } = require('../password/utils');
+
+const validateField = function validateField (field, expr, msg) {
+  try {
+    invariant(expr, msg);
+  } catch (error) {
+    const err = new Error();
+    err.name = 'ValidationError';
+    err.errors = [];
+    err.errors[field] = { message: msg };
+    throw err;
+  }
+}
 
 const findUserByNameOrEmail = async function findUserByNameOrEmail (
   emailOrName
@@ -37,7 +50,16 @@ const findUserByEmailAndRole = async function findUserByEmailAndRole ({
 };
 
 const createUser = async function createUser (name, email, password, language) {
+
   try {
+    validateField('name', name.length > 0, 'Name is required');
+    validateField('password', validatePassword(password), 'Password must be at least 8 characters');
+  } catch (error) {
+    throw error;
+  }
+
+  try {
+    // TODO: Wrap this in a transaction
     const hashedPassword = await passwordHasher(password);
     const user = await db
       .insert(userTable)
@@ -55,6 +77,7 @@ const createUser = async function createUser (name, email, password, language) {
     return user[0];
   } catch (error) {
     console.log(error);
+    throw error;
   }
 };
 
