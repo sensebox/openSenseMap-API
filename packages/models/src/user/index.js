@@ -14,13 +14,14 @@ const validateField = function validateField (field, expr, msg) {
   try {
     invariant(expr, msg);
   } catch (error) {
-    const err = new Error();
+    const err = new Error(msg);
     err.name = 'ValidationError';
-    err.errors = [];
-    err.errors[field] = { message: msg };
+    err.errors = {
+      [field]: { message: msg }
+    };
     throw err;
   }
-}
+};
 
 const findUserByNameOrEmail = async function findUserByNameOrEmail (
   emailOrName
@@ -51,12 +52,8 @@ const findUserByEmailAndRole = async function findUserByEmailAndRole ({
 
 const createUser = async function createUser (name, email, password, language) {
 
-  try {
-    validateField('name', name.length > 0, 'Name is required');
-    validateField('password', validatePassword(password), 'Password must be at least 8 characters');
-  } catch (error) {
-    throw error;
-  }
+  validateField('name', name.length > 0, 'Name is required');
+  validateField('password', validatePassword(password), 'Password must be at least 8 characters');
 
   try {
     // TODO: Wrap this in a transaction
