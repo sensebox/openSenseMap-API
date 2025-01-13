@@ -3,12 +3,17 @@
 const { v4: uuidv4 } = require('uuid');
 const invariant = require('tiny-invariant');
 
-const { userTable, passwordTable } = require('../../schema/schema');
+const { userTable, passwordTable, profileTable } = require('../../schema/schema');
 const { db } = require('../drizzle');
 const { createProfile } = require('../profile/profile');
 const { eq } = require('drizzle-orm');
 const ModelError = require('../modelError');
 const { checkPassword, validatePassword, passwordHasher } = require('../password/utils');
+const IsEmail = require('isemail');
+
+const userNameRequirementsText = 'Parameter name must consist of at least 3 and up to 40 alphanumerics (a-zA-Z0-9), dot (.), dash (-), underscore (_) and spaces.';
+const nameValidRegex =
+  /^[^~`!@#$%^&*()+=£€{}[\]|\\:;"'<>,?/\n\r\t\s][^~`!@#$%^&*()+=£€{}[\]|\\:;"'<>,?/\n\r\t]{1,39}[^~`!@#$%^&*()+=£€{}[\]|\\:;"'<>,?/\n\r\t\s]$/;
 
 const validateField = function validateField (field, expr, msg) {
   try {
@@ -53,29 +58,41 @@ const findUserByEmailAndRole = async function findUserByEmailAndRole ({
 const createUser = async function createUser (name, email, password, language) {
 
   validateField('name', name.length > 0, 'Name is required');
+  validateField(
+    'name',
+    name.length > 3 && name.length < 40,
+    userNameRequirementsText
+  );
+  validateField('name', nameValidRegex.test(name), userNameRequirementsText);
+  validateField('email', IsEmail.validate(email), 'Email is required');
   validateField('password', validatePassword(password), 'Password must be at least 8 characters');
 
-  try {
-    // TODO: Wrap this in a transaction
-    const hashedPassword = await passwordHasher(password);
-    const user = await db
+  const hashedPassword = await passwordHasher(password);
+
+  const user = await db.transaction(async (tx) => {
+    const user = await tx
       .insert(userTable)
       .values({ name, email, language })
       .returning();
 
-    await db.insert(passwordTable).values({
+    await tx.insert(passwordTable).values({
       hash: hashedPassword,
       userId: user[0].id
     });
 
-    await createProfile(user[0]);
+    await tx.insert(profileTable).values({
+      username: name,
+      public: false,
+      userId: user[0].id
+    });
 
-    // TODO: Only return specific fields
     return user[0];
-  } catch (error) {
-    console.log(error);
-    throw error;
-  }
+  });
+
+  // Delete not needed properties
+  delete user.emailConfirmationToken;
+
+  return user;
 };
 
 const destroyUser = async function destroyUser (user) {
