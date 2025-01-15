@@ -438,22 +438,37 @@ describe('openSenseMap API Routes: /users', function () {
   });
 
   it('should allow to refresh jwt using the refresh token', function () {
-    return chakram.post(`${BASE_URL}/users/refresh-auth`, { 'token': refreshToken })
+    return chakram
+      .post(
+        `${BASE_URL}/users/refresh-auth`,
+        { token: refreshToken }
+      )
       .then(function (response) {
         expect(response).to.have.status(200);
-        expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
+        expect(response).to.have.header(
+          'content-type',
+          'application/json; charset=utf-8'
+        );
         expect(response.body.token).to.exist;
         expect(response.body.refreshToken).to.exist;
 
         const jwt = response.body.token;
 
-        return chakram.get(`${BASE_URL}/users/me`, { headers: { 'Authorization': `Bearer ${jwt}` } });
+        return chakram.get(`${BASE_URL}/users/me`, {
+          headers: { Authorization: `Bearer ${jwt}` }
+        });
       })
       .then(function (response) {
         expect(response).to.have.status(200);
-        expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
+        expect(response).to.have.header(
+          'content-type',
+          'application/json; charset=utf-8'
+        );
         expect(response).to.have.schema(getUserSchema);
-        expect(response).to.comprise.of.json({ code: 'Ok', data: { me: { email: 'tester@test.test' } } });
+        expect(response).to.comprise.of.json({
+          code: 'Ok',
+          data: { me: { email: 'tester@test.test' } }
+        });
 
         return chakram.wait();
       });

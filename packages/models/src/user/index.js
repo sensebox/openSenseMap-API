@@ -182,7 +182,7 @@ const confirmEmail = async function confirmEmail ({ token, email }) {
 
   const user = await findUserByNameOrEmail(email);
 
-  if (!user) {
+  if (!user || user.emailConfirmationToken !== token) {
     throw new ModelError('invalid email confirmation token', {
       type: 'ForbiddenError'
     });
