@@ -1,32 +1,18 @@
 'use strict';
 
 const { v4: uuidv4 } = require('uuid');
-const invariant = require('tiny-invariant');
 
 const { userTable, passwordTable, profileTable } = require('../../schema/schema');
 const { db } = require('../drizzle');
-const { createProfile } = require('../profile/profile');
 const { eq } = require('drizzle-orm');
 const ModelError = require('../modelError');
 const { checkPassword, validatePassword, passwordHasher } = require('../password/utils');
 const IsEmail = require('isemail');
+const { validateField } = require('../utils/validation');
 
 const userNameRequirementsText = 'Parameter name must consist of at least 3 and up to 40 alphanumerics (a-zA-Z0-9), dot (.), dash (-), underscore (_) and spaces.';
 const nameValidRegex =
   /^[^~`!@#$%^&*()+=£€{}[\]|\\:;"'<>,?/\n\r\t\s][^~`!@#$%^&*()+=£€{}[\]|\\:;"'<>,?/\n\r\t]{1,39}[^~`!@#$%^&*()+=£€{}[\]|\\:;"'<>,?/\n\r\t\s]$/;
-
-const validateField = function validateField (field, expr, msg) {
-  try {
-    invariant(expr, msg);
-  } catch (error) {
-    const err = new Error(msg);
-    err.name = 'ValidationError';
-    err.errors = {
-      [field]: { message: msg }
-    };
-    throw err;
-  }
-};
 
 const findUserByNameOrEmail = async function findUserByNameOrEmail (
   emailOrName
@@ -69,30 +55,44 @@ const createUser = async function createUser (name, email, password, language) {
 
   const hashedPassword = await passwordHasher(password);
 
-  const user = await db.transaction(async (tx) => {
-    const user = await tx
-      .insert(userTable)
-      .values({ name, email, language })
-      .returning();
+  try {
+    const user = await db.transaction(async (tx) => {
+      const user = await tx
+        .insert(userTable)
+        .values({ name, email, language })
+        .returning();
 
-    await tx.insert(passwordTable).values({
-      hash: hashedPassword,
-      userId: user[0].id
+      await tx.insert(passwordTable).values({
+        hash: hashedPassword,
+        userId: user[0].id
+      });
+
+      await tx.insert(profileTable).values({
+        username: name,
+        public: false,
+        userId: user[0].id
+      });
+
+      return user[0];
     });
 
-    await tx.insert(profileTable).values({
-      username: name,
-      public: false,
-      userId: user[0].id
-    });
+    // Delete not needed properties
+    delete user.emailConfirmationToken;
 
-    return user[0];
-  });
-
-  // Delete not needed properties
-  delete user.emailConfirmationToken;
-
-  return user;
+    return user;
+  } catch (error) {
+    // Catch and transform database errors
+    console.log(error);
+    /**
+     * {
+      "code": "BadRequest",
+      "message": "Duplicate user detected"
+      }
+     */
+    if (error.code === '23505') {
+      throw new ModelError('Duplicate user detected', { type: 'BadRequest' });
+    }
+  }
 };
 
 const destroyUser = async function destroyUser (user) {
