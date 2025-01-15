@@ -4,12 +4,14 @@
     "packages/*"
   ],
   "scripts": {
+    "dev": "node packages/api/app.js",
+    "db:up": "docker compose up -d db",
+    "db:down": "docker compose down db",
+    "models:db:migrate": "yarn workspace @sensebox/opensensemap-api-models db:migrate",
     "start": "node packages/api/app.js",
-    "start-dev-db": "sudo docker-compose up -d db",
-    "stop-dev-db": "sudo docker-compose down db",
     "build-test-env": "./.scripts/run-tests.sh build",
     "test": "./.scripts/run-tests.sh",
-    "test-models": "./.scripts/run-tests.sh only_models",
+    "test:models": "./.scripts/run-tests.sh only_models",
     "NOTpretest": "node tests/waitForHttp",
     "tag-container": "./.scripts/npm_tag-container.sh",
     "lint:ci": "eslint --ignore-pattern node_modules \"{tests,packages}/**/*.js\"",

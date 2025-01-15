@@ -1,0 +1,1 @@
+ALTER TABLE "user" ADD COLUMN "email_confirmation_token" text;
