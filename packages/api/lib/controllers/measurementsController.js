@@ -225,6 +225,7 @@ const getData = async function getData (req, res) {
  * @apiName getDataMulti
  * @apiParam {String} boxId Comma separated list of senseBox IDs.
  * @apiParam {String} phenomenon the name of the phenomenon you want to download the data for.
+ * @apiParam {String} grouptag the name of the phenomenon you want to download the data for.
  * @apiParam {RFC3339Date} [from-date] Beginning date of measurement data (default: 2 days ago from now)
  * @apiParam {RFC3339Date} [to-date] End date of measurement data (default: now)
  * @apiUse SeparatorParam
@@ -235,17 +236,22 @@ const getData = async function getData (req, res) {
  * @apiParam {Boolean=true,false} [download=true] Set the `content-disposition` header to force browsers to download instead of displaying.
  */
 const getDataMulti = async function getDataMulti (req, res) {
-  const { boxId, bbox, exposure, delimiter, columns, fromDate, toDate, phenomenon, download, format } = req._userParams;
+  const { boxId, bbox, exposure, delimiter, columns, fromDate, toDate, phenomenon, download, format, grouptag } = req._userParams;
 
   // build query
-  const queryParams = {
-    'sensors.title': phenomenon
-  };
+  // const queryParams = {
+  //   'sensors.title': phenomenon
+  // };
+  const queryParams = {};
+
+  if (phenomenon) {
+    queryParams['sensors.title'] = phenomenon;
+  }
 
   if (boxId && bbox) {
-    return Promise.reject(new BadRequestError('please specify only boxId or bbox'));
+    return Promise.reject(new BadRequestError('please specify only boxId or bbox or grouptag'));
   } else if (!boxId && !bbox) {
-    return Promise.reject(new BadRequestError('please specify either boxId or bbox'));
+    return Promise.reject(new BadRequestError('please specify either boxId or bbox or grouptag'));
   }
 
   if (boxId) {
@@ -255,6 +261,11 @@ const getDataMulti = async function getDataMulti (req, res) {
   // exposure parameter
   if (exposure) {
     queryParams['exposure'] = { '$in': exposure };
+  }
+
+  if (grouptag) {
+    const queryTags = grouptag.split(',');
+    queryParams['grouptag'] = { '$all': queryTags };
   }
 
   try {
@@ -512,10 +523,21 @@ module.exports = {
     retrieveParameters([
       { predef: 'sensorId', required: true },
       { name: 'format', defaultValue: 'json', allowedValues: ['json', 'csv'] },
-      { name: 'download', defaultValue: 'false', allowedValues: ['true', 'false'] },
+      {
+        name: 'download',
+        defaultValue: 'false',
+        allowedValues: ['true', 'false']
+      },
       { predef: 'delimiter' },
       { name: 'outliers', allowedValues: ['mark', 'replace'] },
-      { name: 'outlierWindow', dataType: 'Integer', aliases: ['outlier-window'], defaultValue: 15, min: 1, max: 50 },
+      {
+        name: 'outlierWindow',
+        dataType: 'Integer',
+        aliases: ['outlier-window'],
+        defaultValue: 15,
+        min: 1,
+        max: 50
+      },
       { predef: 'toDate' },
       { predef: 'fromDate' }
     ]),
@@ -524,27 +546,40 @@ module.exports = {
   ],
   getDataMulti: [
     retrieveParameters([
-      { name: 'boxId', aliases: ['senseboxid', 'senseboxids', 'boxid', 'boxids'], dataType: ['id'] },
-      { name: 'phenomenon', required: true },
+      {
+        name: 'boxId',
+        aliases: ['senseboxid', 'senseboxids', 'boxid', 'boxids'],
+        dataType: ['id']
+      },
+      { name: 'grouptag', required: false },
+      { name: 'phenomenon', required: false },
       { predef: 'delimiter' },
-      { name: 'exposure', allowedValues: Box.BOX_VALID_EXPOSURES, dataType: ['String'] },
+      {
+        name: 'exposure',
+        allowedValues: Box.BOX_VALID_EXPOSURES,
+        dataType: ['String']
+      },
       { predef: 'columnsGetDataMulti' },
       { predef: 'bbox' },
       { predef: 'toDate' },
       { predef: 'fromDate' },
-      { name: 'download', defaultValue: 'true', allowedValues: ['true', 'false'] },
+      {
+        name: 'download',
+        defaultValue: 'true',
+        allowedValues: ['true', 'false']
+      },
       { name: 'format', defaultValue: 'csv', allowedValues: ['csv', 'json'] }
     ]),
     validateFromToTimeParams,
     getDataMulti
   ],
-  getDataByGroupTag: [
-    retrieveParameters([
-      { name: 'grouptag', required: true },
-      { name: 'format', defaultValue: 'json', allowedValues: ['json'] }
-    ]),
-    getDataByGroupTag
-  ],
+  // getDataByGroupTag: [
+  //   retrieveParameters([
+  //     { name: 'grouptag', required: true },
+  //     { name: 'format', defaultValue: 'json', allowedValues: ['json'] }
+  //   ]),
+  //   getDataByGroupTag
+  // ],
   getLatestMeasurements: [
     retrieveParameters([
       { predef: 'boxId', required: true },
