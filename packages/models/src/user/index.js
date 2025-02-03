@@ -1,57 +1,70 @@
-'use strict';
+"use strict";
 
-const { v4: uuidv4 } = require('uuid');
+const { v4: uuidv4 } = require("uuid");
 
-const { userTable, passwordTable, profileTable } = require('../../schema/schema');
-const { db } = require('../drizzle');
-const { eq } = require('drizzle-orm');
-const ModelError = require('../modelError');
-const { checkPassword, validatePassword, passwordHasher } = require('../password/utils');
-const IsEmail = require('isemail');
-const { validateField } = require('../utils/validation');
+const {
+  userTable,
+  passwordTable,
+  profileTable,
+} = require("../../schema/schema");
+const { db } = require("../drizzle");
+const { eq } = require("drizzle-orm");
+const ModelError = require("../modelError");
+const {
+  checkPassword,
+  validatePassword,
+  passwordHasher,
+} = require("../password/utils");
+const IsEmail = require("isemail");
+const { validateField } = require("../utils/validation");
+const createToken  = require("../../../api/lib/helpers/jwtHelpers");
 
-const userNameRequirementsText = 'Parameter name must consist of at least 3 and up to 40 alphanumerics (a-zA-Z0-9), dot (.), dash (-), underscore (_) and spaces.';
+const userNameRequirementsText =
+  "Parameter name must consist of at least 3 and up to 40 alphanumerics (a-zA-Z0-9), dot (.), dash (-), underscore (_) and spaces.";
 const nameValidRegex =
   /^[^~`!@#$%^&*()+=£€{}[\]|\\:;"'<>,?/\n\r\t\s][^~`!@#$%^&*()+=£€{}[\]|\\:;"'<>,?/\n\r\t]{1,39}[^~`!@#$%^&*()+=£€{}[\]|\\:;"'<>,?/\n\r\t\s]$/;
 
-const findUserByNameOrEmail = async function findUserByNameOrEmail (
+const findUserByNameOrEmail = async function findUserByNameOrEmail(
   emailOrName
 ) {
   return db.query.userTable.findFirst({
     where: (user, { eq, or }) =>
       or(eq(user.email, emailOrName.toLowerCase()), eq(user.name, emailOrName)),
     with: {
-      password: true
-    }
+      password: true,
+    },
   });
 };
 
-const findUserByEmailAndRole = async function findUserByEmailAndRole ({
+const findUserByEmailAndRole = async function findUserByEmailAndRole({
   email,
-  role
+  role,
 }) {
   const user = await db.query.userTable.findFirst({
     with: {
-      password: true
+      password: true,
     },
     where: (user, { eq, and }) =>
-      and(eq(user.email, email.toLowerCase(), eq(user.role, role)))
+      and(eq(user.email, email.toLowerCase(), eq(user.role, role))),
   });
 
   return user;
 };
 
-const createUser = async function createUser (name, email, password, language) {
-
-  validateField('name', name.length > 0, 'Name is required');
+const createUser = async function createUser(name, email, password, language) {
+  validateField("name", name.length > 0, "Name is required");
   validateField(
-    'name',
+    "name",
     name.length > 3 && name.length < 40,
     userNameRequirementsText
   );
-  validateField('name', nameValidRegex.test(name), userNameRequirementsText);
-  validateField('email', IsEmail.validate(email), 'Email is required');
-  validateField('password', validatePassword(password), 'Password must be at least 8 characters');
+  validateField("name", nameValidRegex.test(name), userNameRequirementsText);
+  validateField("email", IsEmail.validate(email), "Email is required");
+  validateField(
+    "password",
+    validatePassword(password),
+    "Password must be at least 8 characters"
+  );
 
   const hashedPassword = await passwordHasher(password);
 
@@ -64,13 +77,13 @@ const createUser = async function createUser (name, email, password, language) {
 
       await tx.insert(passwordTable).values({
         hash: hashedPassword,
-        userId: user[0].id
+        userId: user[0].id,
       });
 
       await tx.insert(profileTable).values({
         username: name,
         public: false,
-        userId: user[0].id
+        userId: user[0].id,
       });
 
       return user[0];
@@ -89,109 +102,138 @@ const createUser = async function createUser (name, email, password, language) {
       "message": "Duplicate user detected"
       }
      */
-    if (error.code === '23505') {
-      throw new ModelError('Duplicate user detected', { type: 'BadRequest' });
+    if (error.code === "23505") {
+      throw new ModelError("Duplicate user detected", { type: "BadRequest" });
     }
   }
 };
 
-const destroyUser = async function destroyUser (user) {
+const destroyUser = async function destroyUser(user) {
   return await db
     .delete(userTable)
     .where(eq(userTable.id, user.id))
     .returning({ name: userTable.name });
 };
 
-const updateUser = async function updateUser (
-  userId,
-  { email, language, name, currentPassword, newPassword, integrations }
+const updateUserDetails = async function updateUserDetails(
+  user,
+  { email, language, name, currentPassword, newPassword }
 ) {
+  let messages = []; // Default to empty array
+
   // don't allow email and password change in one request
   if (email && newPassword) {
     return Promise.reject(
       new ModelError(
-        'You cannot change your email address and password in the same request.'
+        "You cannot change your email address and password in the same request.",
+        { status: 400 }
       )
     );
   }
 
-  // for password and email changes, require parameter currentPassword to be valid.
-  if ((newPassword && newPassword !== '') || (email && email !== '')) {
-    // check if the request includes the old password
+  // for password and email changes, require parameter currentPassword to be valid
+  if ((newPassword && newPassword !== "") || (email && email !== "")) {
     if (!currentPassword) {
       return Promise.reject(
         new ModelError(
-          'To change your password or email address, please supply your current password.'
+          "To change your password or email address, please supply your current password.",
+          { status: 400 }
         )
       );
     }
-    await checkPassword(currentPassword);
 
-    // check new password against password rules
+    try {
+      await checkPassword(currentPassword, user.password);
+    } catch (error) {
+      return Promise.reject(
+        new ModelError("Password incorrect", { status: 403 })
+      );
+    }
+
     if (newPassword && validatePassword(newPassword) === false) {
       return Promise.reject(
-        new ModelError('New password should have at least 8 characters')
+        new ModelError("New password should have at least 8 characters")
       );
     }
   }
 
-  // at this point its clear the user is allowed to change the details of their profile
   const setColumns = {};
+  let signOut = false;
+  let hasChanges = false; // ✅ Track if changes were made
 
-  const msgs = [];
-  let signOut = false,
-    somethingsChanged = false;
-
-  // we only set changed properties
   if (name && user.name !== name) {
-    user.set('name', name);
-    somethingsChanged = true;
+    user.name = name;
+    setColumns.name = name;
+    hasChanges = true;
   }
 
   if (language && user.language !== language) {
-    user.set('language', language);
-    somethingsChanged = true;
+    user.language = language;
+    setColumns.language = language;
+    messages.push("Language changed.");
+    hasChanges = true;
   }
 
   if (email && user.email !== email) {
-    user.set('newEmail', email);
-    msgs.push(
-      ' E-Mail changed. Please confirm your new address. Until confirmation, sign in using your old address'
+    user.email = email;
+    setColumns.email = email;
+    messages.push(
+      "E-Mail changed. Please confirm your new address. Until confirmation, sign in using your old address"
     );
-    somethingsChanged = true;
+    hasChanges = true;
   }
 
-  // at this point its also clear the new password conforms to the password rules
   if (newPassword) {
-    user.set('password', newPassword);
-    msgs.push(' Password changed. Please sign in with your new password');
+    user.password = newPassword;
+    setColumns.password = newPassword;
+    messages.push("Password changed. Please sign in with your new password.");
     signOut = true;
-    somethingsChanged = true;
+    hasChanges = true;
   }
 
-  const user = await db
-    .update(userTable)
-    .set(setColumns)
-    .where(eq(userTable.id, userId))
-    .returning();
+  if (hasChanges) {
+    try {
+      const updatedUser = await db
+        .update(userTable)
+        .set(setColumns)
+        .where(eq(userTable.id, user.id))
+        .returning();
 
-  return user[0];
+      return {
+        updated: true,
+        signOut,
+        messages,
+        updatedUser: updatedUser[0],
+      };
+    } catch (err) {
+      console.error("Error updating user:", err);
+      throw new ModelError("Error updating user", { type: "DatabaseError" });
+    }
+  }
+
+  return {
+    updated: false,
+    messages: ["No changed properties supplied. User remains unchanged."],
+    updatedUser: user,
+  };
 };
 
-const confirmEmail = async function confirmEmail ({ token, email }) {
 
+const confirmEmail = async function confirmEmail({ token, email }) {
   const user = await findUserByNameOrEmail(email);
 
   if (!user || user.emailConfirmationToken !== token) {
-    throw new ModelError('invalid email confirmation token', {
-      type: 'ForbiddenError'
+    throw new ModelError("invalid email confirmation token", {
+      type: "ForbiddenError",
     });
   }
 
-  const updatedUser = await db.update(userTable).set({
-    emailIsConfirmed: true,
-    emailConfirmationToken: null
-  })
+  const updatedUser = await db
+    .update(userTable)
+    .set({
+      emailIsConfirmed: true,
+      emailConfirmationToken: null,
+    })
     .where()
     .returning();
 
@@ -223,18 +265,20 @@ const confirmEmail = async function confirmEmail ({ token, email }) {
   //   });
 };
 
-const resendEmailConfirmation = async function resendEmailConfirmation (user) {
+const resendEmailConfirmation = async function resendEmailConfirmation(user) {
   if (user.emailIsConfirmed === true) {
     return Promise.reject(
       new ModelError(`Email address ${user.email} is already confirmed.`, {
-        type: 'UnprocessableEntityError'
+        type: "UnprocessableEntityError",
       })
     );
   }
 
-  const savedUser = await db.update(userTable).set({
-    emailConfirmationToken: uuidv4()
-  })
+  const savedUser = await db
+    .update(userTable)
+    .set({
+      emailConfirmationToken: uuidv4(),
+    })
     .returning();
 
   return savedUser[0];
@@ -252,7 +296,7 @@ module.exports = {
   findUserByEmailAndRole,
   createUser,
   destroyUser,
-  updateUser,
+  updateUserDetails,
   confirmEmail,
-  resendEmailConfirmation
+  resendEmailConfirmation,
 };

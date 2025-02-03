@@ -1,25 +1,40 @@
-'use strict';
+"use strict";
 
-
-const { InternalServerError, ForbiddenError } = require('restify-errors'),
+const { InternalServerError, ForbiddenError } = require("restify-errors"),
   {
     checkContentType,
     redactEmail,
-    postToMattermost
-  } = require('../helpers/apiUtils'),
-  { retrieveParameters } = require('../helpers/userParamHelpers'),
-  handleError = require('../helpers/errorHandler'),
+    postToMattermost,
+  } = require("../helpers/apiUtils"),
+  { retrieveParameters } = require("../helpers/userParamHelpers"),
+  handleError = require("../helpers/errorHandler"),
   {
     createToken,
     refreshJwt,
     invalidateToken,
-    verifyJwtAndRefreshToken
-  } = require('../helpers/jwtHelpers');
-const { findDeviceById } = require('@sensebox/opensensemap-api-models/src/box/box');
-const { findDevicesByUserId } = require('@sensebox/opensensemap-api-models/src/device');
-const { initPasswordReset, resetOldPassword } = require('@sensebox/opensensemap-api-models/src/password');
-const { checkPassword } = require('@sensebox/opensensemap-api-models/src/password/utils');
-const { createUser, findUserByNameOrEmail, resendEmailConfirmation, confirmEmail, destroyUser } = require('@sensebox/opensensemap-api-models/src/user');
+    verifyJwtAndRefreshToken,
+  } = require("../helpers/jwtHelpers");
+const {
+  findDeviceById,
+} = require("@sensebox/opensensemap-api-models/src/box/box");
+const {
+  findDevicesByUserId,
+} = require("@sensebox/opensensemap-api-models/src/device");
+const {
+  initPasswordReset,
+  resetOldPassword,
+} = require("@sensebox/opensensemap-api-models/src/password");
+const {
+  checkPassword,
+} = require("@sensebox/opensensemap-api-models/src/password/utils");
+const {
+  createUser,
+  findUserByNameOrEmail,
+  resendEmailConfirmation,
+  confirmEmail,
+  destroyUser,
+  updateUserDetails,
+} = require("@sensebox/opensensemap-api-models/src/user");
 
 /**
  * define for nested user parameter for box creation request
@@ -57,7 +72,7 @@ const { createUser, findUserByNameOrEmail, resendEmailConfirmation, confirmEmail
  * @apiSuccess (Created 201) {String} refreshToken valid refresh token
  * @apiSuccess (Created 201) {Object} data `{ "user": {"name":"fullname","email":"test@test.de","role":"user","language":"en_US","boxes":[],"emailIsConfirmed":false} }`
  */
-const registerUser = async function registerUser (req, res) {
+const registerUser = async function registerUser(req, res) {
   const { email, password, language, name } = req._userParams;
 
   try {
@@ -71,8 +86,8 @@ const registerUser = async function registerUser (req, res) {
       const { token, refreshToken } = await createToken(newUser);
 
       res.send(201, {
-        code: 'Created',
-        message: 'Successfully registered new user',
+        code: "Created",
+        message: "Successfully registered new user",
         data: { user: newUser },
         token,
         refreshToken,
@@ -103,7 +118,7 @@ const registerUser = async function registerUser (req, res) {
  * @apiSuccess {Object} data `{ "user": {"name":"fullname","email":"test@test.de","role":"user","language":"en_US","boxes":[],"emailIsConfirmed":false} }`
  * @apiError {String} 403 Unauthorized
  */
-const signIn = async function signIn (req, res) {
+const signIn = async function signIn(req, res) {
   const { email: emailOrName, password } = req._userParams;
 
   try {
@@ -111,7 +126,7 @@ const signIn = async function signIn (req, res) {
 
     if (!user) {
       return Promise.reject(
-        new ForbiddenError('User and or password not valid!')
+        new ForbiddenError("User and or password not valid!")
       );
     }
 
@@ -119,16 +134,16 @@ const signIn = async function signIn (req, res) {
       const { token, refreshToken } = await createToken(user);
 
       res.send(200, {
-        code: 'Authorized',
-        message: 'Successfully signed in',
+        code: "Authorized",
+        message: "Successfully signed in",
         data: { user },
         token,
         refreshToken,
       });
     }
   } catch (err) {
-    if (err.name === 'ModelError' && err.message === 'Password incorrect') {
-      return handleError(new ForbiddenError('User and or password not valid!'));
+    if (err.name === "ModelError" && err.message === "Password incorrect") {
+      return handleError(new ForbiddenError("User and or password not valid!"));
     }
 
     return handleError(err);
@@ -148,7 +163,7 @@ const signIn = async function signIn (req, res) {
  * @apiSuccess {Object} data `{ "user": {"name":"fullname","email":"test@test.de","role":"user","language":"en_US","boxes":[],"emailIsConfirmed":false} }`
  * @apiError {Object} Forbidden `{"code":"ForbiddenError","message":"Refresh token invalid or too old. Please sign in with your username and password."}`
  */
-const refreshJWT = async function refreshJWT (req, res) {
+const refreshJWT = async function refreshJWT(req, res) {
   try {
     // Check if refreshToken matches JWT Token
     await verifyJwtAndRefreshToken(req._userParams.token, req._jwtString);
@@ -158,8 +173,8 @@ const refreshJWT = async function refreshJWT (req, res) {
       req._userParams.token
     );
     res.send(200, {
-      code: 'Authorized',
-      message: 'Successfully refreshed auth',
+      code: "Authorized",
+      message: "Successfully refreshed auth",
       data: { user },
       token,
       refreshToken,
@@ -178,10 +193,10 @@ const refreshJWT = async function refreshJWT (req, res) {
  * @apiSuccess {String} code `Ok`
  * @apiSuccess {String} message `Successfully signed out`
  */
-const signOut = async function signOut (req, res) {
+const signOut = async function signOut(req, res) {
   invalidateToken(req);
 
-  return res.send(200, { code: 'Ok', message: 'Successfully signed out' });
+  return res.send(200, { code: "Ok", message: "Successfully signed out" });
 };
 
 /**
@@ -194,10 +209,10 @@ const signOut = async function signOut (req, res) {
  * @apiSuccess {String} message `Password reset initiated`
  */
 // generate new password reset token and send the token to the user
-const requestResetPassword = async function requestResetPassword (req, res) {
+const requestResetPassword = async function requestResetPassword(req, res) {
   try {
     await initPasswordReset(req._userParams);
-    res.send(200, { code: 'Ok', message: 'Password reset initiated' });
+    res.send(200, { code: "Ok", message: "Password reset initiated" });
   } catch (err) {
     return handleError(err);
   }
@@ -214,14 +229,14 @@ const requestResetPassword = async function requestResetPassword (req, res) {
  * @apiSuccess {String} message `Password successfully changed. You can now login with your new password`
  */
 // set new password with reset token as auth
-const resetPassword = async function resetPassword (req, res) {
+const resetPassword = async function resetPassword(req, res) {
   try {
     // await User.resetPassword(req._userParams);
     await resetOldPassword(req._userParams);
     res.send(200, {
-      code: 'Ok',
+      code: "Ok",
       message:
-        'Password successfully changed. You can now login with your new password',
+        "Password successfully changed. You can now login with your new password",
     });
   } catch (err) {
     return handleError(err);
@@ -238,13 +253,13 @@ const resetPassword = async function resetPassword (req, res) {
  * @apiSuccess {String} code `Ok`
  * @apiSuccess {String} message `E-Mail successfully confirmed. Thank you`
  */
-const confirmEmailAddress = async function confirmEmailAddress (req, res) {
+const confirmEmailAddress = async function confirmEmailAddress(req, res) {
   try {
     await confirmEmail(req._userParams);
     // await User.confirmEmail(req._userParams);
     res.send(200, {
-      code: 'Ok',
-      message: 'E-Mail successfully confirmed. Thank you',
+      code: "Ok",
+      message: "E-Mail successfully confirmed. Thank you",
     });
   } catch (err) {
     return handleError(err);
@@ -260,17 +275,17 @@ const confirmEmailAddress = async function confirmEmailAddress (req, res) {
  * @apiSuccess {String} code `Ok`
  * @apiSuccess {String} data A json object with a single `boxes` array field
  */
-const getUserBoxes = async function getUserBoxes (req, res) {
+const getUserBoxes = async function getUserBoxes(req, res) {
   const { page } = req._userParams;
   try {
     const devices = await findDevicesByUserId(req.user.id, { page });
     // const sharedBoxes = await req.user.getSharedBoxes();
     res.send(200, {
-      code: 'Ok',
+      code: "Ok",
       data: {
         boxes: devices,
         boxes_count: devices.length,
-        sharedBoxes: []
+        sharedBoxes: [],
       },
     });
   } catch (err) {
@@ -287,14 +302,14 @@ const getUserBoxes = async function getUserBoxes (req, res) {
  * @apiSuccess {String} code `Ok`
  * @apiSuccess {String} data A json object with a single `box` object field
  */
-const getUserBox = async function getUserBox (req, res) {
+const getUserBox = async function getUserBox(req, res) {
   const { boxId } = req._userParams;
   try {
     const device = await findDeviceById(boxId);
     res.send(200, {
-      code: 'Ok',
+      code: "Ok",
       data: {
-        box: device
+        box: device,
       },
     });
   } catch (err) {
@@ -309,14 +324,14 @@ const getUserBox = async function getUserBox (req, res) {
  * @apiGroup Users
  * @apiUse JWTokenAuth
  */
-const getUser = async function getUser (req, res) {
-  res.send(200, { code: 'Ok', data: { me: req.user } });
+const getUser = async function getUser(req, res) {
+  res.send(200, { code: "Ok", data: { me: req.user } });
 };
 
 /**
  * @api {put} /users/me Update user details
  * @apiName updateUser
- * @apiDescription Allows to change name, email, language and password of the currently signed in user. Changing the password triggers a sign out. The user has to log in again with the new password. Changing the mail triggers a Email confirmation process.
+ * @apiDescription Allows to change name, email, language, and password of the currently signed-in user. Changing the password triggers a sign-out. The user has to log in again with the new password. Changing the email triggers an email confirmation process.
  * @apiGroup Users
  * @apiUse JWTokenAuth
  * @apiParam {String} [email] the new email address for this user.
@@ -325,23 +340,34 @@ const getUser = async function getUser (req, res) {
  * @apiParam {String} [newPassword] the new password for this user. Should be at least 8 characters long.
  * @apiParam {String} currentPassword the current password for this user.
  */
-const updateUser = async function updateUser (req, res) {
+const updateUser = async function updateUser(req, res) {
+  const user = req.user;
+  const { email, language, name, currentPassword, newPassword } =
+    req._userParams;
+
   try {
-    const { updated, signOut, messages, updatedUser } =
-      await req.user.updateUser(req._userParams);
+    const { updated, signOut, messages, updatedUser } = await updateUserDetails(
+      user,
+      { email, language, name, currentPassword, newPassword }
+    );
+
+    // Safeguard: Ensure messages is always an array
+    const messageText = Array.isArray(messages) ? messages.join(".") : "";
+
     if (updated === false) {
       return res.send(200, {
-        code: 'Ok',
-        message: 'No changed properties supplied. User remains unchanged.',
+        code: "Ok",
+        message: "No changed properties supplied. User remains unchanged.",
       });
     }
 
     if (signOut === true) {
       invalidateToken(req);
     }
+
     res.send(200, {
-      code: 'Ok',
-      message: `User successfully saved.${messages.join('.')}`,
+      code: "Ok",
+      message: `User successfully saved. ${messageText}`,
       data: { me: updatedUser },
     });
   } catch (err) {
@@ -358,7 +384,7 @@ const updateUser = async function updateUser (req, res) {
  * @apiParam {String} password the current password for this user.
  */
 
-const deleteUser = async function deleteUser (req, res) {
+const deleteUser = async function deleteUser(req, res) {
   const { password } = req._userParams;
 
   try {
@@ -367,7 +393,7 @@ const deleteUser = async function deleteUser (req, res) {
 
     const deletedUser = await destroyUser(req.user);
     res.send(200, {
-      code: 'Ok',
+      code: "Ok",
       message: `User and all boxes of user marked for deletion. Bye Bye ${deletedUser[0].name}!`,
     });
     postToMattermost(
@@ -387,7 +413,7 @@ const deleteUser = async function deleteUser (req, res) {
  * @apiSuccess {String} code `Ok`
  * @apiSuccess {String} message `Email confirmation has been sent to <emailaddress>`
  */
-const requestEmailConfirmation = async function requestEmailConfirmation (
+const requestEmailConfirmation = async function requestEmailConfirmation(
   req,
   res
 ) {
@@ -399,7 +425,7 @@ const requestEmailConfirmation = async function requestEmailConfirmation (
       usedAddress = result.unconfirmedEmail;
     }
     res.send(200, {
-      code: 'Ok',
+      code: "Ok",
       message: `Email confirmation has been sent to ${usedAddress}`,
     });
   } catch (err) {
@@ -411,76 +437,76 @@ module.exports = {
   registerUser: [
     checkContentType,
     retrieveParameters([
-      { name: 'email', dataType: 'email', required: true },
-      { predef: 'password' },
-      { name: 'name', required: true, dataType: 'as-is' },
-      { name: 'language', defaultValue: 'en_US' },
-      { name: 'integrations', dataType: 'object' }
+      { name: "email", dataType: "email", required: true },
+      { predef: "password" },
+      { name: "name", required: true, dataType: "as-is" },
+      { name: "language", defaultValue: "en_US" },
+      { name: "integrations", dataType: "object" },
     ]),
-    registerUser
+    registerUser,
   ],
   signIn: [
     checkContentType,
     retrieveParameters([
-      { name: 'email', required: true },
-      { predef: 'password' }
+      { name: "email", required: true },
+      { predef: "password" },
     ]),
-    signIn
+    signIn,
   ],
   signOut,
   resetPassword: [
     checkContentType,
     retrieveParameters([
-      { name: 'token', required: true },
-      { predef: 'password' }
+      { name: "token", required: true },
+      { predef: "password" },
     ]),
-    resetPassword
+    resetPassword,
   ],
   requestResetPassword: [
     checkContentType,
-    retrieveParameters([{ name: 'email', dataType: 'email', required: true }]),
-    requestResetPassword
+    retrieveParameters([{ name: "email", dataType: "email", required: true }]),
+    requestResetPassword,
   ],
   confirmEmailAddress: [
     checkContentType,
     retrieveParameters([
-      { name: 'token', required: true },
-      { name: 'email', dataType: 'email', required: true }
+      { name: "token", required: true },
+      { name: "email", dataType: "email", required: true },
     ]),
-    confirmEmailAddress
+    confirmEmailAddress,
   ],
   requestEmailConfirmation,
   getUserBox: [
-    retrieveParameters([{ predef: 'boxId', required: true }]),
-    getUserBox
+    retrieveParameters([{ predef: "boxId", required: true }]),
+    getUserBox,
   ],
   getUserBoxes: [
     retrieveParameters([
-      { name: 'page', dataType: 'Integer', defaultValue: 0, min: 0 }
+      { name: "page", dataType: "Integer", defaultValue: 0, min: 0 },
     ]),
-    getUserBoxes
+    getUserBoxes,
   ],
   updateUser: [
     checkContentType,
     retrieveParameters([
-      { name: 'email', dataType: 'email' },
-      { predef: 'password', name: 'currentPassword', required: false },
-      { predef: 'password', name: 'newPassword', required: false },
-      { name: 'name', dataType: 'as-is' },
-      { name: 'language' },
-      { name: 'integrations', dataType: 'object' }
+      { name: "email", dataType: "email" },
+      { predef: "password", name: "currentPassword", required: false },
+      { predef: "password", name: "newPassword", required: false },
+      { name: "name", dataType: "as-is" },
+      { name: "language" },
+      { name: "integrations", dataType: "object" },
     ]),
-    updateUser
+    updateUser,
   ],
   getUser,
   refreshJWT: [
     checkContentType,
-    retrieveParameters([{ name: 'token', required: true }]),
-    refreshJWT
+    retrieveParameters([{ name: "token", required: true }]),
+    refreshJWT,
   ],
   deleteUser: [
     checkContentType,
-    retrieveParameters([{ predef: 'password' }]),
-    deleteUser
-  ]
+    retrieveParameters([{ predef: "password" }]),
+    deleteUser,
+  ],
 };
