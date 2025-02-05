@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+## v3.2.1
+## v3.2.1
+
+- Add Hydreon RG-15 Optical Rain Gauge
+
 ## v3.2.0
 
 - Add `user` integrations (myBadges) (#834)
