@@ -4,6 +4,8 @@
 
 ## v3.3.1
 
+## v3.3.1
+
 - Add Hydreon RG-15 Optical Rain Gauge
 
 ## v3.3.0
