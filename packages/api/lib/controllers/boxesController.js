@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 /**
  * @apiDefine ExposureFilterParam
@@ -56,25 +56,25 @@
  * @apiSuccess {String} [image] image showing the senseBox
  */
 
-const { Box, User, Claim } = require("@sensebox/opensensemap-api-models"),
+const { Box, User, Claim } = require('@sensebox/opensensemap-api-models'),
   {
     addCache,
     clearCache,
     checkContentType,
     redactEmail,
     postToMattermost,
-  } = require("../helpers/apiUtils"),
-  { point } = require("@turf/helpers"),
-  classifyTransformer = require("../transformers/classifyTransformer"),
+  } = require('../helpers/apiUtils'),
+  { point } = require('@turf/helpers'),
+  classifyTransformer = require('../transformers/classifyTransformer'),
   {
     retrieveParameters,
     parseAndValidateTimeParamsForFindAllBoxes,
     validateFromToTimeParams,
     checkPrivilege,
     validateDateNotPast,
-  } = require("../helpers/userParamHelpers"),
-  handleError = require("../helpers/errorHandler"),
-  jsonstringify = require("stringify-stream");
+  } = require('../helpers/userParamHelpers'),
+  handleError = require('../helpers/errorHandler'),
+  jsonstringify = require('stringify-stream');
 
 /**
  * @apiDefine Addons
@@ -157,7 +157,7 @@ const { Box, User, Claim } = require("@sensebox/opensensemap-api-models"),
  * @apiUse ContentTypeJSON
  *
  */
-const updateBox = async function updateBox(req, res) {
+const updateBox = async function updateBox (req, res) {
   try {
     let box = await Box.findBoxById(req._userParams.boxId, {
       lean: false,
@@ -165,11 +165,11 @@ const updateBox = async function updateBox(req, res) {
     });
     box = await box.updateBox(req._userParams);
     if (box._sensorsChanged === true) {
-      req.user.mail("newSketch", box);
+      req.user.mail('newSketch', box);
     }
 
-    res.send({ code: "Ok", data: box.toJSON({ includeSecrets: true }) });
-    clearCache(["getBoxes"]);
+    res.send({ code: 'Ok', data: box.toJSON({ includeSecrets: true }) });
+    clearCache(['getBoxes']);
   } catch (err) {
     return handleError(err);
   }
@@ -195,7 +195,7 @@ const updateBox = async function updateBox(req, res) {
  *   { "coordinates": [7.68323, 51.9423], "type": "Point", "timestamp": "2017-07-27T12:02:00Z"}
  * ]
  */
-const getBoxLocations = async function getBoxLocations(req, res) {
+const getBoxLocations = async function getBoxLocations (req, res) {
   try {
     const box = await Box.findBoxById(req._userParams.boxId, {
       onlyLocations: true,
@@ -207,8 +207,8 @@ const getBoxLocations = async function getBoxLocations(req, res) {
   }
 };
 
-const geoJsonStringifyReplacer = function geoJsonStringifyReplacer(key, box) {
-  if (key === "") {
+const geoJsonStringifyReplacer = function geoJsonStringifyReplacer (key, box) {
+  if (key === '') {
     const coordinates = box.currentLocation.coordinates;
     box.currentLocation = undefined;
     box.loc = undefined;
@@ -308,16 +308,16 @@ const geoJsonStringifyReplacer = function geoJsonStringifyReplacer(key, box) {
     }
  * ]
  */
-const getBoxes = async function getBoxes(req, res) {
+const getBoxes = async function getBoxes (req, res) {
   // content-type is always application/json for this route
-  res.header("Content-Type", "application/json; charset=utf-8");
+  res.header('Content-Type', 'application/json; charset=utf-8');
 
   // default format
-  let stringifier = jsonstringify({ open: "[", close: "]" });
+  let stringifier = jsonstringify({ open: '[', close: ']' });
   // format
-  if (req._userParams.format === "geojson") {
+  if (req._userParams.format === 'geojson') {
     stringifier = jsonstringify(
-      { open: '{"type":"FeatureCollection","features":[', close: "]}" },
+      { open: '{"type":"FeatureCollection","features":[', close: ']}' },
       geoJsonStringifyReplacer
     );
   }
@@ -330,16 +330,16 @@ const getBoxes = async function getBoxes(req, res) {
     if (req._userParams.name) {
       stream = await Box.findBoxes(req._userParams);
     } else {
-      if (req._userParams.minimal === "true") {
+      if (req._userParams.minimal === 'true') {
         stream = await Box.findBoxesMinimal(req._userParams);
       } else {
         stream = await Box.findBoxesLastMeasurements(req._userParams);
       }
 
-      if (req._userParams.classify === "true") {
+      if (req._userParams.classify === 'true') {
         stream = stream
           .pipe(new classifyTransformer())
-          .on("error", function (err) {
+          .on('error', function (err) {
             res.end(`Error: ${err.message}`);
           });
       }
@@ -347,7 +347,7 @@ const getBoxes = async function getBoxes(req, res) {
 
     stream
       .pipe(stringifier)
-      .on("error", function (err) {
+      .on('error', function (err) {
         res.end(`Error: ${err.message}`);
       })
       .pipe(res);
@@ -461,13 +461,13 @@ const getBoxes = async function getBoxes(req, res) {
 }
  */
 
-const getBox = async function getBox(req, res) {
+const getBox = async function getBox (req, res) {
   const { format, boxId } = req._userParams;
 
   try {
     const box = await Box.findBoxById(boxId);
 
-    if (format === "geojson") {
+    if (format === 'geojson') {
       const coordinates = box.currentLocation.coordinates;
       box.currentLocation = undefined;
       box.loc = undefined;
@@ -511,12 +511,12 @@ const getBox = async function getBox(req, res) {
  * @apiUse ContentTypeJSON
  * @apiUse JWTokenAuth
  */
-const postNewBox = async function postNewBox(req, res) {
+const postNewBox = async function postNewBox (req, res) {
   try {
     let newBox = await req.user.addBox(req._userParams);
     newBox = await Box.populate(newBox, Box.BOX_SUB_PROPS_FOR_POPULATION);
-    res.send(201, { message: "Box successfully created", data: newBox });
-    clearCache(["getBoxes", "getStats"]);
+    res.send(201, { message: 'Box successfully created', data: newBox });
+    clearCache(['getBoxes', 'getStats']);
     postToMattermost(
       `New Box: ${req.user.name} (${redactEmail(
         req.user.email
@@ -548,8 +548,8 @@ const postNewBox = async function postNewBox(req, res) {
  * @apiUse JWTokenAuth
  * @apiUse BoxIdParam
  */
-const getSketch = async function getSketch(req, res) {
-  res.header("Content-Type", "text/plain; charset=utf-8");
+const getSketch = async function getSketch (req, res) {
+  res.header('Content-Type', 'text/plain; charset=utf-8');
   try {
     const box = await Box.findBoxById(req._userParams.boxId, {
       populate: false,
@@ -590,17 +590,17 @@ const getSketch = async function getSketch(req, res) {
  * @apiUse JWTokenAuth
  * @apiUse BoxIdParam
  */
-const deleteBox = async function deleteBox(req, res) {
+const deleteBox = async function deleteBox (req, res) {
   const { password, boxId } = req._userParams;
 
   try {
     await req.user.checkPassword(password);
     const box = await req.user.removeBox(boxId);
     res.send({
-      code: "Ok",
-      message: "box and all associated measurements marked for deletion",
+      code: 'Ok',
+      message: 'box and all associated measurements marked for deletion',
     });
-    clearCache(["getBoxes", "getStats"]);
+    clearCache(['getBoxes', 'getStats']);
     postToMattermost(
       `Box deleted: ${req.user.name} (${redactEmail(
         req.user.email
@@ -619,7 +619,7 @@ const deleteBox = async function deleteBox(req, res) {
  * @apiUse JWTokenAuth
  * @apiUse BoxIdParam
  */
-const getTransfer = async function getTransfer(req, res) {
+const getTransfer = async function getTransfer (req, res) {
   const { boxId } = req._userParams;
   try {
     const transfer = await Claim.findClaimByDeviceID(boxId);
@@ -640,12 +640,12 @@ const getTransfer = async function getTransfer(req, res) {
  * @apiParam (RequestBody) {RFC3339Date} expiresAt Expiration date for transfer token (default: 24 hours from now).
  * @apiUse JWTokenAuth
  */
-const createTransfer = async function createTransfer(req, res) {
+const createTransfer = async function createTransfer (req, res) {
   const { boxId, date } = req._userParams;
   try {
     const transferCode = await req.user.transferBox(boxId, date);
     res.send(201, {
-      message: "Box successfully prepared for transfer",
+      message: 'Box successfully prepared for transfer',
       data: transferCode,
     });
   } catch (err) {
@@ -663,12 +663,12 @@ const createTransfer = async function createTransfer(req, res) {
  * @apiUse JWTokenAuth
  * @apiUse BoxIdParam
  */
-const updateTransfer = async function updateTransfer(req, res) {
+const updateTransfer = async function updateTransfer (req, res) {
   const { boxId, token, date } = req._userParams;
   try {
     const transfer = await req.user.updateTransfer(boxId, token, date);
     res.send(200, {
-      message: "Transfer successfully updated",
+      message: 'Transfer successfully updated',
       data: transfer,
     });
   } catch (err) {
@@ -685,7 +685,7 @@ const updateTransfer = async function updateTransfer(req, res) {
  * @apiParam (RequestBody) {String} token Transfer token you want to revoke.
  * @apiUse JWTokenAuth
  */
-const removeTransfer = async function removeTransfer(req, res) {
+const removeTransfer = async function removeTransfer (req, res) {
   const { boxId, token } = req._userParams;
   try {
     await req.user.removeTransfer(boxId, token);
@@ -704,7 +704,7 @@ const removeTransfer = async function removeTransfer(req, res) {
  * @apiParam (RequestBody) {String} token the token to claim a senseBox
  * @apiUse JWTokenAuth
  */
-const claimBox = async function claimBox(req, res) {
+const claimBox = async function claimBox (req, res) {
   const { token } = req._userParams;
 
   try {
@@ -713,17 +713,18 @@ const claimBox = async function claimBox(req, res) {
 
     await claim.expireToken();
 
-    res.send(200, { message: "Device successfully claimed!" });
+    res.send(200, { message: 'Device successfully claimed!' });
   } catch (err) {
     return handleError(err);
   }
 };
 
-const getAllTags = async function getAllTags(req, res) {
+const getAllTags = async function getAllTags (req, res) {
   try {
-    const grouptags = await Box.find().distinct("grouptag").exec();
+    const grouptags = await Box.find().distinct('grouptag')
+      .exec();
 
-    res.send({ code: "Ok", data: grouptags });
+    res.send({ code: 'Ok', data: grouptags });
   } catch (err) {
     return handleError(err);
   }
@@ -734,21 +735,21 @@ module.exports = {
   deleteBox: [
     checkContentType,
     retrieveParameters([
-      { predef: "boxId", required: true },
-      { predef: "password" },
+      { predef: 'boxId', required: true },
+      { predef: 'password' },
     ]),
     checkPrivilege,
     deleteBox,
   ],
   getTransfer: [
-    retrieveParameters([{ predef: "boxId", required: true }]),
+    retrieveParameters([{ predef: 'boxId', required: true }]),
     checkPrivilege,
     getTransfer,
   ],
   createTransfer: [
     retrieveParameters([
-      { predef: "boxId", required: true },
-      { predef: "dateNoDefault" },
+      { predef: 'boxId', required: true },
+      { predef: 'dateNoDefault' },
     ]),
     validateDateNotPast,
     checkPrivilege,
@@ -756,9 +757,9 @@ module.exports = {
   ],
   updateTransfer: [
     retrieveParameters([
-      { predef: "boxId", required: true },
-      { name: "token", dataType: "String" },
-      { predef: "dateNoDefault", required: true },
+      { predef: 'boxId', required: true },
+      { name: 'token', dataType: 'String' },
+      { predef: 'dateNoDefault', required: true },
     ]),
     validateDateNotPast,
     checkPrivilege,
@@ -766,46 +767,46 @@ module.exports = {
   ],
   removeTransfer: [
     retrieveParameters([
-      { predef: "boxId", required: true },
-      { name: "token", dataType: "String" },
+      { predef: 'boxId', required: true },
+      { name: 'token', dataType: 'String' },
     ]),
     checkPrivilege,
     removeTransfer,
   ],
   claimBox: [
     checkContentType,
-    retrieveParameters([{ name: "token", dataType: "String" }]),
+    retrieveParameters([{ name: 'token', dataType: 'String' }]),
     claimBox,
   ],
   getSketch: [
     retrieveParameters([
-      { predef: "boxId", required: true },
+      { predef: 'boxId', required: true },
       {
-        name: "serialPort",
-        dataType: "String",
-        allowedValues: ["Serial1", "Serial2"],
+        name: 'serialPort',
+        dataType: 'String',
+        allowedValues: ['Serial1', 'Serial2'],
       },
       {
-        name: "soilDigitalPort",
-        dataType: "String",
-        allowedValues: ["A", "B", "C"],
+        name: 'soilDigitalPort',
+        dataType: 'String',
+        allowedValues: ['A', 'B', 'C'],
       },
       {
-        name: "soundMeterPort",
-        dataType: "String",
-        allowedValues: ["A", "B", "C"],
+        name: 'soundMeterPort',
+        dataType: 'String',
+        allowedValues: ['A', 'B', 'C'],
       },
       {
-        name: "windSpeedPort",
-        dataType: "String",
-        allowedValues: ["A", "B", "C"],
+        name: 'windSpeedPort',
+        dataType: 'String',
+        allowedValues: ['A', 'B', 'C'],
       },
-      { name: "ssid", dataType: "StringWithEmpty" },
-      { name: "password", dataType: "StringWithEmpty" },
-      { name: "devEUI", dataType: "StringWithEmpty" },
-      { name: "appEUI", dataType: "StringWithEmpty" },
-      { name: "appKey", dataType: "StringWithEmpty" },
-      { name: "display_enabled", allowedValues: ["true", "false"] },
+      { name: 'ssid', dataType: 'StringWithEmpty' },
+      { name: 'password', dataType: 'StringWithEmpty' },
+      { name: 'devEUI', dataType: 'StringWithEmpty' },
+      { name: 'appEUI', dataType: 'StringWithEmpty' },
+      { name: 'appKey', dataType: 'StringWithEmpty' },
+      { name: 'display_enabled', allowedValues: ['true', 'false'] },
     ]),
     checkPrivilege,
     getSketch,
@@ -813,20 +814,20 @@ module.exports = {
   updateBox: [
     checkContentType,
     retrieveParameters([
-      { predef: "boxId", required: true },
-      { name: "name" },
-      { name: "grouptag", dataType: ["String"] },
-      { name: "description", dataType: "StringWithEmpty" },
-      { name: "weblink", dataType: "StringWithEmpty" },
-      { name: "image", dataType: "base64Image" },
-      { name: "exposure", allowedValues: Box.BOX_VALID_EXPOSURES },
-      { name: "mqtt", dataType: "object" },
-      { name: "ttn", dataType: "object" },
-      { name: "sensors", dataType: ["object"] },
-      { name: "addons", dataType: "object" },
-      { predef: "location" },
-      { name: "useAuth", allowedValues: ["true", "false"] },
-      { name: "generate_access_token", allowedValues: ["true", "false"] },
+      { predef: 'boxId', required: true },
+      { name: 'name' },
+      { name: 'grouptag', dataType: ['String'] },
+      { name: 'description', dataType: 'StringWithEmpty' },
+      { name: 'weblink', dataType: 'StringWithEmpty' },
+      { name: 'image', dataType: 'base64Image' },
+      { name: 'exposure', allowedValues: Box.BOX_VALID_EXPOSURES },
+      { name: 'mqtt', dataType: 'object' },
+      { name: 'ttn', dataType: 'object' },
+      { name: 'sensors', dataType: ['object'] },
+      { name: 'addons', dataType: 'object' },
+      { predef: 'location' },
+      { name: 'useAuth', allowedValues: ['true', 'false'] },
+      { name: 'generate_access_token', allowedValues: ['true', 'false'] },
     ]),
     checkPrivilege,
     updateBox,
@@ -834,14 +835,14 @@ module.exports = {
   // no auth required
   getBoxLocations: [
     retrieveParameters([
-      { predef: "boxId", required: true },
+      { predef: 'boxId', required: true },
       {
-        name: "format",
-        defaultValue: "json",
-        allowedValues: ["json", "geojson"],
+        name: 'format',
+        defaultValue: 'json',
+        allowedValues: ['json', 'geojson'],
       },
-      { predef: "toDate" },
-      { predef: "fromDate" },
+      { predef: 'toDate' },
+      { predef: 'fromDate' },
       validateFromToTimeParams,
     ]),
     getBoxLocations,
@@ -849,110 +850,110 @@ module.exports = {
   postNewBox: [
     checkContentType,
     retrieveParameters([
-      { name: "name", required: true },
-      { name: "description", dataType: "StringWithEmpty" },
-      { name: "grouptag", dataType: ["String"], aliases: ["tag"] },
-      { name: "exposure", allowedValues: Box.BOX_VALID_EXPOSURES },
-      { name: "model", allowedValues: Box.BOX_VALID_MODELS },
-      { name: "sensors", dataType: ["object"] },
+      { name: 'name', required: true },
+      { name: 'description', dataType: 'StringWithEmpty' },
+      { name: 'grouptag', dataType: ['String'], aliases: ['tag'] },
+      { name: 'exposure', allowedValues: Box.BOX_VALID_EXPOSURES },
+      { name: 'model', allowedValues: Box.BOX_VALID_MODELS },
+      { name: 'sensors', dataType: ['object'] },
       {
-        name: "sensorTemplates",
-        dataType: ["String"],
+        name: 'sensorTemplates',
+        dataType: ['String'],
         allowedValues: [
-          "hdc1080",
-          "bmp280",
-          "sds 011",
-          "tsl45315",
-          "veml6070",
-          "bme680",
-          "smt50",
-          "soundlevelmeter",
-          "windspeed",
-          "scd30",
-          "dps310",
-          "sps30",
-          "rg15",
+          'hdc1080',
+          'bmp280',
+          'sds 011',
+          'tsl45315',
+          'veml6070',
+          'bme680',
+          'smt50',
+          'soundlevelmeter',
+          'windspeed',
+          'scd30',
+          'dps310',
+          'sps30',
+          'rg15',
         ],
       },
       {
-        name: "serialPort",
-        dataType: "String",
-        defaultValue: "Serial1",
-        allowedValues: ["Serial1", "Serial2"],
+        name: 'serialPort',
+        dataType: 'String',
+        defaultValue: 'Serial1',
+        allowedValues: ['Serial1', 'Serial2'],
       },
       {
-        name: "soilDigitalPort",
-        dataType: "String",
-        defaultValue: "A",
-        allowedValues: ["A", "B", "C"],
+        name: 'soilDigitalPort',
+        dataType: 'String',
+        defaultValue: 'A',
+        allowedValues: ['A', 'B', 'C'],
       },
       {
-        name: "soundMeterPort",
-        dataType: "String",
-        defaultValue: "B",
-        allowedValues: ["A", "B", "C"],
+        name: 'soundMeterPort',
+        dataType: 'String',
+        defaultValue: 'B',
+        allowedValues: ['A', 'B', 'C'],
       },
       {
-        name: "windSpeedPort",
-        dataType: "String",
-        defaultValue: "C",
-        allowedValues: ["A", "B", "C"],
+        name: 'windSpeedPort',
+        dataType: 'String',
+        defaultValue: 'C',
+        allowedValues: ['A', 'B', 'C'],
       },
-      { name: "mqtt", dataType: "object" },
-      { name: "ttn", dataType: "object" },
-      { name: "useAuth", allowedValues: ["true", "false"] },
-      { predef: "location", required: true },
-      { name: "sharedBox", allowedValues: ["true", "false"] },
+      { name: 'mqtt', dataType: 'object' },
+      { name: 'ttn', dataType: 'object' },
+      { name: 'useAuth', allowedValues: ['true', 'false'] },
+      { predef: 'location', required: true },
+      { name: 'sharedBox', allowedValues: ['true', 'false'] },
     ]),
     postNewBox,
   ],
   getBox: [
     retrieveParameters([
-      { predef: "boxId", required: true },
+      { predef: 'boxId', required: true },
       {
-        name: "format",
-        defaultValue: "json",
-        allowedValues: ["json", "geojson"],
+        name: 'format',
+        defaultValue: 'json',
+        allowedValues: ['json', 'geojson'],
       },
     ]),
     getBox,
   ],
   getBoxes: [
     retrieveParameters([
-      { name: "name", dataType: "String" },
-      { name: "limit", dataType: "Number", defaultValue: 5, min: 1, max: 20 },
+      { name: 'name', dataType: 'String' },
+      { name: 'limit', dataType: 'Number', defaultValue: 5, min: 1, max: 20 },
       {
-        name: "exposure",
+        name: 'exposure',
         allowedValues: Box.BOX_VALID_EXPOSURES,
-        dataType: ["String"],
+        dataType: ['String'],
       },
-      { name: "model", dataType: ["StringWithEmpty"] },
-      { name: "grouptag", dataType: ["StringWithEmpty"] },
-      { name: "phenomenon", dataType: "StringWithEmpty" },
-      { name: "date", dataType: ["RFC 3339"] },
+      { name: 'model', dataType: ['StringWithEmpty'] },
+      { name: 'grouptag', dataType: ['StringWithEmpty'] },
+      { name: 'phenomenon', dataType: 'StringWithEmpty' },
+      { name: 'date', dataType: ['RFC 3339'] },
       {
-        name: "format",
-        defaultValue: "json",
-        allowedValues: ["json", "geojson"],
-      },
-      {
-        name: "classify",
-        defaultValue: "false",
-        allowedValues: ["true", "false"],
+        name: 'format',
+        defaultValue: 'json',
+        allowedValues: ['json', 'geojson'],
       },
       {
-        name: "minimal",
-        defaultValue: "false",
-        allowedValues: ["true", "false"],
+        name: 'classify',
+        defaultValue: 'false',
+        allowedValues: ['true', 'false'],
       },
-      { name: "full", defaultValue: "false", allowedValues: ["true", "false"] },
-      { predef: "near" },
-      { name: "maxDistance" },
-      { predef: "bbox" },
+      {
+        name: 'minimal',
+        defaultValue: 'false',
+        allowedValues: ['true', 'false'],
+      },
+      { name: 'full', defaultValue: 'false', allowedValues: ['true', 'false'] },
+      { predef: 'near' },
+      { name: 'maxDistance' },
+      { predef: 'bbox' },
     ]),
     parseAndValidateTimeParamsForFindAllBoxes,
-    addCache("5 minutes", "getBoxes"),
+    addCache('5 minutes', 'getBoxes'),
     getBoxes,
   ],
-  getAllTags: [addCache("5 minutes", "getAllTags"), getAllTags],
+  getAllTags: [addCache('5 minutes', 'getAllTags'), getAllTags],
 };
