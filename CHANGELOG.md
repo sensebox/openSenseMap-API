@@ -1,5 +1,11 @@
 # openSenseMap API Changelog
 
+## v11.3.0
+
+- Use @sensebox/opensensemap-api-models v3.3.0
+- Fix type: `measruement` ➡️ `measurement` (#859)
+- Update dependencies
+
 ## v11.2.0
 
 - Use @sensebox/opensensemap-api-models v3.2.0

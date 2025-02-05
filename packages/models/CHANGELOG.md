@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## v3.3.0
+
+- Add DNMS sensor template (#881)
+
 ## v3.2.0
 
 - Add `user` integrations (myBadges) (#834)

@@ -51,7 +51,10 @@ const veml6070_uvintensity = require('./veml6070_uvintensity'),
   rg15_eventAcc = require('./rg15_eventacc'),
   rg15_totalAcc = require('./rg15_totalacc'),
   sht3x_temperature = require('./sht3x_temperature'),
-  sht3x_humidity = require('./sht3x_humidity');
+  sht3x_humidity = require('./sht3x_humidity'),
+  dnms_la_eq = require('./dnms_la_eq'),
+  dnms_la_min = require('./dnms_la_min'),
+  dnms_la_max = require('./dnms_la_max');
 module.exports = {
   hdc1008_temperature,
   hdc1080_temperature,
@@ -105,4 +108,7 @@ module.exports = {
   rg15_totalAcc,
   sht3x_temperature,
   sht3x_humidity,
+  dnms_la_eq,
+  dnms_la_min,
+  dnms_la_max,
 };
