@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## v3.3.1
+
+- Add Hydreon RG-15 Optical Rain Gauge
+
 ## v3.3.0
 
 - Add DNMS sensor template (#881)
