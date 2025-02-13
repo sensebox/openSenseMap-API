@@ -9,7 +9,8 @@
     "Gerald Pape",
     "Norwin Roosen",
     "Umut Tas",
-    "Felix Erdmann"
+    "Felix Erdmann",
+    "Frederick Bruch"
   ],
   "dependencies": {
     "@paralleldrive/cuid2": "^2.2.2",

@@ -107,10 +107,12 @@ describe('openSenseMap API locations tests', function () {
         .then(logResponseIfError)
         .then(function (response) {
           expect(response).to.have.status(201);
-          expect(response.body.data.currentLocation).to.exist;
-          expect(response.body.data.currentLocation.coordinates).to.deep.equal(loc);
-          expect(response.body.data.currentLocation.timestamp).to.exist;
-          expect(moment().diff(response.body.data.currentLocation.timestamp)).to.be.below(300);
+          expect(response.body.data.latitude).to.exist;
+          expect(response.body.data.longitude).to.exist;
+          expect(response.body.data.latitude).to.deep.equal(loc[0]);
+          expect(response.body.data.longitude).to.deep.equal(loc[1]);
+          expect(response.body.data.createdAt).to.exist;
+          expect(moment().diff(response.body.data.createdAt)).to.be.below(300);
 
           box = response.body.data;
           authHeaderBox = { headers: { 'Authorization': `${response.body.data.access_token}` } };
@@ -128,14 +130,12 @@ describe('openSenseMap API locations tests', function () {
         .then(logResponseIfError)
         .then(function (response) {
           expect(response).to.have.status(201);
-          expect(response.body.data.currentLocation).to.exist;
-          expect(response.body.data.currentLocation.coordinates).to.deep.equal([
-            loc.lng,
-            loc.lat,
-            loc.height,
-          ]);
-          expect(response.body.data.currentLocation.timestamp).to.exist;
-          expect(moment().diff(response.body.data.currentLocation.timestamp)).to.be.below(300);
+          expect(response.body.data.latitude).to.exist;
+          expect(response.body.data.latitude).to.deep.equal(loc.lat);
+          expect(response.body.data.longitude).to.exist;
+          expect(response.body.data.longitude).to.deep.equal(loc.lng);
+          expect(response.body.data.createdAt).to.exist;
+          expect(moment().diff(response.body.data.createdAt)).to.be.below(300);
 
           return chakram.wait();
         });

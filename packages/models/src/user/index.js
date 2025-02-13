@@ -126,7 +126,7 @@ const updateUserDetails = async function updateUserDetails(
     return Promise.reject(
       new ModelError(
         "You cannot change your email address and password in the same request.",
-        { status: 400 }
+        { status: 403 }
       )
     );
   }
@@ -137,7 +137,7 @@ const updateUserDetails = async function updateUserDetails(
       return Promise.reject(
         new ModelError(
           "To change your password or email address, please supply your current password.",
-          { status: 400 }
+          { status: 403 }
         )
       );
     }
@@ -175,8 +175,8 @@ const updateUserDetails = async function updateUserDetails(
   }
 
   if (email && user.email !== email) {
-    user.email = email;
-    setColumns.email = email;
+    user.unconfirmedEmail = email;
+    setColumns.unconfirmedEmail = email;
     messages.push(
       "E-Mail changed. Please confirm your new address. Until confirmation, sign in using your old address"
     );

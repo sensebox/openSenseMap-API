@@ -103,6 +103,7 @@ const user = pgTable('user', {
   name: text('name').notNull(),
   email: text('email').unique()
     .notNull(),
+  unconfirmedEmail: text('unconfirmed_email').unique(),
   role: text('role', { enum: ['admin', 'user'] }).default('user'),
   language: text('language').default('en_US'),
   emailIsConfirmed: boolean('email_is_confirmed').default(false),
