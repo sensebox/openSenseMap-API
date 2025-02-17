@@ -722,7 +722,7 @@ const userModel = mongoose.model('User', userSchema);
 
 const checkDeviceOwner = async function checkDeviceOwner (userId, deviceId) {
 
-  const device = await findById(deviceId);
+  const device = await findById(deviceId, {}, { userId: true });
 
   if (!device || device.userId !== userId) {
     throw new ModelError('User does not own this senseBox', { type: 'ForbiddenError' });

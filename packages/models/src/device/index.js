@@ -109,7 +109,7 @@ const createDevice = async function createDevice (userId, params) {
         longitude: location[0],
         tags: grouptag
       })
-      .returning();
+      .returning({ ...deviceTable, _id: deviceTable.id });
 
     const [geometry] = await tx
       .insert(locationTable)
@@ -173,11 +173,10 @@ const deleteDevice = async function (filter) {
     .returning();
 };
 
-const findById = async function findById (deviceId, relations = {}) {
+const findById = async function findById (deviceId, relations = {}, columns = {}) {
+  columns = { ...DEFAULT_COLUMNS, ...columns };
   const device = await db.query.deviceTable.findFirst({
-    columns: {
-      ...DEFAULT_COLUMNS
-    },
+    columns: columns,
     where: (device, { eq }) => eq(device.id, deviceId),
     ...(Object.keys(relations).length !== 0 && { with: relations })
   });
@@ -274,6 +273,41 @@ const saveMeasurements = async function saveMeasurements (device, measurements) 
 
   await insertMeasurements(measurements);
 };
+
+async function updateLocation(deviceId, coords, timestamp = utcNow()) {
+  if (!coords || coords.length !== 2) {
+    throw new Error('Invalid coordinates provided');
+  }
+
+  const [longitude, latitude] = coords;
+
+  // Check if the location already exists
+  let existingLocation = await db.query.location.findFirst({
+    where: eq(location.location, `POINT(${longitude} ${latitude})`),
+  });
+
+  if (!existingLocation) {
+    // Insert new location if not found
+    const newLocation = await db.insert(location).values({
+      location: `POINT(${longitude} ${latitude})`,
+    }).returning();
+    existingLocation = newLocation[0];
+  }
+
+  // Insert into device_to_location linking table
+  await db.insert(deviceToLocation).values({
+    deviceId,
+    locationId: existingLocation.id,
+    time: timestamp,
+  });
+
+  // Update the device's current location
+  await db.update(device)
+    .set({ latitude, longitude, updatedAt: timestamp })
+    .where(eq(device.id, deviceId));
+
+  return existingLocation;
+}
 
 const updateDevice = async function updateDevice (deviceId, args) {
   const {
@@ -382,6 +416,10 @@ const updateDevice = async function updateDevice (deviceId, args) {
   //       .updateLocation(location)
   //       .then((loc) => box.set({ currentLocation: loc }))
   //   : Promise.resolve();
+  // update location
+  if (location) {
+    await updateLocation(deviceId, location);
+  }
 
   const device = await db
     .update(deviceTable)
