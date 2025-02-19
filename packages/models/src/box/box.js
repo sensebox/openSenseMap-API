@@ -181,6 +181,8 @@ const DEVICE_COLUMNS_FOR_RETURNING = {
   createdAt: true,
   updatedAt: true,
   location: true,
+  latitude: true,
+  longitude: true,
   status: true
 };
 

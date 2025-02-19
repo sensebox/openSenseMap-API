@@ -8,6 +8,7 @@ const ModelError = require('../modelError');
 const { inArray, arrayContains, sql, eq, asc, ilike } = require('drizzle-orm');
 const { insertMeasurement, insertMeasurements } = require('../measurement');
 const SketchTemplater = require('@sensebox/sketch-templater');
+const { utcNow } = require('../utils');
 
 const { max_boxes: pagination_max_boxes } = require('config').get('openSenseMap-API-models.pagination');
 
@@ -274,41 +275,6 @@ const saveMeasurements = async function saveMeasurements (device, measurements) 
   await insertMeasurements(measurements);
 };
 
-async function updateLocation(deviceId, coords, timestamp = utcNow()) {
-  if (!coords || coords.length !== 2) {
-    throw new Error('Invalid coordinates provided');
-  }
-
-  const [longitude, latitude] = coords;
-
-  // Check if the location already exists
-  let existingLocation = await db.query.location.findFirst({
-    where: eq(location.location, `POINT(${longitude} ${latitude})`),
-  });
-
-  if (!existingLocation) {
-    // Insert new location if not found
-    const newLocation = await db.insert(location).values({
-      location: `POINT(${longitude} ${latitude})`,
-    }).returning();
-    existingLocation = newLocation[0];
-  }
-
-  // Insert into device_to_location linking table
-  await db.insert(deviceToLocation).values({
-    deviceId,
-    locationId: existingLocation.id,
-    time: timestamp,
-  });
-
-  // Update the device's current location
-  await db.update(device)
-    .set({ latitude, longitude, updatedAt: timestamp })
-    .where(eq(device.id, deviceId));
-
-  return existingLocation;
-}
-
 const updateDevice = async function updateDevice (deviceId, args) {
   const {
     mqtt: {
@@ -410,15 +376,43 @@ const updateDevice = async function updateDevice (deviceId, args) {
   //   box.addAddon(addonToAdd);
   // }
 
-  // TODO: run location update logic, if a location was provided.
-  // const locPromise = location
-  //   ? box
-  //       .updateLocation(location)
-  //       .then((loc) => box.set({ currentLocation: loc }))
-  //   : Promise.resolve();
-  // update location
+  // run location update logic, if a location was provided.
+  // if the provided location already exists, just update the relation
+  // if the location does not exist, create it and update
   if (location) {
-    await updateLocation(deviceId, location);
+    const [geometry] = await db
+      .insert(locationTable)
+      .values({
+        location: sql`ST_SetSRID(ST_MakePoint(${location[1]}, ${location[0]}), 4326)`
+      })
+      .onConflictDoNothing()
+      .returning({ id: locationTable.id });
+
+    if (geometry) {
+      // update location relation (update location id of device)
+      await db
+        .update(deviceToLocationTable)
+        .set({ locationId: geometry.id })
+        .where(eq(deviceToLocationTable.deviceId, deviceId));
+    } else {
+      // Get location id
+      const geom = await db.query.locationTable.findFirst({
+        columns: {
+          id: true
+        },
+        where: sql`ST_Equals(${locationTable.location}, ST_SetSRID(ST_MakePoint(${location[1]}, ${location[0]}), 4326))`
+      });
+
+      // update location relation (update location id of device)
+      await db
+        .update(deviceToLocationTable)
+        .set({ locationId: geom.id })
+        .where(eq(deviceToLocationTable.deviceId, deviceId));
+    }
+
+    // also set latitude and longitude of device
+    setColumns['longitude'] = location[0];
+    setColumns['latitude'] = location[1];
   }
 
   const device = await db
