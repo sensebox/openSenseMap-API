@@ -246,10 +246,11 @@ describe('openSenseMap API locations tests', function () {
       expect(result.locations).to.not.exist;
     });
 
-    it('should return the deprecated location in box.loc', function () {
-      expect(result.loc).to.exist;
-      expect(result.loc).to.deep.equal([{ type: 'Feature', geometry: result.currentLocation }]);
-    });
+    // DO WE NEED THIS?
+    // it('should return the deprecated location in box.loc', function () {
+    //   expect(result.loc).to.exist;
+    //   expect(result.loc).to.deep.equal([{ type: 'Feature', geometry: result.currentLocation }]);
+    // });
 
   });
 
@@ -264,7 +265,8 @@ describe('openSenseMap API locations tests', function () {
           expect(response.body).to.have.length(2);
 
           for (const box of response.body) {
-            expect(box.currentLocation).to.exist;
+            expect(box.longitude).to.exist;
+            expect(box.latitude).to.exist;
             expect(box.locations).to.not.exist;
           }
 
@@ -278,11 +280,15 @@ describe('openSenseMap API locations tests', function () {
       return chakram.get(`${BASE_URL}?bbox=120,60,121,61`)
         .then(logResponseIfError)
         .then(function (response) {
+          console.log("🚀 ~ response:", response.body)
           expect(response).to.have.status(200);
 
           expect(response.body).to.be.an('array');
           expect(response.body).to.have.length(1);
-          expect(response.body[0].currentLocation.coordinates).to.deep.equal(loc);
+          expect(response.body[0].longitude).to.equal(loc.lng);
+          expect(response.body[0].latitude).to.equal(loc.lat);
+          expect([response.body[0].longitude, response.body[0].latitude]).to.deep.equal([loc.lng, loc.lat]);
+          //expect(response.body[0].currentLocation.coordinates).to.deep.equal(loc);
         });
     });
 

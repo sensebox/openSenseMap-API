@@ -421,6 +421,8 @@ const updateDevice = async function updateDevice (deviceId, args) {
     .where(eq(deviceTable.id, deviceId))
     .returning();
 
+  device[0]._id = device[0].id;
+
   return device[0];
 };
 

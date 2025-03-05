@@ -367,7 +367,7 @@ const updateUser = async function updateUser(req, res) {
 
     res.send(200, {
       code: "Ok",
-      message: `User successfully saved. ${messageText}`,
+      message: `User successfully saved.${messageText}`,
       data: { me: updatedUser },
     });
   } catch (err) {

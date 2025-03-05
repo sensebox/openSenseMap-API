@@ -126,7 +126,7 @@ const updateUserDetails = async function updateUserDetails(
     return Promise.reject(
       new ModelError(
         "You cannot change your email address and password in the same request.",
-        { status: 403 }
+        { status: 400 }
       )
     );
   }
@@ -137,7 +137,7 @@ const updateUserDetails = async function updateUserDetails(
       return Promise.reject(
         new ModelError(
           "To change your password or email address, please supply your current password.",
-          { status: 403 }
+          { status: 400 }
         )
       );
     }
@@ -159,7 +159,7 @@ const updateUserDetails = async function updateUserDetails(
 
   const setColumns = {};
   let signOut = false;
-  let hasChanges = false; // ✅ Track if changes were made
+  let hasChanges = false;
 
   if (name && user.name !== name) {
     user.name = name;
@@ -178,7 +178,7 @@ const updateUserDetails = async function updateUserDetails(
     user.unconfirmedEmail = email;
     setColumns.unconfirmedEmail = email;
     messages.push(
-      "E-Mail changed. Please confirm your new address. Until confirmation, sign in using your old address"
+      " E-Mail changed. Please confirm your new address. Until confirmation, sign in using your old address"
     );
     hasChanges = true;
   }
@@ -186,7 +186,7 @@ const updateUserDetails = async function updateUserDetails(
   if (newPassword) {
     user.password = newPassword;
     setColumns.password = newPassword;
-    messages.push("Password changed. Please sign in with your new password.");
+    messages.push(" Password changed. Please sign in with your new password");
     signOut = true;
     hasChanges = true;
   }
