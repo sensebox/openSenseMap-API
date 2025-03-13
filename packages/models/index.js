@@ -9,12 +9,12 @@ const config = require('config');
 config.util.setModuleDefaults('openSenseMap-API-models', {
   db: {
     host: 'localhost',
-    port: 27017,
-    user: 'admin',
-    userpass: 'admin',
-    authsource: 'OSeM-api',
-    db: 'OSeM-api',
-    mongo_uri: '',
+    port: 5432,
+    user: 'postgres',
+    userpass: 'postgres',
+    db: 'opensensemap',
+    database_url: '',
+    ssl: false
   },
   integrations: {
     ca_cert: '',
@@ -25,29 +25,29 @@ config.util.setModuleDefaults('openSenseMap-API-models', {
       port: 6379,
       username: '',
       password: '',
-      db: 0,
+      db: 0
     },
     mailer: {
       url: '',
       origin: '',
-      queue: 'mails',
+      queue: 'mails'
     },
     mqtt: {
-      url: '',
-    },
+      url: ''
+    }
   },
   password: {
     min_length: 8,
-    salt_factor: 13,
+    salt_factor: 13
   },
   claims_ttl: {
     amount: 1,
-    unit: 'd',
+    unit: 'd'
   },
   pagination: {
     max_boxes: 3
   },
-  image_folder: './userimages/',
+  image_folder: './userimages/'
 });
 
 const { model: Box } = require('./src/box/box'),
@@ -57,7 +57,8 @@ const { model: Box } = require('./src/box/box'),
   { model: Claim } = require('./src/box/claim'),
   utils = require('./src/utils'),
   decoding = require('./src/measurement/decoding'),
-  db = require('./src/db');
+  db = require('./src/db'),
+  isReady = require('./src/drizzle').isReady;
 
 module.exports = {
   Box,
@@ -67,5 +68,6 @@ module.exports = {
   User,
   utils,
   decoding,
-  db
+  db,
+  isReady
 };

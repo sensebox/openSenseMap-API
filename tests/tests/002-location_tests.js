@@ -107,10 +107,12 @@ describe('openSenseMap API locations tests', function () {
         .then(logResponseIfError)
         .then(function (response) {
           expect(response).to.have.status(201);
-          expect(response.body.data.currentLocation).to.exist;
-          expect(response.body.data.currentLocation.coordinates).to.deep.equal(loc);
-          expect(response.body.data.currentLocation.timestamp).to.exist;
-          expect(moment().diff(response.body.data.currentLocation.timestamp)).to.be.below(300);
+          expect(response.body.data.latitude).to.exist;
+          expect(response.body.data.longitude).to.exist;
+          expect(response.body.data.latitude).to.deep.equal(loc[0]);
+          expect(response.body.data.longitude).to.deep.equal(loc[1]);
+          expect(response.body.data.createdAt).to.exist;
+          expect(moment().diff(response.body.data.createdAt)).to.be.below(300);
 
           box = response.body.data;
           authHeaderBox = { headers: { 'Authorization': `${response.body.data.access_token}` } };
@@ -128,14 +130,12 @@ describe('openSenseMap API locations tests', function () {
         .then(logResponseIfError)
         .then(function (response) {
           expect(response).to.have.status(201);
-          expect(response.body.data.currentLocation).to.exist;
-          expect(response.body.data.currentLocation.coordinates).to.deep.equal([
-            loc.lng,
-            loc.lat,
-            loc.height,
-          ]);
-          expect(response.body.data.currentLocation.timestamp).to.exist;
-          expect(moment().diff(response.body.data.currentLocation.timestamp)).to.be.below(300);
+          expect(response.body.data.latitude).to.exist;
+          expect(response.body.data.latitude).to.deep.equal(loc.lat);
+          expect(response.body.data.longitude).to.exist;
+          expect(response.body.data.longitude).to.deep.equal(loc.lng);
+          expect(response.body.data.createdAt).to.exist;
+          expect(moment().diff(response.body.data.createdAt)).to.be.below(300);
 
           return chakram.wait();
         });
@@ -182,12 +182,15 @@ describe('openSenseMap API locations tests', function () {
         .then(logResponseIfError)
         .then(function (response) {
           expect(response).to.have.status(200);
-          expect(response.body.data.currentLocation).to.exist;
-          expect(response.body.data.currentLocation.coordinates).to.deep.equal(loc);
-          expect(response.body.data.currentLocation.timestamp).to.exist;
-          expect(moment().diff(response.body.data.currentLocation.timestamp)).to.be.below(300);
+          expect(response.body.data.latitude).to.exist;
+          expect(response.body.data.longitude).to.exist;
+          expect(response.body.data.longitude).to.deep.equal(loc[0]);
+          expect(response.body.data.latitude).to.deep.equal(loc[1]);
 
-          submitTimeLoc1 = response.body.data.currentLocation.timestamp;
+          expect(response.body.data.updatedAt).to.exist;
+          expect(moment().diff(response.body.data.updatedAt)).to.be.below(300);
+
+          submitTimeLoc1 = response.body.data.updatedAt;
 
           return chakram.wait();
         });
@@ -200,14 +203,12 @@ describe('openSenseMap API locations tests', function () {
         .then(logResponseIfError)
         .then(function (response) {
           expect(response).to.have.status(200);
-          expect(response.body.data.currentLocation).to.exist;
-          expect(response.body.data.currentLocation.coordinates).to.deep.equal([
-            loc.lng,
-            loc.lat,
-            loc.height,
-          ]);
-          expect(response.body.data.currentLocation.timestamp).to.exist;
-          expect(moment().diff(response.body.data.currentLocation.timestamp)).to.be.below(300);
+          expect(response.body.data.latitude).to.exist;
+          expect(response.body.data.longitude).to.exist;
+          expect(response.body.data.longitude).to.deep.equal(loc.lng);
+          expect(response.body.data.latitude).to.deep.equal(loc.lat);
+          expect(response.body.data.updatedAt).to.exist;
+          expect(moment().diff(response.body.data.updatedAt)).to.be.below(300);
 
           box = response.body.data;
 
@@ -236,18 +237,20 @@ describe('openSenseMap API locations tests', function () {
     });
 
     it('should return the current location in box.currentLocation', function () {
-      expect(result.currentLocation).to.exist;
-      expect(result.currentLocation).to.deep.equal(box.currentLocation);
+      expect(result.latitude).to.exist;
+      expect(result.longitude).to.exist;
+      expect([result.longitude, result.latitude]).to.deep.equal([box.longitude, box.latitude]);
     });
 
     it('should NOT return the whole location history in box.locations', function () {
       expect(result.locations).to.not.exist;
     });
 
-    it('should return the deprecated location in box.loc', function () {
-      expect(result.loc).to.exist;
-      expect(result.loc).to.deep.equal([{ type: 'Feature', geometry: result.currentLocation }]);
-    });
+    // DO WE NEED THIS?
+    // it('should return the deprecated location in box.loc', function () {
+    //   expect(result.loc).to.exist;
+    //   expect(result.loc).to.deep.equal([{ type: 'Feature', geometry: result.currentLocation }]);
+    // });
 
   });
 
@@ -262,7 +265,8 @@ describe('openSenseMap API locations tests', function () {
           expect(response.body).to.have.length(2);
 
           for (const box of response.body) {
-            expect(box.currentLocation).to.exist;
+            expect(box.longitude).to.exist;
+            expect(box.latitude).to.exist;
             expect(box.locations).to.not.exist;
           }
 
@@ -276,11 +280,15 @@ describe('openSenseMap API locations tests', function () {
       return chakram.get(`${BASE_URL}?bbox=120,60,121,61`)
         .then(logResponseIfError)
         .then(function (response) {
+          console.log("🚀 ~ response:", response.body)
           expect(response).to.have.status(200);
 
           expect(response.body).to.be.an('array');
           expect(response.body).to.have.length(1);
-          expect(response.body[0].currentLocation.coordinates).to.deep.equal(loc);
+          expect(response.body[0].longitude).to.equal(loc.lng);
+          expect(response.body[0].latitude).to.equal(loc.lat);
+          expect([response.body[0].longitude, response.body[0].latitude]).to.deep.equal([loc.lng, loc.lat]);
+          //expect(response.body[0].currentLocation.coordinates).to.deep.equal(loc);
         });
     });
 

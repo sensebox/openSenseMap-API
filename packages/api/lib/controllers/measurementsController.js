@@ -1,5 +1,8 @@
 'use strict';
 
+const { findAccessToken, findById, saveMeasurement, saveMeasurements } = require('@sensebox/opensensemap-api-models/src/device');
+const { hasDecoder, decodeMeasurements } = require('@sensebox/opensensemap-api-models/src/measurement');
+const { getSensorsWithLastMeasurement, getSensorWithLastMeasurement, getSensorsWithLastMeasurements } = require('@sensebox/opensensemap-api-models/src/sensor');
 const {
     BadRequestError,
     UnsupportedMediaTypeError,
@@ -62,59 +65,79 @@ const {
  */
 const getLatestMeasurements = async function getLatestMeasurements (req, res) {
   const { _userParams: params } = req;
+  const { boxId, sensorId, count, onlyValue } = req._userParams;
 
-  let box;
+  let device;
 
   try {
-    if (req._userParams.count) {
-      box = await Box.findBoxById(req._userParams.boxId, {
-        populate: false,
-        onlyLastMeasurements: false,
-        count: req._userParams.count,
-        projection: {
-          name: 1,
-          lastMeasurementAt: 1,
-          sensors: 1,
-          grouptag: 1
-        }
-      });
+    // if (req._userParams.count) {
+    //   box = await Box.findBoxById(req._userParams.boxId, {
+    //     populate: false,
+    //     onlyLastMeasurements: false,
+    //     count: req._userParams.count,
+    //     projection: {
+    //       name: 1,
+    //       lastMeasurementAt: 1,
+    //       sensors: 1,
+    //       grouptag: 1
+    //     }
+    //   });
 
-      const measurements = await Measurement.findLatestMeasurementsForSensorsWithCount(box, req._userParams.count);
-      for (let index = 0; index < box.sensors.length; index++) {
-        const sensor = box.sensors[index];
-        const values = measurements.find(elem => elem._id.equals(sensor._id));
-        sensor['lastMeasurements'] = values;
-      }
-    } else {
-      box = await Box.findBoxById(req._userParams.boxId, {
-        onlyLastMeasurements: true
-      });
-    }
-  } catch (err) {
-    return handleError(err);
-  }
+    //   const measurements = await Measurement.findLatestMeasurementsForSensorsWithCount(box, req._userParams.count);
+    //   for (let index = 0; index < box.sensors.length; index++) {
+    //     const sensor = box.sensors[index];
+    //     const values = measurements.find(elem => elem._id.equals(sensor._id));
+    //     sensor['lastMeasurements'] = values;
+    //   }
+    // } else {
+    // box = await Box.findBoxById(req._userParams.boxId, {
+    //   onlyLastMeasurements: true
+    // });
+    device = await findById(boxId, { sensors: true });
 
-  if (params.sensorId) {
-    const sensor = box.sensors.find(s => s._id.equals(params.sensorId));
-    if (sensor) {
-      if (params.onlyValue) {
-        if (!sensor.lastMeasurement) {
-          res.send(undefined);
+    if (sensorId) {
+      const sensor = device.sensors.find((s) => s.id === sensorId);
+      if (sensor) {
+        const sensorWithMeasurements = await getSensorWithLastMeasurement(
+          boxId,
+          sensorId,
+          count
+        );
+
+        if (onlyValue) {
+          if (!sensorWithMeasurements[0].lastMeasurement.value) {
+            res.send(undefined);
+
+            return;
+          }
+
+          res.send(sensorWithMeasurements[0].lastMeasurement.value);
 
           return;
         }
-        res.send(sensor.lastMeasurement.value);
+
+        res.send(sensorWithMeasurements[0]);
 
         return;
       }
-      res.send(sensor);
 
-      return;
+      res.send(
+        new NotFoundError(`Sensor with id ${params.sensorId} does not exist`)
+      );
+
+    } else {
+      const sensorsWithMeasurements = await getSensorsWithLastMeasurements(
+        boxId,
+        count
+      );
+
+      device.sensors = sensorsWithMeasurements;
     }
 
-    res.send(new NotFoundError(`Sensor with id ${params.sensorId} does not exist`));
-  } else {
-    res.send(box);
+    // }
+    res.send(device);
+  } catch (err) {
+    return handleError(err);
   }
 };
 
@@ -235,7 +258,7 @@ const getData = async function getData (req, res) {
  * @apiParam {Boolean=true,false} [download=true] Set the `content-disposition` header to force browsers to download instead of displaying.
  */
 const getDataMulti = async function getDataMulti (req, res) {
-  const { boxId, bbox, exposure, delimiter, columns, fromDate, toDate, phenomenon, download, format } = req._userParams;
+  const { boxId, bbox, exposure, grouptag, delimiter, columns, fromDate, toDate, phenomenon, download, format } = req._userParams;
 
   // build query
   const queryParams = {
@@ -255,6 +278,11 @@ const getDataMulti = async function getDataMulti (req, res) {
   // exposure parameter
   if (exposure) {
     queryParams['exposure'] = { '$in': exposure };
+  }
+
+  // grouptag parameter
+  if (grouptag) {
+    // TODO
   }
 
   try {
@@ -306,37 +334,37 @@ const getDataMulti = async function getDataMulti (req, res) {
  * @apiParam {String} grouptag The grouptag to search by.
  * @apiParam {String=json} format=json
  */
-const getDataByGroupTag = async function getDataByGroupTag (req, res) {
-  const { grouptag, format } = req._userParams;
-  const queryTags = grouptag.split(',');
-  // build query
-  const queryParams = {};
-  if (grouptag) {
-    queryParams['grouptag'] = { '$all': queryTags };
-  }
+// const getDataByGroupTag = async function getDataByGroupTag (req, res) {
+//   const { grouptag, format } = req._userParams;
+//   const queryTags = grouptag.split(',');
+//   // build query
+//   const queryParams = {};
+//   if (grouptag) {
+//     queryParams['grouptag'] = { '$all': queryTags };
+//   }
 
-  try {
-    let stream = await Box.findMeasurementsOfBoxesByTagStream({
-      query: queryParams
-    });
-    stream = stream
-      .on('error', function (err) {
-        return handleError(err);
-      });
-    switch (format) {
-    case 'json':
-      res.header('Content-Type', 'application/json');
-      stream = stream
-        .pipe(jsonstringify({ open: '[', close: ']' }));
-      break;
-    }
+//   try {
+//     let stream = await Box.findMeasurementsOfBoxesByTagStream({
+//       query: queryParams
+//     });
+//     stream = stream
+//       .on('error', function (err) {
+//         return handleError(err);
+//       });
+//     switch (format) {
+//     case 'json':
+//       res.header('Content-Type', 'application/json');
+//       stream = stream
+//         .pipe(jsonstringify({ open: '[', close: ']' }));
+//       break;
+//     }
 
-    stream
-      .pipe(res);
-  } catch (err) {
-    return handleError(err);
-  }
-};
+//     stream
+//       .pipe(res);
+//   } catch (err) {
+//     return handleError(err);
+//   }
+// };
 
 /**
  * @api {post} /boxes/:senseBoxId/:sensorId Post new measurement
@@ -353,22 +381,24 @@ const getDataByGroupTag = async function getDataByGroupTag (req, res) {
  * @apiHeader {String} Authorization Box' unique access_token. Will be used as authorization token if box has auth enabled (e.g. useAuth: true)
  */
 const postNewMeasurement = async function postNewMeasurement (req, res) {
-  const { boxId, sensorId, value, createdAt, location } = req._userParams;
+  const { boxId: deviceId, sensorId, value, createdAt, location } = req._userParams;
 
   try {
-    const box = await Box.findBoxById(boxId, { populate: false, lean: false });
-    if (box.useAuth && box.access_token && box.access_token !== req.headers.authorization) {
-      return Promise.reject(new UnauthorizedError('Box access token not valid!'));
+    const device = await findById(deviceId, { sensors: true });
+    const deviceAccessToken = await findAccessToken(deviceId);
+    if (device.useAuth && deviceAccessToken.token && deviceAccessToken.token !== req.headers.authorization) {
+      return Promise.reject(new UnauthorizedError('Device access token not valid!'));
     }
 
-    const [measurement] = await Measurement.decodeMeasurements([{
+    const [measurement] = await decodeMeasurements([{
       sensor_id: sensorId,
       value,
       createdAt,
       location
     }]);
-    await box.saveMeasurement(measurement);
-    res.send(201, 'Measurement saved in box');
+    // await box.saveMeasurement(measurement);
+    await saveMeasurement(device, measurement);
+    res.send(201, 'Measurement saved in device');
   } catch (err) {
     return handleError(err);
   }
@@ -454,7 +484,7 @@ const postNewMeasurement = async function postNewMeasurement (req, res) {
  * }
  */
 const postNewMeasurements = async function postNewMeasurements (req, res) {
-  const { boxId, luftdaten, hackair } = req._userParams;
+  const { boxId: deviceId, luftdaten, hackair } = req._userParams;
   let contentType = req.getContentType();
 
   if (hackair) {
@@ -463,21 +493,24 @@ const postNewMeasurements = async function postNewMeasurements (req, res) {
     contentType = 'luftdaten';
   }
 
-  if (Measurement.hasDecoder(contentType)) {
+  if (hasDecoder(contentType)) {
     try {
-      const box = await Box.findBoxById(boxId, { populate: false, lean: false, projection: { sensors: 1, locations: 1, lastMeasurementAt: 1, currentLocation: 1, model: 1, access_token: 1, useAuth: 1 } });
+      const device = await findById(deviceId, { sensors: true });
+      const deviceAccessToken = await findAccessToken(deviceId);
+      // const box = await Box.findBoxById(boxId, { populate: false, lean: false, projection: { sensors: 1, locations: 1, lastMeasurementAt: 1, currentLocation: 1, model: 1, access_token: 1, useAuth: 1 } });
 
       // if (contentType === 'hackair' && box.access_token !== req.headers.authorization) {
       //   throw new UnauthorizedError('Box access token not valid!');
       // }
 
       // authorization for all boxes that have not opt out
-      if ((box.useAuth || contentType === 'hackair') && box.access_token && box.access_token !== req.headers.authorization) {
-        return Promise.reject(new UnauthorizedError('Box access token not valid!'));
+      if ((device.useAuth || contentType === 'hackair') && deviceAccessToken.token && deviceAccessToken.token !== req.headers.authorization) {
+        return Promise.reject(new UnauthorizedError('Device access token not valid!'));
       }
 
-      const measurements = await Measurement.decodeMeasurements(req.body, { contentType, sensors: box.sensors });
-      await box.saveMeasurementsArray(measurements);
+      const measurements = await decodeMeasurements(req.body, { contentType, sensors: device.sensors });
+      // await box.saveMeasurementsArray(measurements);
+      await saveMeasurements(device, measurements);
       res.send(201, 'Measurements saved in box');
     } catch (err) {
       return handleError(err);
@@ -512,10 +545,21 @@ module.exports = {
     retrieveParameters([
       { predef: 'sensorId', required: true },
       { name: 'format', defaultValue: 'json', allowedValues: ['json', 'csv'] },
-      { name: 'download', defaultValue: 'false', allowedValues: ['true', 'false'] },
+      {
+        name: 'download',
+        defaultValue: 'false',
+        allowedValues: ['true', 'false']
+      },
       { predef: 'delimiter' },
       { name: 'outliers', allowedValues: ['mark', 'replace'] },
-      { name: 'outlierWindow', dataType: 'Integer', aliases: ['outlier-window'], defaultValue: 15, min: 1, max: 50 },
+      {
+        name: 'outlierWindow',
+        dataType: 'Integer',
+        aliases: ['outlier-window'],
+        defaultValue: 15,
+        min: 1,
+        max: 50
+      },
       { predef: 'toDate' },
       { predef: 'fromDate' }
     ]),
@@ -524,26 +568,32 @@ module.exports = {
   ],
   getDataMulti: [
     retrieveParameters([
-      { name: 'boxId', aliases: ['senseboxid', 'senseboxids', 'boxid', 'boxids'], dataType: ['id'] },
+      {
+        name: 'boxId',
+        aliases: ['senseboxid', 'senseboxids', 'boxid', 'boxids'],
+        dataType: ['id']
+      },
       { name: 'phenomenon', required: true },
+      { name: 'grouptag' },
       { predef: 'delimiter' },
-      { name: 'exposure', allowedValues: Box.BOX_VALID_EXPOSURES, dataType: ['String'] },
+      {
+        name: 'exposure',
+        allowedValues: Box.BOX_VALID_EXPOSURES,
+        dataType: ['String']
+      },
       { predef: 'columnsGetDataMulti' },
       { predef: 'bbox' },
       { predef: 'toDate' },
       { predef: 'fromDate' },
-      { name: 'download', defaultValue: 'true', allowedValues: ['true', 'false'] },
+      {
+        name: 'download',
+        defaultValue: 'true',
+        allowedValues: ['true', 'false']
+      },
       { name: 'format', defaultValue: 'csv', allowedValues: ['csv', 'json'] }
     ]),
     validateFromToTimeParams,
     getDataMulti
-  ],
-  getDataByGroupTag: [
-    retrieveParameters([
-      { name: 'grouptag', required: true },
-      { name: 'format', defaultValue: 'json', allowedValues: ['json'] }
-    ]),
-    getDataByGroupTag
   ],
   getLatestMeasurements: [
     retrieveParameters([

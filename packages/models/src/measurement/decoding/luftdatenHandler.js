@@ -123,7 +123,7 @@ const findSensorId = function findSensorId (sensors, value_type) {
             matchings[vt_phenomenon].some((alias) => title.includes(alias))) &&
           type.startsWith(vt_sensortype)
         ) {
-          sensorId = sensor._id.toString();
+          sensorId = sensor.id;
           break;
         }
       }
@@ -135,14 +135,14 @@ const findSensorId = function findSensorId (sensors, value_type) {
 
 const transformLuftdatenJson = function transformLuftdatenJson (json, sensors) {
   const outArray = [];
-
+  
   for (const sdv of json.sensordatavalues) {
     const sensor_id = findSensorId(sensors, sdv.value_type);
     if (sensor_id) {
       outArray.push({ sensor_id, value: sdv.value });
     }
   }
-
+  
   return outArray;
 };
 

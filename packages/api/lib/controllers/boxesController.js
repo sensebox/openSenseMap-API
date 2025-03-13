@@ -70,6 +70,11 @@ const
   } = require('../helpers/userParamHelpers'),
   handleError = require('../helpers/errorHandler'),
   jsonstringify = require('stringify-stream');
+const { findDeviceById } = require('@sensebox/opensensemap-api-models/src/box/box');
+const { createDevice, findDevices, findTags, updateDevice, findById, generateSketch } = require('@sensebox/opensensemap-api-models/src/device');
+const { findByUserId } = require('@sensebox/opensensemap-api-models/src/password');
+const { getSensorsWithLastMeasurement } = require('@sensebox/opensensemap-api-models/src/sensor');
+const { removeDevice, checkPassword } = require('@sensebox/opensensemap-api-models/src/user/user');
 
 /**
  * @apiDefine Addons
@@ -154,13 +159,14 @@ const
  */
 const updateBox = async function updateBox (req, res) {
   try {
-    let box = await Box.findBoxById(req._userParams.boxId, { lean: false, populate: false });
-    box = await box.updateBox(req._userParams);
-    if (box._sensorsChanged === true) {
-      req.user.mail('newSketch', box);
-    }
+    let device = await findDeviceById(req._userParams.boxId);
+    device = await updateDevice(device.id, req._userParams);
+    // if (box._sensorsChanged === true) {
+    //   req.user.mail('newSketch', box);
+    // }
 
-    res.send({ code: 'Ok', data: box.toJSON({ includeSecrets: true }) });
+    // res.send({ code: 'Ok', data: box.toJSON({ includeSecrets: true }) });
+    res.send({ code: 'Ok', data: device });
     clearCache(['getBoxes']);
   } catch (err) {
     return handleError(err);
@@ -220,7 +226,7 @@ const geoJsonStringifyReplacer = function geoJsonStringifyReplacer (key, box) {
  * @apiParam {String=json,geojson} [format=json] the format the sensor data is returned in.
  * @apiParam {String} [grouptag] only return boxes with this grouptag, allows to specify multiple separated with a comma
  * @apiParam {String="homeEthernet","homeWifi","homeEthernetFeinstaub","homeWifiFeinstaub","luftdaten_sds011","luftdaten_sds011_dht11","luftdaten_sds011_dht22","luftdaten_sds011_bmp180","luftdaten_sds011_bme280"} [model] only return boxes with this model, allows to specify multiple separated with a comma
- * @apiParam {Boolean="true","false"} [classify=false] if specified, the api will classify the boxes accordingly to their last measurements.
+ * @apiParam @deprecated {Boolean="true","false"} [classify=false] if specified, the api will classify the boxes accordingly to their last measurements.
  * @apiParam {Boolean="true","false"} [minimal=false] if specified, the api will only return a minimal set of box metadata consisting of [_id, updatedAt, currentLocation, exposure, name] for a fast response.
  * @apiParam {Boolean="true","false"} [full=false] if true the API will return populated lastMeasurements (use this with caution for now, expensive on the database)
  * @apiParam {Number} [near] A comma separated coordinate, if specified, the api will only return senseBoxes within maxDistance (in m) of this location
@@ -309,34 +315,54 @@ const getBoxes = async function getBoxes (req, res) {
   }
 
   try {
-    let stream;
+    // let devices;
 
     // Search boxes by name
     // Directly return results and do nothing else
-    if (req._userParams.name) {
-      stream = await Box.findBoxes(req._userParams);
-    } else {
-      if (req._userParams.minimal === 'true') {
-        stream = await Box.findBoxesMinimal(req._userParams);
-      } else {
-        stream = await Box.findBoxesLastMeasurements(req._userParams);
-      }
+    // if (req._userParams.name) {
+    //   // stream = await Box.findBoxes(req._userParams);
+    //   devices = await findDevices(req._userParams, { id: true, name: true, location: true });
+    // } else if (req._userParams.minimal === 'true') {
+    //   devices = await findDevicesMinimal(req._userParams, { id: true, name: true, exposure: true, location: true, status: true });
+    //   // stream = await Box.findBoxesMinimal(req._userParams);
+    // } else {
+    //   // stream = await Box.findBoxesLastMeasurements(req._userParams);
+    //   devices = await findDevicesMinimal(req._userParams);
+    // }
 
-      if (req._userParams.classify === 'true') {
-        stream = stream
-          .pipe(new classifyTransformer())
-          .on('error', function (err) {
-            res.end(`Error: ${err.message}`);
-          });
-      }
-    }
+    // if (req._userParams.minimal === 'true') {
+    //   devices = await findDevices(req._userParams, {
+    //     id: true,
+    //     name: true,
+    //     exposure: true,
+    //     location: true,
+    //     status: true
+    //   });
+    //   // stream = await Box.findBoxesMinimal(req._userParams);
+    // } else {
+    //   // stream = await Box.findBoxesLastMeasurements(req._userParams);
+    //   devices = await findDevices(req._userParams);
+    // }
 
-    stream
-      .pipe(stringifier)
-      .on('error', function (err) {
-        res.end(`Error: ${err.message}`);
-      })
-      .pipe(res);
+    const devices = await findDevices(req._userParams, {}, { sensors: { columns: { deviceId: false, sensorWikiType: false, sensorWikiPhenomenon: false, sensorWikiUnit: false } } });
+
+    // Deprecated: classify is performed by database
+    // if (req._userParams.classify === 'true') {
+    //   stream = stream
+    //     .pipe(new classifyTransformer())
+    //     .on('error', function (err) {
+    //       res.end(`Error: ${err.message}`);
+    //     });
+    // }
+    // }
+
+    // stream
+    //   .pipe(stringifier)
+    //   .on('error', function (err) {
+    //     res.end(`Error: ${err.message}`);
+    //   })
+    //   .pipe(res);
+    res.send(devices);
   } catch (err) {
     return handleError(err);
   }
@@ -451,16 +477,17 @@ const getBox = async function getBox (req, res) {
   const { format, boxId } = req._userParams;
 
   try {
-    const box = await Box.findBoxById(boxId);
+    const device = await findDeviceById(boxId);
+    const sensorsWithMeasurements = await getSensorsWithLastMeasurement(boxId);
 
-    if (format === 'geojson') {
-      const coordinates = box.currentLocation.coordinates;
-      box.currentLocation = undefined;
-      box.loc = undefined;
+    device.sensors = sensorsWithMeasurements;
 
-      return res.send(point(coordinates, box));
+    if (format === 'geojson') { // Handle with PostGIS Extension
+      const coordinates = [device.longitude, device.latitude];
+
+      return res.send(point(coordinates, device));
     }
-    res.send(box);
+    res.send(device);
   } catch (err) {
     return handleError(err);
   }
@@ -499,18 +526,19 @@ const getBox = async function getBox (req, res) {
  */
 const postNewBox = async function postNewBox (req, res) {
   try {
-    let newBox = await req.user.addBox(req._userParams);
-    newBox = await Box.populate(newBox, Box.BOX_SUB_PROPS_FOR_POPULATION);
-    res.send(201, { message: 'Box successfully created', data: newBox });
+    const newDevice = await createDevice(req.user.id, req._userParams);
+    // TODO: only return specific fields newBox = await Box.populate(newBox, Box.BOX_SUB_PROPS_FOR_POPULATION);
+
+    res.send(201, { message: 'Box successfully created', data: newDevice });
     clearCache(['getBoxes', 'getStats']);
     postToMattermost(
       `New Box: ${req.user.name} (${redactEmail(
         req.user.email
-      )}) just registered "${newBox.name}" (${
-        newBox.model
+      )}) just registered "${newDevice.name}" (${
+        newDevice.model
       }): [https://opensensemap.org/explore/${
-        newBox._id
-      }](https://opensensemap.org/explore/${newBox._id})`
+        newDevice.id
+      }](https://opensensemap.org/explore/${newDevice.id})`
     );
   } catch (err) {
     return handleError(err);
@@ -537,7 +565,7 @@ const postNewBox = async function postNewBox (req, res) {
 const getSketch = async function getSketch (req, res) {
   res.header('Content-Type', 'text/plain; charset=utf-8');
   try {
-    const box = await Box.findBoxById(req._userParams.boxId, { populate: false, lean: false });
+    const device = await findById(req._userParams.boxId, { accessToken: true, sensors: true });
 
     const params = {
       serialPort: req._userParams.serialPort,
@@ -553,11 +581,11 @@ const getSketch = async function getSketch (req, res) {
     };
 
     // pass access token only if useAuth is true and access_token is available
-    if (box.access_token) {
-      params.access_token = box.access_token;
+    if (device.useAuth && device.accessToken) {
+      params.access_token = device.accessToken.token;
     }
 
-    res.send(box.getSketch(params));
+    res.send(generateSketch(device, params));
   } catch (err) {
     return handleError(err);
   }
@@ -577,11 +605,14 @@ const deleteBox = async function deleteBox (req, res) {
   const { password, boxId } = req._userParams;
 
   try {
-    await req.user.checkPassword(password);
-    const box = await req.user.removeBox(boxId);
-    res.send({ code: 'Ok', message: 'box and all associated measurements marked for deletion' });
+    const hashedPassword = await findByUserId(req.user.id);
+
+    await checkPassword(password, hashedPassword);
+    const device = await removeDevice(boxId);
+
+    res.send({ code: 'Ok', message: 'device and all associated measurements marked for deletion' });
     clearCache(['getBoxes', 'getStats']);
-    postToMattermost(`Box deleted: ${req.user.name} (${redactEmail(req.user.email)}) just deleted "${box.name}" (${boxId})`);
+    postToMattermost(`Device deleted: ${req.user.name} (${redactEmail(req.user.email)}) just deleted "${device.name}" (${boxId})`);
 
   } catch (err) {
     return handleError(err);
@@ -698,10 +729,11 @@ const claimBox = async function claimBox (req, res) {
 
 const getAllTags = async function getAllTags (req, res) {
   try {
-    const grouptags = await Box.find().distinct('grouptag')
-      .exec();
+    const tags = await findTags();
+    // const grouptags = await Box.find().distinct('grouptag')
+    //   .exec();
 
-    res.send({ code: 'Ok', data: grouptags });
+    res.send({ code: 'Ok', data: tags });
   } catch (err) {
     return handleError(err);
   }
@@ -925,7 +957,7 @@ module.exports = {
       },
       { name: 'full', defaultValue: 'false', allowedValues: ['true', 'false'] },
       { predef: 'near' },
-      { name: 'maxDistance' },
+      { name: 'maxDistance', dataType: Number, defaultValue: 1000 },
       { predef: 'bbox' }
     ]),
     parseAndValidateTimeParamsForFindAllBoxes,

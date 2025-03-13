@@ -37,10 +37,10 @@ describe('openSenseMap API luftdaten.info devices', function () {
         expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
         expect(response).to.have.json('sensors', function (sensors) {
           expect(sensors.some(function (sensor) {
-            return sensor.sensorType === 'DHT11' && sensor.title === 'Temperatur';
+            return sensor.sensor_type === 'DHT11' && sensor.title === 'Temperatur';
           })).to.be.true;
           expect(sensors.some(function (sensor) {
-            return sensor.sensorType === 'DHT11' && sensor.title === 'rel. Luftfeuchte';
+            return sensor.sensor_type === 'DHT11' && sensor.title === 'rel. Luftfeuchte';
           })).to.be.true;
         });
 
@@ -66,10 +66,10 @@ describe('openSenseMap API luftdaten.info devices', function () {
         expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
         expect(response).to.have.json('sensors', function (sensors) {
           expect(sensors.some(function (sensor) {
-            return sensor.sensorType === 'DHT22' && sensor.title === 'Temperatur';
+            return sensor.sensor_type === 'DHT22' && sensor.title === 'Temperatur';
           })).to.be.true;
           expect(sensors.some(function (sensor) {
-            return sensor.sensorType === 'DHT22' && sensor.title === 'rel. Luftfeuchte';
+            return sensor.sensor_type === 'DHT22' && sensor.title === 'rel. Luftfeuchte';
           })).to.be.true;
         });
 
@@ -95,10 +95,10 @@ describe('openSenseMap API luftdaten.info devices', function () {
         expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
         expect(response).to.have.json('sensors', function (sensors) {
           expect(sensors.some(function (sensor) {
-            return sensor.sensorType === 'BMP180' && sensor.title === 'Temperatur';
+            return sensor.sensor_type === 'BMP180' && sensor.title === 'Temperatur';
           })).to.be.true;
           expect(sensors.some(function (sensor) {
-            return sensor.sensorType === 'BMP180' && sensor.title === 'Luftdruck';
+            return sensor.sensor_type === 'BMP180' && sensor.title === 'Luftdruck';
           })).to.be.true;
         });
 
@@ -124,13 +124,13 @@ describe('openSenseMap API luftdaten.info devices', function () {
         expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
         expect(response).to.have.json('sensors', function (sensors) {
           expect(sensors.some(function (sensor) {
-            return sensor.sensorType === 'BME280' && sensor.title === 'Temperatur';
+            return sensor.sensor_type === 'BME280' && sensor.title === 'Temperatur';
           })).to.be.true;
           expect(sensors.some(function (sensor) {
-            return sensor.sensorType === 'BME280' && sensor.title === 'rel. Luftfeuchte';
+            return sensor.sensor_type === 'BME280' && sensor.title === 'rel. Luftfeuchte';
           })).to.be.true;
           expect(sensors.some(function (sensor) {
-            return sensor.sensorType === 'BME280' && sensor.title === 'Luftdruck';
+            return sensor.sensor_type === 'BME280' && sensor.title === 'Luftdruck';
           })).to.be.true;
         });
 
@@ -175,16 +175,16 @@ describe('openSenseMap API luftdaten.info devices', function () {
         expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
         expect(response).to.have.json('sensors', function (sensors) {
           expect(sensors.some(function (sensor) {
-            return sensor.sensorType === 'DHT22' && sensor.title === 'Außentemperatur';
+            return sensor.sensor_type === 'DHT22' && sensor.title === 'Außentemperatur';
           })).to.be.true;
           expect(sensors.some(function (sensor) {
-            return sensor.sensorType === 'DHT22' && sensor.title === 'rel. Luftfeuchte draußen';
+            return sensor.sensor_type === 'DHT22' && sensor.title === 'rel. Luftfeuchte draußen';
           })).to.be.true;
           expect(sensors.some(function (sensor) {
-            return sensor.sensorType === 'BMP180' && sensor.title === 'Kellertemperatur';
+            return sensor.sensor_type === 'BMP180' && sensor.title === 'Kellertemperatur';
           })).to.be.true;
           expect(sensors.some(function (sensor) {
-            return sensor.sensorType === 'BMP180' && sensor.title === 'Luftdruck Keller';
+            return sensor.sensor_type === 'BMP180' && sensor.title === 'Luftdruck Keller';
           })).to.be.true;
         });
 
@@ -345,19 +345,19 @@ describe('openSenseMap API luftdaten.info devices', function () {
       .then(function (response) {
         expect(response).to.have.json('sensors', function (sensors) {
           sensors.forEach(function (sensor) {
-            if (sensor.title === 'Temperatur' && sensor.sensorType === 'DHT22') {
+            if (sensor.title === 'Temperatur' && sensor.sensor_type === 'DHT22') {
               expect(sensor.lastMeasurement.value).to.equal('24.30');
             }
-            if (sensor.title === 'Kellertemperatur' && sensor.sensorType === 'BMP180') {
-              expect(sensor.lastMeasurement.value).to.equal('26.00');
+            if (sensor.title === 'Kellertemperatur' && sensor.sensor_type === 'BMP180') {
+              expect(sensor.lastMeasurement.value).to.equal('26');
             }
-            if (sensor.title === 'rel. Luftfeuchte' && sensor.sensorType === 'DHT22') {
-              expect(sensor.lastMeasurement.value).to.equal('63.00');
+            if (sensor.title === 'rel. Luftfeuchte' && sensor.sensor_type === 'DHT22') {
+              expect(sensor.lastMeasurement.value).to.equal('63');
             }
-            if (sensor.title === 'Luftdruck Keller' && sensor.sensorType === 'BMP180') {
+            if (sensor.title === 'Luftdruck Keller' && sensor.sensor_type === 'BMP180') {
               expect(sensor.lastMeasurement.value).to.equal('100590');
             }
-            if (sensor.title === 'Wifi Signal' && sensor.sensorType === 'Wifi') {
+            if (sensor.title === 'Wifi Signal' && sensor.sensor_type === 'Wifi') {
               expect(sensor.lastMeasurement.value).to.equal('-64');
             }
 

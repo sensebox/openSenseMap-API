@@ -7,11 +7,13 @@
   "dependencies": {
     "@grpc/grpc-js": "^1.9.4",
     "@grpc/proto-loader": "^0.7.10",
+    "@paralleldrive/cuid2": "^2.2.2",
     "@sensebox/osem-protos": "^1.1.0",
     "@sensebox/sketch-templater": "1.13.1",
     "bcrypt": "^5.1.1",
     "bullmq": "^4.12.3",
     "config": "^3.3.6",
+    "drizzle-orm": "^0.33.0",
     "got": "^11.8.2",
     "isemail": "^3.0.0",
     "jsonpath": "^1.1.1",
@@ -19,14 +21,24 @@
     "moment": "^2.29.4",
     "mongoose": "^5.13.20",
     "mongoose-timestamp": "^0.6",
+    "pg": "^8.13.0",
     "pino": "^8.8.0",
+    "tiny-invariant": "^1.3.3",
     "uuid": "^8.3.2"
   },
   "scripts": {
+    "db:drop": "drizzle-kit drop",
+    "db:generate": "drizzle-kit generate",
+    "db:generate-custom": "drizzle-kit generate --custom",
+    "db:migrate": "drizzle-kit migrate",
+    "db:studio": "drizzle-kit studio",
     "version": "node .scripts/npm_version-update_changelog.js && git add CHANGELOG.md",
     "test": "mocha test/waitForDatabase test/index.js"
   },
   "publishConfig": {
     "access": "public"
+  },
+  "devDependencies": {
+    "drizzle-kit": "^0.24.2"
   }
 }

@@ -10,7 +10,7 @@
 
 'use strict';
 
-const { db } = require('@sensebox/opensensemap-api-models'),
+const { isReady } = require('@sensebox/opensensemap-api-models'),
   restify = require('restify'),
   {
     fullResponse,
@@ -53,9 +53,12 @@ if (config.get('logLevel') === 'debug') {
   server.use(debugLogger);
 }
 
-db.connect()
-  .then(function () {
-    // attach Routes
+const run = async function () {
+  try {
+    // Check if the database is ready
+    await isReady();
+
+    // Load routes
     routes(server);
 
     // start the server
@@ -63,11 +66,14 @@ db.connect()
       stdLogger.logger.info(`${server.name} listening at ${server.url}`);
       postToMattermost(`openSenseMap API started. Version: ${getVersion}`);
     });
-  })
-  .catch(function (err) {
-    stdLogger.logger.fatal(err, 'Couldn\'t connect to MongoDB. Exiting...');
+  } catch (error) {
+    stdLogger.logger.fatal(error, 'Couldn\'t connect to PostgreSQL. Exiting...');
     process.exit(1);
-  });
+  }
+};
+
+// 🔥 Fire up API
+run();
 
 // InternalServerError is the only error we want to report to Honeybadger..
 server.on('InternalServer', function (req, res, err, callback) {

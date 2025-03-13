@@ -1,0 +1,26 @@
+ALTER TYPE "model" ADD VALUE 'home_v2_lora';--> statement-breakpoint
+ALTER TYPE "model" ADD VALUE 'home_v2_ethernet';--> statement-breakpoint
+ALTER TYPE "model" ADD VALUE 'home_v2_ethernet_feinstaub';--> statement-breakpoint
+ALTER TYPE "model" ADD VALUE 'home_v2_wifi';--> statement-breakpoint
+ALTER TYPE "model" ADD VALUE 'home_v2_wifi_feinstaub';--> statement-breakpoint
+ALTER TYPE "model" ADD VALUE 'home_ethernet';--> statement-breakpoint
+ALTER TYPE "model" ADD VALUE 'home_wifi';--> statement-breakpoint
+ALTER TYPE "model" ADD VALUE 'home_ethernet_feinstaub';--> statement-breakpoint
+ALTER TYPE "model" ADD VALUE 'home_wifi_feinstaub';--> statement-breakpoint
+ALTER TYPE "model" ADD VALUE 'luftdaten_sds011';--> statement-breakpoint
+ALTER TYPE "model" ADD VALUE 'luftdaten_sds011_dht11';--> statement-breakpoint
+ALTER TYPE "model" ADD VALUE 'luftdaten_sds011_dht22';--> statement-breakpoint
+ALTER TYPE "model" ADD VALUE 'luftdaten_sds011_bmp180';--> statement-breakpoint
+ALTER TYPE "model" ADD VALUE 'luftdaten_sds011_bme280';--> statement-breakpoint
+ALTER TYPE "model" ADD VALUE 'luftdaten_pms1003';--> statement-breakpoint
+ALTER TYPE "model" ADD VALUE 'luftdaten_pms1003_bme280';--> statement-breakpoint
+ALTER TYPE "model" ADD VALUE 'luftdaten_pms3003';--> statement-breakpoint
+ALTER TYPE "model" ADD VALUE 'luftdaten_pms3003_bme280';--> statement-breakpoint
+ALTER TYPE "model" ADD VALUE 'luftdaten_pms5003';--> statement-breakpoint
+ALTER TYPE "model" ADD VALUE 'luftdaten_pms5003_bme280';--> statement-breakpoint
+ALTER TYPE "model" ADD VALUE 'luftdaten_pms7003';--> statement-breakpoint
+ALTER TYPE "model" ADD VALUE 'luftdaten_pms7003_bme280';--> statement-breakpoint
+ALTER TYPE "model" ADD VALUE 'luftdaten_sps30_bme280';--> statement-breakpoint
+ALTER TYPE "model" ADD VALUE 'luftdaten_sps30_sht3x';--> statement-breakpoint
+ALTER TYPE "model" ADD VALUE 'hackair_home_v2';--> statement-breakpoint
+ALTER TYPE "model" ADD VALUE 'custom';

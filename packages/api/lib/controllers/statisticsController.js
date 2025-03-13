@@ -1,6 +1,9 @@
 'use strict';
 
-const { Box, Measurement } = require('@sensebox/opensensemap-api-models'),
+const { measurementTable } = require('@sensebox/opensensemap-api-models/schema/schema');
+const { rowCount, rowCountTimeBucket } = require('@sensebox/opensensemap-api-models/src/stats');
+
+const { Box } = require('@sensebox/opensensemap-api-models'),
   { UnprocessableEntityError, BadRequestError } = require('restify-errors'),
   idwTransformer = require('../transformers/idwTransformer'),
   { addCache, createDownloadFilename, computeTimestampTruncationLength, csvStringifier } = require('../helpers/apiUtils'),
@@ -28,14 +31,9 @@ const getStatistics = async function getStatistics (req, res) {
   const { human } = req._userParams;
   try {
     let results = await Promise.all([
-      Box.count({}),
-      Measurement.count({}),
-      Measurement.count({
-        createdAt: {
-          '$gt': new Date(Date.now() - 60000),
-          '$lt': new Date()
-        }
-      })
+      rowCount('device'),
+      rowCount('sensor'),
+      rowCountTimeBucket(measurementTable, 'time', 60000)
     ]);
     if (human === 'true') {
       results = results.map(r => millify.default(r).toString());
