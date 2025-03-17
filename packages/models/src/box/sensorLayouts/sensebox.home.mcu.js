@@ -25,7 +25,6 @@ const {
   sps30_pm4,
   sps30_pm10,
   rg15_intensity,
-  rg15_eventAcc,
   rg15_totalAcc
 } = sensorDefinitions;
 
@@ -52,6 +51,5 @@ module.exports = [
   sps30_pm4,
   sps30_pm10,
   rg15_intensity,
-  rg15_eventAcc,
   rg15_totalAcc,
 ];
