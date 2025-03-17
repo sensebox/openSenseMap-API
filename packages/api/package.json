@@ -9,7 +9,8 @@
     "Gerald Pape",
     "Norwin Roosen",
     "Umut Tas",
-    "Felix Erdmann"
+    "Felix Erdmann",
+    "Eric Thieme-Garmann"
   ],
   "dependencies": {
     "@sensebox/opensensemap-api-models": "3.3.1",
