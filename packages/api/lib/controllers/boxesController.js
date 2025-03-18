@@ -556,8 +556,10 @@ const getSketch = async function getSketch (req, res) {
       lean: false,
     });
 
+
     const params = {
-      serialPort: req._userParams.serialPort,
+      sdsSerialPort: req._userParams.sdsSerialPort,
+      rg15SerialPort: req._userParams.rg15SerialPort,
       soilDigitalPort: req._userParams.soilDigitalPort,
       soundMeterPort: req._userParams.soundMeterPort,
       windSpeedPort: req._userParams.windSpeedPort,
@@ -568,6 +570,8 @@ const getSketch = async function getSketch (req, res) {
       appKey: req._userParams.appKey,
       display_enabled: req._userParams.display_enabled,
     };
+
+
 
     // pass access token only if useAuth is true and access_token is available
     if (box.access_token) {
@@ -782,7 +786,12 @@ module.exports = {
     retrieveParameters([
       { predef: 'boxId', required: true },
       {
-        name: 'serialPort',
+        name: 'sdsSerialPort',
+        dataType: 'String',
+        allowedValues: ['Serial1', 'Serial2'],
+      },
+      {
+        name: 'rg15SerialPort',
         dataType: 'String',
         allowedValues: ['Serial1', 'Serial2'],
       },

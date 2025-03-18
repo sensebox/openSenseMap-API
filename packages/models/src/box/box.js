@@ -881,9 +881,12 @@ boxSchema.methods.updateSensors = function updateSensors (sensors) {
   }
 };
 
-boxSchema.methods.getSketch = function getSketch ({ encoding, serialPort, soilDigitalPort, soundMeterPort, windSpeedPort, ssid, password, devEUI, appEUI, appKey, access_token, display_enabled } = {}) {
-  if (serialPort) {
-    this.serialPort = serialPort;
+boxSchema.methods.getSketch = function getSketch ({ encoding, sdsSerialPort,rg15SerialPort, soilDigitalPort, soundMeterPort, windSpeedPort, ssid, password, devEUI, appEUI, appKey, access_token, display_enabled } = {}) {
+  if (sdsSerialPort) {
+    this.sdsSerialPort = sdsSerialPort;
+  }
+  if (rg15SerialPort) {
+    this.rg15SerialPort = rg15SerialPort;
   }
   if (soilDigitalPort) {
     this.soilDigitalPort = soilDigitalPort;
