@@ -881,7 +881,7 @@ boxSchema.methods.updateSensors = function updateSensors (sensors) {
   }
 };
 
-boxSchema.methods.getSketch = function getSketch ({ encoding, sdsSerialPort,rg15SerialPort, soilDigitalPort, soundMeterPort, windSpeedPort, ssid, password, devEUI, appEUI, appKey, access_token, display_enabled } = {}) {
+boxSchema.methods.getSketch = function getSketch ({ encoding, sdsSerialPort, rg15SerialPort, soilDigitalPort, soundMeterPort, windSpeedPort, ssid, password, devEUI, appEUI, appKey, access_token, display_enabled } = {}) {
   if (sdsSerialPort) {
     this.sdsSerialPort = sdsSerialPort;
   }
