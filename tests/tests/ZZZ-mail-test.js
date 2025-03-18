@@ -35,23 +35,6 @@ const getMail = async function getMail (
   return mail;
 };
 
-const getMails = async function getMails (address, subject) {
-  const mailsResponse = await chakram.get(
-    'http://mailhog:8025/api/v2/messages?limit=9999'
-  );
-  const mails = mailsResponse.body.items;
-
-  return mails
-    .filter(function (item) {
-      return (
-        item.Raw.To[0] === address &&
-        item.Content.Headers.Subject.includes(subject)
-      );
-    })
-    .map(function (mail) {
-      return $.load(mimelib.decodeQuotedPrintable(mail.Content.Body));
-    });
-};
 
 describe('mails', function () {
   it('should have sent mails', function () {
@@ -549,7 +532,6 @@ describe('mails', function () {
       });
   });
 
-  
 
   it('should have sent a mail upon deletion of an user', async function () {
     const mail = await getMail(
