@@ -1,14 +1,14 @@
 {
   "name": "@sensebox/opensensemap-api-models",
   "description": "openSenseMap data models and database connection",
-  "version": "3.3.1",
+  "version": "3.3.2",
   "main": "index.js",
   "license": "MIT",
   "dependencies": {
     "@grpc/grpc-js": "^1.9.4",
     "@grpc/proto-loader": "^0.7.10",
     "@sensebox/osem-protos": "^1.1.0",
-    "@sensebox/sketch-templater": "1.13.2",
+    "@sensebox/sketch-templater": "1.13.3",
     "bcrypt": "^5.1.1",
     "bullmq": "^4.12.3",
     "config": "^3.3.6",
