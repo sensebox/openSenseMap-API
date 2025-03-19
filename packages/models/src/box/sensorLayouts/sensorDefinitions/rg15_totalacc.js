@@ -1,7 +1,7 @@
 'use strict';
 
 module.exports = {
-  title: 'Niederschlag (Insgesamt)',
+  title: 'Gesamtniederschlag',
   unit: 'mm/m²',
   sensorType: 'RG15',
   icon: 'osem-umbrella',
