@@ -3,6 +3,6 @@
 module.exports = {
   title: 'Regenintensität',
   unit: 'mm/h',
-  sensorType: 'RG-15',
+  sensorType: 'RG15',
   icon: 'osem-umbrella'
 };

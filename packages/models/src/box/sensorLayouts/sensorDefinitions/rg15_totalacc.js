@@ -3,7 +3,7 @@
 module.exports = {
   title: 'Niederschlag (Insgesamt)',
   unit: 'mm/m²',
-  sensorType: 'RG-15',
+  sensorType: 'RG15',
   icon: 'osem-umbrella',
 };
 
