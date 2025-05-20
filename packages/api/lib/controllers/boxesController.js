@@ -882,6 +882,7 @@ module.exports = {
           'dps310',
           'sps30',
           'rg15',
+          'sb041'
         ],
       },
       {

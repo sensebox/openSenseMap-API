@@ -25,7 +25,10 @@ const {
   sps30_pm4,
   sps30_pm10,
   rg15_intensity,
-  rg15_totalAcc
+  rg15_totalAcc,
+  sb041_solarvoltage,
+  sb041_batteryvoltage,
+  sb041_level,
 } = sensorDefinitions;
 
 module.exports = [
@@ -52,4 +55,8 @@ module.exports = [
   sps30_pm10,
   rg15_intensity,
   rg15_totalAcc,
+  sb041_solarvoltage,
+  sb041_batteryvoltage,
+  sb041_level,
 ];
+
