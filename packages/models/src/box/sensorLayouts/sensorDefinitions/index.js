@@ -47,11 +47,17 @@ const veml6070_uvintensity = require('./veml6070_uvintensity'),
   sps30_pm25 = require('./sps30_pm25'),
   sps30_pm4 = require('./sps30_pm4'),
   sps30_pm10 = require('./sps30_pm10'),
+  rg15_intensity = require('./rg15_intensity'),
+  rg15_totalAcc = require('./rg15_totalacc'),
   sht3x_temperature = require('./sht3x_temperature'),
   sht3x_humidity = require('./sht3x_humidity'),
   dnms_la_eq = require('./dnms_la_eq'),
   dnms_la_min = require('./dnms_la_min'),
-  dnms_la_max = require('./dnms_la_max');
+  dnms_la_max = require('./dnms_la_max'),
+  sb041_level = require('./sb041_level'),
+  sb041_batteryvoltage = require('./sb041_batteryvoltage'),
+  sb041_solarvoltage = require('./sb041_solarvoltage');
+
 module.exports = {
   hdc1008_temperature,
   hdc1080_temperature,
@@ -100,9 +106,14 @@ module.exports = {
   sps30_pm25,
   sps30_pm4,
   sps30_pm10,
+  rg15_intensity,
+  rg15_totalAcc,
   sht3x_temperature,
   sht3x_humidity,
   dnms_la_eq,
   dnms_la_min,
   dnms_la_max,
+  sb041_level,
+  sb041_batteryvoltage,
+  sb041_solarvoltage,
 };

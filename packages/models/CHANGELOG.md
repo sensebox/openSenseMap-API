@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+## v3.3.2
+
+## v3.3.2
+ - Have option to supply templater with serial ports for SDS and RG-15
+
+## v3.3.1
+- Add Hydreon RG-15 Optical Rain Gauge
+
 ## v3.3.0
 
 - Add DNMS sensor template (#881)

@@ -56,9 +56,14 @@
  * @apiSuccess {String} [image] image showing the senseBox
  */
 
-const
-  { Box, User, Claim } = require('@sensebox/opensensemap-api-models'),
-  { addCache, clearCache, checkContentType, redactEmail, postToMattermost } = require('../helpers/apiUtils'),
+const { Box, User, Claim } = require('@sensebox/opensensemap-api-models'),
+  {
+    addCache,
+    clearCache,
+    checkContentType,
+    redactEmail,
+    postToMattermost,
+  } = require('../helpers/apiUtils'),
   { point } = require('@turf/helpers'),
   classifyTransformer = require('../transformers/classifyTransformer'),
   {
@@ -66,7 +71,7 @@ const
     parseAndValidateTimeParamsForFindAllBoxes,
     validateFromToTimeParams,
     checkPrivilege,
-    validateDateNotPast
+    validateDateNotPast,
   } = require('../helpers/userParamHelpers'),
   handleError = require('../helpers/errorHandler'),
   jsonstringify = require('stringify-stream');
@@ -154,7 +159,10 @@ const
  */
 const updateBox = async function updateBox (req, res) {
   try {
-    let box = await Box.findBoxById(req._userParams.boxId, { lean: false, populate: false });
+    let box = await Box.findBoxById(req._userParams.boxId, {
+      lean: false,
+      populate: false,
+    });
     box = await box.updateBox(req._userParams);
     if (box._sensorsChanged === true) {
       req.user.mail('newSketch', box);
@@ -189,7 +197,10 @@ const updateBox = async function updateBox (req, res) {
  */
 const getBoxLocations = async function getBoxLocations (req, res) {
   try {
-    const box = await Box.findBoxById(req._userParams.boxId, { onlyLocations: true, lean: false });
+    const box = await Box.findBoxById(req._userParams.boxId, {
+      onlyLocations: true,
+      lean: false,
+    });
     res.send(await box.getLocations(req._userParams));
   } catch (err) {
     return handleError(err);
@@ -305,7 +316,10 @@ const getBoxes = async function getBoxes (req, res) {
   let stringifier = jsonstringify({ open: '[', close: ']' });
   // format
   if (req._userParams.format === 'geojson') {
-    stringifier = jsonstringify({ open: '{"type":"FeatureCollection","features":[', close: ']}' }, geoJsonStringifyReplacer);
+    stringifier = jsonstringify(
+      { open: '{"type":"FeatureCollection","features":[', close: ']}' },
+      geoJsonStringifyReplacer
+    );
   }
 
   try {
@@ -484,7 +498,7 @@ const getBox = async function getBox (req, res) {
  * @apiParam (RequestBody) {Location} location the coordinates of this senseBox.
  * @apiParam (RequestBody) {String="homeV2Lora","homeV2Ethernet","homeV2Wifi","homeEthernet","homeWifi","homeEthernetFeinstaub","homeWifiFeinstaub","luftdaten_sds011","luftdaten_sds011_dht11","luftdaten_sds011_dht22","luftdaten_sds011_bmp180","luftdaten_sds011_bme280","hackair_home_v2"} [model] specify the model if you want to use a predefined senseBox model, autocreating sensor definitions.
  * @apiParam (RequestBody) {Sensor[]} [sensors] an array containing the sensors of this senseBox. Only use if `model` is unspecified.
- * @apiParam (RequestBody) {String[]="hdc1080","bmp280","tsl45315","veml6070","sds011","bme680","smt50","soundlevelmeter","windspeed","scd30","dps310","sps30"} [sensorTemplates] Specify which sensors should be included.
+ * @apiParam (RequestBody) {String[]="hdc1080","bmp280","tsl45315","veml6070","sds011","bme680","smt50","soundlevelmeter","windspeed","scd30","dps310","sps30","rg15"} [sensorTemplates] Specify which sensors should be included.
  * @apiParam (RequestBody) {Object} [mqtt] specify parameters of the MQTT integration for external measurement upload. Please see below for the accepted parameters
  * @apiParam (RequestBody) {Object} [ttn] specify parameters for the TTN integration for measurement from TheThingsNetwork.org upload. Please see below for the accepted parameters
  * @apiParam (RequestBody) {Boolean="true","false"} [useAuth] whether to use access_token or not for authentication
@@ -537,10 +551,15 @@ const postNewBox = async function postNewBox (req, res) {
 const getSketch = async function getSketch (req, res) {
   res.header('Content-Type', 'text/plain; charset=utf-8');
   try {
-    const box = await Box.findBoxById(req._userParams.boxId, { populate: false, lean: false });
+    const box = await Box.findBoxById(req._userParams.boxId, {
+      populate: false,
+      lean: false,
+    });
+
 
     const params = {
-      serialPort: req._userParams.serialPort,
+      sdsSerialPort: req._userParams.sdsSerialPort,
+      rg15SerialPort: req._userParams.rg15SerialPort,
       soilDigitalPort: req._userParams.soilDigitalPort,
       soundMeterPort: req._userParams.soundMeterPort,
       windSpeedPort: req._userParams.windSpeedPort,
@@ -549,8 +568,10 @@ const getSketch = async function getSketch (req, res) {
       devEUI: req._userParams.devEUI,
       appEUI: req._userParams.appEUI,
       appKey: req._userParams.appKey,
-      display_enabled: req._userParams.display_enabled
+      display_enabled: req._userParams.display_enabled,
     };
+
+
 
     // pass access token only if useAuth is true and access_token is available
     if (box.access_token) {
@@ -579,10 +600,16 @@ const deleteBox = async function deleteBox (req, res) {
   try {
     await req.user.checkPassword(password);
     const box = await req.user.removeBox(boxId);
-    res.send({ code: 'Ok', message: 'box and all associated measurements marked for deletion' });
+    res.send({
+      code: 'Ok',
+      message: 'box and all associated measurements marked for deletion',
+    });
     clearCache(['getBoxes', 'getStats']);
-    postToMattermost(`Box deleted: ${req.user.name} (${redactEmail(req.user.email)}) just deleted "${box.name}" (${boxId})`);
-
+    postToMattermost(
+      `Box deleted: ${req.user.name} (${redactEmail(
+        req.user.email
+      )}) just deleted "${box.name}" (${boxId})`
+    );
   } catch (err) {
     return handleError(err);
   }
@@ -707,87 +734,91 @@ const getAllTags = async function getAllTags (req, res) {
   }
 };
 
-
 module.exports = {
   // auth required
   deleteBox: [
     checkContentType,
     retrieveParameters([
       { predef: 'boxId', required: true },
-      { predef: 'password' }
+      { predef: 'password' },
     ]),
     checkPrivilege,
-    deleteBox
+    deleteBox,
   ],
   getTransfer: [
     retrieveParameters([{ predef: 'boxId', required: true }]),
     checkPrivilege,
-    getTransfer
+    getTransfer,
   ],
   createTransfer: [
     retrieveParameters([
       { predef: 'boxId', required: true },
-      { predef: 'dateNoDefault' }
+      { predef: 'dateNoDefault' },
     ]),
     validateDateNotPast,
     checkPrivilege,
-    createTransfer
+    createTransfer,
   ],
   updateTransfer: [
     retrieveParameters([
       { predef: 'boxId', required: true },
       { name: 'token', dataType: 'String' },
-      { predef: 'dateNoDefault', required: true }
+      { predef: 'dateNoDefault', required: true },
     ]),
     validateDateNotPast,
     checkPrivilege,
-    updateTransfer
+    updateTransfer,
   ],
   removeTransfer: [
     retrieveParameters([
       { predef: 'boxId', required: true },
-      { name: 'token', dataType: 'String' }
+      { name: 'token', dataType: 'String' },
     ]),
     checkPrivilege,
-    removeTransfer
+    removeTransfer,
   ],
   claimBox: [
     checkContentType,
     retrieveParameters([{ name: 'token', dataType: 'String' }]),
-    claimBox
+    claimBox,
   ],
   getSketch: [
     retrieveParameters([
       { predef: 'boxId', required: true },
       {
-        name: 'serialPort',
+        name: 'sdsSerialPort',
         dataType: 'String',
-        allowedValues: ['Serial1', 'Serial2']
+        allowedValues: ['Serial1', 'Serial2'],
+      },
+      {
+        name: 'rg15SerialPort',
+        dataType: 'String',
+        allowedValues: ['Serial1', 'Serial2'],
       },
       {
         name: 'soilDigitalPort',
         dataType: 'String',
-        allowedValues: ['A', 'B', 'C']
+        allowedValues: ['A', 'B', 'C'],
       },
       {
         name: 'soundMeterPort',
         dataType: 'String',
-        allowedValues: ['A', 'B', 'C']
+        allowedValues: ['A', 'B', 'C'],
       },
       {
         name: 'windSpeedPort',
         dataType: 'String',
-        allowedValues: ['A', 'B', 'C']
+        allowedValues: ['A', 'B', 'C'],
       },
       { name: 'ssid', dataType: 'StringWithEmpty' },
       { name: 'password', dataType: 'StringWithEmpty' },
       { name: 'devEUI', dataType: 'StringWithEmpty' },
       { name: 'appEUI', dataType: 'StringWithEmpty' },
       { name: 'appKey', dataType: 'StringWithEmpty' },
-      { name: 'display_enabled', allowedValues: ['true', 'false'] }
+      { name: 'display_enabled', allowedValues: ['true', 'false'] },
     ]),
     checkPrivilege,
-    getSketch
+    getSketch,
   ],
   updateBox: [
     checkContentType,
@@ -805,10 +836,10 @@ module.exports = {
       { name: 'addons', dataType: 'object' },
       { predef: 'location' },
       { name: 'useAuth', allowedValues: ['true', 'false'] },
-      { name: 'generate_access_token', allowedValues: ['true', 'false'] }
+      { name: 'generate_access_token', allowedValues: ['true', 'false'] },
     ]),
     checkPrivilege,
-    updateBox
+    updateBox,
   ],
   // no auth required
   getBoxLocations: [
@@ -817,13 +848,13 @@ module.exports = {
       {
         name: 'format',
         defaultValue: 'json',
-        allowedValues: ['json', 'geojson']
+        allowedValues: ['json', 'geojson'],
       },
       { predef: 'toDate' },
       { predef: 'fromDate' },
-      validateFromToTimeParams
+      validateFromToTimeParams,
     ]),
-    getBoxLocations
+    getBoxLocations,
   ],
   postNewBox: [
     checkContentType,
@@ -849,40 +880,42 @@ module.exports = {
           'windspeed',
           'scd30',
           'dps310',
-          'sps30'
-        ]
+          'sps30',
+          'rg15',
+          'sb041'
+        ],
       },
       {
         name: 'serialPort',
         dataType: 'String',
         defaultValue: 'Serial1',
-        allowedValues: ['Serial1', 'Serial2']
+        allowedValues: ['Serial1', 'Serial2'],
       },
       {
         name: 'soilDigitalPort',
         dataType: 'String',
         defaultValue: 'A',
-        allowedValues: ['A', 'B', 'C']
+        allowedValues: ['A', 'B', 'C'],
       },
       {
         name: 'soundMeterPort',
         dataType: 'String',
         defaultValue: 'B',
-        allowedValues: ['A', 'B', 'C']
+        allowedValues: ['A', 'B', 'C'],
       },
       {
         name: 'windSpeedPort',
         dataType: 'String',
         defaultValue: 'C',
-        allowedValues: ['A', 'B', 'C']
+        allowedValues: ['A', 'B', 'C'],
       },
       { name: 'mqtt', dataType: 'object' },
       { name: 'ttn', dataType: 'object' },
       { name: 'useAuth', allowedValues: ['true', 'false'] },
       { predef: 'location', required: true },
-      { name: 'sharedBox', allowedValues: ['true', 'false'] }
+      { name: 'sharedBox', allowedValues: ['true', 'false'] },
     ]),
-    postNewBox
+    postNewBox,
   ],
   getBox: [
     retrieveParameters([
@@ -890,10 +923,10 @@ module.exports = {
       {
         name: 'format',
         defaultValue: 'json',
-        allowedValues: ['json', 'geojson']
-      }
+        allowedValues: ['json', 'geojson'],
+      },
     ]),
-    getBox
+    getBox,
   ],
   getBoxes: [
     retrieveParameters([
@@ -902,7 +935,7 @@ module.exports = {
       {
         name: 'exposure',
         allowedValues: Box.BOX_VALID_EXPOSURES,
-        dataType: ['String']
+        dataType: ['String'],
       },
       { name: 'model', dataType: ['StringWithEmpty'] },
       { name: 'grouptag', dataType: ['StringWithEmpty'] },
@@ -911,26 +944,26 @@ module.exports = {
       {
         name: 'format',
         defaultValue: 'json',
-        allowedValues: ['json', 'geojson']
+        allowedValues: ['json', 'geojson'],
       },
       {
         name: 'classify',
         defaultValue: 'false',
-        allowedValues: ['true', 'false']
+        allowedValues: ['true', 'false'],
       },
       {
         name: 'minimal',
         defaultValue: 'false',
-        allowedValues: ['true', 'false']
+        allowedValues: ['true', 'false'],
       },
       { name: 'full', defaultValue: 'false', allowedValues: ['true', 'false'] },
       { predef: 'near' },
       { name: 'maxDistance' },
-      { predef: 'bbox' }
+      { predef: 'bbox' },
     ]),
     parseAndValidateTimeParamsForFindAllBoxes,
     addCache('5 minutes', 'getBoxes'),
-    getBoxes
+    getBoxes,
   ],
-  getAllTags: [addCache('5 minutes', 'getAllTags'), getAllTags]
+  getAllTags: [addCache('5 minutes', 'getAllTags'), getAllTags],
 };
