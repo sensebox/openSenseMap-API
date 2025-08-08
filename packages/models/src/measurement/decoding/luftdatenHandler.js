@@ -78,6 +78,7 @@ const matchings = {
   n5: ['nc5', 'n5'],
   n10: ['nc10', 'n10'],
   n25: ['nc2.5', 'n2.5'],
+  co2_ppm: ['co2', 'carbon_dioxide', 'kohlendioxid', 'kohlenstoffdioxid'],
   temperature: ['temperatur'],
   humidity: ['rel. luftfeuchte', 'luftfeuchtigkeit', 'luftfeuchte'],
   pressure: ['luftdruck', 'druck'],
