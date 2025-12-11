@@ -56,7 +56,8 @@ const modelDefinitions = {
   'luftdaten_pms7003_bme280': luftdaten_pms7003_bme280,
   'luftdaten_sps30_bme280': luftdaten_sps30_bme280,
   'luftdaten_sps30_sht3x': luftdaten_sps30_sht3x,
-  'hackair_home_v2': hackair_home_v2
+  'hackair_home_v2': hackair_home_v2,
+  'noiseMonitor': noiseMonitor
 };
 
 const addonDefinitions = {
