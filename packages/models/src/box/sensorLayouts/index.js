@@ -19,7 +19,8 @@ const senseboxhome = require('./sensebox.home'),
   luftdaten_sps30_bme280 = require('./luftdaten/sps30.bme280'),
   luftdaten_sps30_sht3x = require('./luftdaten/sps30.shtx3'),
   hackair_home_v2 = require('./hackair/home.v2'),
-  addonFeinstaub = require('./addons/feinstaubAddon');
+  addonFeinstaub = require('./addons/feinstaubAddon'),
+  noiseMonitor = require('./noiseMonitor/noiseMonitor');
 
 /*
  * How to add a new senseBox model?
