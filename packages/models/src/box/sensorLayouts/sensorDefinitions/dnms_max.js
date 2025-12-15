@@ -1,6 +1,5 @@
 'use strict';
 
-
 module.exports = {
   title: 'Lautstärke (Max)',
   unit: 'db (A)',
